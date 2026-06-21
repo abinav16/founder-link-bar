@@ -3,22 +3,32 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ArrowRight, ArrowLeft, ExternalLink, Copy, Check, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import {
+  ArrowRight, ArrowLeft, ExternalLink,
+  Copy, Check, CheckCircle2, XCircle, Loader2,
+} from "lucide-react";
 
 export const Route = createFileRoute("/apply")({
   head: () => ({ meta: [{ title: "Apply — StartupBar" }] }),
   component: Apply,
 });
 
-const schema = z.object({ name: z.string().trim().min(2).max(60), website_url: z.string().trim().url().max(200), description: z.string().trim().min(10).max(100) });
+const schema = z.object({
+  name: z.string().trim().min(2).max(60),
+  website_url: z.string().trim().url().max(200),
+  description: z.string().trim().min(10).max(100),
+});
 
 function BarPreview({ name, url, desc }: { name: string; url: string; desc: string }) {
-  const displayName = name || "Your Startup"; const displayDesc = desc || "Your one-liner goes here";
+  const displayName = name || "Your Startup";
+  const displayDesc = desc || "Your one-liner goes here";
   const favicon = url ? `https://www.google.com/s2/favicons?domain=${url}&sz=32` : null;
   return (
     <div className="overflow-hidden rounded-xl border border-black/10 bg-white shadow-[0_8px_40px_-12px_rgba(0,0,0,0.12)]">
       <div className="flex h-8 items-center gap-1.5 border-b border-black/6 bg-black/[0.02] px-3">
-        <div className="h-2 w-2 rounded-full bg-red-400/70" /><div className="h-2 w-2 rounded-full bg-yellow-400/70" /><div className="h-2 w-2 rounded-full bg-green-400/70" />
+        <div className="h-2 w-2 rounded-full bg-red-400/70" />
+        <div className="h-2 w-2 rounded-full bg-yellow-400/70" />
+        <div className="h-2 w-2 rounded-full bg-green-400/70" />
         <div className="ml-2 text-[10px] text-black/25">somefounder.com</div>
       </div>
       <div className="flex h-9 items-center gap-2.5 border-b border-black/6 bg-white px-4">
@@ -29,15 +39,24 @@ function BarPreview({ name, url, desc }: { name: string; url: string; desc: stri
         <span className="ml-auto flex items-center gap-1 text-[12px] text-black/50">Visit <ExternalLink className="h-3 w-3" /></span>
       </div>
       <div className="space-y-2 px-4 py-6">
-        <div className="h-3 w-2/3 rounded-full bg-black/5" /><div className="h-3 w-1/2 rounded-full bg-black/5" />
-        <div className="mt-4 h-3 w-full rounded-full bg-black/5" /><div className="h-3 w-5/6 rounded-full bg-black/5" /><div className="h-3 w-4/6 rounded-full bg-black/5" />
+        <div className="h-3 w-2/3 rounded-full bg-black/5" />
+        <div className="h-3 w-1/2 rounded-full bg-black/5" />
+        <div className="mt-4 h-3 w-full rounded-full bg-black/5" />
+        <div className="h-3 w-5/6 rounded-full bg-black/5" />
+        <div className="h-3 w-4/6 rounded-full bg-black/5" />
       </div>
     </div>
   );
 }
 
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
-  return (<div><label className="block text-sm font-medium text-black">{label}</label>{hint && <p className="mt-0.5 text-xs text-black/40">{hint}</p>}<div className="mt-2">{children}</div></div>);
+  return (
+    <div>
+      <label className="block text-sm font-medium text-black">{label}</label>
+      {hint && <p className="mt-0.5 text-xs text-black/40">{hint}</p>}
+      <div className="mt-2">{children}</div>
+    </div>
+  );
 }
 
 const inputCls = "w-full rounded-lg border border-black/12 bg-white px-4 py-3 text-sm text-black placeholder:text-black/25 outline-none ring-0 transition focus:border-black/30 focus:ring-2 focus:ring-black/8";
@@ -46,36 +65,59 @@ function Apply() {
   const navigate = useNavigate();
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [step, setStep] = useState<1 | 2>(1);
-  const [name, setName] = useState(""); const [url, setUrl] = useState(""); const [desc, setDesc] = useState("");
+  const [name, setName] = useState("");
+  const [url, setUrl] = useState("");
+  const [desc, setDesc] = useState("");
   const [startupId] = useState(() => crypto.randomUUID());
   const [copied, setCopied] = useState(false);
   const [verifyStatus, setVerifyStatus] = useState<"idle" | "checking" | "found" | "not-found" | "error">("idle");
   const [verifyMsg, setVerifyMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => { supabase.auth.getUser().then(({ data }) => setAuthed(!!data.user)); }, []);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setAuthed(!!data.user));
+  }, []);
 
   const snippet = `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}"></script>`;
 
-  function copySnippet() { navigator.clipboard.writeText(snippet); setCopied(true); setTimeout(() => setCopied(false), 1500); }
+  function copySnippet() {
+    navigator.clipboard.writeText(snippet);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }
 
   function goToStep2(e: React.FormEvent) {
     e.preventDefault();
     if (!authed) { navigate({ to: "/auth" }); return; }
     const parsed = schema.safeParse({ name, website_url: url, description: desc });
-    if (!parsed.success) { toast.error(parsed.error.issues[0]?.message ?? "Invalid input"); return; }
-    setStep(2); window.scrollTo({ top: 0, behavior: "smooth" });
+    if (!parsed.success) {
+      toast.error(parsed.error.issues[0]?.message ?? "Invalid input");
+      return;
+    }
+    setStep(2);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   async function checkInstallation() {
-    setVerifyStatus("checking"); setVerifyMsg("");
+    setVerifyStatus("checking");
+    setVerifyMsg("");
     try {
       const res = await fetch(`/api/public/verify-install?url=${encodeURIComponent(url)}`);
       const json = await res.json();
-      if (json.installed) { setVerifyStatus("found"); setVerifyMsg("Script detected on your site!"); }
-      else if (json.error) { setVerifyStatus("error"); setVerifyMsg(json.error); }
-      else { setVerifyStatus("not-found"); setVerifyMsg("Not found yet — paste it in your <head> and try again."); }
-    } catch { setVerifyStatus("error"); setVerifyMsg("Could not reach verification service."); }
+      if (json.installed) {
+        setVerifyStatus("found");
+        setVerifyMsg("Script detected on your site!");
+      } else if (json.error) {
+        setVerifyStatus("error");
+        setVerifyMsg(json.error);
+      } else {
+        setVerifyStatus("not-found");
+        setVerifyMsg("Not found yet — paste it in your <head> and try again.");
+      }
+    } catch {
+      setVerifyStatus("error");
+      setVerifyMsg("Could not reach verification service.");
+    }
   }
 
   async function onSubmit() {
@@ -83,63 +125,100 @@ function Apply() {
     const { data: userData } = await supabase.auth.getUser();
     const user_id = userData.user?.id;
     if (!user_id) { navigate({ to: "/auth" }); return; }
+
     const parsed = schema.parse({ name, website_url: url, description: desc });
-    const { error } = await supabase.from("startups").insert({ id: startupId, user_id, ...parsed });
+    const { error } = await supabase.from("startups").insert(
+      { id: startupId, user_id, ...parsed }
+    );
     setLoading(false);
     if (error) { toast.error(error.message); return; }
-    supabase.functions.invoke("send-email", { body: { type: "startup-submitted", data: { email: userData.user!.email, name: userData.user!.user_metadata?.full_name || userData.user!.email, startupName: parsed.name } } }).catch(() => {});
-    // Notify admin of new application
-    supabase.functions.invoke("send-email", {
-      body: {
-        type: "admin-new-application",
-        data: {
-          startupName: parsed.name,
-          startupUrl: parsed.website_url,
-          description: parsed.description,
-          applicantEmail: userData.user!.email,
-        },
-      },
-    }).catch(() => {});
-    toast.success("Application submitted!"); navigate({ to: "/dashboard" });
+
+    supabase.functions.invoke("send-email", { body: { type: "startup-submitted", data: { email: userData.user!.email, name: userData.user!.user_metadata?.full_name ?? "", startupName: parsed.name } } }).catch(() => {});
+    supabase.functions.invoke("send-email", { body: { type: "admin-new-application", data: { startupName: parsed.name, startupUrl: parsed.website_url, description: parsed.description, applicantEmail: userData.user!.email } } }).catch(() => {});
+
+    toast.success("Application submitted!");
+    navigate({ to: "/dashboard" });
   }
 
   return (
     <div className="min-h-screen bg-white text-black">
       <header className="border-b border-black/8">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <Link to="/" className="flex items-center gap-2"><div className="h-2 w-6 rounded-sm bg-black" /><span className="text-base font-semibold tracking-tight">StartupBar</span></Link>
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+          <Link to="/" className="flex items-center gap-2">
+            <div className="h-2 w-6 rounded-sm bg-black" />
+            <span className="text-base font-semibold tracking-tight">StartupBar</span>
+          </Link>
           <div className="flex items-center gap-2 text-sm">
             <span className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold ${step === 1 ? "bg-black text-white" : "bg-black/10 text-black/50"}`}>1</span>
             <span className="text-black/20">—</span>
             <span className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold ${step === 2 ? "bg-black text-white" : "bg-black/10 text-black/30"}`}>2</span>
           </div>
-          <Link to="/auth" className="text-sm text-black/40 hover:text-black transition-colors">Already a member? Sign in</Link>
+          <Link to="/auth" className="text-sm text-black/40 hover:text-black transition-colors">
+            <span className="hidden sm:inline">Already a member? </span>Sign in
+          </Link>
         </div>
       </header>
 
       {step === 1 && (
-        <div className="mx-auto max-w-6xl px-6 py-10 md:py-14">
-          <div className="grid gap-16 md:grid-cols-2 md:gap-24">
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 md:py-14">
+          <div className="grid gap-10 md:grid-cols-2 md:gap-24">
             <div>
               <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Step 1 of 2</span>
-              <h1 className="mt-4 text-4xl font-medium leading-tight tracking-tight md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>Your startup details.</h1>
-              <p className="mt-4 text-[15px] leading-relaxed text-black/45">Tell us about your product. We review every application within 24 hours.</p>
-              {authed === false && (<div className="mt-6 rounded-lg border border-black/10 bg-black/[0.02] px-4 py-3 text-sm text-black/60">You'll need an account to apply.{" "}<Link to="/auth" className="font-medium text-black underline underline-offset-2">Sign in or create one →</Link></div>)}
+              <h1 className="mt-4 text-3xl font-medium leading-tight tracking-tight sm:text-4xl md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
+                Your startup details.
+              </h1>
+              <p className="mt-4 text-[15px] leading-relaxed text-black/45">
+                Tell us about your product. We review every application within 24 hours.
+              </p>
+
+              {authed === false && (
+                <div className="mt-6 rounded-lg border border-black/10 bg-black/[0.02] px-4 py-3 text-sm text-black/60">
+                  You'll need an account to apply.{" "}
+                  <Link to="/auth" className="font-medium text-black underline underline-offset-2">Sign in or create one →</Link>
+                </div>
+              )}
+
               <form onSubmit={goToStep2} className="mt-10 space-y-7">
-                <Field label="Startup name" hint="The name shown in the bar across the network."><input required maxLength={60} value={name} onChange={(e) => setName(e.target.value)} placeholder="Acme AI" className={inputCls} /></Field>
-                <Field label="Website URL" hint="Your homepage — where visitors land when they click."><input required type="url" value={url} onChange={(e) => setUrl(e.target.value)} onBlur={() => { const v = url.trim(); if (v && !v.startsWith("http://") && !v.startsWith("https://")) setUrl("https://" + v); }} placeholder="acme.ai" className={inputCls} /></Field>
-                <Field label="One-liner" hint="What your product does, in plain English. Max 100 chars."><textarea required maxLength={100} rows={3} value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="Turn meeting notes into action items, automatically." className={inputCls + " resize-none"} /><div className="mt-1 text-right text-[11px] text-black/30">{desc.length} / 100</div></Field>
-                <button type="submit" className="group flex w-full items-center justify-center gap-2 rounded-lg bg-black py-3.5 text-sm font-medium text-white transition-all hover:bg-black/80">Next — Install the script<ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" /></button>
+                <Field label="Startup name" hint="The name shown in the bar across the network.">
+                  <input required maxLength={60} value={name} onChange={(e) => setName(e.target.value)} placeholder="Acme AI" className={inputCls} />
+                </Field>
+                <Field label="Website URL" hint="Your homepage — where visitors land when they click.">
+                  <input
+                    required type="url" value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    onBlur={() => {
+                      const v = url.trim();
+                      if (v && !v.startsWith("http://") && !v.startsWith("https://")) setUrl("https://" + v);
+                    }}
+                    placeholder="acme.ai" className={inputCls}
+                  />
+                </Field>
+                <Field label="One-liner" hint="What your product does, in plain English. Max 100 chars.">
+                  <textarea required maxLength={100} rows={3} value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="Turn meeting notes into action items, automatically." className={inputCls + " resize-none"} />
+                  <div className="mt-1 text-right text-[11px] text-black/30">{desc.length} / 100</div>
+                </Field>
+                <button type="submit" className="group flex w-full items-center justify-center gap-2 rounded-lg bg-black py-3.5 text-sm font-medium text-white transition-all hover:bg-black/80">
+                  Next — Install the script
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                </button>
                 <p className="text-center text-xs text-black/30">Free forever · We review within 24h · No commitment</p>
               </form>
             </div>
+
             <div className="hidden md:block">
               <div className="sticky top-10">
                 <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Live preview</span>
                 <p className="mt-1.5 text-sm text-black/40">This is how your startup will appear on other founders' sites.</p>
-                <div className="mt-5"><BarPreview name={name} url={url} desc={desc} /></div>
+                <div className="mt-5">
+                  <BarPreview name={name} url={url} desc={desc} />
+                </div>
                 <div className="mt-8 space-y-4 border-t border-black/8 pt-8">
-                  {["Your bar will show on sites across the network as soon as you're approved.", "In return, you'll show one other startup on your site — completely automatic.", "Cancel anytime by removing the script tag. No lock-in, no fees."].map((t) => (<div key={t} className="flex items-start gap-3"><div className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" /><p className="text-[13px] leading-relaxed text-black/45">{t}</p></div>))}
+                  {["Your bar will show on sites across the network as soon as you're approved.", "In return, you'll show one other startup on your site — completely automatic.", "Cancel anytime by removing the script tag. No lock-in, no fees."].map((t) => (
+                    <div key={t} className="flex items-start gap-3">
+                      <div className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
+                      <p className="text-[13px] leading-relaxed text-black/45">{t}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -148,41 +227,78 @@ function Apply() {
       )}
 
       {step === 2 && (
-        <div className="mx-auto max-w-2xl px-6 py-12 md:py-16">
-          <button onClick={() => setStep(1)} className="mb-8 flex items-center gap-1.5 text-sm text-black/40 hover:text-black transition-colors"><ArrowLeft className="h-3.5 w-3.5" /> Back</button>
+        <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 md:py-16">
+          <button onClick={() => setStep(1)} className="mb-8 flex items-center gap-1.5 text-sm text-black/40 hover:text-black transition-colors">
+            <ArrowLeft className="h-3.5 w-3.5" /> Back
+          </button>
+
           <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Step 2 of 2</span>
-          <h1 className="mt-4 text-3xl font-medium leading-tight tracking-tight md:text-4xl" style={{ fontFamily: "var(--font-display)" }}>Install the script.</h1>
-          <p className="mt-3 text-[15px] leading-relaxed text-black/45">Paste this once inside the <code className="rounded bg-black/8 px-1.5 py-0.5 font-mono text-sm">&lt;head&gt;</code> of your site, then verify it's live.</p>
+          <h1 className="mt-4 text-3xl font-medium leading-tight tracking-tight md:text-4xl" style={{ fontFamily: "var(--font-display)" }}>
+            Install the script.
+          </h1>
+          <p className="mt-3 text-[15px] leading-relaxed text-black/45">
+            Paste this once inside the <code className="rounded bg-black/8 px-1.5 py-0.5 font-mono text-sm">&lt;head&gt;</code> of your site, then verify it's live.
+          </p>
+
           <div className="mt-8 flex items-center gap-3 rounded-xl border border-black/8 bg-black/[0.02] px-5 py-4">
             {url && <img src={`https://www.google.com/s2/favicons?domain=${url}&sz=32`} alt="" className="h-5 w-5 rounded-sm" onError={(e) => (e.currentTarget.style.display = "none")} />}
-            <div className="min-w-0"><p className="font-medium text-black">{name}</p><p className="truncate text-xs text-black/40">{url}</p></div>
+            <div className="min-w-0">
+              <p className="font-medium text-black">{name}</p>
+              <p className="truncate text-xs text-black/40">{url}</p>
+            </div>
             <button onClick={() => setStep(1)} className="ml-auto text-xs text-black/35 hover:text-black transition-colors">Edit</button>
           </div>
+
           <div className="mt-8">
             <p className="text-sm font-semibold text-black">Your embed code</p>
             <p className="mt-1 text-xs text-black/45">This is your unique startup ID — it won't change after you apply.</p>
             <div className="mt-3 rounded-xl border border-black/10 bg-black/[0.025]">
               <div className="flex items-center justify-between border-b border-black/8 px-4 py-2">
                 <span className="text-[11px] font-medium uppercase tracking-wider text-black/30">HTML</span>
-                <button onClick={copySnippet} className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium text-black/50 hover:bg-black/8 hover:text-black transition-all">{copied ? <><Check className="h-3.5 w-3.5 text-emerald-500" /> Copied!</> : <><Copy className="h-3.5 w-3.5" /> Copy</>}</button>
+                <button onClick={copySnippet} className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium text-black/50 hover:bg-black/8 hover:text-black transition-all">
+                  {copied ? <><Check className="h-3.5 w-3.5 text-emerald-500" /> Copied!</> : <><Copy className="h-3.5 w-3.5" /> Copy</>}
+                </button>
               </div>
-              <div className="overflow-x-auto px-4 py-3"><pre className="text-[12px] font-mono text-black/60 whitespace-nowrap">{snippet}</pre></div>
+              <div className="overflow-x-auto px-4 py-3">
+                <pre className="text-[12px] font-mono text-black/60 whitespace-nowrap">{snippet}</pre>
+              </div>
             </div>
           </div>
+
           <div className="mt-6 rounded-xl border border-black/8 bg-white p-5">
-            <div className="flex items-center justify-between">
-              <div><p className="text-sm font-semibold text-black">Verify installation</p><p className="mt-0.5 text-xs text-black/40">We'll check if the script is live on <span className="font-medium text-black/60">{url}</span></p></div>
-              <button onClick={checkInstallation} disabled={verifyStatus === "checking"} className="inline-flex items-center gap-2 rounded-lg border border-black/15 px-4 py-2 text-sm font-medium text-black hover:bg-black/[0.04] transition-all disabled:opacity-40">{verifyStatus === "checking" ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Checking…</> : "Check now"}</button>
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-black">Verify installation</p>
+                <p className="mt-0.5 text-xs text-black/40 truncate">We'll check if the script is live on <span className="font-medium text-black/60">{url}</span></p>
+              </div>
+              <button
+                onClick={checkInstallation}
+                disabled={verifyStatus === "checking"}
+                className="shrink-0 inline-flex items-center gap-2 rounded-lg border border-black/15 px-4 py-2 text-sm font-medium text-black hover:bg-black/[0.04] transition-all disabled:opacity-40"
+              >
+                {verifyStatus === "checking" ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Checking…</> : "Check now"}
+              </button>
             </div>
+
             {verifyStatus !== "idle" && verifyStatus !== "checking" && (
               <div className={`mt-4 flex items-start gap-2.5 rounded-lg px-4 py-3 text-sm ${verifyStatus === "found" ? "bg-emerald-50 text-emerald-700" : verifyStatus === "not-found" ? "bg-amber-50 text-amber-700" : "bg-black/[0.03] text-black/50"}`}>
-                {verifyStatus === "found" ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" /> : <XCircle className="mt-0.5 h-4 w-4 shrink-0" />}<span>{verifyMsg}</span>
+                {verifyStatus === "found" ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" /> : <XCircle className="mt-0.5 h-4 w-4 shrink-0" />}
+                <span>{verifyMsg}</span>
               </div>
             )}
           </div>
+
           <div className="mt-8 space-y-3">
-            <button onClick={onSubmit} disabled={loading} className="group flex w-full items-center justify-center gap-2 rounded-lg bg-black py-3.5 text-sm font-medium text-white transition-all hover:bg-black/80 disabled:opacity-50">{loading ? "Submitting…" : <>Submit application <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" /></>}</button>
-            <p className="text-center text-xs text-black/30">{verifyStatus !== "found" ? "You can submit without verifying — we'll review within 24h." : "Script verified ✓ — you're all set."}</p>
+            <button
+              onClick={onSubmit}
+              disabled={loading}
+              className="group flex w-full items-center justify-center gap-2 rounded-lg bg-black py-3.5 text-sm font-medium text-white transition-all hover:bg-black/80 disabled:opacity-50"
+            >
+              {loading ? "Submitting…" : <>Submit application <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" /></>}
+            </button>
+            <p className="text-center text-xs text-black/30">
+              {verifyStatus !== "found" ? "You can submit without verifying — we'll review within 24h." : "Script verified ✓ — you're all set."}
+            </p>
           </div>
         </div>
       )}
