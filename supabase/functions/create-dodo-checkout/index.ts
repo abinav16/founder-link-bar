@@ -19,7 +19,10 @@ serve(async (req) => {
       });
     }
 
-    const res = await fetch("https://api.dodopayments.com/payments", {
+    const baseUrl = Deno.env.get("DODO_PAYMENTS_API_KEY")?.startsWith("test_")
+      ? "https://test.dodopayments.com"
+      : "https://live.dodopayments.com";
+    const res = await fetch(`${baseUrl}/payments`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${apiKey}`,
