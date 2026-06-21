@@ -41,7 +41,7 @@
     var bg = theme === 'dark' ? '#18181b' : '#ffffff';
 
     var iframe = document.createElement('iframe');
-    iframe.src = origin + '/widget/bar?host=' + encodeURIComponent(id) + '&theme=' + theme;
+    iframe.src = origin + '/widget/bar?host=' + encodeURIComponent(id) + '&theme=' + theme + '&domain=' + encodeURIComponent(window.location.hostname);
     iframe.setAttribute('title', 'StartupBar');
     iframe.setAttribute('scrolling', 'no');
     iframe.style.cssText = ['position:fixed','top:0','left:0','width:100%','height:36px','border:0','margin:0','padding:0','z-index:2147483647','background:' + bg,'display:block'].join(';');

@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 const search = z.object({
   host: z.string().uuid().optional(),
   theme: z.enum(["light", "dark"]).optional(),
+  domain: z.string().optional(),
 });
 
 export const Route = createFileRoute("/widget/bar")({
@@ -52,7 +53,7 @@ const darkTokens: typeof lightTokens = {
 };
 
 function WidgetBar() {
-  const { host, theme: urlTheme } = useSearch({ from: "/widget/bar" });
+  const { host, theme: urlTheme, domain } = useSearch({ from: "/widget/bar" });
   const [activeTheme, setActiveTheme] = useState<"light" | "dark">(urlTheme ?? "light");
   const tokens = activeTheme === "dark" ? darkTokens : lightTokens;
   const [startup, setStartup] = useState<Startup | null>(null);
@@ -76,6 +77,7 @@ function WidgetBar() {
       try {
         const params = new URLSearchParams();
         if (host) params.set("host", host);
+        if (domain) params.set("domain", domain);
         const res = await fetch(`/api/public/widget/pick?${params.toString()}`);
         if (res.ok) {
           const data = (await res.json()) as Startup | null;
