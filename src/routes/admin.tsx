@@ -183,12 +183,15 @@ function AdminPage() {
                     <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 sm:px-5">Startup</th>
                     <th className="hidden px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 md:table-cell">One-liner</th>
                     <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 sm:px-5">Status</th>
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 sm:px-5">Embed</th>
                     <th className="hidden px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 sm:table-cell">Applied</th>
                     <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 sm:px-5">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-black/5">
-                  {filtered.map((s) => (
+                  {filtered.map((s) => {
+                    const e = embed[s.id];
+                    return (
                     <tr key={s.id} className="hover:bg-black/[0.01] transition-colors">
                       <td className="px-4 py-4 sm:px-5">
                         <div className="flex items-center gap-2">
