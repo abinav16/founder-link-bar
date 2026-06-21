@@ -153,6 +153,38 @@ function emailTest(toEmail: string) {
   };
 }
 
+function emailAdminNewApplication(startupName: string, startupUrl: string, description: string, applicantEmail: string) {
+  return {
+    from: FROM_NOREPLY,
+    to: "danielabinav16@gmail.com",
+    subject: `New application — ${startupName}`,
+    html: wrap(
+      `${startupName} just applied to StartupBar.`,
+      h1("New startup application.") +
+      p(`<strong style="color:#000;">${startupName}</strong> just submitted an application and is waiting for your review.`) +
+      `<table cellpadding="0" cellspacing="0" style="width:100%;margin:20px 0;border:1px solid rgba(0,0,0,0.07);border-radius:8px;overflow:hidden;">
+        <tr style="background:#fafafa;border-bottom:1px solid rgba(0,0,0,0.06);">
+          <td style="padding:10px 16px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:rgba(0,0,0,0.35);width:120px;">Name</td>
+          <td style="padding:10px 16px;font-size:13px;color:#000;">${startupName}</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,0.06);">
+          <td style="padding:10px 16px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:rgba(0,0,0,0.35);">URL</td>
+          <td style="padding:10px 16px;font-size:13px;"><a href="${startupUrl}" style="color:#000;">${startupUrl}</a></td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,0.06);">
+          <td style="padding:10px 16px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:rgba(0,0,0,0.35);">One-liner</td>
+          <td style="padding:10px 16px;font-size:13px;color:rgba(0,0,0,0.65);">${description}</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 16px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:rgba(0,0,0,0.35);">Applicant</td>
+          <td style="padding:10px 16px;font-size:13px;color:rgba(0,0,0,0.65);">${applicantEmail}</td>
+        </tr>
+      </table>` +
+      btn("Review in admin panel", "https://startupbar.co/admin")
+    ),
+  };
+}
+
 async function sendViaResend(payload: { from: string; to: string; subject: string; html: string }) {
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
