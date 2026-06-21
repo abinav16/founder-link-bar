@@ -2,7 +2,7 @@ import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-ro
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Check, X, ExternalLink, LogOut, Clock, RefreshCw } from "lucide-react";
+import { Check, X, ExternalLink, LogOut, Clock, RefreshCw, Radio, CircleSlash, Loader2 } from "lucide-react";
 
 const ADMIN_EMAIL = "danielabinav16@gmail.com";
 
@@ -50,6 +50,18 @@ function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>("pending");
   const [updating, setUpdating] = useState<string | null>(null);
+  const [embed, setEmbed] = useState<Record<string, "checking" | "live" | "missing" | "error">>({});
+
+  async function checkEmbed(id: string, website: string) {
+    setEmbed((p) => ({ ...p, [id]: "checking" }));
+    try {
+      const r = await fetch(`/api/public/verify-install?url=${encodeURIComponent(website)}`);
+      const j = await r.json();
+      setEmbed((p) => ({ ...p, [id]: j.installed ? "live" : (j.error ? "error" : "missing") }));
+    } catch {
+      setEmbed((p) => ({ ...p, [id]: "error" }));
+    }
+  }
 
   async function load() {
     setLoading(true);
@@ -57,8 +69,11 @@ function AdminPage() {
       .from("startups")
       .select("*")
       .order("created_at", { ascending: false });
-    setStartups((data as Startup[]) ?? []);
+    const list = (data as Startup[]) ?? [];
+    setStartups(list);
     setLoading(false);
+    // Auto-check embed for approved startups
+    list.filter((s) => s.status === "approved" && s.website_url).forEach((s) => checkEmbed(s.id, s.website_url));
   }
 
   useEffect(() => { load(); }, []);
@@ -168,12 +183,15 @@ function AdminPage() {
                     <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 sm:px-5">Startup</th>
                     <th className="hidden px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 md:table-cell">One-liner</th>
                     <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 sm:px-5">Status</th>
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 sm:px-5">Embed</th>
                     <th className="hidden px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 sm:table-cell">Applied</th>
                     <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 sm:px-5">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-black/5">
-                  {filtered.map((s) => (
+                  {filtered.map((s) => {
+                    const e = embed[s.id];
+                    return (
                     <tr key={s.id} className="hover:bg-black/[0.01] transition-colors">
                       <td className="px-4 py-4 sm:px-5">
                         <div className="flex items-center gap-2">
@@ -192,6 +210,34 @@ function AdminPage() {
                         <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${STATUS_STYLES[s.status]}`}>
                           {s.status}
                         </span>
+                      </td>
+                      <td className="px-4 py-4 sm:px-5">
+                        <button
+                          onClick={() => checkEmbed(s.id, s.website_url)}
+                          disabled={!s.website_url || e === "checking"}
+                          title="Re-check embed installation"
+                          className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors disabled:opacity-60 ${
+                            e === "live"
+                              ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                              : e === "missing"
+                              ? "border-red-200 bg-red-50 text-red-600 hover:bg-red-100"
+                              : e === "error"
+                              ? "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
+                              : "border-black/10 bg-black/[0.02] text-black/45 hover:bg-black/[0.04]"
+                          }`}
+                        >
+                          {e === "checking" ? (
+                            <><Loader2 className="h-3 w-3 animate-spin" /> Checking</>
+                          ) : e === "live" ? (
+                            <><Radio className="h-3 w-3" /> Live</>
+                          ) : e === "missing" ? (
+                            <><CircleSlash className="h-3 w-3" /> Not installed</>
+                          ) : e === "error" ? (
+                            <><CircleSlash className="h-3 w-3" /> Unreachable</>
+                          ) : (
+                            <><RefreshCw className="h-3 w-3" /> Check</>
+                          )}
+                        </button>
                       </td>
                       <td className="hidden px-5 py-4 text-xs text-black/35 sm:table-cell">
                         {new Date(s.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
@@ -215,7 +261,8 @@ function AdminPage() {
                         </div>
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
