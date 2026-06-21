@@ -37,10 +37,24 @@ interface Dot {
   y: number;
   r: number;
   ringIdx: number;
+  dotIdx: number;
 }
 
 function HeroCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const logosRef = useRef<HTMLImageElement[]>([]);
+
+  useEffect(() => {
+    supabase.from("startups").select("website_url").eq("status", "approved").then(({ data }) => {
+      if (!data || data.length === 0) return;
+      data.forEach((s, i) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.src = `https://www.google.com/s2/favicons?domain=${s.website_url}&sz=32`;
+        logosRef.current[i] = img;
+      });
+    });
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -62,7 +76,7 @@ function HeroCanvas() {
         for (let i = 0; i < count; i++) {
           const angle = (i / count) * Math.PI * 2;
           const speed = (0.00025 + Math.random() * 0.00015) * (Math.random() > 0.5 ? 1 : -1);
-          dots.push({ angle, speed, radius, x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius, r: 1.8 + Math.random() * 1.2, ringIdx: ri });
+          dots.push({ angle, speed, radius, x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius, r: 9 + Math.random() * 3, ringIdx: ri, dotIdx: dots.length });
         }
       });
     };
@@ -100,7 +114,28 @@ function HeroCanvas() {
         g.addColorStop(0, "rgba(0,0,0,0.05)"); g.addColorStop(1, "rgba(0,0,0,0)");
         ctx.fillStyle = g; ctx.beginPath(); ctx.arc(mouse.x, mouse.y, 70, 0, Math.PI * 2); ctx.fill();
       }
-      dots.forEach((d) => { ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2); ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fill(); });
+      dots.forEach((d) => {
+        const n = logosRef.current.length;
+        const img = n > 0 ? logosRef.current[d.dotIdx % n] : null;
+        if (img && img.complete && img.naturalWidth > 0) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+          ctx.clip();
+          ctx.drawImage(img, d.x - d.r, d.y - d.r, d.r * 2, d.r * 2);
+          ctx.restore();
+          ctx.beginPath();
+          ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+          ctx.strokeStyle = "rgba(0,0,0,0.10)";
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        } else {
+          ctx.beginPath();
+          ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(0,0,0,0.18)";
+          ctx.fill();
+        }
+      });
       animId = requestAnimationFrame(draw);
     };
 

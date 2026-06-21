@@ -10,16 +10,26 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-interface Dot { angle: number; speed: number; radius: number; x: number; y: number; r: number; ringIdx: number; }
+interface Dot { angle: number; speed: number; radius: number; x: number; y: number; r: number; ringIdx: number; dotIdx: number; }
 
 function ConstellationPanel() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const logosRef = useRef<HTMLImageElement[]>([]);
   useEffect(() => {
     const canvas = canvasRef.current; if (!canvas) return;
     const ctx = canvas.getContext("2d"); if (!ctx) return;
     let animId: number; const mouse = { x: -999, y: -999, inside: false }; let dots: Dot[] = [];
     const RINGS = [70, 130, 200, 280];
-    const init = () => { dots = []; const cx = canvas.width / 2; const cy = canvas.height / 2; RINGS.forEach((radius, ri) => { const count = 6 + ri * 4; for (let i = 0; i < count; i++) { const angle = (i / count) * Math.PI * 2; const speed = (0.0012 + Math.random() * 0.0008) * (Math.random() > 0.5 ? 1 : -1); dots.push({ angle, speed, radius, x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius, r: 1.5 + Math.random() * 1.5, ringIdx: ri }); } }); };
+    const init = () => { dots = []; const cx = canvas.width / 2; const cy = canvas.height / 2; RINGS.forEach((radius, ri) => { const count = 6 + ri * 4; for (let i = 0; i < count; i++) { const angle = (i / count) * Math.PI * 2; const speed = (0.0012 + Math.random() * 0.0008) * (Math.random() > 0.5 ? 1 : -1); dots.push({ angle, speed, radius, x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius, r: 8 + Math.random() * 3, ringIdx: ri, dotIdx: dots.length }); } }); };
+    supabase.from("startups").select("website_url").eq("status", "approved").then(({ data }) => {
+      if (!data || data.length === 0) return;
+      data.forEach((s, i) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.src = `https://www.google.com/s2/favicons?domain=${s.website_url}&sz=32`;
+        logosRef.current[i] = img;
+      });
+    });
     const resize = () => { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; init(); };
     const draw = () => {
       const cx = canvas.width / 2; const cy = canvas.height / 2;
@@ -28,7 +38,28 @@ function ConstellationPanel() {
       dots.forEach((d) => { d.angle += d.speed; const tx = cx + Math.cos(d.angle) * d.radius; const ty = cy + Math.sin(d.angle) * d.radius; if (mouse.inside) { const dx = mouse.x - tx; const dy = mouse.y - ty; const dist = Math.sqrt(dx * dx + dy * dy); if (dist < 160) { const pull = (1 - dist / 160) * 0.3; d.x += (tx + dx * pull - d.x) * 0.1; d.y += (ty + dy * pull - d.y) * 0.1; } else { d.x += (tx - d.x) * 0.1; d.y += (ty - d.y) * 0.1; } } else { d.x += (tx - d.x) * 0.1; d.y += (ty - d.y) * 0.1; } });
       for (let i = 0; i < dots.length; i++) { for (let j = i + 1; j < dots.length; j++) { if (dots[i].ringIdx !== dots[j].ringIdx) continue; const dx = dots[i].x - dots[j].x; const dy = dots[i].y - dots[j].y; const dist = Math.sqrt(dx * dx + dy * dy); if (dist < 90) { ctx.beginPath(); ctx.moveTo(dots[i].x, dots[i].y); ctx.lineTo(dots[j].x, dots[j].y); ctx.strokeStyle = `rgba(255,255,255,${(1 - dist / 90) * 0.12})`; ctx.lineWidth = 0.5; ctx.stroke(); } } }
       if (mouse.inside) { dots.forEach((d) => { const dx = mouse.x - d.x; const dy = mouse.y - d.y; const dist = Math.sqrt(dx * dx + dy * dy); if (dist < 140) { ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(mouse.x, mouse.y); ctx.strokeStyle = `rgba(255,255,255,${(1 - dist / 140) * 0.25})`; ctx.lineWidth = 0.5; ctx.stroke(); } }); const g = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 60); g.addColorStop(0, "rgba(255,255,255,0.06)"); g.addColorStop(1, "rgba(255,255,255,0)"); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(mouse.x, mouse.y, 60, 0, Math.PI * 2); ctx.fill(); }
-      dots.forEach((d) => { ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2); ctx.fillStyle = "rgba(255,255,255,0.6)"; ctx.fill(); });
+      dots.forEach((d) => {
+        const n = logosRef.current.length;
+        const img = n > 0 ? logosRef.current[d.dotIdx % n] : null;
+        if (img && img.complete && img.naturalWidth > 0) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+          ctx.clip();
+          ctx.drawImage(img, d.x - d.r, d.y - d.r, d.r * 2, d.r * 2);
+          ctx.restore();
+          ctx.beginPath();
+          ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+          ctx.strokeStyle = "rgba(255,255,255,0.18)";
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        } else {
+          ctx.beginPath();
+          ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(255,255,255,0.6)";
+          ctx.fill();
+        }
+      });
       animId = requestAnimationFrame(draw);
     };
     const onMove = (e: MouseEvent) => { const rect = canvas.getBoundingClientRect(); const x = e.clientX - rect.left; const y = e.clientY - rect.top; mouse.x = x; mouse.y = y; mouse.inside = x >= 0 && x <= canvas.width && y >= 0 && y <= canvas.height; };
