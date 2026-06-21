@@ -169,7 +169,7 @@ function Apply() {
       toast.error(parsed.error.issues[0]?.message ?? "Invalid input");
       return;
     }
-    if (existingCount >= 1) {
+    if (existingCount >= 1 && !hasPrepaid) {
       setStep("payment");
     } else {
       setStep(2);
