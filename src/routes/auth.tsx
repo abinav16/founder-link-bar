@@ -6,7 +6,14 @@ import { toast } from "sonner";
 import { ArrowRight, Mail, Lock, User } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Sign in — StartupBar" }] }),
+  head: () => ({
+    meta: [
+      { title: "Sign in — StartupBar" },
+      { name: "description", content: "Sign in or create your StartupBar account to manage your startup, track impressions, and join the founder traffic exchange." },
+      { name: "robots", content: "noindex" },
+    ],
+    links: [{ rel: "canonical", href: "/auth" }],
+  }),
   component: AuthPage,
 });
 
