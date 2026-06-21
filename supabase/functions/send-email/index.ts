@@ -220,6 +220,10 @@ serve(async (req) => {
     } else if (type === "startup-submitted") {
       toEmail = data.email;
       email = emailStartupSubmitted(data.name, data.startupName);
+    } else if (type === "admin-new-application") {
+      const payload = emailAdminNewApplication(data.startupName, data.startupUrl, data.description, data.applicantEmail);
+      await sendViaResend({ from: payload.from, to: payload.to, subject: payload.subject, html: payload.html });
+      return new Response(JSON.stringify({ ok: true }), { headers: { ...cors, "Content-Type": "application/json" } });
     } else if (type === "startup-approved" || type === "startup-rejected") {
       const { data: startup } = await adminClient.from("startups").select("name, user_id").eq("id", data.startupId).single();
       if (!startup) throw new Error("Startup not found");
