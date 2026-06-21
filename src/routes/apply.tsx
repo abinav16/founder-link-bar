@@ -9,7 +9,15 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/apply")({
-  head: () => ({ meta: [{ title: "Apply — StartupBar" }] }),
+  head: () => ({
+    meta: [
+      { title: "Apply — StartupBar" },
+      { name: "description", content: "Submit your startup to join the StartupBar network. Get featured on other founders' sites and grow together through free traffic exchange." },
+      { property: "og:title", content: "Apply — StartupBar" },
+      { property: "og:description", content: "Submit your startup to join the StartupBar network and get featured on other founders' sites." },
+    ],
+    links: [{ rel: "canonical", href: "/apply" }],
+  }),
   component: Apply,
 });
 
