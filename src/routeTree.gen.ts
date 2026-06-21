@@ -9,6 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ApplyRouteImport } from './routes/apply'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
@@ -18,6 +20,16 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as ApiPublicWidgetPickRouteImport } from './routes/api/public/widget.pick'
 import { Route as ApiPublicWidgetClickRouteImport } from './routes/api/public/widget.click'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -62,6 +74,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/apply': typeof ApplyRoute
   '/auth': typeof AuthRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/widget/bar': typeof WidgetBarRoute
   '/api/public/widget/click': typeof ApiPublicWidgetClickRoute
@@ -71,6 +85,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/apply': typeof ApplyRoute
   '/auth': typeof AuthRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/widget/bar': typeof WidgetBarRoute
   '/api/public/widget/click': typeof ApiPublicWidgetClickRoute
@@ -82,6 +98,8 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/apply': typeof ApplyRoute
   '/auth': typeof AuthRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/widget/bar': typeof WidgetBarRoute
   '/api/public/widget/click': typeof ApiPublicWidgetClickRoute
@@ -93,6 +111,8 @@ export interface FileRouteTypes {
     | '/'
     | '/apply'
     | '/auth'
+    | '/privacy'
+    | '/terms'
     | '/dashboard'
     | '/widget/bar'
     | '/api/public/widget/click'
@@ -102,6 +122,8 @@ export interface FileRouteTypes {
     | '/'
     | '/apply'
     | '/auth'
+    | '/privacy'
+    | '/terms'
     | '/dashboard'
     | '/widget/bar'
     | '/api/public/widget/click'
@@ -112,6 +134,8 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/apply'
     | '/auth'
+    | '/privacy'
+    | '/terms'
     | '/_authenticated/dashboard'
     | '/widget/bar'
     | '/api/public/widget/click'
@@ -123,6 +147,8 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   ApplyRoute: typeof ApplyRoute
   AuthRoute: typeof AuthRoute
+  PrivacyRoute: typeof PrivacyRoute
+  TermsRoute: typeof TermsRoute
   WidgetBarRoute: typeof WidgetBarRoute
   ApiPublicWidgetClickRoute: typeof ApiPublicWidgetClickRoute
   ApiPublicWidgetPickRoute: typeof ApiPublicWidgetPickRoute
@@ -130,6 +156,20 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -205,6 +245,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   ApplyRoute: ApplyRoute,
   AuthRoute: AuthRoute,
+  PrivacyRoute: PrivacyRoute,
+  TermsRoute: TermsRoute,
   WidgetBarRoute: WidgetBarRoute,
   ApiPublicWidgetClickRoute: ApiPublicWidgetClickRoute,
   ApiPublicWidgetPickRoute: ApiPublicWidgetPickRoute,
