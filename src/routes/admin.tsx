@@ -34,7 +34,10 @@ function AdminPage() {
   async function setStatus(id: string, status: "approved" | "rejected") {
     setUpdating(id);
     const { error } = await supabase.from("startups").update({ status }).eq("id", id);
-    if (error) { toast.error(error.message); } else { toast.success(`Startup ${status}`); setStartups((prev) => prev.map((s) => s.id === id ? { ...s, status } : s)); }
+    if (error) { toast.error(error.message); } else {
+      supabase.functions.invoke("send-email", { body: { type: status === "approved" ? "startup-approved" : "startup-rejected", data: { startupId: id } } }).catch(() => {});
+      toast.success(`Startup ${status}`); setStartups((prev) => prev.map((s) => s.id === id ? { ...s, status } : s));
+    }
     setUpdating(null);
   }
 

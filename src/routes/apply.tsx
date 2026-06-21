@@ -87,6 +87,7 @@ function Apply() {
     const { error } = await supabase.from("startups").insert({ id: startupId, user_id, ...parsed });
     setLoading(false);
     if (error) { toast.error(error.message); return; }
+    supabase.functions.invoke("send-email", { body: { type: "startup-submitted", data: { email: userData.user!.email, name: userData.user!.user_metadata?.full_name || userData.user!.email, startupName: parsed.name } } }).catch(() => {});
     toast.success("Application submitted!"); navigate({ to: "/dashboard" });
   }
 
