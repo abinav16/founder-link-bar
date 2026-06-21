@@ -19,11 +19,11 @@ serve(async (req) => {
       });
     }
 
-    // Use test mode by default; set DODO_MODE=live in secrets to switch to production.
-    const mode = Deno.env.get("DODO_MODE") ?? "test";
-    const baseUrl = mode === "live"
-      ? "https://live.dodopayments.com"
-      : "https://test.dodopayments.com";
+    // Default to live; set DODO_MODE=test in secrets to use the test endpoint.
+    const mode = Deno.env.get("DODO_MODE") ?? "live";
+    const baseUrl = mode === "test"
+      ? "https://test.dodopayments.com"
+      : "https://live.dodopayments.com";
     const res = await fetch(`${baseUrl}/payments`, {
       method: "POST",
       headers: {
