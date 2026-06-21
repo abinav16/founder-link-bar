@@ -14,7 +14,111 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      clicks: {
+        Row: {
+          created_at: string
+          host_startup_id: string | null
+          id: string
+          shown_startup_id: string
+        }
+        Insert: {
+          created_at?: string
+          host_startup_id?: string | null
+          id?: string
+          shown_startup_id: string
+        }
+        Update: {
+          created_at?: string
+          host_startup_id?: string | null
+          id?: string
+          shown_startup_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clicks_host_startup_id_fkey"
+            columns: ["host_startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clicks_shown_startup_id_fkey"
+            columns: ["shown_startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      impressions: {
+        Row: {
+          created_at: string
+          host_startup_id: string | null
+          id: string
+          shown_startup_id: string
+        }
+        Insert: {
+          created_at?: string
+          host_startup_id?: string | null
+          id?: string
+          shown_startup_id: string
+        }
+        Update: {
+          created_at?: string
+          host_startup_id?: string | null
+          id?: string
+          shown_startup_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "impressions_host_startup_id_fkey"
+            columns: ["host_startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "impressions_shown_startup_id_fkey"
+            columns: ["shown_startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      startups: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          name: string
+          status: Database["public"]["Enums"]["startup_status"]
+          updated_at: string
+          user_id: string
+          website_url: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          name: string
+          status?: Database["public"]["Enums"]["startup_status"]
+          updated_at?: string
+          user_id: string
+          website_url: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          name?: string
+          status?: Database["public"]["Enums"]["startup_status"]
+          updated_at?: string
+          user_id?: string
+          website_url?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +127,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      startup_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +254,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      startup_status: ["pending", "approved", "rejected"],
+    },
   },
 } as const
