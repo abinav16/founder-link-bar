@@ -70,6 +70,12 @@ function WidgetBar() {
         </a>
         {startup ? (
           <>
+            <img
+              src={`https://www.google.com/s2/favicons?domain=${startup.website_url}&sz=32`}
+              alt=""
+              style={{ width: 14, height: 14, borderRadius: 2, flexShrink: 0, objectFit: "contain" }}
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+            />
             <span style={{ fontWeight: 600, color: "#0f172a", flexShrink: 0 }}>{startup.name}</span>
             <span style={{ color: "#475569", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
               &nbsp;— {startup.description}
