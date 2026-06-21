@@ -4,11 +4,17 @@
     var id = s && s.getAttribute('data-startup-id');
     if (!id) return;
     var origin = new URL(s.src).origin;
+
+    var dataTheme = s.getAttribute('data-theme');
+    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var theme = dataTheme === 'dark' || dataTheme === 'light' ? dataTheme : (prefersDark ? 'dark' : 'light');
+    var bg = theme === 'dark' ? '#18181b' : '#ffffff';
+
     var iframe = document.createElement('iframe');
-    iframe.src = origin + '/widget/bar?host=' + encodeURIComponent(id);
+    iframe.src = origin + '/widget/bar?host=' + encodeURIComponent(id) + '&theme=' + theme;
     iframe.setAttribute('title', 'StartupBar');
     iframe.setAttribute('scrolling', 'no');
-    iframe.style.cssText = ['position:fixed','top:0','left:0','width:100%','height:36px','border:0','margin:0','padding:0','z-index:2147483647','background:#ffffff','display:block'].join(';');
+    iframe.style.cssText = ['position:fixed','top:0','left:0','width:100%','height:36px','border:0','margin:0','padding:0','z-index:2147483647','background:' + bg,'display:block'].join(';');
     window.addEventListener('message', function(e) {
       if (e.data && e.data.type === 'startupbar:resize') {
         iframe.style.height = e.data.height + 'px';
