@@ -69,47 +69,88 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 
 const inputCls = "w-full rounded-lg border border-black/12 bg-white px-4 py-3 text-sm text-black placeholder:text-black/25 outline-none ring-0 transition focus:border-black/30 focus:ring-2 focus:ring-black/8";
 
+function readInitialFromUrl() {
+  if (typeof window === "undefined") return { step: 1 as 1 | "payment" | 2, name: "", url: "", desc: "", paid: false, paymentId: "" };
+  const p = new URLSearchParams(window.location.search);
+  if (p.get("paid") === "true") {
+    return {
+      step: 2 as 1 | "payment" | 2,
+      name: p.get("name") ?? "",
+      url: p.get("url") ?? "",
+      desc: p.get("desc") ?? "",
+      paid: true,
+      paymentId: p.get("payment_id") ?? "",
+    };
+  }
+  return { step: 1 as 1 | "payment" | 2, name: "", url: "", desc: "", paid: false, paymentId: "" };
+}
+
 function Apply() {
   const navigate = useNavigate();
+  const initial = (typeof window !== "undefined" ? readInitialFromUrl() : { step: 1 as 1 | "payment" | 2, name: "", url: "", desc: "", paid: false, paymentId: "" });
   const [authed, setAuthed] = useState<boolean | null>(null);
-  const [step, setStep] = useState<1 | "payment" | 2>(1);
-  const [name, setName] = useState("");
-  const [url, setUrl] = useState("");
-  const [desc, setDesc] = useState("");
+  const [step, setStep] = useState<1 | "payment" | 2>(initial.step);
+  const [name, setName] = useState(initial.name);
+  const [url, setUrl] = useState(initial.url);
+  const [desc, setDesc] = useState(initial.desc);
   const [startupId] = useState(() => crypto.randomUUID());
   const [copied, setCopied] = useState(false);
   const [verifyStatus, setVerifyStatus] = useState<"idle" | "checking" | "found" | "not-found" | "error">("idle");
   const [verifyMsg, setVerifyMsg] = useState("");
   const [loading, setLoading] = useState(false);
   const [existingCount, setExistingCount] = useState(0);
+  const [hasPrepaid, setHasPrepaid] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [verifyingPayment, setVerifyingPayment] = useState(initial.paid && !!initial.paymentId);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setAuthed(!!data.user));
   }, []);
 
+  async function refreshGateData(userId: string) {
+    const [{ count }, { data: prepaid }] = await Promise.all([
+      supabase.from("startups").select("*", { count: "exact", head: true }).eq("user_id", userId),
+      supabase.from("payments").select("id").eq("user_id", userId).eq("status", "succeeded").is("consumed_at", null).limit(1),
+    ]);
+    setExistingCount(count ?? 0);
+    setHasPrepaid((prepaid?.length ?? 0) > 0);
+  }
+
   useEffect(() => {
     if (!authed) return;
-    supabase.auth.getUser().then(async ({ data }) => {
-      if (!data.user) return;
-      const { count } = await supabase
-        .from("startups")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", data.user.id);
-      setExistingCount(count ?? 0);
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) refreshGateData(data.user.id);
     });
   }, [authed]);
 
+  // Verify payment server-side once on return from Dodo, then clean URL.
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("paid") === "true") {
-      setName(params.get("name") ?? "");
-      setUrl(params.get("url") ?? "");
-      setDesc(params.get("desc") ?? "");
-      setStep(2);
+    if (!initial.paid) return;
+    if (!initial.paymentId) {
       window.history.replaceState({}, "", "/apply");
+      setVerifyingPayment(false);
+      return;
     }
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase.functions.invoke("verify-dodo-payment", {
+        body: { payment_id: initial.paymentId },
+      });
+      if (cancelled) return;
+      if (error || !data?.ok) {
+        toast.error("We couldn't verify your payment. Please contact support.");
+        setStep(1);
+      } else {
+        const { data: u } = await supabase.auth.getUser();
+        if (u.user) await refreshGateData(u.user.id);
+      }
+      window.history.replaceState({}, "", "/apply");
+      setVerifyingPayment(false);
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
 
 
   const snippet = `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}"></script>`;
@@ -128,7 +169,7 @@ function Apply() {
       toast.error(parsed.error.issues[0]?.message ?? "Invalid input");
       return;
     }
-    if (existingCount >= 1) {
+    if (existingCount >= 1 && !hasPrepaid) {
       setStep("payment");
     } else {
       setStep(2);
@@ -181,6 +222,21 @@ function Apply() {
     if (!user_id) { navigate({ to: "/auth" }); return; }
 
     const parsed = schema.parse({ name, website_url: url, description: desc });
+
+    // If this is a paid additional listing, atomically consume one prepaid slot first.
+    if (existingCount >= 1) {
+      const { data: consumedId, error: consumeErr } = await supabase.rpc(
+        "consume_prepaid_listing",
+        { _user_id: user_id },
+      );
+      if (consumeErr || !consumedId) {
+        setLoading(false);
+        toast.error("No prepaid listing available. Please complete payment.");
+        setStep("payment");
+        return;
+      }
+    }
+
     const { error } = await supabase.from("startups").insert(
       { id: startupId, user_id, ...parsed }
     );

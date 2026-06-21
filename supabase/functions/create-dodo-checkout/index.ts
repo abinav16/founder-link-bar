@@ -24,6 +24,10 @@ serve(async (req) => {
     const baseUrl = mode === "test"
       ? "https://test.dodopayments.com"
       : "https://live.dodopayments.com";
+    // Append {payment_id} placeholder so Dodo substitutes the real ID on redirect.
+    const sep = return_url.includes("?") ? "&" : "?";
+    const finalReturnUrl = `${return_url}${sep}payment_id={payment_id}`;
+
     const res = await fetch(`${baseUrl}/payments`, {
       method: "POST",
       headers: {
@@ -35,7 +39,7 @@ serve(async (req) => {
         customer: { email, name: name || email },
         payment_link: true,
         product_cart: [{ product_id: "pdt_0NhWYhoEbLJW16TY9Eicc", quantity: 1 }],
-        return_url,
+        return_url: finalReturnUrl,
       }),
     });
 
