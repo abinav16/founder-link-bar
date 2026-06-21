@@ -2,7 +2,7 @@ import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-ro
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Check, X, ExternalLink, LogOut, Clock, RefreshCw } from "lucide-react";
+import { Check, X, ExternalLink, LogOut, Clock, RefreshCw, Radio, CircleSlash, Loader2 } from "lucide-react";
 
 const ADMIN_EMAIL = "danielabinav16@gmail.com";
 
