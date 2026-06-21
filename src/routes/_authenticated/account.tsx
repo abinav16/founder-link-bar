@@ -98,7 +98,7 @@ function AccountPage() {
 
   return (
     <DashboardLayout>
-      <div className="px-8 py-8">
+      <div>
         <div><h1 className="text-2xl font-semibold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Account</h1><p className="mt-0.5 text-sm text-black/40">Manage your profile and startups.</p></div>
         <div className="mt-8 space-y-10">
           <div className="grid gap-6 md:grid-cols-[220px_1fr]">
