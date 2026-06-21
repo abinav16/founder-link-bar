@@ -118,7 +118,7 @@ function emailStartupApproved(name: string, startupName: string) {
 function emailStartupRejected(name: string, startupName: string) {
   const first = name?.split(" ")[0] || "there";
   return {
-    from: FROM_NOREPLY,
+    from: FROM_PERSONAL,
     subject: `Update on your StartupBar application`,
     html: wrap(
       "We've reviewed your application.",
