@@ -17,6 +17,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WidgetBarRouteImport } from './routes/widget.bar'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as ApiPublicVerifyInstallRouteImport } from './routes/api/public/verify-install'
 import { Route as ApiPublicWidgetPickRouteImport } from './routes/api/public/widget.pick'
 import { Route as ApiPublicWidgetClickRouteImport } from './routes/api/public/widget.click'
 
@@ -59,6 +60,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicVerifyInstallRoute = ApiPublicVerifyInstallRouteImport.update({
+  id: '/api/public/verify-install',
+  path: '/api/public/verify-install',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicWidgetPickRoute = ApiPublicWidgetPickRouteImport.update({
   id: '/api/public/widget/pick',
   path: '/api/public/widget/pick',
@@ -78,6 +84,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/widget/bar': typeof WidgetBarRoute
+  '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
   '/api/public/widget/click': typeof ApiPublicWidgetClickRoute
   '/api/public/widget/pick': typeof ApiPublicWidgetPickRoute
 }
@@ -89,6 +96,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/widget/bar': typeof WidgetBarRoute
+  '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
   '/api/public/widget/click': typeof ApiPublicWidgetClickRoute
   '/api/public/widget/pick': typeof ApiPublicWidgetPickRoute
 }
@@ -102,6 +110,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/widget/bar': typeof WidgetBarRoute
+  '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
   '/api/public/widget/click': typeof ApiPublicWidgetClickRoute
   '/api/public/widget/pick': typeof ApiPublicWidgetPickRoute
 }
@@ -115,6 +124,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/dashboard'
     | '/widget/bar'
+    | '/api/public/verify-install'
     | '/api/public/widget/click'
     | '/api/public/widget/pick'
   fileRoutesByTo: FileRoutesByTo
@@ -126,6 +136,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/dashboard'
     | '/widget/bar'
+    | '/api/public/verify-install'
     | '/api/public/widget/click'
     | '/api/public/widget/pick'
   id:
@@ -138,6 +149,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/_authenticated/dashboard'
     | '/widget/bar'
+    | '/api/public/verify-install'
     | '/api/public/widget/click'
     | '/api/public/widget/pick'
   fileRoutesById: FileRoutesById
@@ -150,6 +162,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   TermsRoute: typeof TermsRoute
   WidgetBarRoute: typeof WidgetBarRoute
+  ApiPublicVerifyInstallRoute: typeof ApiPublicVerifyInstallRoute
   ApiPublicWidgetClickRoute: typeof ApiPublicWidgetClickRoute
   ApiPublicWidgetPickRoute: typeof ApiPublicWidgetPickRoute
 }
@@ -212,6 +225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/verify-install': {
+      id: '/api/public/verify-install'
+      path: '/api/public/verify-install'
+      fullPath: '/api/public/verify-install'
+      preLoaderRoute: typeof ApiPublicVerifyInstallRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/widget/pick': {
       id: '/api/public/widget/pick'
       path: '/api/public/widget/pick'
@@ -248,6 +268,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   TermsRoute: TermsRoute,
   WidgetBarRoute: WidgetBarRoute,
+  ApiPublicVerifyInstallRoute: ApiPublicVerifyInstallRoute,
   ApiPublicWidgetClickRoute: ApiPublicWidgetClickRoute,
   ApiPublicWidgetPickRoute: ApiPublicWidgetPickRoute,
 }
