@@ -1,33 +1,37 @@
-## New flow
+## Problem
 
-Move payment from a separate "payment" step into Step 2, gated on live script detection.
+The new `PreShip Validation` application IS in the database with `status='pending'` — but it belongs to a different user (`patmeeker+preship@gmail.com`). The admin page shows `All: 2` (only your own two approved startups), not 3.
 
-### Step 1 (unchanged UX, simpler logic)
-- Collect name / url / one-liner.
-- "Next" always goes to Step 2. No payment gate, no `step === "payment"` branch.
-- Remove the `setStep("payment")` logic in `goToStep2`.
+Cause: Row-Level Security on `public.startups` only lets a user read:
+- their own rows, or
+- rows where `status='approved'`.
 
-### Step 2 — install + verify + submit/pay
-1. User pastes the embed code and clicks **Check now**.
-2. Until `verifyStatus === "found"`, the bottom CTA is **disabled** with helper text "Install the script and verify it's live to continue."
-3. Once detected:
-   - **First startup (free):** CTA becomes `Submit application` → existing `onSubmit()` path → toast → `navigate({ to: "/dashboard" })`.
-   - **Additional startup (existingCount ≥ 1 && !hasPrepaid):** CTA becomes `Pay $9.99 & submit →`. Clicking it calls `handlePayment()` which redirects to Dodo. Return URL stays `/apply?paid=true&...&payment_id={payment_id}`.
-4. On return from Dodo with `paid=true`:
-   - Render Step 2 (already does via `readInitialFromUrl`).
-   - Run the existing `verify-dodo-payment` effect — on success, `refreshGateData` flips `hasPrepaid=true`.
-   - Auto-trigger `onSubmit()` once: it consumes the prepaid slot, inserts the startup, sends emails, then `navigate({ to: "/dashboard" })` (the account/overview page).
-   - On verification failure: toast + stay on Step 2 (don't bounce to Step 1).
+There is no policy that lets the admin email read pending/rejected rows from other users. So admin's `select * from startups` silently filters them out.
 
-### Cleanup
-- Remove the entire `step === "payment"` JSX block and the `"payment"` value from the `step` union (now `1 | 2`).
-- Remove the step-1 payment gate; keep `existingCount` / `hasPrepaid` only to decide Step 2's CTA label and behavior.
-- The post-payment auto-submit needs the `name/url/desc` from the URL (already restored by `readInitialFromUrl`) and the `startupId` (regenerated per mount — fine since the row hasn't been inserted yet).
+The same applies to `UPDATE` — the admin currently can't approve/reject other users' applications either (the existing trigger that allows status changes by the admin email never runs because the `UPDATE` is blocked by RLS first).
 
-### Files touched
-- `src/routes/apply.tsx` — only file. No backend, migration, or edge function changes needed (`verify-dodo-payment` + `consume_prepaid_listing` already exist and stay as-is).
+## Fix
 
-### Result
-- Free listing: fill form → install + verify → submit → dashboard.
-- Paid listing: fill form → install + verify → pay → return → auto-submit → dashboard.
-- Users cannot pay without a verified live script, and cannot submit a paid listing without paying.
+One migration that adds two admin-scoped RLS policies on `public.startups`, scoped to the admin email via `auth.jwt()->>'email'`:
+
+1. `SELECT` policy — admin can read every row (any status, any user).
+2. `UPDATE` policy — admin can update every row (so approve/reject works for other users' applications). The existing `prevent_user_status_change` trigger continues to guard non-admins.
+
+No code changes to `src/routes/admin.tsx` are needed; once RLS lets the admin read/update all rows, the existing UI works (the pending tab will show PreShip Validation, approve/reject will succeed).
+
+### Migration sketch
+
+```sql
+CREATE POLICY "Admin can read all startups"
+ON public.startups FOR SELECT TO authenticated
+USING (COALESCE(auth.jwt()->>'email','') = 'danielabinav16@gmail.com');
+
+CREATE POLICY "Admin can update all startups"
+ON public.startups FOR UPDATE TO authenticated
+USING (COALESCE(auth.jwt()->>'email','') = 'danielabinav16@gmail.com')
+WITH CHECK (COALESCE(auth.jwt()->>'email','') = 'danielabinav16@gmail.com');
+```
+
+## Result
+
+After the migration, refreshing `/admin` will show `All: 3`, `Pending: 1` with PreShip Validation visible, and approve/reject will work for it.
