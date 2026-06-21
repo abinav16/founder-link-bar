@@ -37,10 +37,24 @@ interface Dot {
   y: number;
   r: number;
   ringIdx: number;
+  dotIdx: number;
 }
 
 function HeroCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const logosRef = useRef<HTMLImageElement[]>([]);
+
+  useEffect(() => {
+    supabase.from("startups").select("website_url").eq("status", "approved").then(({ data }) => {
+      if (!data || data.length === 0) return;
+      data.forEach((s, i) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.src = `https://www.google.com/s2/favicons?domain=${s.website_url}&sz=32`;
+        logosRef.current[i] = img;
+      });
+    });
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
