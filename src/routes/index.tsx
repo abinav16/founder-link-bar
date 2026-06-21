@@ -387,11 +387,14 @@ function HowItWorks() {
             <button
               key={i}
               onClick={() => handleDotClick(i)}
+              aria-label={`Go to slide ${i + 1}`}
+              aria-current={i === active ? "true" : undefined}
               className={`rounded-full transition-all duration-300 ${
                 i === active ? "h-2.5 w-8 bg-black" : "h-2.5 w-2.5 bg-black/20 hover:bg-black/40"
               }`}
             />
           ))}
+
         </div>
       </div>
     </section>
@@ -562,8 +565,10 @@ function Landing() {
                 </Link>
                 <button
                   onClick={signOut}
+                  aria-label="Sign out"
                   className="flex items-center gap-1.5 rounded-md border border-black/12 px-2 py-1.5 text-black/60 hover:border-black/25 hover:text-black transition-all sm:px-3"
                 >
+
                   <LogOut className="h-3.5 w-3.5" />
                   <span className="hidden sm:inline">Sign out</span>
                 </button>
