@@ -1,18 +1,31 @@
 import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { Info, X } from "lucide-react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 
-const search = z.object({ host: z.string().uuid().optional() });
-export const Route = createFileRoute("/widget/bar")({ validateSearch: search, component: WidgetBar });
+const search = z.object({
+  host: z.string().uuid().optional(),
+});
 
-interface Startup { id: string; name: string; website_url: string; description: string; }
+export const Route = createFileRoute("/widget/bar")({
+  validateSearch: search,
+  component: WidgetBar,
+});
+
+interface Startup {
+  id: string;
+  name: string;
+  website_url: string;
+  description: string;
+}
 
 function WidgetBar() {
   const { host } = useSearch({ from: "/widget/bar" });
   const [startup, setStartup] = useState<Startup | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -36,78 +49,118 @@ function WidgetBar() {
     })();
   }, [host]);
 
-  // No partner yet — show branded fallback instead of loading forever
+  if (!loaded || dismissed) return null;
+
   if (loaded && !startup) {
     return (
-      <div style={barStyle}>
-        <a href="https://startupbar.co" target="_blank" rel="noopener noreferrer" style={labelStyle}>STARTUPBAR</a>
-        <span style={{ color: "#475569", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          Discover founder-built tools — join the free traffic exchange
-        </span>
-        <a
-          href="https://startupbar.co"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ fontWeight: 500, color: "#0f172a", textDecoration: "none", padding: "4px 10px", border: "1px solid #e2e8f0", borderRadius: 6, background: "#ffffff", fontSize: 12 }}
-        >
-          Join free →
-        </a>
+      <div style={{ position: "relative", width: "100%" }}>
+        <div style={barStyle}>
+          <button onClick={() => setShowInfo(v => !v)} aria-label="What is this?" style={iconBtnStyle}>
+            <Info size={12} />
+          </button>
+          <a href="https://startupbar.co" target="_blank" rel="noopener noreferrer" style={labelStyle}>STARTUPBAR</a>
+          <span style={{ color: "#475569", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            Discover founder-built tools — join the free traffic exchange
+          </span>
+          <a href="https://startupbar.co" target="_blank" rel="noopener noreferrer"
+            style={{ flexShrink: 0, fontWeight: 500, color: "#0f172a", textDecoration: "none", fontSize: 12 }}>
+            Join free →
+          </a>
+          <button onClick={() => setDismissed(true)} aria-label="Dismiss" style={iconBtnStyle}>
+            <X size={11} />
+          </button>
+        </div>
+        {showInfo && <InfoPanel />}
       </div>
     );
   }
 
-  if (!loaded) return null;
-
   const clickUrl = `/api/public/widget/click?id=${startup!.id}${host ? `&host=${host}` : ""}`;
 
   return (
-    <div style={barStyle}>
-      <a href="https://startupbar.co" target="_blank" rel="noopener noreferrer" style={labelStyle}>
-        STARTUPBAR
-      </a>
-      <span style={{ fontWeight: 600, color: "#0f172a" }}>{startup!.name}</span>
-      <span style={{ color: "#475569", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
-        — {startup!.description}
-      </span>
-      <a
-        href={clickUrl}
-        target="_top"
-        style={{
-          fontWeight: 500,
-          color: "#0f172a",
-          textDecoration: "none",
-          padding: "4px 10px",
-          border: "1px solid #e2e8f0",
-          borderRadius: 6,
-          background: "#ffffff",
-          fontSize: 12,
-        }}
-      >
-        Visit →
-      </a>
-      <button
-        onClick={() => setShowInfo((v) => !v)}
-        aria-label="About StartupBar"
-        style={{
-          width: 18, height: 18, borderRadius: 9, border: "1px solid #cbd5e1", background: "#fff",
-          color: "#64748b", fontSize: 11, cursor: "pointer", padding: 0, lineHeight: "16px",
-        }}
-      >
-        i
-      </button>
-      {showInfo && (
-        <div style={{
-          position: "absolute", right: 8, top: 36, background: "#fff", border: "1px solid #e2e8f0",
-          borderRadius: 8, padding: 10, fontSize: 12, color: "#475569", maxWidth: 260,
-          boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
-        }}>
-          StartupBar is a free traffic exchange between founders.{" "}
-          <a href="https://startupbar.co" target="_blank" rel="noopener noreferrer" style={{ color: "#0f172a" }}>Learn more</a>
-        </div>
-      )}
+    <div style={{ position: "relative", width: "100%" }}>
+      <div style={barStyle}>
+        <button onClick={() => setShowInfo(v => !v)} aria-label="About StartupBar" style={iconBtnStyle}>
+          <Info size={12} />
+        </button>
+        <a href="https://startupbar.co" target="_blank" rel="noopener noreferrer" style={labelStyle}>
+          STARTUPBAR
+        </a>
+        <span style={{ fontWeight: 600, color: "#0f172a", flexShrink: 0 }}>{startup!.name}</span>
+        <span style={{ color: "#475569", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+          &nbsp;— {startup!.description}
+        </span>
+        <a href={clickUrl} target="_top"
+          style={{ flexShrink: 0, fontWeight: 500, color: "#0f172a", textDecoration: "none", fontSize: 12 }}>
+          Visit →
+        </a>
+        <button onClick={() => setDismissed(true)} aria-label="Dismiss" style={iconBtnStyle}>
+          <X size={11} />
+        </button>
+      </div>
+      {showInfo && <InfoPanel />}
     </div>
   );
 }
 
-const barStyle: React.CSSProperties = { position: "relative", display: "flex", alignItems: "center", gap: 10, height: 36, width: "100%", padding: "0 12px", background: "#ffffff", borderBottom: "1px solid #e2e8f0", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", fontSize: 13, color: "#0f172a", boxSizing: "border-box" };
-const labelStyle: React.CSSProperties = { background: "#0f172a", color: "#ffffff", fontSize: 10, fontWeight: 700, letterSpacing: "0.05em", padding: "3px 6px", borderRadius: 3, textDecoration: "none", flexShrink: 0 };
+function InfoPanel() {
+  return (
+    <div style={{
+      borderTop: "1px solid #e2e8f0",
+      background: "#f8fafc",
+      padding: "10px 16px 12px",
+      fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    }}>
+      <p style={{ margin: "0 0 3px", fontSize: 11, fontWeight: 600, color: "#0f172a" }}>Founder-to-founder growth</p>
+      <p style={{ margin: "0 0 8px", fontSize: 10, color: "#64748b", lineHeight: 1.55 }}>
+        This bar shows startups from the <strong style={{ color: "#0f172a" }}>StartupBar</strong> network — founders who display each other's startups for free mutual traffic. No ads, no cost.
+      </p>
+      <a href="https://startupbar.co" target="_blank" rel="noopener noreferrer"
+        style={{ fontSize: 10, fontWeight: 600, color: "#0f172a", textDecoration: "none" }}>
+        Have a startup? Join free →
+      </a>
+    </div>
+  );
+}
+
+const barStyle: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  height: 36,
+  width: "100%",
+  padding: "0 6px",
+  background: "#ffffff",
+  borderBottom: "1px solid #e2e8f0",
+  fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  fontSize: 13,
+  color: "#0f172a",
+  boxSizing: "border-box",
+};
+
+const iconBtnStyle: React.CSSProperties = {
+  flexShrink: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: 22,
+  height: 22,
+  borderRadius: 4,
+  border: "none",
+  background: "none",
+  color: "#94a3b8",
+  cursor: "pointer",
+  padding: 0,
+};
+
+const labelStyle: React.CSSProperties = {
+  background: "#0f172a",
+  color: "#ffffff",
+  fontSize: 10,
+  fontWeight: 700,
+  letterSpacing: "0.05em",
+  padding: "3px 6px",
+  borderRadius: 3,
+  textDecoration: "none",
+  flexShrink: 0,
+};

@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Settings, LogOut, LayoutDashboard, Eye, MousePointerClick, Globe, BarChart2, Users, TrendingUp } from "lucide-react";
+import { ArrowRight, Settings, LogOut, LayoutDashboard, Eye, MousePointerClick, Globe, BarChart2, Users, TrendingUp, Info, X } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -69,7 +69,11 @@ function HeroCanvas() {
       });
     };
 
-    const resize = () => { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; init(); };
+    const resize = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+      init();
+    };
 
     const draw = () => {
       const cx = canvas.width / 2;
@@ -77,8 +81,11 @@ function HeroCanvas() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       RINGS.forEach((r) => {
-        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(0,0,0,0.07)"; ctx.lineWidth = 1; ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(0,0,0,0.07)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
       });
 
       dots.forEach((d) => {
@@ -86,36 +93,61 @@ function HeroCanvas() {
         const tx = cx + Math.cos(d.angle) * d.radius;
         const ty = cy + Math.sin(d.angle) * d.radius;
         if (mouse.inside) {
-          const dx = mouse.x - tx; const dy = mouse.y - ty;
+          const dx = mouse.x - tx;
+          const dy = mouse.y - ty;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 180) { const pull = (1 - dist / 180) * 0.35; d.x += (tx + dx * pull - d.x) * 0.1; d.y += (ty + dy * pull - d.y) * 0.1; }
-          else { d.x += (tx - d.x) * 0.1; d.y += (ty - d.y) * 0.1; }
-        } else { d.x += (tx - d.x) * 0.1; d.y += (ty - d.y) * 0.1; }
+          if (dist < 180) {
+            const pull = (1 - dist / 180) * 0.35;
+            d.x += (tx + dx * pull - d.x) * 0.1;
+            d.y += (ty + dy * pull - d.y) * 0.1;
+          } else {
+            d.x += (tx - d.x) * 0.1;
+            d.y += (ty - d.y) * 0.1;
+          }
+        } else {
+          d.x += (tx - d.x) * 0.1;
+          d.y += (ty - d.y) * 0.1;
+        }
       });
 
       for (let i = 0; i < dots.length; i++) {
         for (let j = i + 1; j < dots.length; j++) {
           if (dots[i].ringIdx !== dots[j].ringIdx) continue;
-          const dx = dots[i].x - dots[j].x; const dy = dots[i].y - dots[j].y;
+          const dx = dots[i].x - dots[j].x;
+          const dy = dots[i].y - dots[j].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < 100) {
-            ctx.beginPath(); ctx.moveTo(dots[i].x, dots[i].y); ctx.lineTo(dots[j].x, dots[j].y);
-            ctx.strokeStyle = `rgba(0,0,0,${(1 - dist / 100) * 0.1})`; ctx.lineWidth = 0.5; ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(dots[i].x, dots[i].y);
+            ctx.lineTo(dots[j].x, dots[j].y);
+            ctx.strokeStyle = `rgba(0,0,0,${(1 - dist / 100) * 0.1})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
           }
         }
       }
 
       if (mouse.inside) {
         dots.forEach((d) => {
-          const dx = mouse.x - d.x; const dy = mouse.y - d.y; const dist = Math.sqrt(dx * dx + dy * dy);
+          const dx = mouse.x - d.x;
+          const dy = mouse.y - d.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < 160) {
-            ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(mouse.x, mouse.y);
-            ctx.strokeStyle = `rgba(0,0,0,${(1 - dist / 160) * 0.3})`; ctx.lineWidth = 0.6; ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(d.x, d.y);
+            ctx.lineTo(mouse.x, mouse.y);
+            ctx.strokeStyle = `rgba(0,0,0,${(1 - dist / 160) * 0.3})`;
+            ctx.lineWidth = 0.6;
+            ctx.stroke();
           }
         });
         const g = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 70);
-        g.addColorStop(0, "rgba(0,0,0,0.05)"); g.addColorStop(1, "rgba(0,0,0,0)");
-        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(mouse.x, mouse.y, 70, 0, Math.PI * 2); ctx.fill();
+        g.addColorStop(0, "rgba(0,0,0,0.05)");
+        g.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(mouse.x, mouse.y, 70, 0, Math.PI * 2);
+        ctx.fill();
       }
 
       const logoMap = new Map<number, HTMLImageElement>();
@@ -130,8 +162,10 @@ function HeroCanvas() {
           ctx.beginPath(); ctx.arc(d.x, d.y, lr, 0, Math.PI * 2);
           ctx.strokeStyle = "rgba(0,0,0,0.12)"; ctx.lineWidth = 0.8; ctx.stroke();
         } else {
-          ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-          ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fill();
+          ctx.beginPath();
+          ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(0,0,0,0.5)";
+          ctx.fill();
         }
       });
 
@@ -140,8 +174,10 @@ function HeroCanvas() {
 
     const onMove = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left; const y = e.clientY - rect.top;
-      mouse.x = x; mouse.y = y;
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      mouse.x = x;
+      mouse.y = y;
       mouse.inside = x >= 0 && x <= canvas.width && y >= 0 && y <= canvas.height;
     };
     const onLeave = () => { mouse.inside = false; };
@@ -149,7 +185,9 @@ function HeroCanvas() {
     window.addEventListener("resize", resize);
     window.addEventListener("mousemove", onMove);
     document.addEventListener("mouseleave", onLeave);
-    resize(); draw();
+
+    resize();
+    draw();
 
     return () => {
       cancelAnimationFrame(animId);
@@ -166,7 +204,9 @@ function SlideVisual1() {
   return (
     <div className="overflow-hidden rounded-2xl border border-black/8 bg-white shadow-[0_8px_40px_-12px_rgba(0,0,0,0.12)]">
       <div className="flex h-8 items-center gap-1.5 border-b border-black/6 bg-black/[0.02] px-3">
-        <div className="h-2 w-2 rounded-full bg-red-400/70" /><div className="h-2 w-2 rounded-full bg-yellow-400/70" /><div className="h-2 w-2 rounded-full bg-green-400/70" />
+        <div className="h-2 w-2 rounded-full bg-red-400/70" />
+        <div className="h-2 w-2 rounded-full bg-yellow-400/70" />
+        <div className="h-2 w-2 rounded-full bg-green-400/70" />
         <div className="ml-2 text-[10px] text-black/25">yoursite.com</div>
       </div>
       <div className="flex h-9 items-center gap-2.5 border-b border-black/10 bg-white px-4">
@@ -176,9 +216,13 @@ function SlideVisual1() {
         <span className="ml-auto shrink-0 whitespace-nowrap text-[11px] font-medium text-black">Visit ↗</span>
       </div>
       <div className="space-y-2.5 px-5 py-5">
-        <div className="h-3 w-2/5 rounded-full bg-black/8" /><div className="h-3 w-3/5 rounded-full bg-black/5" />
+        <div className="h-3 w-2/5 rounded-full bg-black/8" />
+        <div className="h-3 w-3/5 rounded-full bg-black/5" />
         <div className="mt-4 h-10 w-full rounded-lg bg-black/4" />
-        <div className="flex gap-2 pt-2"><div className="h-8 w-20 rounded-md bg-black/10" /><div className="h-8 w-24 rounded-md bg-black/5" /></div>
+        <div className="flex gap-2 pt-2">
+          <div className="h-8 w-20 rounded-md bg-black/10" />
+          <div className="h-8 w-24 rounded-md bg-black/5" />
+        </div>
       </div>
     </div>
   );
@@ -189,7 +233,9 @@ function SlideVisual2() {
     <div className="overflow-hidden rounded-2xl border border-black/10 bg-[#111] shadow-[0_8px_40px_-12px_rgba(0,0,0,0.25)]">
       <div className="flex h-9 items-center justify-between border-b border-white/8 px-4">
         <div className="flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full bg-white/20" /><div className="h-2 w-2 rounded-full bg-white/20" /><div className="h-2 w-2 rounded-full bg-white/20" />
+          <div className="h-2 w-2 rounded-full bg-white/20" />
+          <div className="h-2 w-2 rounded-full bg-white/20" />
+          <div className="h-2 w-2 rounded-full bg-white/20" />
           <span className="ml-2 text-[11px] text-white/30">index.html</span>
         </div>
         <span className="text-[11px] text-white/20">{`</>`}</span>
@@ -212,12 +258,12 @@ function SlideVisual2() {
 
 function SlideVisual3() {
   const cards = [
-    { Icon: Eye, title: "Real Impressions", sub: "Only visible views count" },
-    { Icon: MousePointerClick, title: "Click Tracking", sub: "Know exactly who clicked" },
-    { Icon: Globe, title: "Traffic Analytics", sub: "Country, device, referrer" },
-    { Icon: BarChart2, title: "Network Rank", sub: "See where you stand" },
-    { Icon: Users, title: "Founder Network", sub: "Reach startup audiences" },
-    { Icon: TrendingUp, title: "Mutual Growth", sub: "More founders = more reach" },
+    { Icon: Eye,              title: "Real Impressions",  sub: "Only visible views count" },
+    { Icon: MousePointerClick,title: "Click Tracking",    sub: "Know exactly who clicked" },
+    { Icon: Globe,            title: "Traffic Analytics", sub: "Country, device, referrer" },
+    { Icon: BarChart2,        title: "Network Rank",      sub: "See where you stand" },
+    { Icon: Users,            title: "Founder Network",   sub: "Reach startup audiences" },
+    { Icon: TrendingUp,       title: "Mutual Growth",     sub: "More founders = more reach" },
   ];
   return (
     <div className="grid grid-cols-2 gap-3">
@@ -226,7 +272,10 @@ function SlideVisual3() {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/8 bg-black/[0.03] transition-colors group-hover:bg-black group-hover:border-black">
             <Icon className="h-4 w-4 text-black/50 transition-colors group-hover:text-white" />
           </div>
-          <div><p className="text-sm font-semibold text-black">{title}</p><p className="mt-0.5 text-xs text-black/40">{sub}</p></div>
+          <div>
+            <p className="text-sm font-semibold text-black">{title}</p>
+            <p className="mt-0.5 text-xs text-black/40">{sub}</p>
+          </div>
         </div>
       ))}
     </div>
@@ -234,9 +283,36 @@ function SlideVisual3() {
 }
 
 const SLIDES = [
-  { headline: "You promote others.\nOthers promote you.", bullets: ["Embed bar → promotes a verified startup", "They embed → your startup gets featured back", "Bigger network = more reach for everyone"], cta: { label: "Get started free", to: "/apply" }, visual: <SlideVisual1 /> },
-  { headline: "One line of code.\nInfinite reach.", bullets: ["Works on Next.js, Webflow, WordPress — anything", "Async load — zero impact on page speed", "Auto-updated, always shows the best match"], cta: { label: "Get your embed code", to: "/apply" }, visual: <SlideVisual2 /> },
-  { headline: "Every impression.\nEvery click. Tracked.", bullets: ["Real impressions — visible in viewport only", "Country, device, referrer — all free", "Verified traffic badge on your listing"], cta: { label: "View your dashboard", to: "/dashboard" }, visual: <SlideVisual3 /> },
+  {
+    headline: "You promote others.\nOthers promote you.",
+    bullets: [
+      "Embed bar → promotes a verified startup",
+      "They embed → your startup gets featured back",
+      "Bigger network = more reach for everyone",
+    ],
+    cta: { label: "Get started free", to: "/apply" },
+    visual: <SlideVisual1 />,
+  },
+  {
+    headline: "One line of code.\nInfinite reach.",
+    bullets: [
+      "Works on Next.js, Webflow, WordPress — anything",
+      "Async load — zero impact on page speed",
+      "Auto-updated, always shows the best match",
+    ],
+    cta: { label: "Get your embed code", to: "/apply" },
+    visual: <SlideVisual2 />,
+  },
+  {
+    headline: "Every impression.\nEvery click. Tracked.",
+    bullets: [
+      "Real impressions — visible in viewport only",
+      "Country, device, referrer — all free",
+      "Verified traffic badge on your listing",
+    ],
+    cta: { label: "View your dashboard", to: "/dashboard" },
+    visual: <SlideVisual3 />,
+  },
 ];
 
 function HowItWorks() {
@@ -254,23 +330,40 @@ function HowItWorks() {
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
       setAnimating(true);
-      setTimeout(() => { setActive((prev) => (prev + 1) % SLIDES.length); setAnimating(false); }, 220);
+      setTimeout(() => {
+        setActive((prev) => (prev + 1) % SLIDES.length);
+        setAnimating(false);
+      }, 220);
     }, 4000);
   }
 
-  useEffect(() => { resetTimer(); return () => { if (timerRef.current) clearInterval(timerRef.current); }; }, []);
+  useEffect(() => {
+    resetTimer();
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, []);
 
-  function handleDotClick(i: number) { goTo(i); resetTimer(); }
+  function handleDotClick(i: number) {
+    goTo(i);
+    resetTimer();
+  }
 
   const slide = SLIDES[active];
 
   return (
-    <section id="how" className="border-t border-black/8 bg-white px-6 py-20 md:py-28">
+    <section id="how" className="border-t border-black/8 bg-white px-6 py-14 sm:py-20 md:py-28">
       <div className="mx-auto max-w-5xl">
         <p className="mb-12 text-xs font-semibold uppercase tracking-[0.18em] text-black/35">How it works</p>
-        <div className="grid items-center gap-12 transition-all duration-300 md:grid-cols-2 md:gap-20" style={{ opacity: animating ? 0 : 1, transform: animating ? "translateY(8px)" : "none" }}>
+        <div
+          className="grid items-center gap-12 transition-all duration-300 md:grid-cols-2 md:gap-20"
+          style={{ opacity: animating ? 0 : 1, transform: animating ? "translateY(8px)" : "none" }}
+        >
           <div>
-            <h2 className="text-4xl font-semibold leading-tight tracking-tight md:text-5xl" style={{ fontFamily: "var(--font-display)", whiteSpace: "pre-line" }}>{slide.headline}</h2>
+            <h2
+              className="text-3xl font-semibold leading-tight tracking-tight sm:text-4xl md:text-5xl"
+              style={{ fontFamily: "var(--font-display)", whiteSpace: "pre-line" }}
+            >
+              {slide.headline}
+            </h2>
             <ul className="mt-8 space-y-3">
               {slide.bullets.map((b) => (
                 <li key={b} className="flex items-start gap-3 text-[15px] leading-relaxed text-black/55">
@@ -279,15 +372,25 @@ function HowItWorks() {
                 </li>
               ))}
             </ul>
-            <Link to={slide.cta.to} className="group mt-10 inline-flex items-center gap-2 rounded-lg bg-black px-5 py-3 text-sm font-medium text-white hover:bg-black/80 transition-all">
-              {slide.cta.label}<ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            <Link
+              to={slide.cta.to}
+              className="group mt-10 inline-flex items-center gap-2 rounded-lg bg-black px-5 py-3 text-sm font-medium text-white hover:bg-black/80 transition-all"
+            >
+              {slide.cta.label}
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
           <div>{slide.visual}</div>
         </div>
         <div className="mt-12 flex items-center justify-center gap-2.5">
           {SLIDES.map((_, i) => (
-            <button key={i} onClick={() => handleDotClick(i)} className={`rounded-full transition-all duration-300 ${i === active ? "h-2.5 w-8 bg-black" : "h-2.5 w-2.5 bg-black/20 hover:bg-black/40"}`} />
+            <button
+              key={i}
+              onClick={() => handleDotClick(i)}
+              className={`rounded-full transition-all duration-300 ${
+                i === active ? "h-2.5 w-8 bg-black" : "h-2.5 w-2.5 bg-black/20 hover:bg-black/40"
+              }`}
+            />
           ))}
         </div>
       </div>
@@ -304,14 +407,25 @@ const FACTS = [
 function WhyItWorks() {
   const { ref, visible } = useInView();
   return (
-    <section className="border-t border-black/8 bg-black/[0.015] px-6 py-24 md:py-32">
+    <section className="border-t border-black/8 bg-black/[0.015] px-6 py-16 sm:py-24 md:py-32">
       <div className="mx-auto max-w-5xl">
-        <div ref={ref} className="transition-all duration-700" style={{ opacity: visible ? 1 : 0, transform: visible ? "none" : "translateY(24px)" }}>
+        <div
+          ref={ref}
+          className="transition-all duration-700"
+          style={{ opacity: visible ? 1 : 0, transform: visible ? "none" : "translateY(24px)" }}
+        >
           <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Why it works</span>
-          <h2 className="mt-4 text-4xl font-medium leading-tight tracking-tight md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>The fairest growth channel<br />you'll ever ship.</h2>
+          <h2
+            className="mt-4 text-3xl font-medium leading-tight tracking-tight sm:text-4xl md:text-5xl"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            The fairest growth channel<br />you'll ever ship.
+          </h2>
         </div>
         <div className="mt-16 grid md:grid-cols-3">
-          {FACTS.map((f, i) => (<FactCell key={i} fact={f} delay={i * 100} total={FACTS.length} index={i} />))}
+          {FACTS.map((f, i) => (
+            <FactCell key={i} fact={f} delay={i * 100} total={FACTS.length} index={i} />
+          ))}
         </div>
       </div>
     </section>
@@ -321,8 +435,17 @@ function WhyItWorks() {
 function FactCell({ fact, delay, total, index }: { fact: typeof FACTS[0]; delay: number; total: number; index: number }) {
   const { ref, visible } = useInView(0.15);
   return (
-    <div ref={ref} className={`group relative rounded-2xl bg-white px-8 py-10 transition-all duration-700 hover:shadow-[0_4px_24px_-6px_rgba(0,0,0,0.08)] ${index < total - 1 ? "mb-3 md:mb-0 md:mr-3" : ""}`} style={{ opacity: visible ? 1 : 0, transform: visible ? "none" : "translateY(20px)", transitionDelay: `${delay}ms` }}>
-      <div className="text-5xl font-semibold leading-none tracking-tight text-black transition-transform duration-300 group-hover:-translate-y-0.5 md:text-6xl" style={{ fontFamily: "var(--font-display)" }}>{fact.stat}</div>
+    <div
+      ref={ref}
+      className={`group relative rounded-2xl bg-white px-8 py-10 transition-all duration-700 hover:shadow-[0_4px_24px_-6px_rgba(0,0,0,0.08)] ${index < total - 1 ? "mb-3 md:mb-0 md:mr-3" : ""}`}
+      style={{ opacity: visible ? 1 : 0, transform: visible ? "none" : "translateY(20px)", transitionDelay: `${delay}ms` }}
+    >
+      <div
+        className="text-5xl font-semibold leading-none tracking-tight text-black transition-transform duration-300 group-hover:-translate-y-0.5 md:text-6xl"
+        style={{ fontFamily: "var(--font-display)" }}
+      >
+        {fact.stat}
+      </div>
       <div className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-black/35">{fact.label}</div>
       <div className="mt-6 h-px w-8 bg-black/12 transition-all duration-300 group-hover:w-12 group-hover:bg-black/25" />
       <p className="mt-5 text-sm leading-relaxed text-black/45">{fact.body}</p>
@@ -333,13 +456,28 @@ function FactCell({ fact, delay, total, index }: { fact: typeof FACTS[0]; delay:
 function CtaBanner() {
   const { ref, visible } = useInView(0.2);
   return (
-    <section className="border-t border-black/8 bg-white px-6 py-24 md:py-36">
-      <div ref={ref} className="mx-auto max-w-2xl text-center transition-all duration-700" style={{ opacity: visible ? 1 : 0, transform: visible ? "none" : "translateY(28px)" }}>
-        <h2 className="text-4xl font-medium leading-tight tracking-tight text-black md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>Start getting discovered<br />by other founders today.</h2>
-        <p className="mx-auto mt-5 max-w-sm text-[15px] leading-relaxed text-black/40">Two minutes to set up. Free forever.<br />Cancel by deleting one line of code.</p>
+    <section className="border-t border-black/8 bg-white px-6 py-16 sm:py-24 md:py-36">
+      <div
+        ref={ref}
+        className="mx-auto max-w-2xl text-center transition-all duration-700"
+        style={{ opacity: visible ? 1 : 0, transform: visible ? "none" : "translateY(28px)" }}
+      >
+        <h2
+          className="text-3xl font-medium leading-tight tracking-tight text-black sm:text-4xl md:text-5xl"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          Start getting discovered<br />by other founders today.
+        </h2>
+        <p className="mx-auto mt-5 max-w-sm text-[15px] leading-relaxed text-black/40">
+          Two minutes to set up. Free forever.<br />Cancel by deleting one line of code.
+        </p>
         <div className="mt-10">
-          <Link to="/apply" className="group inline-flex h-12 items-center rounded-lg bg-black px-7 text-sm font-medium text-white transition-all duration-200 hover:bg-black/80">
-            Apply your startup<ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+          <Link
+            to="/apply"
+            className="group inline-flex h-12 items-center rounded-lg bg-black px-7 text-sm font-medium text-white transition-all duration-200 hover:bg-black/80"
+          >
+            Apply your startup
+            <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
           </Link>
         </div>
       </div>
@@ -360,71 +498,170 @@ function Landing() {
   const navigate = useNavigate();
   const [user, setUser] = useState<{ email?: string; name?: string } | null>(null);
   const [authReady, setAuthReady] = useState(false);
+  const [liveStartup, setLiveStartup] = useState<{ name: string; description: string } | null>(null);
+  const [mockInfoOpen, setMockInfoOpen] = useState(false);
+  const [mockDismissed, setMockDismissed] = useState(false);
+
+  useEffect(() => {
+    supabase.from("startups").select("name, description").eq("status", "approved").limit(1).maybeSingle().then(({ data }) => {
+      if (data) setLiveStartup(data);
+    });
+  }, []);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      if (data.user) setUser({ email: data.user.email, name: data.user.user_metadata?.full_name?.split(" ")[0] ?? "" });
+      if (data.user) {
+        setUser({
+          email: data.user.email,
+          name: data.user.user_metadata?.full_name?.split(" ")[0] ?? "",
+        });
+      }
       setAuthReady(true);
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) setUser({ email: session.user.email, name: session.user.user_metadata?.full_name?.split(" ")[0] ?? "" });
-      else setUser(null);
+      if (session?.user) {
+        setUser({
+          email: session.user.email,
+          name: session.user.user_metadata?.full_name?.split(" ")[0] ?? "",
+        });
+      } else {
+        setUser(null);
+      }
     });
     return () => subscription.unsubscribe();
   }, []);
 
-  async function signOut() { await supabase.auth.signOut(); setUser(null); navigate({ to: "/" }); }
+  async function signOut() {
+    await supabase.auth.signOut();
+    setUser(null);
+    navigate({ to: "/" });
+  }
 
   return (
     <div className="min-h-screen bg-white text-black">
+      {/* HEADER */}
       <header className="relative z-20 border-b border-black/8 bg-white">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <Logo />
-          <nav className="flex items-center gap-2 text-sm">
+          <nav className="flex items-center gap-1 text-sm">
             {!authReady ? null : user ? (
               <>
-                <Link to="/dashboard" className="flex items-center gap-1.5 px-3 py-2 text-black/50 hover:text-black transition-colors"><LayoutDashboard className="h-4 w-4" />Dashboard</Link>
-                <Link to="/account" className="rounded-md p-2 text-black/40 hover:text-black transition-colors" title="Account settings"><Settings className="h-4 w-4" /></Link>
-                <button onClick={signOut} className="flex items-center gap-1.5 rounded-md border border-black/12 px-3 py-1.5 text-black/60 hover:border-black/25 hover:text-black transition-all"><LogOut className="h-3.5 w-3.5" />Sign out</button>
+                <Link
+                  to="/dashboard"
+                  className="flex items-center gap-1.5 px-2 py-2 text-black/50 hover:text-black transition-colors sm:px-3"
+                >
+                  <LayoutDashboard className="h-4 w-4" />
+                  <span className="hidden sm:inline">Dashboard</span>
+                </Link>
+                <Link
+                  to="/account"
+                  className="rounded-md p-2 text-black/40 hover:text-black transition-colors"
+                  title="Account settings"
+                >
+                  <Settings className="h-4 w-4" />
+                </Link>
+                <button
+                  onClick={signOut}
+                  className="flex items-center gap-1.5 rounded-md border border-black/12 px-2 py-1.5 text-black/60 hover:border-black/25 hover:text-black transition-all sm:px-3"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Sign out</span>
+                </button>
               </>
             ) : (
               <>
-                <Link to="/privacy" className="px-3 py-2 text-black/40 hover:text-black transition-colors text-[13px]">Privacy</Link>
-                <Link to="/terms" className="px-3 py-2 text-black/40 hover:text-black transition-colors text-[13px]">Terms</Link>
+                <Link to="/privacy" className="hidden sm:inline px-3 py-2 text-black/40 hover:text-black transition-colors text-[13px]">Privacy</Link>
+                <Link to="/terms" className="hidden sm:inline px-3 py-2 text-black/40 hover:text-black transition-colors text-[13px]">Terms</Link>
                 <Link to="/auth" className="px-3 py-2 text-black/50 hover:text-black transition-colors">Sign in</Link>
-                <Link to="/apply" className="inline-flex h-9 items-center rounded-md bg-black px-4 font-medium text-white hover:bg-black/80 transition-colors">Join the network</Link>
+                <Link to="/apply" className="inline-flex h-9 items-center rounded-md bg-black px-3 text-sm font-medium text-white hover:bg-black/80 transition-colors sm:px-4">
+                  <span className="hidden sm:inline">Join the network</span>
+                  <span className="sm:hidden">Join</span>
+                </Link>
               </>
             )}
           </nav>
         </div>
       </header>
 
+      {/* HERO */}
       <section className="relative overflow-hidden bg-white">
         <HeroCanvas />
-        <div className="relative z-10 mx-auto max-w-5xl px-6 pt-20 pb-28 text-center sb-fade-up">
+        <div className="relative z-10 mx-auto max-w-5xl px-6 pt-14 pb-20 text-center sb-fade-up sm:pt-20 sm:pb-28">
           <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-black/30">
             Free forever&nbsp;&nbsp;·&nbsp;&nbsp;No money, ever
           </p>
-          <h1 className="mt-8 text-5xl font-medium leading-[1.05] tracking-tight text-black md:text-7xl" style={{ fontFamily: "var(--font-display)" }}>
-            Founders helping founders<br />get their <em className="italic">first</em> traffic.
+
+          <h1
+            className="mt-6 text-[2.4rem] font-medium leading-[1.08] tracking-tight text-black sm:mt-8 sm:text-5xl md:text-7xl"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            Founders helping founders
+            <br className="hidden sm:block" />{" "}
+            get their <em className="italic">first</em> traffic.
           </h1>
-          <p className="mx-auto mt-7 max-w-xl text-lg text-black/50 leading-relaxed">Add one line of code. A small bar appears on your site showing another founder's startup. In return, yours gets shown on theirs.</p>
+
+          <p className="mx-auto mt-5 max-w-xl text-base text-black/50 leading-relaxed sm:mt-7 sm:text-lg">
+            Add one line of code. A small bar appears on your site showing another founder's startup. In return, yours gets shown on theirs.
+          </p>
+
           <div className="mt-10 flex items-center justify-center">
-            <div className="flex items-center gap-3"><div className="h-3 w-10 rounded-sm bg-black" /><span className="text-2xl font-semibold tracking-tight text-black">StartupBar</span></div>
+            <div className="flex items-center gap-3">
+              <div className="h-3 w-10 rounded-sm bg-black" />
+              <span className="text-2xl font-semibold tracking-tight text-black">StartupBar</span>
+            </div>
           </div>
+
+          {/* Browser mock */}
           <div className="relative mx-auto mt-20 max-w-3xl">
             <div className="relative overflow-hidden rounded-xl border border-black/10 bg-white shadow-[0_20px_60px_-20px_rgba(0,0,0,0.15)]">
               <div className="flex h-9 items-center gap-2 border-b border-black/8 bg-black/[0.02] px-4">
-                <div className="h-2.5 w-2.5 rounded-full bg-red-400/80" /><div className="h-2.5 w-2.5 rounded-full bg-yellow-400/80" /><div className="h-2.5 w-2.5 rounded-full bg-green-400/80" />
+                <div className="h-2.5 w-2.5 rounded-full bg-red-400/80" />
+                <div className="h-2.5 w-2.5 rounded-full bg-yellow-400/80" />
+                <div className="h-2.5 w-2.5 rounded-full bg-green-400/80" />
                 <div className="ml-3 text-[11px] text-black/30">yourstartup.com</div>
               </div>
-              <div className="flex h-9 items-center gap-3 border-b border-black/8 bg-white px-4 text-[13px]" style={{ color: "#0f172a" }}>
-                <span className="rounded-sm bg-black px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-white">STARTUPBAR</span>
-                <span className="font-medium">Acme AI</span>
-                <span className="hidden text-black/40 sm:inline">— turn meeting notes into action items, automatically</span>
-                <span className="ml-auto text-black/60">Visit →</span>
+              {!mockDismissed && (
+                <div className="border-b border-black/8">
+                  <div className="relative flex h-9 items-center gap-0 bg-white px-2 text-[13px]" style={{ color: "#0f172a" }}>
+                    <button
+                      onClick={() => setMockInfoOpen(v => !v)}
+                      aria-label="What is this?"
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-black/30 transition-colors hover:text-black/60"
+                    >
+                      <Info size={12} />
+                    </button>
+                    <div className="flex min-w-0 flex-1 items-center gap-2 px-1">
+                      <span className="shrink-0 rounded-sm bg-black px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-white">STARTUPBAR</span>
+                      <span className="shrink-0 font-medium">{liveStartup?.name ?? "Acme AI"}</span>
+                      <span className="hidden min-w-0 flex-1 truncate text-black/40 sm:block">
+                        {liveStartup ? `— ${liveStartup.description}` : "— turn meeting notes into action items, automatically"}
+                      </span>
+                    </div>
+                    <span className="shrink-0 px-2 text-[12px] text-black/60 hover:underline underline-offset-2 cursor-pointer">Visit →</span>
+                    <button
+                      onClick={() => setMockDismissed(true)}
+                      aria-label="Dismiss"
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-black/25 transition-colors hover:text-black/50"
+                    >
+                      <X size={11} />
+                    </button>
+                  </div>
+                  {mockInfoOpen && (
+                    <div className="border-t border-black/6 bg-black/[0.015] px-4 py-3">
+                      <p className="text-[11px] font-semibold text-black/70">Founder-to-founder growth</p>
+                      <p className="mt-1 text-[11px] leading-relaxed text-black/45">
+                        This bar shows startups from the <strong className="text-black/60">StartupBar</strong> network — founders who display each other's startups for free, mutual traffic. Zero cost, no ads.
+                      </p>
+                      <span className="mt-2 inline-block text-[11px] font-semibold text-black/60 hover:underline underline-offset-2 cursor-pointer">
+                        Have a startup? Join free →
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+              <div className="grid place-items-center bg-black/[0.02] px-6 py-14 text-xs text-black/20 sm:py-24">
+                your website continues here as normal
               </div>
-              <div className="grid place-items-center bg-black/[0.02] px-6 py-24 text-xs text-black/20">your website continues here as normal</div>
             </div>
           </div>
         </div>
@@ -434,15 +671,21 @@ function Landing() {
       <WhyItWorks />
       <CtaBanner />
 
+      {/* FOOTER */}
       <footer className="border-t border-black/8 bg-white px-6 py-10">
-        <div className="mx-auto flex max-w-6xl items-center justify-between">
-          <div className="flex flex-col gap-1"><Logo /><span className="text-[11px] text-black/30">Built for founders, by founders.</span></div>
-          <div className="flex items-center gap-5 text-xs text-black/40">
-            <Link to="/auth" className="hover:text-black transition-colors">Sign in</Link>
-            <Link to="/apply" className="hover:text-black transition-colors">Apply</Link>
-            <Link to="/privacy" className="hover:text-black transition-colors">Privacy</Link>
-            <Link to="/terms" className="hover:text-black transition-colors">Terms</Link>
-            <span className="text-black/20">© {new Date().getFullYear()} StartupBar</span>
+        <div className="mx-auto max-w-6xl">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-1">
+              <Logo />
+              <span className="text-[11px] text-black/30">Built for founders, by founders.</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-4 text-xs text-black/40">
+              <Link to="/auth" className="hover:text-black transition-colors">Sign in</Link>
+              <Link to="/apply" className="hover:text-black transition-colors">Apply</Link>
+              <Link to="/privacy" className="hover:text-black transition-colors">Privacy</Link>
+              <Link to="/terms" className="hover:text-black transition-colors">Terms</Link>
+              <span className="text-black/20">© {new Date().getFullYear()} StartupBar</span>
+            </div>
           </div>
         </div>
       </footer>
