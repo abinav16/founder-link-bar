@@ -437,8 +437,3 @@ function Apply() {
     </div>
   );
 }
-        </div>
-      )}
-    </div>
-  );
-}
