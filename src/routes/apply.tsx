@@ -88,6 +88,18 @@ function Apply() {
     setLoading(false);
     if (error) { toast.error(error.message); return; }
     supabase.functions.invoke("send-email", { body: { type: "startup-submitted", data: { email: userData.user!.email, name: userData.user!.user_metadata?.full_name || userData.user!.email, startupName: parsed.name } } }).catch(() => {});
+    // Notify admin of new application
+    supabase.functions.invoke("send-email", {
+      body: {
+        type: "admin-new-application",
+        data: {
+          startupName: parsed.name,
+          startupUrl: parsed.website_url,
+          description: parsed.description,
+          applicantEmail: userData.user!.email,
+        },
+      },
+    }).catch(() => {});
     toast.success("Application submitted!"); navigate({ to: "/dashboard" });
   }
 
