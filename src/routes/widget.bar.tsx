@@ -97,7 +97,10 @@ function WidgetBar() {
             </a>
           </>
         )}
-        <button onClick={() => setDismissed(true)} aria-label="Dismiss" style={iconBtnStyle}>
+        <button onClick={() => {
+          window.parent.postMessage({ type: "startupbar:resize", height: 0 }, "*");
+          setDismissed(true);
+        }} aria-label="Dismiss" style={iconBtnStyle}>
           <X size={11} />
         </button>
       </div>
