@@ -42,16 +42,15 @@ interface Dot {
 
 function HeroCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const logosRef = useRef<HTMLImageElement[]>([]);
+  const logosRef = useRef<{ img: HTMLImageElement; dotIdx: number }[]>([]);
 
   useEffect(() => {
     supabase.from("startups").select("website_url").eq("status", "approved").then(({ data }) => {
       if (!data || data.length === 0) return;
-      data.forEach((s, i) => {
+      logosRef.current = data.map((s, i) => {
         const img = new Image();
-        img.crossOrigin = "anonymous";
         img.src = `https://www.google.com/s2/favicons?domain=${s.website_url}&sz=32`;
-        logosRef.current[i] = img;
+        return { img, dotIdx: i * 7 }; // spread logos across dot indices
       });
     });
   }, []);
@@ -64,7 +63,7 @@ function HeroCanvas() {
 
     let animId: number;
     const mouse = { x: -999, y: -999, inside: false };
-    let dots: Dot[] = [];
+    let dots: { angle: number; speed: number; radius: number; x: number; y: number; r: number; ringIdx: number; dotIdx: number }[] = [];
     const RINGS = [120, 210, 320, 450];
 
     const init = () => {
@@ -76,7 +75,7 @@ function HeroCanvas() {
         for (let i = 0; i < count; i++) {
           const angle = (i / count) * Math.PI * 2;
           const speed = (0.00025 + Math.random() * 0.00015) * (Math.random() > 0.5 ? 1 : -1);
-          dots.push({ angle, speed, radius, x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius, r: 9 + Math.random() * 3, ringIdx: ri, dotIdx: dots.length });
+          dots.push({ angle, speed, radius, x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius, r: 1.8 + Math.random() * 1.2, ringIdx: ri, dotIdx: dots.length });
         }
       });
     };
@@ -87,63 +86,88 @@ function HeroCanvas() {
       const cx = canvas.width / 2;
       const cy = canvas.height * 0.48;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      RINGS.forEach((r) => { ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.strokeStyle = "rgba(0,0,0,0.07)"; ctx.lineWidth = 1; ctx.stroke(); });
+
+      RINGS.forEach((r) => {
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(0,0,0,0.07)"; ctx.lineWidth = 1; ctx.stroke();
+      });
+
       dots.forEach((d) => {
         d.angle += d.speed;
         const tx = cx + Math.cos(d.angle) * d.radius;
         const ty = cy + Math.sin(d.angle) * d.radius;
         if (mouse.inside) {
-          const dx = mouse.x - tx; const dy = mouse.y - ty; const dist = Math.sqrt(dx * dx + dy * dy);
+          const dx = mouse.x - tx; const dy = mouse.y - ty;
+          const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < 180) { const pull = (1 - dist / 180) * 0.35; d.x += (tx + dx * pull - d.x) * 0.1; d.y += (ty + dy * pull - d.y) * 0.1; }
           else { d.x += (tx - d.x) * 0.1; d.y += (ty - d.y) * 0.1; }
         } else { d.x += (tx - d.x) * 0.1; d.y += (ty - d.y) * 0.1; }
       });
+
       for (let i = 0; i < dots.length; i++) {
         for (let j = i + 1; j < dots.length; j++) {
           if (dots[i].ringIdx !== dots[j].ringIdx) continue;
-          const dx = dots[i].x - dots[j].x; const dy = dots[i].y - dots[j].y; const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 100) { ctx.beginPath(); ctx.moveTo(dots[i].x, dots[i].y); ctx.lineTo(dots[j].x, dots[j].y); ctx.strokeStyle = `rgba(0,0,0,${(1 - dist / 100) * 0.1})`; ctx.lineWidth = 0.5; ctx.stroke(); }
+          const dx = dots[i].x - dots[j].x; const dy = dots[i].y - dots[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 100) {
+            ctx.beginPath(); ctx.moveTo(dots[i].x, dots[i].y); ctx.lineTo(dots[j].x, dots[j].y);
+            ctx.strokeStyle = `rgba(0,0,0,${(1 - dist / 100) * 0.1})`; ctx.lineWidth = 0.5; ctx.stroke();
+          }
         }
       }
+
       if (mouse.inside) {
         dots.forEach((d) => {
           const dx = mouse.x - d.x; const dy = mouse.y - d.y; const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 160) { ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(mouse.x, mouse.y); ctx.strokeStyle = `rgba(0,0,0,${(1 - dist / 160) * 0.3})`; ctx.lineWidth = 0.6; ctx.stroke(); }
+          if (dist < 160) {
+            ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(mouse.x, mouse.y);
+            ctx.strokeStyle = `rgba(0,0,0,${(1 - dist / 160) * 0.3})`; ctx.lineWidth = 0.6; ctx.stroke();
+          }
         });
         const g = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 70);
         g.addColorStop(0, "rgba(0,0,0,0.05)"); g.addColorStop(1, "rgba(0,0,0,0)");
         ctx.fillStyle = g; ctx.beginPath(); ctx.arc(mouse.x, mouse.y, 70, 0, Math.PI * 2); ctx.fill();
       }
+
+      // Build a set of dotIdx values that have logos
+      const logoMap = new Map<number, HTMLImageElement>();
+      logosRef.current.forEach(({ img, dotIdx }) => { logoMap.set(dotIdx % dots.length, img); });
+
       dots.forEach((d) => {
-        const n = logosRef.current.length;
-        const img = n > 0 ? logosRef.current[d.dotIdx % n] : null;
-        if (img && img.complete && img.naturalWidth > 0) {
-          ctx.save();
-          ctx.beginPath();
-          ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-          ctx.clip();
-          ctx.drawImage(img, d.x - d.r, d.y - d.r, d.r * 2, d.r * 2);
-          ctx.restore();
-          ctx.beginPath();
-          ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-          ctx.strokeStyle = "rgba(0,0,0,0.10)";
-          ctx.lineWidth = 0.8;
-          ctx.stroke();
+        const logoImg = logoMap.get(d.dotIdx);
+        if (logoImg && logoImg.complete && logoImg.naturalWidth > 0) {
+          const lr = 7;
+          ctx.save(); ctx.beginPath(); ctx.arc(d.x, d.y, lr, 0, Math.PI * 2); ctx.clip();
+          ctx.drawImage(logoImg, d.x - lr, d.y - lr, lr * 2, lr * 2); ctx.restore();
+          ctx.beginPath(); ctx.arc(d.x, d.y, lr, 0, Math.PI * 2);
+          ctx.strokeStyle = "rgba(0,0,0,0.12)"; ctx.lineWidth = 0.8; ctx.stroke();
         } else {
-          ctx.beginPath();
-          ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-          ctx.fillStyle = "rgba(0,0,0,0.18)";
-          ctx.fill();
+          ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fill();
         }
       });
+
       animId = requestAnimationFrame(draw);
     };
 
-    const onMove = (e: MouseEvent) => { const rect = canvas.getBoundingClientRect(); const x = e.clientX - rect.left; const y = e.clientY - rect.top; mouse.x = x; mouse.y = y; mouse.inside = x >= 0 && x <= canvas.width && y >= 0 && y <= canvas.height; };
+    const onMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left; mouse.y = e.clientY - rect.top;
+      mouse.inside = mouse.x >= 0 && mouse.x <= canvas.width && mouse.y >= 0 && mouse.y <= canvas.height;
+    };
     const onLeave = () => { mouse.inside = false; };
-    window.addEventListener("resize", resize); window.addEventListener("mousemove", onMove); document.addEventListener("mouseleave", onLeave);
+
+    window.addEventListener("resize", resize);
+    window.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseleave", onLeave);
     resize(); draw();
-    return () => { cancelAnimationFrame(animId); window.removeEventListener("resize", resize); window.removeEventListener("mousemove", onMove); document.removeEventListener("mouseleave", onLeave); };
+
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener("resize", resize);
+      window.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseleave", onLeave);
+    };
   }, []);
 
   return <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 h-full w-full" />;
