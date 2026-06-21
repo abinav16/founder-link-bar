@@ -72,7 +72,7 @@ const inputCls = "w-full rounded-lg border border-black/12 bg-white px-4 py-3 te
 function Apply() {
   const navigate = useNavigate();
   const [authed, setAuthed] = useState<boolean | null>(null);
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<1 | "payment" | 2>(1);
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
   const [desc, setDesc] = useState("");
@@ -81,10 +81,36 @@ function Apply() {
   const [verifyStatus, setVerifyStatus] = useState<"idle" | "checking" | "found" | "not-found" | "error">("idle");
   const [verifyMsg, setVerifyMsg] = useState("");
   const [loading, setLoading] = useState(false);
+  const [existingCount, setExistingCount] = useState(0);
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setAuthed(!!data.user));
   }, []);
+
+  useEffect(() => {
+    if (!authed) return;
+    supabase.auth.getUser().then(async ({ data }) => {
+      if (!data.user) return;
+      const { count } = await supabase
+        .from("startups")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", data.user.id);
+      setExistingCount(count ?? 0);
+    });
+  }, [authed]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("paid") === "true") {
+      setName(params.get("name") ?? "");
+      setUrl(params.get("url") ?? "");
+      setDesc(params.get("desc") ?? "");
+      setStep(2);
+      window.history.replaceState({}, "", "/apply");
+    }
+  }, []);
+
 
   const snippet = `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}"></script>`;
 
