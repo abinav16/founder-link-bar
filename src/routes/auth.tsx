@@ -10,7 +10,7 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-interface Dot { angle: number; speed: number; radius: number; x: number; y: number; r: number; ringIdx: number; }
+interface Dot { angle: number; speed: number; radius: number; x: number; y: number; r: number; ringIdx: number; dotIdx: number; }
 
 function ConstellationPanel() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
