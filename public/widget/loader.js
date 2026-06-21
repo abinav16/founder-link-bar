@@ -9,6 +9,11 @@
     iframe.setAttribute('title', 'StartupBar');
     iframe.setAttribute('scrolling', 'no');
     iframe.style.cssText = ['position:fixed','top:0','left:0','width:100%','height:36px','border:0','margin:0','padding:0','z-index:2147483647','background:#ffffff','display:block'].join(';');
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'startupbar:resize') {
+        iframe.style.height = e.data.height + 'px';
+      }
+    });
     function inject() {
       document.body && document.body.appendChild(iframe);
       var html = document.documentElement;
