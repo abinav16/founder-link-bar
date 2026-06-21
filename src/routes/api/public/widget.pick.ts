@@ -41,6 +41,14 @@ export const Route = createFileRoute("/api/public/widget/pick")({
         }
 
         const pick = filtered[Math.floor(Math.random() * filtered.length)];
+
+        // Record impression server-side so cross-origin iframes (where browser
+        // localStorage is partitioned/blocked) still count.
+        await supabase.from("impressions").insert({
+          shown_startup_id: pick.id,
+          host_startup_id: host ?? null,
+        });
+
         return Response.json(pick, {
           headers: { "Cache-Control": "no-store", "Access-Control-Allow-Origin": "*" },
         });
