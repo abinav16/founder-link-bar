@@ -88,6 +88,7 @@ export type Database = {
       }
       payments: {
         Row: {
+          consumed_at: string | null
           created_at: string
           dodo_payment_id: string
           id: string
@@ -95,6 +96,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          consumed_at?: string | null
           created_at?: string
           dodo_payment_id: string
           id?: string
@@ -102,6 +104,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          consumed_at?: string | null
           created_at?: string
           dodo_payment_id?: string
           id?: string
@@ -148,7 +151,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      consume_prepaid_listing: { Args: { _user_id: string }; Returns: string }
     }
     Enums: {
       startup_status: "pending" | "approved" | "rejected"
