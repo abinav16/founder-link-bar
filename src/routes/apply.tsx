@@ -128,9 +128,29 @@ function Apply() {
       toast.error(parsed.error.issues[0]?.message ?? "Invalid input");
       return;
     }
-    setStep(2);
+    if (existingCount >= 1) {
+      setStep("payment");
+    } else {
+      setStep(2);
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
+
+  async function handlePayment() {
+    setPaymentLoading(true);
+    const { data: u } = await supabase.auth.getUser();
+    const returnUrl = `${window.location.origin}/apply?paid=true&name=${encodeURIComponent(name)}&url=${encodeURIComponent(url)}&desc=${encodeURIComponent(desc)}`;
+    const { data, error } = await supabase.functions.invoke("create-dodo-checkout", {
+      body: { email: u.user?.email, name: u.user?.user_metadata?.full_name, return_url: returnUrl },
+    });
+    setPaymentLoading(false);
+    if (error || !data?.payment_link) {
+      toast.error("Could not create payment session. Please try again.");
+      return;
+    }
+    window.location.href = data.payment_link;
+  }
+
 
   async function checkInstallation() {
     setVerifyStatus("checking");
