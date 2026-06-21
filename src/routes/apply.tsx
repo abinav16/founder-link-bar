@@ -18,6 +18,7 @@ export const Route = createFileRoute("/apply")({
     ],
     links: [{ rel: "canonical", href: "/apply" }],
   }),
+  ssr: false,
   component: Apply,
 });
 
