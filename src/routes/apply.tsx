@@ -399,17 +399,44 @@ function Apply() {
           </div>
 
           <div className="mt-8 space-y-3">
-            <button
-              onClick={onSubmit}
-              disabled={loading}
-              className="group flex w-full items-center justify-center gap-2 rounded-lg bg-black py-3.5 text-sm font-medium text-white transition-all hover:bg-black/80 disabled:opacity-50"
-            >
-              {loading ? "Submitting…" : <>Submit application <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" /></>}
-            </button>
+            {(() => {
+              const needsPayment = existingCount >= 1 && !hasPrepaid;
+              const verified = verifyStatus === "found";
+              const busy = loading || paymentLoading || verifyingPayment;
+              const disabled = !verified || busy;
+              const onClick = needsPayment ? handlePayment : onSubmit;
+              const label = verifyingPayment
+                ? "Verifying payment…"
+                : loading
+                ? "Submitting…"
+                : paymentLoading
+                ? "Redirecting to payment…"
+                : needsPayment
+                ? "Pay $9.99 & submit →"
+                : "Submit application";
+              return (
+                <button
+                  onClick={onClick}
+                  disabled={disabled}
+                  className="group flex w-full items-center justify-center gap-2 rounded-lg bg-black py-3.5 text-sm font-medium text-white transition-all hover:bg-black/80 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {label}
+                </button>
+              );
+            })()}
             <p className="text-center text-xs text-black/30">
-              {verifyStatus !== "found" ? "You can submit without verifying — we'll review within 24h." : "Script verified ✓ — you're all set."}
+              {verifyStatus !== "found"
+                ? "Install the script and verify it's live to continue."
+                : existingCount >= 1 && !hasPrepaid
+                ? "Script verified ✓ — one-time $9.99 for additional listings."
+                : "Script verified ✓ — you're all set."}
             </p>
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
         </div>
       )}
     </div>
