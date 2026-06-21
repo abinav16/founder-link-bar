@@ -2,3 +2,6 @@ User-agent: *
 Allow: /
 Disallow: /widget/
 Disallow: /api/
+
+Sitemap: https://startupbar.co/sitemap.xml
+
