@@ -19,9 +19,11 @@ serve(async (req) => {
       });
     }
 
-    const baseUrl = Deno.env.get("DODO_PAYMENTS_API_KEY")?.startsWith("test_")
-      ? "https://test.dodopayments.com"
-      : "https://live.dodopayments.com";
+    // Use test mode by default; set DODO_MODE=live in secrets to switch to production.
+    const mode = Deno.env.get("DODO_MODE") ?? "test";
+    const baseUrl = mode === "live"
+      ? "https://live.dodopayments.com"
+      : "https://test.dodopayments.com";
     const res = await fetch(`${baseUrl}/payments`, {
       method: "POST",
       headers: {
