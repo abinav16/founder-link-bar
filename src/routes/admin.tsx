@@ -211,6 +211,34 @@ function AdminPage() {
                           {s.status}
                         </span>
                       </td>
+                      <td className="px-4 py-4 sm:px-5">
+                        <button
+                          onClick={() => checkEmbed(s.id, s.website_url)}
+                          disabled={!s.website_url || e === "checking"}
+                          title="Re-check embed installation"
+                          className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors disabled:opacity-60 ${
+                            e === "live"
+                              ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                              : e === "missing"
+                              ? "border-red-200 bg-red-50 text-red-600 hover:bg-red-100"
+                              : e === "error"
+                              ? "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
+                              : "border-black/10 bg-black/[0.02] text-black/45 hover:bg-black/[0.04]"
+                          }`}
+                        >
+                          {e === "checking" ? (
+                            <><Loader2 className="h-3 w-3 animate-spin" /> Checking</>
+                          ) : e === "live" ? (
+                            <><Radio className="h-3 w-3" /> Live</>
+                          ) : e === "missing" ? (
+                            <><CircleSlash className="h-3 w-3" /> Not installed</>
+                          ) : e === "error" ? (
+                            <><CircleSlash className="h-3 w-3" /> Unreachable</>
+                          ) : (
+                            <><RefreshCw className="h-3 w-3" /> Check</>
+                          )}
+                        </button>
+                      </td>
                       <td className="hidden px-5 py-4 text-xs text-black/35 sm:table-cell">
                         {new Date(s.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                       </td>
