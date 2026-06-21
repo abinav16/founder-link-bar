@@ -114,7 +114,28 @@ function HeroCanvas() {
         g.addColorStop(0, "rgba(0,0,0,0.05)"); g.addColorStop(1, "rgba(0,0,0,0)");
         ctx.fillStyle = g; ctx.beginPath(); ctx.arc(mouse.x, mouse.y, 70, 0, Math.PI * 2); ctx.fill();
       }
-      dots.forEach((d) => { ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2); ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fill(); });
+      dots.forEach((d) => {
+        const n = logosRef.current.length;
+        const img = n > 0 ? logosRef.current[d.dotIdx % n] : null;
+        if (img && img.complete && img.naturalWidth > 0) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+          ctx.clip();
+          ctx.drawImage(img, d.x - d.r, d.y - d.r, d.r * 2, d.r * 2);
+          ctx.restore();
+          ctx.beginPath();
+          ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+          ctx.strokeStyle = "rgba(0,0,0,0.10)";
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        } else {
+          ctx.beginPath();
+          ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(0,0,0,0.18)";
+          ctx.fill();
+        }
+      });
       animId = requestAnimationFrame(draw);
     };
 
