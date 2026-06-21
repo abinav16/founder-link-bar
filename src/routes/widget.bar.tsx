@@ -52,13 +52,24 @@ const darkTokens: typeof lightTokens = {
 };
 
 function WidgetBar() {
-  const { host, theme } = useSearch({ from: "/widget/bar" });
-  const tokens = theme === "dark" ? darkTokens : lightTokens;
+  const { host, theme: urlTheme } = useSearch({ from: "/widget/bar" });
+  const [activeTheme, setActiveTheme] = useState<"light" | "dark">(urlTheme ?? "light");
+  const tokens = activeTheme === "dark" ? darkTokens : lightTokens;
   const [startup, setStartup] = useState<Startup | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onMessage(e: MessageEvent) {
+      if (e.data && e.data.type === "startupbar:theme") {
+        setActiveTheme(e.data.theme);
+      }
+    }
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, []);
 
   useEffect(() => {
     (async () => {

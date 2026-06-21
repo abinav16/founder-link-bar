@@ -6,11 +6,9 @@
     var origin = new URL(s.src).origin;
 
     function detectTheme() {
-      // 1. Explicit override on the script tag wins
       var dataTheme = s.getAttribute('data-theme');
       if (dataTheme === 'dark' || dataTheme === 'light') return dataTheme;
 
-      // 2. Check <html> and <body> for common dark-mode attributes
       var roots = [document.documentElement, document.body];
       for (var i = 0; i < roots.length; i++) {
         var el = roots[i];
@@ -21,12 +19,10 @@
           if (val && val.toLowerCase().includes('dark')) return 'dark';
           if (val && val.toLowerCase().includes('light')) return 'light';
         }
-        // 3. Check for 'dark' CSS class on root elements
         if (el.classList && el.classList.contains('dark')) return 'dark';
         if (el.classList && el.classList.contains('light')) return 'light';
       }
 
-      // 4. Try to compute luminance from body background color
       try {
         var bg = window.getComputedStyle(document.body).backgroundColor;
         var rgb = bg.match(/\d+/g);
@@ -37,11 +33,11 @@
         }
       } catch (e) {}
 
-      // 5. Fall back to OS preference
       return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
     }
 
     var theme = detectTheme();
+    var currentTheme = theme;
     var bg = theme === 'dark' ? '#18181b' : '#ffffff';
 
     var iframe = document.createElement('iframe');
@@ -49,11 +45,27 @@
     iframe.setAttribute('title', 'StartupBar');
     iframe.setAttribute('scrolling', 'no');
     iframe.style.cssText = ['position:fixed','top:0','left:0','width:100%','height:36px','border:0','margin:0','padding:0','z-index:2147483647','background:' + bg,'display:block'].join(';');
+
     window.addEventListener('message', function(e) {
       if (e.data && e.data.type === 'startupbar:resize') {
         iframe.style.height = e.data.height + 'px';
       }
     });
+
+    function startObserver() {
+      var observer = new MutationObserver(function() {
+        var newTheme = detectTheme();
+        if (newTheme !== currentTheme) {
+          currentTheme = newTheme;
+          iframe.style.background = newTheme === 'dark' ? '#18181b' : '#ffffff';
+          iframe.contentWindow.postMessage({ type: 'startupbar:theme', theme: newTheme }, '*');
+        }
+      });
+      var opts = { attributes: true, attributeFilter: ['class', 'data-theme', 'data-color-scheme', 'data-mode', 'color-scheme'] };
+      observer.observe(document.documentElement, opts);
+      if (document.body) observer.observe(document.body, opts);
+    }
+
     function inject() {
       document.body && document.body.appendChild(iframe);
       var html = document.documentElement;
@@ -61,7 +73,9 @@
         html.style.scrollPaddingTop = '36px';
         if (document.body) document.body.style.marginTop = (parseInt(getComputedStyle(document.body).marginTop) || 0) + 36 + 'px';
       }
+      startObserver();
     }
+
     if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', inject); } else { inject(); }
   } catch (e) {}
 })();
