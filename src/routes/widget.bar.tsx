@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const search = z.object({
   host: z.string().uuid().optional(),
+  theme: z.enum(["light", "dark"]).optional(),
 });
 
 export const Route = createFileRoute("/widget/bar")({
@@ -20,8 +21,39 @@ interface Startup {
   description: string;
 }
 
+const lightTokens = {
+  bg: "#ffffff",
+  border: "#e2e8f0",
+  text: "#0f172a",
+  textMuted: "#475569",
+  labelBg: "#0f172a",
+  labelText: "#ffffff",
+  iconColor: "#94a3b8",
+  infoBg: "#f8fafc",
+  infoBorder: "#e2e8f0",
+  infoText: "#64748b",
+  infoHeading: "#0f172a",
+  infoLink: "#0f172a",
+};
+
+const darkTokens: typeof lightTokens = {
+  bg: "#18181b",
+  border: "#27272a",
+  text: "#f4f4f5",
+  textMuted: "#a1a1aa",
+  labelBg: "#f4f4f5",
+  labelText: "#18181b",
+  iconColor: "#71717a",
+  infoBg: "#27272a",
+  infoBorder: "#3f3f46",
+  infoText: "#a1a1aa",
+  infoHeading: "#f4f4f5",
+  infoLink: "#f4f4f5",
+};
+
 function WidgetBar() {
-  const { host } = useSearch({ from: "/widget/bar" });
+  const { host, theme } = useSearch({ from: "/widget/bar" });
+  const tokens = theme === "dark" ? darkTokens : lightTokens;
   const [startup, setStartup] = useState<Startup | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
@@ -59,6 +91,48 @@ function WidgetBar() {
 
   if (!loaded || dismissed) return null;
 
+  const barStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    height: 36,
+    width: "100%",
+    padding: "0 6px",
+    background: tokens.bg,
+    borderBottom: `1px solid ${tokens.border}`,
+    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    fontSize: 13,
+    color: tokens.text,
+    boxSizing: "border-box",
+  };
+
+  const iconBtnStyle: React.CSSProperties = {
+    flexShrink: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 22,
+    height: 22,
+    borderRadius: 4,
+    border: "none",
+    background: "none",
+    color: tokens.iconColor,
+    cursor: "pointer",
+    padding: 0,
+  };
+
+  const labelStyle: React.CSSProperties = {
+    background: tokens.labelBg,
+    color: tokens.labelText,
+    fontSize: 10,
+    fontWeight: 700,
+    letterSpacing: "0.05em",
+    padding: "3px 6px",
+    borderRadius: 3,
+    textDecoration: "none",
+    flexShrink: 0,
+  };
+
   return (
     <div ref={wrapperRef} style={{ position: "relative", width: "100%" }}>
       <div style={barStyle}>
@@ -76,28 +150,28 @@ function WidgetBar() {
               style={{ width: 14, height: 14, borderRadius: 2, flexShrink: 0, objectFit: "contain" }}
               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
             />
-            <span style={{ fontWeight: 600, color: "#0f172a", flexShrink: 0 }}>{startup.name}</span>
-            <span style={{ color: "#475569", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+            <span style={{ fontWeight: 600, color: tokens.text, flexShrink: 0 }}>{startup.name}</span>
+            <span style={{ color: tokens.textMuted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
               &nbsp;— {startup.description}
             </span>
             <a
               href={`/api/public/widget/click?id=${startup.id}${host ? `&host=${host}` : ""}`}
               target="_top"
-              style={{ flexShrink: 0, fontWeight: 500, color: "#0f172a", textDecoration: "none", fontSize: 12 }}
+              style={{ flexShrink: 0, fontWeight: 500, color: tokens.text, textDecoration: "none", fontSize: 12 }}
             >
               Visit →
             </a>
           </>
         ) : (
           <>
-            <span style={{ color: "#475569", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            <span style={{ color: tokens.textMuted, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               Discover founder-built tools — join the free traffic exchange
             </span>
             <a
               href="https://startupbar.co"
               target="_blank"
               rel="noopener noreferrer"
-              style={{ flexShrink: 0, fontWeight: 500, color: "#0f172a", textDecoration: "none", fontSize: 12 }}
+              style={{ flexShrink: 0, fontWeight: 500, color: tokens.text, textDecoration: "none", fontSize: 12 }}
             >
               Join free →
             </a>
@@ -110,69 +184,27 @@ function WidgetBar() {
           <X size={11} />
         </button>
       </div>
-      {showInfo && <InfoPanel />}
+      {showInfo && <InfoPanel tokens={tokens} />}
     </div>
   );
 }
 
-function InfoPanel() {
+function InfoPanel({ tokens }: { tokens: typeof lightTokens }) {
   return (
     <div style={{
-      borderTop: "1px solid #e2e8f0",
-      background: "#f8fafc",
+      borderTop: `1px solid ${tokens.infoBorder}`,
+      background: tokens.infoBg,
       padding: "10px 16px 12px",
       fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     }}>
-      <p style={{ margin: "0 0 3px", fontSize: 11, fontWeight: 600, color: "#0f172a" }}>Founder-to-founder growth</p>
-      <p style={{ margin: "0 0 8px", fontSize: 10, color: "#64748b", lineHeight: 1.55 }}>
-        This bar shows startups from the <strong style={{ color: "#0f172a" }}>StartupBar</strong> network — founders who display each other's startups for free mutual traffic. No ads, no cost.
+      <p style={{ margin: "0 0 3px", fontSize: 11, fontWeight: 600, color: tokens.infoHeading }}>Founder-to-founder growth</p>
+      <p style={{ margin: "0 0 8px", fontSize: 10, color: tokens.infoText, lineHeight: 1.55 }}>
+        This bar shows startups from the <strong style={{ color: tokens.infoHeading }}>StartupBar</strong> network — founders who display each other's startups for free mutual traffic. No ads, no cost.
       </p>
       <a href="https://startupbar.co" target="_blank" rel="noopener noreferrer"
-        style={{ fontSize: 10, fontWeight: 600, color: "#0f172a", textDecoration: "none" }}>
+        style={{ fontSize: 10, fontWeight: 600, color: tokens.infoLink, textDecoration: "none" }}>
         Have a startup? Join free →
       </a>
     </div>
   );
 }
-
-const barStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-  height: 36,
-  width: "100%",
-  padding: "0 6px",
-  background: "#ffffff",
-  borderBottom: "1px solid #e2e8f0",
-  fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-  fontSize: 13,
-  color: "#0f172a",
-  boxSizing: "border-box",
-};
-
-const iconBtnStyle: React.CSSProperties = {
-  flexShrink: 0,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  width: 22,
-  height: 22,
-  borderRadius: 4,
-  border: "none",
-  background: "none",
-  color: "#94a3b8",
-  cursor: "pointer",
-  padding: 0,
-};
-
-const labelStyle: React.CSSProperties = {
-  background: "#0f172a",
-  color: "#ffffff",
-  fontSize: 10,
-  fontWeight: 700,
-  letterSpacing: "0.05em",
-  padding: "3px 6px",
-  borderRadius: 3,
-  textDecoration: "none",
-  flexShrink: 0,
-};
