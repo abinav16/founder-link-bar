@@ -207,6 +207,7 @@ function Apply() {
             <span className="text-black/20">—</span>
             <span className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold ${step === 2 ? "bg-black text-white" : "bg-black/10 text-black/30"}`}>2</span>
           </div>
+
           <Link to="/auth" className="text-sm text-black/40 hover:text-black transition-colors">
             <span className="hidden sm:inline">Already a member? </span>Sign in
           </Link>
