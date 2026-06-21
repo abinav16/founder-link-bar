@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
 import { ArrowRight, Mail, Lock, User } from "lucide-react";
 
@@ -87,8 +88,10 @@ function AuthPage() {
             type="button"
             onClick={async () => {
               setLoading(true);
-              const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${window.location.origin}/dashboard` } });
-              if (error) { toast.error(error.message); setLoading(false); }
+              const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: `${window.location.origin}/dashboard` });
+              if (result.error) { toast.error(result.error.message); setLoading(false); return; }
+              if (result.redirected) return;
+              navigate({ to: "/dashboard" });
             }}
             disabled={loading}
             className="mt-8 flex w-full items-center justify-center gap-3 rounded-lg border border-black/12 bg-white py-3 text-sm font-medium text-black transition-all hover:bg-black/[0.03] hover:border-black/25 disabled:opacity-50"
