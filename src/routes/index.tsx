@@ -76,7 +76,7 @@ function HeroCanvas() {
         for (let i = 0; i < count; i++) {
           const angle = (i / count) * Math.PI * 2;
           const speed = (0.00025 + Math.random() * 0.00015) * (Math.random() > 0.5 ? 1 : -1);
-          dots.push({ angle, speed, radius, x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius, r: 1.8 + Math.random() * 1.2, ringIdx: ri });
+          dots.push({ angle, speed, radius, x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius, r: 9 + Math.random() * 3, ringIdx: ri, dotIdx: dots.length });
         }
       });
     };
