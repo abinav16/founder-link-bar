@@ -83,10 +83,6 @@ function WidgetBar() {
           const data = (await res.json()) as Startup | null;
           if (data?.id) {
             setStartup(data);
-            supabase.from("impressions").insert({
-              shown_startup_id: data.id,
-              host_startup_id: host ?? null,
-            }).then(() => {});
           }
         }
       } finally {
