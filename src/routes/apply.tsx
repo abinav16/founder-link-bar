@@ -155,6 +155,16 @@ function Apply() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // After payment is verified and gate data refreshed, auto-submit the application.
+  useEffect(() => {
+    if (!autoSubmitPending) return;
+    if (!hasPrepaid) return;
+    if (loading) return;
+    setAutoSubmitPending(false);
+    onSubmit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoSubmitPending, hasPrepaid]);
+
   const snippet = `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}"></script>`;
 
   function copySnippet() {
