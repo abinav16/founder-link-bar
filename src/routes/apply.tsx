@@ -230,7 +230,6 @@ function Apply() {
       if (consumeErr || !consumedId) {
         setLoading(false);
         toast.error("No prepaid listing available. Please complete payment.");
-        setStep("payment");
         return;
       }
     }
