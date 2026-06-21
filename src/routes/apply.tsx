@@ -222,6 +222,21 @@ function Apply() {
     if (!user_id) { navigate({ to: "/auth" }); return; }
 
     const parsed = schema.parse({ name, website_url: url, description: desc });
+
+    // If this is a paid additional listing, atomically consume one prepaid slot first.
+    if (existingCount >= 1) {
+      const { data: consumedId, error: consumeErr } = await supabase.rpc(
+        "consume_prepaid_listing",
+        { _user_id: user_id },
+      );
+      if (consumeErr || !consumedId) {
+        setLoading(false);
+        toast.error("No prepaid listing available. Please complete payment.");
+        setStep("payment");
+        return;
+      }
+    }
+
     const { error } = await supabase.from("startups").insert(
       { id: startupId, user_id, ...parsed }
     );
