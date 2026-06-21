@@ -23,8 +23,13 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "StartupBar — Free traffic exchange for founders" },
-      { name: "description", content: "Add one line of code to your site. A 36px bar shows another founder's startup. In return, your startup gets shown on theirs. Free." },
+      { name: "description", content: "Add one line of code to your site. A 36px bar shows another founder's startup, and yours appears on theirs. Free traffic exchange." },
+      { property: "og:title", content: "StartupBar — Free traffic exchange for founders" },
+      { property: "og:description", content: "Add one line of code to your site. A 36px bar shows another founder's startup, and yours appears on theirs. Free traffic exchange." },
+      { name: "twitter:title", content: "StartupBar — Free traffic exchange for founders" },
+      { name: "twitter:description", content: "Add one line of code to your site. A 36px bar shows another founder's startup, and yours appears on theirs. Free traffic exchange." },
     ],
+    links: [{ rel: "canonical", href: "/" }],
   }),
   component: Landing,
 });

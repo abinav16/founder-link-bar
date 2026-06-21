@@ -7,7 +7,14 @@ import { Check, X, ExternalLink, LogOut, Clock, RefreshCw } from "lucide-react";
 const ADMIN_EMAIL = "danielabinav16@gmail.com";
 
 export const Route = createFileRoute("/admin")({
-  head: () => ({ meta: [{ title: "Admin — StartupBar" }] }),
+  head: () => ({
+    meta: [
+      { title: "Admin — StartupBar" },
+      { name: "description", content: "Internal admin console for reviewing and approving startup applications on StartupBar." },
+      { name: "robots", content: "noindex" },
+    ],
+    links: [{ rel: "canonical", href: "/admin" }],
+  }),
   ssr: false,
   beforeLoad: async () => {
     const { data } = await supabase.auth.getUser();

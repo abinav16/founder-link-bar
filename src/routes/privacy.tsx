@@ -1,7 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/privacy")({
-  head: () => ({ meta: [{ title: "Privacy Policy — StartupBar" }] }),
+  head: () => ({
+    meta: [
+      { title: "Privacy Policy — StartupBar" },
+      { name: "description", content: "How StartupBar collects, uses, and protects data from founders and visitors who interact with the traffic exchange widget." },
+      { property: "og:title", content: "Privacy Policy — StartupBar" },
+      { property: "og:description", content: "How StartupBar collects, uses, and protects founder and visitor data." },
+    ],
+    links: [{ rel: "canonical", href: "/privacy" }],
+  }),
   component: PrivacyPage,
 });
 
