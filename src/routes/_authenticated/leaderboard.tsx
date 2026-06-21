@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { getLeaderboard, type LeaderboardRow } from "@/lib/leaderboard.functions";
 import { Trophy, ExternalLink } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/leaderboard")({
@@ -9,53 +10,27 @@ export const Route = createFileRoute("/_authenticated/leaderboard")({
   component: LeaderboardPage,
 });
 
-interface StartupRow {
-  id: string;
-  name: string;
-  website_url: string;
-  description: string;
-  impressions: number;
-  clicks: number;
-}
-
 const MEDALS = ["🥇", "🥈", "🥉"];
 
 function LeaderboardPage() {
-  const [rows, setRows] = useState<StartupRow[]>([]);
+  const fetchLeaderboard = useServerFn(getLeaderboard);
+  const [rows, setRows] = useState<LeaderboardRow[]>([]);
   const [myId, setMyId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
-      const { data: u } = await supabase.auth.getUser();
-      if (!u.user) return;
-      const { data: mine } = await supabase
-        .from("startups").select("id").eq("user_id", u.user.id).maybeSingle();
-      if (mine) setMyId(mine.id);
-
-      const { data: startups } = await supabase
-        .from("startups").select("id, name, website_url, description")
-        .eq("status", "approved");
-
-      if (!startups) { setLoading(false); return; }
-
-      const enriched = await Promise.all(
-        startups.map(async (s) => {
-          const [{ count: imp }, { count: clk }] = await Promise.all([
-            supabase.from("impressions").select("*", { count: "exact", head: true }).eq("shown_startup_id", s.id),
-            supabase.from("clicks").select("*", { count: "exact", head: true }).eq("shown_startup_id", s.id),
-          ]);
-          return { ...s, impressions: imp ?? 0, clicks: clk ?? 0 };
-        })
-      );
-
-      enriched.sort((a, b) => b.impressions - a.impressions);
-      setRows(enriched);
-      setLoading(false);
+      try {
+        const data = await fetchLeaderboard();
+        setRows(data.rows);
+        setMyId(data.myId);
+      } finally {
+        setLoading(false);
+      }
     })();
-  }, []);
+  }, [fetchLeaderboard]);
 
-  const ctr = (row: StartupRow) =>
+  const ctr = (row: LeaderboardRow) =>
     row.impressions > 0 ? ((row.clicks / row.impressions) * 100).toFixed(1) + "%" : "—";
 
   return (
