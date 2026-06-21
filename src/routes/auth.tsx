@@ -10,8 +10,6 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-interface Dot { angle: number; speed: number; radius: number; x: number; y: number; r: number; ringIdx: number; dotIdx: number; }
-
 function ConstellationPanel() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const logosRef = useRef<{ img: HTMLImageElement; dotIdx: number }[]>([]);
@@ -40,8 +38,7 @@ function ConstellationPanel() {
 
     const init = () => {
       dots = [];
-      const cx = canvas.width / 2;
-      const cy = canvas.height / 2;
+      const cx = canvas.width / 2; const cy = canvas.height / 2;
       RINGS.forEach((radius, ri) => {
         const count = 6 + ri * 4;
         for (let i = 0; i < count; i++) {
@@ -103,7 +100,7 @@ function ConstellationPanel() {
       dots.forEach((d) => {
         const logoImg = logoMap.get(d.dotIdx);
         if (logoImg && logoImg.complete && logoImg.naturalWidth > 0) {
-          const lr = 7;
+          const lr = 11;
           ctx.save(); ctx.beginPath(); ctx.arc(d.x, d.y, lr, 0, Math.PI * 2); ctx.clip();
           ctx.drawImage(logoImg, d.x - lr, d.y - lr, lr * 2, lr * 2); ctx.restore();
           ctx.beginPath(); ctx.arc(d.x, d.y, lr, 0, Math.PI * 2);

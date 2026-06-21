@@ -29,17 +29,6 @@ export const Route = createFileRoute("/")({
   component: Landing,
 });
 
-interface Dot {
-  angle: number;
-  speed: number;
-  radius: number;
-  x: number;
-  y: number;
-  r: number;
-  ringIdx: number;
-  dotIdx: number;
-}
-
 function HeroCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const logosRef = useRef<{ img: HTMLImageElement; dotIdx: number }[]>([]);
@@ -50,7 +39,7 @@ function HeroCanvas() {
       logosRef.current = data.map((s, i) => {
         const img = new Image();
         img.src = `https://www.google.com/s2/favicons?domain=${s.website_url}&sz=32`;
-        return { img, dotIdx: i * 7 }; // spread logos across dot indices
+        return { img, dotIdx: i * 7 };
       });
     });
   }, []);
@@ -74,7 +63,7 @@ function HeroCanvas() {
         const count = 8 + ri * 4;
         for (let i = 0; i < count; i++) {
           const angle = (i / count) * Math.PI * 2;
-          const speed = (0.00025 + Math.random() * 0.00015) * (Math.random() > 0.5 ? 1 : -1);
+          const speed = (0.0012 + Math.random() * 0.0008) * (Math.random() > 0.5 ? 1 : -1);
           dots.push({ angle, speed, radius, x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius, r: 1.8 + Math.random() * 1.2, ringIdx: ri, dotIdx: dots.length });
         }
       });
@@ -129,14 +118,13 @@ function HeroCanvas() {
         ctx.fillStyle = g; ctx.beginPath(); ctx.arc(mouse.x, mouse.y, 70, 0, Math.PI * 2); ctx.fill();
       }
 
-      // Build a set of dotIdx values that have logos
       const logoMap = new Map<number, HTMLImageElement>();
       logosRef.current.forEach(({ img, dotIdx }) => { logoMap.set(dotIdx % dots.length, img); });
 
       dots.forEach((d) => {
         const logoImg = logoMap.get(d.dotIdx);
         if (logoImg && logoImg.complete && logoImg.naturalWidth > 0) {
-          const lr = 7;
+          const lr = 11;
           ctx.save(); ctx.beginPath(); ctx.arc(d.x, d.y, lr, 0, Math.PI * 2); ctx.clip();
           ctx.drawImage(logoImg, d.x - lr, d.y - lr, lr * 2, lr * 2); ctx.restore();
           ctx.beginPath(); ctx.arc(d.x, d.y, lr, 0, Math.PI * 2);
@@ -152,8 +140,9 @@ function HeroCanvas() {
 
     const onMove = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
-      mouse.x = e.clientX - rect.left; mouse.y = e.clientY - rect.top;
-      mouse.inside = mouse.x >= 0 && mouse.x <= canvas.width && mouse.y >= 0 && mouse.y <= canvas.height;
+      const x = e.clientX - rect.left; const y = e.clientY - rect.top;
+      mouse.x = x; mouse.y = y;
+      mouse.inside = x >= 0 && x <= canvas.width && y >= 0 && y <= canvas.height;
     };
     const onLeave = () => { mouse.inside = false; };
 
@@ -413,10 +402,9 @@ function Landing() {
       <section className="relative overflow-hidden bg-white">
         <HeroCanvas />
         <div className="relative z-10 mx-auto max-w-5xl px-6 pt-20 pb-28 text-center sb-fade-up">
-          <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-3.5 py-1.5 text-xs text-black/60 backdrop-blur-sm">
-            <span className="relative flex h-1.5 w-1.5"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" /><span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" /></span>
-            Free forever · No money involved
-          </div>
+          <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-black/30">
+            Free forever&nbsp;&nbsp;·&nbsp;&nbsp;No money, ever
+          </p>
           <h1 className="mt-8 text-5xl font-medium leading-[1.05] tracking-tight text-black md:text-7xl" style={{ fontFamily: "var(--font-display)" }}>
             Founders helping founders<br />get their <em className="italic">first</em> traffic.
           </h1>
