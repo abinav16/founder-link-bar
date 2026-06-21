@@ -71,11 +71,11 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 const inputCls = "w-full rounded-lg border border-black/12 bg-white px-4 py-3 text-sm text-black placeholder:text-black/25 outline-none ring-0 transition focus:border-black/30 focus:ring-2 focus:ring-black/8";
 
 function readInitialFromUrl() {
-  if (typeof window === "undefined") return { step: 1 as 1 | "payment" | 2, name: "", url: "", desc: "", paid: false, paymentId: "" };
+  if (typeof window === "undefined") return { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "" };
   const p = new URLSearchParams(window.location.search);
   if (p.get("paid") === "true") {
     return {
-      step: 2 as 1 | "payment" | 2,
+      step: 2 as 1 | 2,
       name: p.get("name") ?? "",
       url: p.get("url") ?? "",
       desc: p.get("desc") ?? "",
@@ -83,14 +83,14 @@ function readInitialFromUrl() {
       paymentId: p.get("payment_id") ?? "",
     };
   }
-  return { step: 1 as 1 | "payment" | 2, name: "", url: "", desc: "", paid: false, paymentId: "" };
+  return { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "" };
 }
 
 function Apply() {
   const navigate = useNavigate();
-  const initial = (typeof window !== "undefined" ? readInitialFromUrl() : { step: 1 as 1 | "payment" | 2, name: "", url: "", desc: "", paid: false, paymentId: "" });
+  const initial = (typeof window !== "undefined" ? readInitialFromUrl() : { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "" });
   const [authed, setAuthed] = useState<boolean | null>(null);
-  const [step, setStep] = useState<1 | "payment" | 2>(initial.step);
+  const [step, setStep] = useState<1 | 2>(initial.step);
   const [name, setName] = useState(initial.name);
   const [url, setUrl] = useState(initial.url);
   const [desc, setDesc] = useState(initial.desc);
@@ -103,6 +103,7 @@ function Apply() {
   const [hasPrepaid, setHasPrepaid] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [verifyingPayment, setVerifyingPayment] = useState(initial.paid && !!initial.paymentId);
+  const [autoSubmitPending, setAutoSubmitPending] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setAuthed(!!data.user));
@@ -124,7 +125,7 @@ function Apply() {
     });
   }, [authed]);
 
-  // Verify payment server-side once on return from Dodo, then clean URL.
+  // Verify payment server-side once on return from Dodo, then auto-submit.
   useEffect(() => {
     if (!initial.paid) return;
     if (!initial.paymentId) {
@@ -140,19 +141,19 @@ function Apply() {
       if (cancelled) return;
       if (error || !data?.ok) {
         toast.error("We couldn't verify your payment. Please contact support.");
-        setStep(1);
-      } else {
-        const { data: u } = await supabase.auth.getUser();
-        if (u.user) await refreshGateData(u.user.id);
+        setVerifyingPayment(false);
+        window.history.replaceState({}, "", "/apply");
+        return;
       }
+      const { data: u } = await supabase.auth.getUser();
+      if (u.user) await refreshGateData(u.user.id);
       window.history.replaceState({}, "", "/apply");
       setVerifyingPayment(false);
+      setAutoSubmitPending(true);
     })();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-
 
   const snippet = `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}"></script>`;
 
@@ -170,11 +171,7 @@ function Apply() {
       toast.error(parsed.error.issues[0]?.message ?? "Invalid input");
       return;
     }
-    if (existingCount >= 1 && !hasPrepaid) {
-      setStep("payment");
-    } else {
-      setStep(2);
-    }
+    setStep(2);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
