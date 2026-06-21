@@ -170,6 +170,7 @@ function AuthPage() {
       if (mode === "signup") {
         const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}/dashboard`, data: { full_name: name } } });
         if (error) throw error;
+        supabase.functions.invoke("send-email", { body: { type: "welcome", data: { email, name } } }).catch(() => {});
         toast.success("Account created — check your email to confirm."); setMode("signin");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
