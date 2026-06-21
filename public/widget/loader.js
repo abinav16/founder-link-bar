@@ -1,5 +1,6 @@
 (function () {
   try {
+    if (window !== window.top) return;
     var s = document.currentScript;
     var id = s && s.getAttribute('data-startup-id');
     if (!id) return;
