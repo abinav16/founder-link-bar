@@ -1,5 +1,5 @@
 import { createFileRoute, useSearch } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Info, X } from "lucide-react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +26,7 @@ function WidgetBar() {
   const [loaded, setLoaded] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     (async () => {
@@ -49,36 +50,17 @@ function WidgetBar() {
     })();
   }, [host]);
 
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+    const height = dismissed ? 0 : el.scrollHeight;
+    window.parent.postMessage({ type: "startupbar:resize", height }, "*");
+  }, [showInfo, dismissed, loaded]);
+
   if (!loaded || dismissed) return null;
 
-  if (loaded && !startup) {
-    return (
-      <div style={{ position: "relative", width: "100%" }}>
-        <div style={barStyle}>
-          <button onClick={() => setShowInfo(v => !v)} aria-label="What is this?" style={iconBtnStyle}>
-            <Info size={12} />
-          </button>
-          <a href="https://startupbar.co" target="_blank" rel="noopener noreferrer" style={labelStyle}>STARTUPBAR</a>
-          <span style={{ color: "#475569", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            Discover founder-built tools — join the free traffic exchange
-          </span>
-          <a href="https://startupbar.co" target="_blank" rel="noopener noreferrer"
-            style={{ flexShrink: 0, fontWeight: 500, color: "#0f172a", textDecoration: "none", fontSize: 12 }}>
-            Join free →
-          </a>
-          <button onClick={() => setDismissed(true)} aria-label="Dismiss" style={iconBtnStyle}>
-            <X size={11} />
-          </button>
-        </div>
-        {showInfo && <InfoPanel />}
-      </div>
-    );
-  }
-
-  const clickUrl = `/api/public/widget/click?id=${startup!.id}${host ? `&host=${host}` : ""}`;
-
   return (
-    <div style={{ position: "relative", width: "100%" }}>
+    <div ref={wrapperRef} style={{ position: "relative", width: "100%" }}>
       <div style={barStyle}>
         <button onClick={() => setShowInfo(v => !v)} aria-label="About StartupBar" style={iconBtnStyle}>
           <Info size={12} />
@@ -86,14 +68,35 @@ function WidgetBar() {
         <a href="https://startupbar.co" target="_blank" rel="noopener noreferrer" style={labelStyle}>
           STARTUPBAR
         </a>
-        <span style={{ fontWeight: 600, color: "#0f172a", flexShrink: 0 }}>{startup!.name}</span>
-        <span style={{ color: "#475569", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
-          &nbsp;— {startup!.description}
-        </span>
-        <a href={clickUrl} target="_top"
-          style={{ flexShrink: 0, fontWeight: 500, color: "#0f172a", textDecoration: "none", fontSize: 12 }}>
-          Visit →
-        </a>
+        {startup ? (
+          <>
+            <span style={{ fontWeight: 600, color: "#0f172a", flexShrink: 0 }}>{startup.name}</span>
+            <span style={{ color: "#475569", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+              &nbsp;— {startup.description}
+            </span>
+            <a
+              href={`/api/public/widget/click?id=${startup.id}${host ? `&host=${host}` : ""}`}
+              target="_top"
+              style={{ flexShrink: 0, fontWeight: 500, color: "#0f172a", textDecoration: "none", fontSize: 12 }}
+            >
+              Visit →
+            </a>
+          </>
+        ) : (
+          <>
+            <span style={{ color: "#475569", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              Discover founder-built tools — join the free traffic exchange
+            </span>
+            <a
+              href="https://startupbar.co"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ flexShrink: 0, fontWeight: 500, color: "#0f172a", textDecoration: "none", fontSize: 12 }}
+            >
+              Join free →
+            </a>
+          </>
+        )}
         <button onClick={() => setDismissed(true)} aria-label="Dismiss" style={iconBtnStyle}>
           <X size={11} />
         </button>
