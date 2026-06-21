@@ -14,12 +14,22 @@ interface Dot { angle: number; speed: number; radius: number; x: number; y: numb
 
 function ConstellationPanel() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const logosRef = useRef<HTMLImageElement[]>([]);
   useEffect(() => {
     const canvas = canvasRef.current; if (!canvas) return;
     const ctx = canvas.getContext("2d"); if (!ctx) return;
     let animId: number; const mouse = { x: -999, y: -999, inside: false }; let dots: Dot[] = [];
     const RINGS = [70, 130, 200, 280];
-    const init = () => { dots = []; const cx = canvas.width / 2; const cy = canvas.height / 2; RINGS.forEach((radius, ri) => { const count = 6 + ri * 4; for (let i = 0; i < count; i++) { const angle = (i / count) * Math.PI * 2; const speed = (0.0012 + Math.random() * 0.0008) * (Math.random() > 0.5 ? 1 : -1); dots.push({ angle, speed, radius, x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius, r: 1.5 + Math.random() * 1.5, ringIdx: ri }); } }); };
+    const init = () => { dots = []; const cx = canvas.width / 2; const cy = canvas.height / 2; RINGS.forEach((radius, ri) => { const count = 6 + ri * 4; for (let i = 0; i < count; i++) { const angle = (i / count) * Math.PI * 2; const speed = (0.0012 + Math.random() * 0.0008) * (Math.random() > 0.5 ? 1 : -1); dots.push({ angle, speed, radius, x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius, r: 8 + Math.random() * 3, ringIdx: ri, dotIdx: dots.length }); } }); };
+    supabase.from("startups").select("website_url").eq("status", "approved").then(({ data }) => {
+      if (!data || data.length === 0) return;
+      data.forEach((s, i) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.src = `https://www.google.com/s2/favicons?domain=${s.website_url}&sz=32`;
+        logosRef.current[i] = img;
+      });
+    });
     const resize = () => { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; init(); };
     const draw = () => {
       const cx = canvas.width / 2; const cy = canvas.height / 2;
