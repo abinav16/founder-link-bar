@@ -103,3 +103,39 @@
   }
   h1, h2, h3 { letter-spacing: -0.02em; }
 }
+
+@keyframes sb-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(40px, -30px) scale(1.1); }
+  66% { transform: translate(-30px, 40px) scale(0.95); }
+}
+@keyframes sb-drift-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-50px, 30px) scale(1.15); }
+}
+@keyframes sb-gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes sb-bar-cycle {
+  0%, 30% { opacity: 1; transform: translateY(0); }
+  35%, 40% { opacity: 0; transform: translateY(-6px); }
+  45%, 75% { opacity: 1; transform: translateY(0); }
+  80%, 85% { opacity: 0; transform: translateY(-6px); }
+  90%, 100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes sb-fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.sb-orb { position: absolute; border-radius: 9999px; filter: blur(80px); opacity: 0.55; pointer-events: none; }
+.sb-orb-a { animation: sb-drift 18s ease-in-out infinite; }
+.sb-orb-b { animation: sb-drift-2 22s ease-in-out infinite; }
+.sb-hero-bg {
+  background: linear-gradient(130deg, #0a0a0f 0%, #0d0a1f 35%, #140b2e 65%, #0a0a0f 100%);
+  background-size: 200% 200%;
+  animation: sb-gradient-shift 18s ease infinite;
+}
+.sb-fade-up { animation: sb-fade-up 0.8s ease-out both; }
+
