@@ -71,11 +71,11 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 const inputCls = "w-full rounded-lg border border-black/12 bg-white px-4 py-3 text-sm text-black placeholder:text-black/25 outline-none ring-0 transition focus:border-black/30 focus:ring-2 focus:ring-black/8";
 
 function readInitialFromUrl() {
-  if (typeof window === "undefined") return { step: 1 as 1 | "payment" | 2, name: "", url: "", desc: "", paid: false, paymentId: "" };
+  if (typeof window === "undefined") return { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "" };
   const p = new URLSearchParams(window.location.search);
   if (p.get("paid") === "true") {
     return {
-      step: 2 as 1 | "payment" | 2,
+      step: 2 as 1 | 2,
       name: p.get("name") ?? "",
       url: p.get("url") ?? "",
       desc: p.get("desc") ?? "",
@@ -83,14 +83,14 @@ function readInitialFromUrl() {
       paymentId: p.get("payment_id") ?? "",
     };
   }
-  return { step: 1 as 1 | "payment" | 2, name: "", url: "", desc: "", paid: false, paymentId: "" };
+  return { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "" };
 }
 
 function Apply() {
   const navigate = useNavigate();
-  const initial = (typeof window !== "undefined" ? readInitialFromUrl() : { step: 1 as 1 | "payment" | 2, name: "", url: "", desc: "", paid: false, paymentId: "" });
+  const initial = (typeof window !== "undefined" ? readInitialFromUrl() : { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "" });
   const [authed, setAuthed] = useState<boolean | null>(null);
-  const [step, setStep] = useState<1 | "payment" | 2>(initial.step);
+  const [step, setStep] = useState<1 | 2>(initial.step);
   const [name, setName] = useState(initial.name);
   const [url, setUrl] = useState(initial.url);
   const [desc, setDesc] = useState(initial.desc);
@@ -103,6 +103,7 @@ function Apply() {
   const [hasPrepaid, setHasPrepaid] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [verifyingPayment, setVerifyingPayment] = useState(initial.paid && !!initial.paymentId);
+  const [autoSubmitPending, setAutoSubmitPending] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setAuthed(!!data.user));
@@ -124,7 +125,7 @@ function Apply() {
     });
   }, [authed]);
 
-  // Verify payment server-side once on return from Dodo, then clean URL.
+  // Verify payment server-side once on return from Dodo, then auto-submit.
   useEffect(() => {
     if (!initial.paid) return;
     if (!initial.paymentId) {
@@ -140,19 +141,29 @@ function Apply() {
       if (cancelled) return;
       if (error || !data?.ok) {
         toast.error("We couldn't verify your payment. Please contact support.");
-        setStep(1);
-      } else {
-        const { data: u } = await supabase.auth.getUser();
-        if (u.user) await refreshGateData(u.user.id);
+        setVerifyingPayment(false);
+        window.history.replaceState({}, "", "/apply");
+        return;
       }
+      const { data: u } = await supabase.auth.getUser();
+      if (u.user) await refreshGateData(u.user.id);
       window.history.replaceState({}, "", "/apply");
       setVerifyingPayment(false);
+      setAutoSubmitPending(true);
     })();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-
+  // After payment is verified and gate data refreshed, auto-submit the application.
+  useEffect(() => {
+    if (!autoSubmitPending) return;
+    if (!hasPrepaid) return;
+    if (loading) return;
+    setAutoSubmitPending(false);
+    onSubmit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoSubmitPending, hasPrepaid]);
 
   const snippet = `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}"></script>`;
 
@@ -170,11 +181,7 @@ function Apply() {
       toast.error(parsed.error.issues[0]?.message ?? "Invalid input");
       return;
     }
-    if (existingCount >= 1 && !hasPrepaid) {
-      setStep("payment");
-    } else {
-      setStep(2);
-    }
+    setStep(2);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -233,7 +240,6 @@ function Apply() {
       if (consumeErr || !consumedId) {
         setLoading(false);
         toast.error("No prepaid listing available. Please complete payment.");
-        setStep("payment");
         return;
       }
     }
@@ -338,39 +344,6 @@ function Apply() {
         </div>
       )}
 
-      {step === "payment" && (
-        <div className="mx-auto max-w-lg px-4 py-16 text-center sm:px-6">
-          <button onClick={() => setStep(1)} className="mb-8 flex items-center gap-1.5 text-sm text-black/40 hover:text-black transition-colors mx-auto">
-            <ArrowLeft className="h-3.5 w-3.5" /> Back
-          </button>
-          <div className="rounded-2xl border border-black/8 bg-white p-8">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-black mx-auto">
-              <div className="h-2 w-6 rounded-sm bg-white" />
-            </div>
-            <h1 className="mt-5 text-2xl font-semibold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-              Add another startup
-            </h1>
-            <p className="mt-2 text-sm text-black/45">
-              Your first startup is free forever. Adding <strong className="text-black">{name}</strong> as an additional listing is a one-time $9.99 fee.
-            </p>
-            <div className="mt-6 rounded-xl border border-black/8 bg-black/[0.02] px-5 py-4 text-left">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-black">Additional startup listing</span>
-                <span className="text-sm font-semibold text-black">$9.99</span>
-              </div>
-              <p className="mt-0.5 text-xs text-black/40">One-time · No subscription · No recurring fees</p>
-            </div>
-            <button
-              onClick={handlePayment}
-              disabled={paymentLoading}
-              className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg bg-black py-3.5 text-sm font-medium text-white hover:bg-black/80 transition-all disabled:opacity-50"
-            >
-              {paymentLoading ? "Redirecting to payment…" : "Pay $9.99 and continue →"}
-            </button>
-            <p className="mt-3 text-xs text-black/30">Secure payment via Dodo Payments</p>
-          </div>
-        </div>
-      )}
 
       {step === 2 && (
 
@@ -436,15 +409,37 @@ function Apply() {
           </div>
 
           <div className="mt-8 space-y-3">
-            <button
-              onClick={onSubmit}
-              disabled={loading}
-              className="group flex w-full items-center justify-center gap-2 rounded-lg bg-black py-3.5 text-sm font-medium text-white transition-all hover:bg-black/80 disabled:opacity-50"
-            >
-              {loading ? "Submitting…" : <>Submit application <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" /></>}
-            </button>
+            {(() => {
+              const needsPayment = existingCount >= 1 && !hasPrepaid;
+              const verified = verifyStatus === "found";
+              const busy = loading || paymentLoading || verifyingPayment;
+              const disabled = !verified || busy;
+              const onClick = needsPayment ? handlePayment : onSubmit;
+              const label = verifyingPayment
+                ? "Verifying payment…"
+                : loading
+                ? "Submitting…"
+                : paymentLoading
+                ? "Redirecting to payment…"
+                : needsPayment
+                ? "Pay $9.99 & submit →"
+                : "Submit application";
+              return (
+                <button
+                  onClick={onClick}
+                  disabled={disabled}
+                  className="group flex w-full items-center justify-center gap-2 rounded-lg bg-black py-3.5 text-sm font-medium text-white transition-all hover:bg-black/80 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {label}
+                </button>
+              );
+            })()}
             <p className="text-center text-xs text-black/30">
-              {verifyStatus !== "found" ? "You can submit without verifying — we'll review within 24h." : "Script verified ✓ — you're all set."}
+              {verifyStatus !== "found"
+                ? "Install the script and verify it's live to continue."
+                : existingCount >= 1 && !hasPrepaid
+                ? "Script verified ✓ — one-time $9.99 for additional listings."
+                : "Script verified ✓ — you're all set."}
             </p>
           </div>
         </div>
