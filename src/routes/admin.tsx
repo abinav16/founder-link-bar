@@ -50,6 +50,18 @@ function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>("pending");
   const [updating, setUpdating] = useState<string | null>(null);
+  const [embed, setEmbed] = useState<Record<string, "checking" | "live" | "missing" | "error">>({});
+
+  async function checkEmbed(id: string, website: string) {
+    setEmbed((p) => ({ ...p, [id]: "checking" }));
+    try {
+      const r = await fetch(`/api/public/verify-install?url=${encodeURIComponent(website)}`);
+      const j = await r.json();
+      setEmbed((p) => ({ ...p, [id]: j.installed ? "live" : (j.error ? "error" : "missing") }));
+    } catch {
+      setEmbed((p) => ({ ...p, [id]: "error" }));
+    }
+  }
 
   async function load() {
     setLoading(true);
@@ -57,8 +69,11 @@ function AdminPage() {
       .from("startups")
       .select("*")
       .order("created_at", { ascending: false });
-    setStartups((data as Startup[]) ?? []);
+    const list = (data as Startup[]) ?? [];
+    setStartups(list);
     setLoading(false);
+    // Auto-check embed for approved startups
+    list.filter((s) => s.status === "approved" && s.website_url).forEach((s) => checkEmbed(s.id, s.website_url));
   }
 
   useEffect(() => { load(); }, []);
