@@ -34,7 +34,7 @@ serve(async (req) => {
         billing: { city: "", country: "US", state: "", street: "", zipcode: "" },
         customer: { email, name: name || email },
         payment_link: true,
-        product_cart: [{ product_id: "pdt_0NhWTstgLoJiLAByVyHaR", quantity: 1 }],
+        product_cart: [{ product_id: "pdt_0NhWYhoEbLJW16TY9Eicc", quantity: 1 }],
         return_url,
       }),
     });
