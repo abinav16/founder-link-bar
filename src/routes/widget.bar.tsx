@@ -141,7 +141,7 @@ function WidgetBar() {
     fontWeight: 700,
     letterSpacing: "0.05em",
     padding: "3px 6px",
-    borderRadius: 3,
+    borderRadius: "999px",
     textDecoration: "none",
     flexShrink: 0,
   };
