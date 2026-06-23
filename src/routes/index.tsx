@@ -43,7 +43,7 @@ function HeroCanvas() {
       if (!data || data.length === 0) return;
       logosRef.current = data.map((s, i) => {
         const img = new Image();
-        img.src = `https://www.google.com/s2/favicons?domain=${s.website_url}&sz=32`;
+        img.src = `https://www.google.com/s2/favicons?domain=${s.website_url}&sz=64`;
         return { img, dotIdx: i * 7 };
       });
     });
