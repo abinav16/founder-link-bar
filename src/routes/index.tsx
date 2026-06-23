@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Settings, LogOut, LayoutDashboard, Eye, MousePointerClick, Globe, BarChart2, Users, TrendingUp, Info, X } from "lucide-react";
+import { ArrowRight, Settings, LogOut, LayoutDashboard, Eye, MousePointerClick, Globe, BarChart2, Users, TrendingUp, Info, X, Trophy } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -580,7 +580,14 @@ function Landing() {
                   className="flex items-center gap-1.5 px-2 py-2 text-black/50 hover:text-black transition-colors sm:px-3"
                 >
                   <LayoutDashboard className="h-4 w-4" />
-                  <span className="hidden sm:inline">Dashboard</span>
+                  <span className="hidden sm:inline">Overview</span>
+                </Link>
+                <Link
+                  to="/leaderboard"
+                  className="flex items-center gap-1.5 px-2 py-2 text-black/50 hover:text-black transition-colors sm:px-3"
+                >
+                  <Trophy className="h-4 w-4" />
+                  <span className="hidden sm:inline">Leaderboard</span>
                 </Link>
                 <Link
                   to="/account"
@@ -601,8 +608,10 @@ function Landing() {
               </>
             ) : (
               <>
-                <Link to="/privacy" className="hidden sm:inline px-3 py-2 text-black/40 hover:text-black transition-colors text-[13px]">Privacy</Link>
-                <Link to="/terms" className="hidden sm:inline px-3 py-2 text-black/40 hover:text-black transition-colors text-[13px]">Terms</Link>
+                <Link to="/leaderboard" className="flex items-center gap-1.5 px-3 py-2 text-black/50 hover:text-black transition-colors text-[13px]">
+                  <Trophy className="h-4 w-4" />
+                  <span className="hidden sm:inline">Leaderboard</span>
+                </Link>
                 <Link to="/auth" className="px-3 py-2 text-black/50 hover:text-black transition-colors">Sign in</Link>
                 <Link to="/apply" className="inline-flex h-9 items-center rounded-md bg-black px-3 text-sm font-medium text-white hover:bg-black/80 transition-colors sm:px-4">
                   <span className="hidden sm:inline">Join the network</span>
