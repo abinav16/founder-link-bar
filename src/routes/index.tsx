@@ -62,8 +62,8 @@ function HeroCanvas() {
 
     const init = () => {
       dots = [];
-      const cx = canvas.width / 2;
-      const cy = canvas.height * 0.48;
+      const cx = canvas.offsetWidth / 2;
+      const cy = canvas.offsetHeight * 0.48;
       RINGS.forEach((radius, ri) => {
         const count = 8 + ri * 4;
         for (let i = 0; i < count; i++) {
@@ -74,16 +74,24 @@ function HeroCanvas() {
       });
     };
 
+    let lastCssW = 0, lastCssH = 0;
     const resize = () => {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-      init();
+      const dpr = window.devicePixelRatio || 1;
+      const cssW = canvas.offsetWidth;
+      const cssH = canvas.offsetHeight;
+      canvas.width = Math.round(cssW * dpr);
+      canvas.height = Math.round(cssH * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (cssW !== lastCssW || cssH !== lastCssH) {
+        lastCssW = cssW; lastCssH = cssH;
+        init();
+      }
     };
 
     const draw = () => {
-      const cx = canvas.width / 2;
-      const cy = canvas.height * 0.48;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const cx = canvas.offsetWidth / 2;
+      const cy = canvas.offsetHeight * 0.48;
+      ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
 
       RINGS.forEach((r) => {
         ctx.beginPath();
