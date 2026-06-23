@@ -108,8 +108,7 @@ function emailStartupApproved(name: string, startupName: string) {
       h1("You're live. 🎉") +
       p(`Hi ${first},`) +
       p(`<strong style="color:#000;">${startupName}</strong> has been approved and is now showing across the StartupBar network. Other founders' sites are already discovering your startup.`) +
-      p("To complete the exchange, install the embed script on your site — it takes one line of code and under a minute.") +
-      btn("Get your embed script", "https://startupbar.co/dashboard") +
+      p("Keep the embed code on your site as long as you'd like to be featured across the StartupBar network — if it's removed, your startup will stop being shown to other founders.") +
       sig()
     ),
   };
