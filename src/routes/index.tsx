@@ -514,15 +514,28 @@ function Landing() {
   const navigate = useNavigate();
   const [user, setUser] = useState<{ email?: string; name?: string } | null>(null);
   const [authReady, setAuthReady] = useState(false);
-  const [liveStartup, setLiveStartup] = useState<{ name: string; description: string } | null>(null);
+  const [liveStartups, setLiveStartups] = useState<Array<{ name: string; description: string }>>([]);
+  const [liveIndex, setLiveIndex] = useState(0);
   const [mockInfoOpen, setMockInfoOpen] = useState(false);
   const [mockDismissed, setMockDismissed] = useState(false);
+  const liveStartup = liveStartups[liveIndex] ?? null;
 
   useEffect(() => {
-    supabase.from("startups").select("name, description").eq("status", "approved").limit(1).maybeSingle().then(({ data }) => {
-      if (data) setLiveStartup(data);
+    supabase.from("startups").select("name, description").eq("status", "approved").then(({ data }) => {
+      if (data && data.length > 0) {
+        const shuffled = [...data].sort(() => Math.random() - 0.5);
+        setLiveStartups(shuffled);
+      }
     });
   }, []);
+
+  useEffect(() => {
+    if (liveStartups.length <= 1) return;
+    const id = setInterval(() => {
+      setLiveIndex(i => (i + 1) % liveStartups.length);
+    }, 3000);
+    return () => clearInterval(id);
+  }, [liveStartups.length]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
