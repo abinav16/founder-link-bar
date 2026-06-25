@@ -89,6 +89,12 @@ function RootShell({ children }: { children: ReactNode }) {
             `,
           }}
         />
+        <script
+          async
+          src="https://startupbar.co/widget/loader.js"
+          data-startup-id="0d2db708-f4e9-4b77-bd83-c446826c76b1"
+        />
+
       </head>
       <body>{children}<Scripts /></body>
     </html>
