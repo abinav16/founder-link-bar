@@ -73,7 +73,17 @@ function AdminPage() {
     try {
       const r = await fetch(`/api/public/verify-install?url=${encodeURIComponent(website)}`);
       const j = await r.json();
-      setEmbed((p) => ({ ...p, [id]: j.installed ? "live" : (j.error ? "error" : "missing") }));
+      const status: "live" | "missing" | "error" = j.installed ? "live" : (j.error ? "error" : "missing");
+      setEmbed((p) => ({ ...p, [id]: status }));
+      // Auto-clear warning if reinstalled
+      if (status === "live") {
+        const s = startups.find((x) => x.id === id);
+        if (s?.warn_expires_at) {
+          await supabase.from("startups").update({ warned_at: null, warn_expires_at: null }).eq("id", id);
+          setStartups((prev) => prev.map((x) => x.id === id ? { ...x, warned_at: null, warn_expires_at: null } : x));
+          toast.success("Reinstalled ✓ — warning cleared");
+        }
+      }
     } catch {
       setEmbed((p) => ({ ...p, [id]: "error" }));
     }
