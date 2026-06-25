@@ -122,6 +122,8 @@ export type Database = {
           status: Database["public"]["Enums"]["startup_status"]
           updated_at: string
           user_id: string
+          warn_expires_at: string | null
+          warned_at: string | null
           website_url: string
         }
         Insert: {
@@ -132,6 +134,8 @@ export type Database = {
           status?: Database["public"]["Enums"]["startup_status"]
           updated_at?: string
           user_id: string
+          warn_expires_at?: string | null
+          warned_at?: string | null
           website_url: string
         }
         Update: {
@@ -142,6 +146,8 @@ export type Database = {
           status?: Database["public"]["Enums"]["startup_status"]
           updated_at?: string
           user_id?: string
+          warn_expires_at?: string | null
+          warned_at?: string | null
           website_url?: string
         }
         Relationships: []
