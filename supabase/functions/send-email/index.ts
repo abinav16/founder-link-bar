@@ -131,6 +131,26 @@ function emailStartupRejected(name: string, startupName: string) {
   };
 }
 
+function emailStartupWarning(name: string, startupName: string, websiteUrl: string, startupId: string, deadlineText: string) {
+  const first = name?.split(" ")[0] || "there";
+  const snippet = `&lt;script async src=&quot;https://startupbar.co/widget/loader.js&quot; data-startup-id=&quot;${startupId}&quot;&gt;&lt;/script&gt;`;
+  return {
+    from: FROM_PERSONAL,
+    subject: `Action needed: reinstall StartupBar on ${startupName}`,
+    html: wrap(
+      "Your StartupBar embed is no longer detected on your site.",
+      h1("Quick action needed.") +
+      p(`Hi ${first},`) +
+      p(`We can no longer detect the StartupBar embed on <a href="${websiteUrl}" style="color:#000;">${websiteUrl}</a>. To keep <strong style="color:#000;">${startupName}</strong> live in the network and continue receiving traffic, please reinstall the snippet within <strong style="color:#000;">48 hours</strong> (by ${deadlineText}).`) +
+      p("Paste this just before the closing &lt;/head&gt; tag on your site:") +
+      `<pre style="margin:12px 0;padding:14px 16px;background:#0a0a0a;color:#e6e6e6;border-radius:8px;font-size:12px;line-height:1.55;overflow-x:auto;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;">${snippet}</pre>` +
+      p("If the snippet isn't reinstalled by then, your startup will be removed from the StartupBar network.") +
+      btn("Open dashboard", "https://startupbar.co/dashboard") +
+      sig()
+    ),
+  };
+}
+
 function emailTest(toEmail: string) {
   return {
     from: FROM_PERSONAL,
@@ -223,16 +243,22 @@ serve(async (req) => {
       const payload = emailAdminNewApplication(data.startupName, data.startupUrl, data.description, data.applicantEmail);
       await sendViaResend({ from: payload.from, to: payload.to, subject: payload.subject, html: payload.html });
       return new Response(JSON.stringify({ ok: true }), { headers: { ...cors, "Content-Type": "application/json" } });
-    } else if (type === "startup-approved" || type === "startup-rejected") {
-      const { data: startup } = await adminClient.from("startups").select("name, user_id").eq("id", data.startupId).single();
+    } else if (type === "startup-approved" || type === "startup-rejected" || type === "startup-warning") {
+      const { data: startup } = await adminClient.from("startups").select("name, user_id, website_url").eq("id", data.startupId).single();
       if (!startup) throw new Error("Startup not found");
       const { data: { user } } = await adminClient.auth.admin.getUserById(startup.user_id);
       if (!user) throw new Error("User not found");
       toEmail = user.email!;
       const userName = user.user_metadata?.full_name || user.email!.split("@")[0];
-      email = type === "startup-approved"
-        ? emailStartupApproved(userName, startup.name)
-        : emailStartupRejected(userName, startup.name);
+      if (type === "startup-approved") {
+        email = emailStartupApproved(userName, startup.name);
+      } else if (type === "startup-rejected") {
+        email = emailStartupRejected(userName, startup.name);
+      } else {
+        const deadline = new Date(Date.now() + 48 * 60 * 60 * 1000);
+        const deadlineText = deadline.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
+        email = emailStartupWarning(userName, startup.name, startup.website_url, data.startupId, deadlineText);
+      }
     } else {
       throw new Error(`Unknown type: ${type}`);
     }

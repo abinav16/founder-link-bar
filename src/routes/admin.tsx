@@ -33,9 +33,11 @@ interface Startup {
   status: "pending" | "approved" | "rejected";
   created_at: string;
   user_id: string;
+  warned_at: string | null;
+  warn_expires_at: string | null;
 }
 
-const STATUS_TABS = ["all", "pending", "approved", "rejected"] as const;
+const STATUS_TABS = ["all", "pending", "approved", "warned", "rejected"] as const;
 type Tab = typeof STATUS_TABS[number];
 
 const STATUS_STYLES = {
@@ -44,6 +46,14 @@ const STATUS_STYLES = {
   rejected: "bg-red-50    text-red-700    border-red-200",
 } as const;
 
+function formatRemaining(expiresAt: string, now: number): string {
+  const diff = new Date(expiresAt).getTime() - now;
+  if (diff <= 0) return "expired";
+  const h = Math.floor(diff / 3_600_000);
+  const m = Math.floor((diff % 3_600_000) / 60_000);
+  return `${h}h ${m}m left`;
+}
+
 function AdminPage() {
   const navigate = useNavigate();
   const [startups, setStartups] = useState<Startup[]>([]);
@@ -51,13 +61,29 @@ function AdminPage() {
   const [tab, setTab] = useState<Tab>("pending");
   const [updating, setUpdating] = useState<string | null>(null);
   const [embed, setEmbed] = useState<Record<string, "checking" | "live" | "missing" | "error">>({});
+  const [now, setNow] = useState<number>(() => Date.now());
+
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(t);
+  }, []);
 
   async function checkEmbed(id: string, website: string) {
     setEmbed((p) => ({ ...p, [id]: "checking" }));
     try {
       const r = await fetch(`/api/public/verify-install?url=${encodeURIComponent(website)}`);
       const j = await r.json();
-      setEmbed((p) => ({ ...p, [id]: j.installed ? "live" : (j.error ? "error" : "missing") }));
+      const status: "live" | "missing" | "error" = j.installed ? "live" : (j.error ? "error" : "missing");
+      setEmbed((p) => ({ ...p, [id]: status }));
+      // Auto-clear warning if reinstalled
+      if (status === "live") {
+        const s = startups.find((x) => x.id === id);
+        if (s?.warn_expires_at) {
+          await supabase.from("startups").update({ warned_at: null, warn_expires_at: null }).eq("id", id);
+          setStartups((prev) => prev.map((x) => x.id === id ? { ...x, warned_at: null, warn_expires_at: null } : x));
+          toast.success("Reinstalled ✓ — warning cleared");
+        }
+      }
     } catch {
       setEmbed((p) => ({ ...p, [id]: "error" }));
     }
@@ -91,16 +117,37 @@ function AdminPage() {
     setUpdating(null);
   }
 
+  async function warnStartup(s: Startup) {
+    if (!confirm(`Send 48h warning email to the founder of "${s.name}"?`)) return;
+    setUpdating(s.id);
+    const expires = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+    const warned = new Date().toISOString();
+    const { error } = await supabase.from("startups").update({ warned_at: warned, warn_expires_at: expires }).eq("id", s.id);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Warning sent — 48h countdown started");
+      setStartups((prev) => prev.map((x) => x.id === s.id ? { ...x, warned_at: warned, warn_expires_at: expires } : x));
+      supabase.functions.invoke("send-email", { body: { type: "startup-warning", data: { startupId: s.id } } }).catch(() => {});
+    }
+    setUpdating(null);
+  }
+
   async function signOut() {
     await supabase.auth.signOut();
     navigate({ to: "/" });
   }
 
-  const filtered = tab === "all" ? startups : startups.filter((s) => s.status === tab);
-  const counts = {
+  const isWarned = (s: Startup) => s.status === "approved" && !!s.warn_expires_at;
+  const filtered =
+    tab === "all" ? startups :
+    tab === "warned" ? startups.filter(isWarned) :
+    startups.filter((s) => s.status === tab);
+  const counts: Record<Tab, number> = {
     all: startups.length,
     pending: startups.filter((s) => s.status === "pending").length,
     approved: startups.filter((s) => s.status === "approved").length,
+    warned: startups.filter(isWarned).length,
     rejected: startups.filter((s) => s.status === "rejected").length,
   };
 
@@ -207,9 +254,24 @@ function AdminPage() {
                         <p className="line-clamp-2 text-sm text-black/60">{s.description}</p>
                       </td>
                       <td className="px-4 py-4 sm:px-5">
-                        <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${STATUS_STYLES[s.status]}`}>
-                          {s.status}
-                        </span>
+                        <div className="flex flex-col items-start gap-1">
+                          <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${STATUS_STYLES[s.status]}`}>
+                            {s.status}
+                          </span>
+                          {s.warn_expires_at && s.status === "approved" && (() => {
+                            const expired = new Date(s.warn_expires_at).getTime() <= now;
+                            return (
+                              <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${
+                                expired
+                                  ? "border-red-300 bg-red-100 text-red-700"
+                                  : "border-amber-200 bg-amber-50 text-amber-700"
+                              }`}>
+                                <Clock className="h-2.5 w-2.5" />
+                                {expired ? "Warning expired" : `Warned · ${formatRemaining(s.warn_expires_at, now)}`}
+                              </span>
+                            );
+                          })()}
+                        </div>
                       </td>
                       <td className="px-4 py-4 sm:px-5">
                         <button
@@ -244,6 +306,14 @@ function AdminPage() {
                       </td>
                       <td className="px-4 py-4 sm:px-5">
                         <div className="flex items-center justify-end gap-1.5">
+                          {s.status === "approved" && e !== "live" && !s.warn_expires_at && (
+                            <button onClick={() => warnStartup(s)} disabled={updating === s.id}
+                              title="Email founder a 48-hour reinstall warning"
+                              className="inline-flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-100 transition-colors disabled:opacity-50 sm:gap-1.5 sm:px-3">
+                              <Clock className="h-3.5 w-3.5" />
+                              <span className="hidden sm:inline">Warn 48h</span>
+                            </button>
+                          )}
                           {s.status !== "approved" && (
                             <button onClick={() => setStatus(s.id, "approved")} disabled={updating === s.id}
                               className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100 transition-colors disabled:opacity-50 sm:gap-1.5 sm:px-3">
@@ -251,13 +321,20 @@ function AdminPage() {
                               <span className="hidden sm:inline">Approve</span>
                             </button>
                           )}
-                          {s.status !== "rejected" && (
-                            <button onClick={() => setStatus(s.id, "rejected")} disabled={updating === s.id}
-                              className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50 sm:gap-1.5 sm:px-3">
-                              <X className="h-3.5 w-3.5" />
-                              <span className="hidden sm:inline">Reject</span>
-                            </button>
-                          )}
+                          {s.status !== "rejected" && (() => {
+                            const warnExpired = !!s.warn_expires_at && new Date(s.warn_expires_at).getTime() <= now;
+                            return (
+                              <button onClick={() => setStatus(s.id, "rejected")} disabled={updating === s.id}
+                                className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors disabled:opacity-50 sm:gap-1.5 sm:px-3 ${
+                                  warnExpired
+                                    ? "border-red-400 bg-red-100 text-red-700 hover:bg-red-200 ring-1 ring-red-300"
+                                    : "border-red-200 bg-red-50 text-red-600 hover:bg-red-100"
+                                }`}>
+                                <X className="h-3.5 w-3.5" />
+                                <span className="hidden sm:inline">Reject</span>
+                              </button>
+                            );
+                          })()}
                         </div>
                       </td>
                     </tr>
