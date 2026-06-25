@@ -254,9 +254,24 @@ function AdminPage() {
                         <p className="line-clamp-2 text-sm text-black/60">{s.description}</p>
                       </td>
                       <td className="px-4 py-4 sm:px-5">
-                        <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${STATUS_STYLES[s.status]}`}>
-                          {s.status}
-                        </span>
+                        <div className="flex flex-col items-start gap-1">
+                          <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${STATUS_STYLES[s.status]}`}>
+                            {s.status}
+                          </span>
+                          {s.warn_expires_at && s.status === "approved" && (() => {
+                            const expired = new Date(s.warn_expires_at).getTime() <= now;
+                            return (
+                              <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${
+                                expired
+                                  ? "border-red-300 bg-red-100 text-red-700"
+                                  : "border-amber-200 bg-amber-50 text-amber-700"
+                              }`}>
+                                <Clock className="h-2.5 w-2.5" />
+                                {expired ? "Warning expired" : `Warned · ${formatRemaining(s.warn_expires_at, now)}`}
+                              </span>
+                            );
+                          })()}
+                        </div>
                       </td>
                       <td className="px-4 py-4 sm:px-5">
                         <button
