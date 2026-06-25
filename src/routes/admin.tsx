@@ -61,6 +61,12 @@ function AdminPage() {
   const [tab, setTab] = useState<Tab>("pending");
   const [updating, setUpdating] = useState<string | null>(null);
   const [embed, setEmbed] = useState<Record<string, "checking" | "live" | "missing" | "error">>({});
+  const [now, setNow] = useState<number>(() => Date.now());
+
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(t);
+  }, []);
 
   async function checkEmbed(id: string, website: string) {
     setEmbed((p) => ({ ...p, [id]: "checking" }));
