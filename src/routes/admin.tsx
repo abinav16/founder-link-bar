@@ -306,6 +306,14 @@ function AdminPage() {
                       </td>
                       <td className="px-4 py-4 sm:px-5">
                         <div className="flex items-center justify-end gap-1.5">
+                          {s.status === "approved" && e !== "live" && !s.warn_expires_at && (
+                            <button onClick={() => warnStartup(s)} disabled={updating === s.id}
+                              title="Email founder a 48-hour reinstall warning"
+                              className="inline-flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-100 transition-colors disabled:opacity-50 sm:gap-1.5 sm:px-3">
+                              <Clock className="h-3.5 w-3.5" />
+                              <span className="hidden sm:inline">Warn 48h</span>
+                            </button>
+                          )}
                           {s.status !== "approved" && (
                             <button onClick={() => setStatus(s.id, "approved")} disabled={updating === s.id}
                               className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100 transition-colors disabled:opacity-50 sm:gap-1.5 sm:px-3">
@@ -313,13 +321,20 @@ function AdminPage() {
                               <span className="hidden sm:inline">Approve</span>
                             </button>
                           )}
-                          {s.status !== "rejected" && (
-                            <button onClick={() => setStatus(s.id, "rejected")} disabled={updating === s.id}
-                              className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50 sm:gap-1.5 sm:px-3">
-                              <X className="h-3.5 w-3.5" />
-                              <span className="hidden sm:inline">Reject</span>
-                            </button>
-                          )}
+                          {s.status !== "rejected" && (() => {
+                            const warnExpired = !!s.warn_expires_at && new Date(s.warn_expires_at).getTime() <= now;
+                            return (
+                              <button onClick={() => setStatus(s.id, "rejected")} disabled={updating === s.id}
+                                className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors disabled:opacity-50 sm:gap-1.5 sm:px-3 ${
+                                  warnExpired
+                                    ? "border-red-400 bg-red-100 text-red-700 hover:bg-red-200 ring-1 ring-red-300"
+                                    : "border-red-200 bg-red-50 text-red-600 hover:bg-red-100"
+                                }`}>
+                                <X className="h-3.5 w-3.5" />
+                                <span className="hidden sm:inline">Reject</span>
+                              </button>
+                            );
+                          })()}
                         </div>
                       </td>
                     </tr>
