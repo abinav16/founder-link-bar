@@ -243,16 +243,22 @@ serve(async (req) => {
       const payload = emailAdminNewApplication(data.startupName, data.startupUrl, data.description, data.applicantEmail);
       await sendViaResend({ from: payload.from, to: payload.to, subject: payload.subject, html: payload.html });
       return new Response(JSON.stringify({ ok: true }), { headers: { ...cors, "Content-Type": "application/json" } });
-    } else if (type === "startup-approved" || type === "startup-rejected") {
-      const { data: startup } = await adminClient.from("startups").select("name, user_id").eq("id", data.startupId).single();
+    } else if (type === "startup-approved" || type === "startup-rejected" || type === "startup-warning") {
+      const { data: startup } = await adminClient.from("startups").select("name, user_id, website_url").eq("id", data.startupId).single();
       if (!startup) throw new Error("Startup not found");
       const { data: { user } } = await adminClient.auth.admin.getUserById(startup.user_id);
       if (!user) throw new Error("User not found");
       toEmail = user.email!;
       const userName = user.user_metadata?.full_name || user.email!.split("@")[0];
-      email = type === "startup-approved"
-        ? emailStartupApproved(userName, startup.name)
-        : emailStartupRejected(userName, startup.name);
+      if (type === "startup-approved") {
+        email = emailStartupApproved(userName, startup.name);
+      } else if (type === "startup-rejected") {
+        email = emailStartupRejected(userName, startup.name);
+      } else {
+        const deadline = new Date(Date.now() + 48 * 60 * 60 * 1000);
+        const deadlineText = deadline.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
+        email = emailStartupWarning(userName, startup.name, startup.website_url, data.startupId, deadlineText);
+      }
     } else {
       throw new Error(`Unknown type: ${type}`);
     }
