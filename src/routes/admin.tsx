@@ -117,16 +117,37 @@ function AdminPage() {
     setUpdating(null);
   }
 
+  async function warnStartup(s: Startup) {
+    if (!confirm(`Send 48h warning email to the founder of "${s.name}"?`)) return;
+    setUpdating(s.id);
+    const expires = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+    const warned = new Date().toISOString();
+    const { error } = await supabase.from("startups").update({ warned_at: warned, warn_expires_at: expires }).eq("id", s.id);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Warning sent — 48h countdown started");
+      setStartups((prev) => prev.map((x) => x.id === s.id ? { ...x, warned_at: warned, warn_expires_at: expires } : x));
+      supabase.functions.invoke("send-email", { body: { type: "startup-warning", data: { startupId: s.id } } }).catch(() => {});
+    }
+    setUpdating(null);
+  }
+
   async function signOut() {
     await supabase.auth.signOut();
     navigate({ to: "/" });
   }
 
-  const filtered = tab === "all" ? startups : startups.filter((s) => s.status === tab);
-  const counts = {
+  const isWarned = (s: Startup) => s.status === "approved" && !!s.warn_expires_at;
+  const filtered =
+    tab === "all" ? startups :
+    tab === "warned" ? startups.filter(isWarned) :
+    startups.filter((s) => s.status === tab);
+  const counts: Record<Tab, number> = {
     all: startups.length,
     pending: startups.filter((s) => s.status === "pending").length,
     approved: startups.filter((s) => s.status === "approved").length,
+    warned: startups.filter(isWarned).length,
     rejected: startups.filter((s) => s.status === "rejected").length,
   };
 
