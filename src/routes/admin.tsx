@@ -33,9 +33,11 @@ interface Startup {
   status: "pending" | "approved" | "rejected";
   created_at: string;
   user_id: string;
+  warned_at: string | null;
+  warn_expires_at: string | null;
 }
 
-const STATUS_TABS = ["all", "pending", "approved", "rejected"] as const;
+const STATUS_TABS = ["all", "pending", "approved", "warned", "rejected"] as const;
 type Tab = typeof STATUS_TABS[number];
 
 const STATUS_STYLES = {
@@ -43,6 +45,14 @@ const STATUS_STYLES = {
   approved: "bg-emerald-50 text-emerald-700 border-emerald-200",
   rejected: "bg-red-50    text-red-700    border-red-200",
 } as const;
+
+function formatRemaining(expiresAt: string, now: number): string {
+  const diff = new Date(expiresAt).getTime() - now;
+  if (diff <= 0) return "expired";
+  const h = Math.floor(diff / 3_600_000);
+  const m = Math.floor((diff % 3_600_000) / 60_000);
+  return `${h}h ${m}m left`;
+}
 
 function AdminPage() {
   const navigate = useNavigate();
