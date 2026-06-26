@@ -51,3 +51,33 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
 
   return { rowsByReceived, rowsByGiven };
 });
+
+export interface NetworkActivityResult {
+  todayImpressions: number;
+  todayClicks: number;
+  yesterdayImpressions: number;
+  yesterdayClicks: number;
+}
+
+export const getNetworkActivity = createServerFn({ method: "GET" }).handler(async (): Promise<NetworkActivityResult> => {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  const todayStart = new Date();
+  todayStart.setUTCHours(0, 0, 0, 0);
+  const yesterdayStart = new Date(todayStart);
+  yesterdayStart.setUTCDate(yesterdayStart.getUTCDate() - 1);
+
+  const [ti, tc, yi, yc] = await Promise.all([
+    supabaseAdmin.from("impressions").select("*", { count: "exact", head: true }).gte("created_at", todayStart.toISOString()),
+    supabaseAdmin.from("clicks").select("*", { count: "exact", head: true }).gte("created_at", todayStart.toISOString()),
+    supabaseAdmin.from("impressions").select("*", { count: "exact", head: true }).gte("created_at", yesterdayStart.toISOString()).lt("created_at", todayStart.toISOString()),
+    supabaseAdmin.from("clicks").select("*", { count: "exact", head: true }).gte("created_at", yesterdayStart.toISOString()).lt("created_at", todayStart.toISOString()),
+  ]);
+
+  return {
+    todayImpressions: ti.count ?? 0,
+    todayClicks: tc.count ?? 0,
+    yesterdayImpressions: yi.count ?? 0,
+    yesterdayClicks: yc.count ?? 0,
+  };
+});

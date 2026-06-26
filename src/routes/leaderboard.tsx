@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import type { User } from "@supabase/supabase-js";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { getLeaderboard, type LeaderboardRow } from "@/lib/leaderboard.functions";
+import { getLeaderboard, getNetworkActivity, type LeaderboardRow } from "@/lib/leaderboard.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Trophy, ExternalLink } from "lucide-react";
 
@@ -23,6 +23,7 @@ interface NetworkActivity {
 
 function LeaderboardPage() {
   const fetchLeaderboard = useServerFn(getLeaderboard);
+  const fetchNetworkActivity = useServerFn(getNetworkActivity);
   const [rowsByReceived, setRowsByReceived] = useState<LeaderboardRow[]>([]);
   const [rowsByGiven, setRowsByGiven] = useState<LeaderboardRow[]>([]);
   const [tab, setTab] = useState<"received" | "given">("received");
@@ -71,33 +72,16 @@ function LeaderboardPage() {
   }, []);
 
   useEffect(() => {
-    async function loadActivity() {
-      const todayStart = new Date();
-      todayStart.setUTCHours(0, 0, 0, 0);
-      const yesterdayStart = new Date(todayStart);
-      yesterdayStart.setUTCDate(yesterdayStart.getUTCDate() - 1);
+    (async () => {
+      try {
+        const data = await fetchNetworkActivity();
+        setActivity(data);
+      } catch (e) {
+        console.error("network activity load failed", e);
+      }
+    })();
+  }, [fetchNetworkActivity]);
 
-      const [
-        { count: todayImpressions },
-        { count: todayClicks },
-        { count: yesterdayImpressions },
-        { count: yesterdayClicks },
-      ] = await Promise.all([
-        supabase.from("impressions").select("*", { count: "exact", head: true }).gte("created_at", todayStart.toISOString()),
-        supabase.from("clicks").select("*", { count: "exact", head: true }).gte("created_at", todayStart.toISOString()),
-        supabase.from("impressions").select("*", { count: "exact", head: true }).gte("created_at", yesterdayStart.toISOString()).lt("created_at", todayStart.toISOString()),
-        supabase.from("clicks").select("*", { count: "exact", head: true }).gte("created_at", yesterdayStart.toISOString()).lt("created_at", todayStart.toISOString()),
-      ]);
-
-      setActivity({
-        todayImpressions: todayImpressions ?? 0,
-        todayClicks: todayClicks ?? 0,
-        yesterdayImpressions: yesterdayImpressions ?? 0,
-        yesterdayClicks: yesterdayClicks ?? 0,
-      });
-    }
-    loadActivity();
-  }, []);
 
   const ctr = (row: LeaderboardRow) =>
     row.impressions > 0 ? ((row.clicks / row.impressions) * 100).toFixed(1) + "%" : "—";
