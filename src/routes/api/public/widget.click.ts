@@ -14,7 +14,11 @@ export const Route = createFileRoute("/api/public/widget/click")({
         const { data: s } = await supabase.from("startups").select("website_url, status").eq("id", id).maybeSingle();
         if (!s || s.status !== "approved") return new Response("Not found", { status: 404 });
         await supabase.from("clicks").insert({ shown_startup_id: id, host_startup_id: host ?? null });
-        return new Response(null, { status: 302, headers: { Location: s.website_url, "Cache-Control": "no-store" } });
+        const dest = new URL(s.website_url);
+        dest.searchParams.set("utm_source", "startupbar");
+        dest.searchParams.set("utm_medium", "bar");
+        dest.searchParams.set("utm_campaign", "network");
+        return new Response(null, { status: 302, headers: { Location: dest.toString(), "Cache-Control": "no-store" } });
       },
     },
   },
