@@ -203,15 +203,6 @@ function DashboardPage() {
     setChartData(counts);
   }
 
-    const counts = [0, 0, 0, 0, 0, 0, 0];
-    (dailyImps ?? []).forEach((row) => {
-      const d = new Date(row.created_at);
-      const dayOfWeek = (d.getDay() + 6) % 7;
-      counts[dayOfWeek] = (counts[dayOfWeek] ?? 0) + 1;
-    });
-    setChartData(counts);
-  }
-
   async function loadRank(startupId: string) {
     const { data: allImps } = await supabase.from("impressions").select("shown_startup_id");
     const countPerStartup = new Map<string, number>();
