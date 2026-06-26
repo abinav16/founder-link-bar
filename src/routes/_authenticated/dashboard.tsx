@@ -122,6 +122,7 @@ function DashboardPage() {
         } catch {/* ignore */}
         checkInstall(data.website_url);
         loadDailyImpressions(data.id);
+        loadRank(data.id);
       }
       setLoading(false);
 
