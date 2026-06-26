@@ -343,7 +343,7 @@ function DashboardPage() {
                 <span className="text-xs text-black/30">This week</span>
               </div>
               <div className="mt-6">
-                <Sparkline data={chartData} />
+                <Sparkline data={chartData} labels={rollingLabels()} />
               </div>
             </div>
 
