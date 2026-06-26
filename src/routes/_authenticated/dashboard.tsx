@@ -190,6 +190,17 @@ function DashboardPage() {
     setChartData(counts);
   }
 
+  async function loadRank(startupId: string) {
+    const { data: allImps } = await supabase.from("impressions").select("shown_startup_id");
+    const countPerStartup = new Map<string, number>();
+    (allImps ?? []).forEach((r: { shown_startup_id: string }) => {
+      countPerStartup.set(r.shown_startup_id, (countPerStartup.get(r.shown_startup_id) ?? 0) + 1);
+    });
+    const myCount = countPerStartup.get(startupId) ?? 0;
+    const r = [...countPerStartup.values()].filter((c) => c > myCount).length + 1;
+    setRank(r);
+  }
+
   async function switchStartup(s: Startup) {
     setSwitcherOpen(false);
     setStartup(s);
