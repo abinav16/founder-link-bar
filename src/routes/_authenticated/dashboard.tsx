@@ -91,6 +91,7 @@ function DashboardPage() {
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [installStatus, setInstallStatus] = useState<"checking" | "live" | "disconnected" | "unknown">("unknown");
   const [chartData, setChartData] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
+  const [rank, setRank] = useState<number | null>(null);
 
   useEffect(() => {
     let userId: string | null = null;
