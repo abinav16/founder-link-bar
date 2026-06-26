@@ -222,10 +222,13 @@ function LeaderboardPage() {
                 </div>
               </div>
 
-              <div className="lg:col-span-1">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-black/30 mb-3">Network Activity</p>
-                <div className="rounded-xl border border-black/8 bg-white p-4 h-full flex flex-col gap-3">
-                  <div className="grid grid-cols-2 gap-2 flex-1">
+              <div className="lg:col-span-1 flex flex-col">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-black/30">Network Activity</p>
+                  <p className="text-[10px] text-black/35 text-right whitespace-nowrap">Resets 5:30 AM IST</p>
+                </div>
+                <div className="rounded-xl border border-black/8 bg-white p-3 flex-1 flex flex-col">
+                  <div className="grid grid-cols-2 gap-2 flex-1 min-h-0">
                     {/* Yesterday Impressions */}
                     <div className="rounded-lg bg-black/[0.03] p-2.5 flex flex-col justify-between">
                       <div className="flex items-center gap-1">
@@ -285,8 +288,6 @@ function LeaderboardPage() {
                       </div>
                     </div>
                   </div>
-
-                  <p className="text-[10px] text-black/40 text-center">Resets at midnight UTC · 5:30 AM IST</p>
                 </div>
 
               </div>
