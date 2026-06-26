@@ -189,6 +189,19 @@ function DashboardPage() {
       .select("created_at")
       .eq("shown_startup_id", startupId)
       .gte("created_at", since.toISOString());
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const counts = [0, 0, 0, 0, 0, 0, 0];
+    (dailyImps ?? []).forEach((row) => {
+      const d = new Date(row.created_at);
+      d.setHours(0, 0, 0, 0);
+      const diffDays = Math.round((today.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
+      if (diffDays >= 0 && diffDays <= 6) {
+        counts[6 - diffDays] = (counts[6 - diffDays] ?? 0) + 1;
+      }
+    });
+    setChartData(counts);
+  }
 
     const counts = [0, 0, 0, 0, 0, 0, 0];
     (dailyImps ?? []).forEach((row) => {
