@@ -120,6 +120,7 @@ function DashboardPage() {
           if (res.ok) setCurrent(await res.json());
         } catch {/* ignore */}
         checkInstall(data.website_url);
+        loadDailyImpressions(data.id);
       }
       setLoading(false);
 
