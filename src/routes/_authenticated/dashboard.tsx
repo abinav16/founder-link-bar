@@ -50,30 +50,38 @@ function StatCard({ icon: Icon, label, value, sub, accent }: {
   );
 }
 
-function Sparkline({ data }: { data: number[] }) {
+function rollingLabels(): string[] {
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const today = new Date();
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today);
+    d.setDate(today.getDate() - (6 - i));
+    return dayNames[d.getDay()];
+  });
+}
+
+function Sparkline({ data, labels }: { data: number[]; labels: string[] }) {
   const max = Math.max(...data, 1);
-  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-  const [hover, setHover] = useState<number | null>(null);
+  const [tooltip, setTooltip] = useState<{ idx: number } | null>(null);
   return (
     <div className="flex h-20 items-end gap-2">
       {data.map((v, i) => (
         <div
           key={i}
-          className="relative flex flex-1 flex-col items-center gap-1.5"
-          onMouseEnter={() => setHover(i)}
-          onMouseLeave={() => setHover(null)}
+          className="flex flex-1 flex-col items-center gap-1.5 relative"
+          onMouseEnter={() => setTooltip({ idx: i })}
+          onMouseLeave={() => setTooltip(null)}
         >
-          {hover === i && (
-            <div className="absolute -top-10 z-10 whitespace-nowrap rounded-md bg-black px-2 py-1 text-[10px] font-medium text-white shadow-md">
-              {v} {v === 1 ? "impression" : "impressions"} · {dayNames[i]}
+          {tooltip?.idx === i && (
+            <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-black px-2 py-1 text-[10px] font-medium text-white z-10">
+              {v} impression{v !== 1 ? "s" : ""} · {labels[i]}
             </div>
           )}
           <div
             className="w-full rounded-t-sm bg-black transition-all duration-500"
             style={{ height: `${Math.max((v / max) * 64, v > 0 ? 4 : 2)}px`, opacity: v > 0 ? 1 : 0.12 }}
           />
-          <span className="text-[9px] text-black/25">{days[i]}</span>
+          <span className="text-[9px] text-black/25">{labels[i]}</span>
         </div>
       ))}
     </div>
