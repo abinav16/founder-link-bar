@@ -194,7 +194,7 @@ function DashboardPage() {
     ? ((stats.clicks / stats.impressions) * 100).toFixed(1)
     : "0.0";
 
-  const chartData = [0, 0, 0, 0, 0, 0, stats.impressions];
+  
 
   function copy() {
     navigator.clipboard.writeText(snippet);
