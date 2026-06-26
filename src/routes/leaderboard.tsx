@@ -156,7 +156,7 @@ function LeaderboardPage() {
       ) : (
         <>
           {podium.length > 0 && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
               <div className="lg:col-span-2">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-black/30 mb-3">Top 3</p>
                 <div className="grid grid-cols-3 gap-3 items-end">
@@ -224,7 +224,7 @@ function LeaderboardPage() {
 
               <div className="lg:col-span-1">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-black/30 mb-3">Network Activity</p>
-                <div className="rounded-xl border border-black/8 bg-white p-4 h-full flex flex-col gap-4">
+                <div className="rounded-xl border border-black/8 bg-white p-5 h-full flex flex-col justify-between">
                   <div>
                     <div className="flex items-center gap-1.5 mb-3">
                       <div className="h-1.5 w-1.5 rounded-full bg-black/20" />
@@ -279,7 +279,7 @@ function LeaderboardPage() {
           )}
 
 
-          <div className="mt-8 space-y-2">
+          <div className="mt-6 space-y-2">
 
             {activeRows.map((row, i) => {
               const maxVal = activeRows[0] ? primaryMetric(activeRows[0]) : 1;
