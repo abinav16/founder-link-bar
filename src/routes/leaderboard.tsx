@@ -30,6 +30,7 @@ function LeaderboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [activity, setActivity] = useState<NetworkActivity | null>(null);
 
   useEffect(() => {
     (async () => {
