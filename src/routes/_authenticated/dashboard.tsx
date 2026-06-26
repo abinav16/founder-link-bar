@@ -91,6 +91,7 @@ function DashboardPage() {
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [installStatus, setInstallStatus] = useState<"checking" | "live" | "disconnected" | "unknown">("unknown");
   const [chartData, setChartData] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
+  const [rank, setRank] = useState<number | null>(null);
 
   useEffect(() => {
     let userId: string | null = null;
@@ -121,6 +122,7 @@ function DashboardPage() {
         } catch {/* ignore */}
         checkInstall(data.website_url);
         loadDailyImpressions(data.id);
+        loadRank(data.id);
       }
       setLoading(false);
 
@@ -189,6 +191,17 @@ function DashboardPage() {
     setChartData(counts);
   }
 
+  async function loadRank(startupId: string) {
+    const { data: allImps } = await supabase.from("impressions").select("shown_startup_id");
+    const countPerStartup = new Map<string, number>();
+    (allImps ?? []).forEach((r: { shown_startup_id: string }) => {
+      countPerStartup.set(r.shown_startup_id, (countPerStartup.get(r.shown_startup_id) ?? 0) + 1);
+    });
+    const myCount = countPerStartup.get(startupId) ?? 0;
+    const r = [...countPerStartup.values()].filter((c) => c > myCount).length + 1;
+    setRank(r);
+  }
+
   async function switchStartup(s: Startup) {
     setSwitcherOpen(false);
     setStartup(s);
@@ -197,6 +210,7 @@ function DashboardPage() {
     setChartData([0, 0, 0, 0, 0, 0, 0]);
     checkInstall(s.website_url);
     loadDailyImpressions(s.id);
+    loadRank(s.id);
     const [{ count: imp }, { count: clk }] = await Promise.all([
       supabase.from("impressions").select("*", { count: "exact", head: true }).eq("shown_startup_id", s.id),
       supabase.from("clicks").select("*", { count: "exact", head: true }).eq("shown_startup_id", s.id),
@@ -308,7 +322,7 @@ function DashboardPage() {
               <StatCard icon={BarChart2} label="Impressions" value={stats.impressions.toLocaleString()} sub="Times shown on the network" />
               <StatCard icon={MousePointerClick} label="Clicks" value={stats.clicks.toLocaleString()} sub="Visits driven to your site" />
               <StatCard icon={Percent} label="CTR" value={`${ctr}%`} sub="Click-through rate" />
-              <StatCard icon={BarChart2} label="Rank" value="—" sub="Coming soon" />
+              <StatCard icon={BarChart2} label="Rank" value={rank ? `#${rank}` : "—"} sub="By impressions" />
             </div>
 
             <div className="rounded-xl border border-black/8 bg-white p-6">
