@@ -1,48 +1,37 @@
-## Goal
+## Fix Network Activity panel height & redesign
 
-Give admin a soft step before rejection: send a warning email to the founder telling them they have 48 hours to reinstall the snippet, start a visible 48h countdown on the admin row, and surface clearly when the window expires so you can reject and remove them from the network.
+The right panel currently stretches taller than the podium because `items-stretch` lets it expand to its content. Goal: cap it at the podium's natural height and tighten the layout.
 
-## 1. Database
+### Changes to `src/routes/leaderboard.tsx` (right panel only)
 
-New migration adds two columns to `public.startups`:
+1. **Outer grid**: keep `items-stretch` so columns share height — but the podium drives height (since the right panel will become more compact).
 
-- `warned_at timestamptz` — when the warning was sent
-- `warn_expires_at timestamptz` — `warned_at + 48 hours`
+2. **Redesign the Network Activity card** into a tighter 2×2 stat matrix instead of stacked Yesterday / Today sections:
 
-RLS: admin email already has full update access via the existing admin policy, so no new policy needed. The `prevent_user_status_change` trigger only blocks `status` changes, so these new columns are safe for the admin to write.
+   ```
+   ┌─────────────────────────────┐
+   │ NETWORK ACTIVITY            │
+   ├──────────────┬──────────────┤
+   │ YESTERDAY    │ YESTERDAY    │
+   │ 38           │ 1            │
+   │ impressions  │ clicks       │
+   ├──────────────┼──────────────┤
+   │ ● TODAY      │ ● TODAY      │
+   │ 44           │ 1            │
+   │ impressions  │ clicks       │
+   │   (black bg) │   (black bg) │
+   ├──────────────┴──────────────┤
+   │ Resets at midnight UTC      │
+   └─────────────────────────────┘
+   ```
 
-## 2. Email template
+   - Inner card: `p-4 h-full flex flex-col gap-3` (replace current `p-5 justify-between`)
+   - Replace the two big stacked stat-pair blocks with a single `grid grid-cols-2 gap-2` containing 4 compact stat tiles
+   - Each tile: `rounded-lg p-2.5`, label `text-[9px] uppercase tracking-wider`, number `text-xl font-bold`, sub-label `text-[10px]`
+   - Today tiles: black bg + white text + tiny pulsing dot on the label
+   - Yesterday tiles: `bg-black/[0.03]` + black text
+   - Footer caption stays at bottom: `text-[10px] text-black/40`
 
-In `supabase/functions/send-email/index.ts` add `emailStartupWarning(name, startupName, deadlineText)`:
+3. **Result**: panel height drops to ~podium height (~280–300px) instead of overflowing, while still showing all 4 metrics + the reset note.
 
-- From: `FROM_PERSONAL` (founder can reply)
-- Subject: `Action needed: reinstall StartupBar on {startupName}`
-- Body: friendly note that the embed snippet is no longer detected on their site, they have **48 hours** (until `{deadlineText}`) to reinstall it or their startup will be removed from the network. Includes the snippet block and a "Go to dashboard" CTA.
-
-Add `type === "startup-warning"` branch in the `serve` handler that looks up the founder's email the same way `startup-approved`/`startup-rejected` already do.
-
-## 3. Admin UI (`src/routes/admin.tsx`)
-
-In the Approved tab row actions:
-
-- New **Warn** button (yellow/outline) next to Reject, only enabled when `embed_status !== "live"` and there is no active warning.
-- On click: confirm dialog → update startup with `warned_at = now()`, `warn_expires_at = now() + 48h` → invoke `send-email` with `type: "startup-warning"` → toast.
-- Replace the button with a live countdown chip `Warned · 41h 12m left` (recomputed every minute via a small `useEffect` interval).
-- When `warn_expires_at < now()`: chip turns red `Warning expired — safe to reject`, and the **Reject** button gets a subtle highlight. Reject flow itself is unchanged (still one click, still sends the rejection email).
-- Add a new top-level tab/filter **Warned** that lists all startups with an active warning, sorted by soonest expiry first, so you can scan who is about to lapse.
-- If admin re-checks embed and it comes back `live`, automatically clear `warned_at`/`warn_expires_at` and show a green "Reinstalled ✓" toast.
-
-## 4. No auto-reject
-
-Per your message ("if its done i get to know we can reject it"), expiry only *signals* you — it does not auto-reject. You stay in control of the destructive action.
-
-## Files touched
-
-- `supabase/migrations/<new>_add_warn_to_startups.sql` — new columns
-- `supabase/functions/send-email/index.ts` — `emailStartupWarning` + handler branch
-- `src/routes/admin.tsx` — Warn button, countdown chip, Warned tab, auto-clear on reinstall
-
-## Out of scope
-
-- No cron job, no automatic rejection on expiry.
-- No changes to the founder dashboard (can add a banner there in a follow-up if you want).
+No other sections (header, tabs, ranked list, podium) change.
