@@ -107,9 +107,6 @@ function LeaderboardPage() {
 
   const activeRows = tab === "received" ? rowsByReceived : rowsByGiven;
   const podium = activeRows.slice(0, 3);
-  // Display order: 2nd, 1st, 3rd
-  const podiumDisplay = [podium[1], podium[0], podium[2]].filter(Boolean) as LeaderboardRow[];
-  const podiumOriginalIndex = (row: LeaderboardRow) => podium.findIndex((r) => r.id === row.id);
 
   const body = (
     <div>
