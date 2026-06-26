@@ -53,10 +53,22 @@ function StatCard({ icon: Icon, label, value, sub, accent }: {
 function Sparkline({ data }: { data: number[] }) {
   const max = Math.max(...data, 1);
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const [hover, setHover] = useState<number | null>(null);
   return (
     <div className="flex h-20 items-end gap-2">
       {data.map((v, i) => (
-        <div key={i} className="flex flex-1 flex-col items-center gap-1.5">
+        <div
+          key={i}
+          className="relative flex flex-1 flex-col items-center gap-1.5"
+          onMouseEnter={() => setHover(i)}
+          onMouseLeave={() => setHover(null)}
+        >
+          {hover === i && (
+            <div className="absolute -top-10 z-10 whitespace-nowrap rounded-md bg-black px-2 py-1 text-[10px] font-medium text-white shadow-md">
+              {v} {v === 1 ? "impression" : "impressions"} · {dayNames[i]}
+            </div>
+          )}
           <div
             className="w-full rounded-t-sm bg-black transition-all duration-500"
             style={{ height: `${Math.max((v / max) * 64, v > 0 ? 4 : 2)}px`, opacity: v > 0 ? 1 : 0.12 }}
@@ -78,6 +90,7 @@ function DashboardPage() {
   const [userName, setUserName] = useState("");
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [installStatus, setInstallStatus] = useState<"checking" | "live" | "disconnected" | "unknown">("unknown");
+  const [chartData, setChartData] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
 
   useEffect(() => {
     let userId: string | null = null;
@@ -107,6 +120,7 @@ function DashboardPage() {
           if (res.ok) setCurrent(await res.json());
         } catch {/* ignore */}
         checkInstall(data.website_url);
+        loadDailyImpressions(data.id);
       }
       setLoading(false);
 
@@ -156,12 +170,33 @@ function DashboardPage() {
     }
   }
 
+  async function loadDailyImpressions(startupId: string) {
+    const since = new Date();
+    since.setDate(since.getDate() - 6);
+    since.setHours(0, 0, 0, 0);
+    const { data: dailyImps } = await supabase
+      .from("impressions")
+      .select("created_at")
+      .eq("shown_startup_id", startupId)
+      .gte("created_at", since.toISOString());
+
+    const counts = [0, 0, 0, 0, 0, 0, 0];
+    (dailyImps ?? []).forEach((row) => {
+      const d = new Date(row.created_at);
+      const dayOfWeek = (d.getDay() + 6) % 7;
+      counts[dayOfWeek] = (counts[dayOfWeek] ?? 0) + 1;
+    });
+    setChartData(counts);
+  }
+
   async function switchStartup(s: Startup) {
     setSwitcherOpen(false);
     setStartup(s);
     setStats({ impressions: 0, clicks: 0 });
     setCurrent(null);
+    setChartData([0, 0, 0, 0, 0, 0, 0]);
     checkInstall(s.website_url);
+    loadDailyImpressions(s.id);
     const [{ count: imp }, { count: clk }] = await Promise.all([
       supabase.from("impressions").select("*", { count: "exact", head: true }).eq("shown_startup_id", s.id),
       supabase.from("clicks").select("*", { count: "exact", head: true }).eq("shown_startup_id", s.id),
@@ -181,7 +216,7 @@ function DashboardPage() {
     ? ((stats.clicks / stats.impressions) * 100).toFixed(1)
     : "0.0";
 
-  const chartData = [0, 0, 0, 0, 0, 0, stats.impressions];
+  
 
   function copy() {
     navigator.clipboard.writeText(snippet);
