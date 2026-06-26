@@ -126,25 +126,25 @@ function LeaderboardPage() {
                 return (
                   <div
                     key={row.id}
-                    className={`rounded-2xl border p-6 flex flex-col items-center text-center transition-all ${
+                    className={`rounded-2xl border p-4 flex flex-col items-center text-center transition-all ${
                       i === 0
-                        ? "border-black bg-black text-white md:py-8 md:-mt-2 md:shadow-2xl md:shadow-black/20 md:z-10 relative"
+                        ? "border-black bg-black text-white md:py-6 md:-mt-2 md:shadow-2xl md:shadow-black/20 md:z-10 relative"
                         : "border-black/8 bg-white"
                     }`}
                   >
                     {i === 0 && (
-                      <div className="mb-3 text-[9px] font-bold tracking-[0.15em] uppercase text-white/40">
+                      <div className="mb-2 text-[9px] font-bold tracking-[0.15em] uppercase text-white/40">
                         Network Leader
                       </div>
                     )}
-                    <div className="text-3xl mb-3">{MEDALS[i]}</div>
+                    <div className="text-2xl mb-2">{MEDALS[i]}</div>
                     <img
                       src={`https://www.google.com/s2/favicons?domain=${row.website_url}&sz=64`}
                       alt=""
-                      className={`w-10 h-10 rounded-xl mb-3 ${i === 0 ? "ring-2 ring-white/20" : "ring-1 ring-black/8"}`}
+                      className={`w-8 h-8 rounded-lg mb-2 ${i === 0 ? "ring-2 ring-white/20" : "ring-1 ring-black/8"}`}
                       onError={(e) => (e.currentTarget.style.display = "none")}
                     />
-                    <p className={`font-bold text-base leading-tight truncate max-w-full ${i === 0 ? "text-white" : "text-black"}`}>
+                    <p className={`font-bold text-sm leading-tight truncate max-w-full ${i === 0 ? "text-white" : "text-black"}`}>
                       {row.name}
                     </p>
                     {row.id === myId && (
@@ -152,32 +152,32 @@ function LeaderboardPage() {
                         i === 0 ? "bg-white/20 text-white" : "bg-black text-white"
                       }`}>You</span>
                     )}
-                    <p className={`mt-1 text-xs line-clamp-1 max-w-full ${i === 0 ? "text-white/50" : "text-black/35"}`}>
+                    <p className={`mt-0.5 text-[11px] line-clamp-1 max-w-full ${i === 0 ? "text-white/50" : "text-black/35"}`}>
                       {row.description}
                     </p>
                     <div className="mt-4 w-full">
-                      <div className={`text-3xl font-bold tabular-nums ${i === 0 ? "text-white" : "text-black"}`}>
+                      <div className={`text-2xl font-bold tabular-nums ${i === 0 ? "text-white" : "text-black"}`}>
                         {primaryMetric(row).toLocaleString()}
                       </div>
-                      <div className={`text-[10px] uppercase tracking-widest mt-1 font-semibold ${i === 0 ? "text-white/40" : "text-black/30"}`}>
+                      <div className={`text-[9px] uppercase tracking-widest mt-1 font-semibold ${i === 0 ? "text-white/40" : "text-black/30"}`}>
                         {tab === "received" ? "impressions" : "given to network"}
                       </div>
                     </div>
                     {tab === "received" ? (
-                      <div className={`mt-4 flex gap-4 text-center border-t pt-4 w-full justify-center ${i === 0 ? "border-white/10" : "border-black/6"}`}>
+                      <div className={`mt-3 flex gap-4 text-center border-t pt-3 w-full justify-center ${i === 0 ? "border-white/10" : "border-black/6"}`}>
                         <div>
-                          <div className={`text-sm font-semibold ${i === 0 ? "text-white" : "text-black"}`}>{row.clicks}</div>
+                          <div className={`text-xs font-semibold ${i === 0 ? "text-white" : "text-black"}`}>{row.clicks}</div>
                           <div className={`text-[9px] uppercase tracking-wide ${i === 0 ? "text-white/35" : "text-black/30"}`}>Clicks</div>
                         </div>
                         <div>
-                          <div className={`text-sm font-semibold ${i === 0 ? "text-white" : "text-black"}`}>{ctr(row)}</div>
+                          <div className={`text-xs font-semibold ${i === 0 ? "text-white" : "text-black"}`}>{ctr(row)}</div>
                           <div className={`text-[9px] uppercase tracking-wide ${i === 0 ? "text-white/35" : "text-black/30"}`}>CTR</div>
                         </div>
                       </div>
                     ) : (
-                      <div className={`mt-4 flex gap-4 text-center border-t pt-4 w-full justify-center ${i === 0 ? "border-white/10" : "border-black/6"}`}>
+                      <div className={`mt-3 flex gap-4 text-center border-t pt-3 w-full justify-center ${i === 0 ? "border-white/10" : "border-black/6"}`}>
                         <div>
-                          <div className={`text-sm font-semibold ${i === 0 ? "text-white" : "text-black"}`}>{row.impressions}</div>
+                          <div className={`text-xs font-semibold ${i === 0 ? "text-white" : "text-black"}`}>{row.impressions}</div>
                           <div className={`text-[9px] uppercase tracking-wide ${i === 0 ? "text-white/35" : "text-black/30"}`}>Received</div>
                         </div>
                       </div>
