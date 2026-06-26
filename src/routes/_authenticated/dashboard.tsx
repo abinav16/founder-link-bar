@@ -169,6 +169,25 @@ function DashboardPage() {
     }
   }
 
+  async function loadDailyImpressions(startupId: string) {
+    const since = new Date();
+    since.setDate(since.getDate() - 6);
+    since.setHours(0, 0, 0, 0);
+    const { data: dailyImps } = await supabase
+      .from("impressions")
+      .select("created_at")
+      .eq("shown_startup_id", startupId)
+      .gte("created_at", since.toISOString());
+
+    const counts = [0, 0, 0, 0, 0, 0, 0];
+    (dailyImps ?? []).forEach((row) => {
+      const d = new Date(row.created_at);
+      const dayOfWeek = (d.getDay() + 6) % 7;
+      counts[dayOfWeek] = (counts[dayOfWeek] ?? 0) + 1;
+    });
+    setChartData(counts);
+  }
+
   async function switchStartup(s: Startup) {
     setSwitcherOpen(false);
     setStartup(s);
