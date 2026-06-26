@@ -224,56 +224,71 @@ function LeaderboardPage() {
 
               <div className="lg:col-span-1">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-black/30 mb-3">Network Activity</p>
-                <div className="rounded-xl border border-black/8 bg-white p-5 h-full flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center gap-1.5 mb-3">
-                      <div className="h-1.5 w-1.5 rounded-full bg-black/20" />
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-black/30">Yesterday</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="rounded-lg bg-black/[0.03] p-3">
-                        <div className="text-xl font-bold tabular-nums text-black">
+                <div className="rounded-xl border border-black/8 bg-white p-4 h-full flex flex-col gap-3">
+                  <div className="grid grid-cols-2 gap-2 flex-1">
+                    {/* Yesterday Impressions */}
+                    <div className="rounded-lg bg-black/[0.03] p-2.5 flex flex-col justify-between">
+                      <div className="flex items-center gap-1">
+                        <div className="h-1 w-1 rounded-full bg-black/25" />
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-black/35">Yesterday</span>
+                      </div>
+                      <div>
+                        <div className="text-xl font-bold tabular-nums text-black leading-none">
                           {activity?.yesterdayImpressions.toLocaleString() ?? "—"}
                         </div>
-                        <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">Impressions</div>
+                        <div className="text-[10px] uppercase tracking-wide text-black/40 mt-1">Impressions</div>
                       </div>
-                      <div className="rounded-lg bg-black/[0.03] p-3">
-                        <div className="text-xl font-bold tabular-nums text-black">
+                    </div>
+                    {/* Yesterday Clicks */}
+                    <div className="rounded-lg bg-black/[0.03] p-2.5 flex flex-col justify-between">
+                      <div className="flex items-center gap-1">
+                        <div className="h-1 w-1 rounded-full bg-black/25" />
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-black/35">Yesterday</span>
+                      </div>
+                      <div>
+                        <div className="text-xl font-bold tabular-nums text-black leading-none">
                           {activity?.yesterdayClicks.toLocaleString() ?? "—"}
                         </div>
-                        <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">Clicks</div>
+                        <div className="text-[10px] uppercase tracking-wide text-black/40 mt-1">Clicks</div>
                       </div>
                     </div>
-                  </div>
-
-                  <div className="border-t border-black/6" />
-
-                  <div>
-                    <div className="flex items-center gap-1.5 mb-3">
-                      <span className="relative flex h-1.5 w-1.5">
-                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-black opacity-30" />
-                        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-black" />
-                      </span>
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-black/30">Today so far</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="rounded-lg bg-black p-3">
-                        <div className="text-xl font-bold tabular-nums text-white">
+                    {/* Today Impressions */}
+                    <div className="rounded-lg bg-black p-2.5 flex flex-col justify-between">
+                      <div className="flex items-center gap-1">
+                        <span className="relative flex h-1 w-1">
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-60" />
+                          <span className="relative inline-flex h-1 w-1 rounded-full bg-white" />
+                        </span>
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-white/60">Today</span>
+                      </div>
+                      <div>
+                        <div className="text-xl font-bold tabular-nums text-white leading-none">
                           {activity?.todayImpressions.toLocaleString() ?? "—"}
                         </div>
-                        <div className="text-[9px] uppercase tracking-wide text-white/40 mt-0.5">Impressions</div>
+                        <div className="text-[10px] uppercase tracking-wide text-white/50 mt-1">Impressions</div>
                       </div>
-                      <div className="rounded-lg bg-black p-3">
-                        <div className="text-xl font-bold tabular-nums text-white">
+                    </div>
+                    {/* Today Clicks */}
+                    <div className="rounded-lg bg-black p-2.5 flex flex-col justify-between">
+                      <div className="flex items-center gap-1">
+                        <span className="relative flex h-1 w-1">
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-60" />
+                          <span className="relative inline-flex h-1 w-1 rounded-full bg-white" />
+                        </span>
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-white/60">Today</span>
+                      </div>
+                      <div>
+                        <div className="text-xl font-bold tabular-nums text-white leading-none">
                           {activity?.todayClicks.toLocaleString() ?? "—"}
                         </div>
-                        <div className="text-[9px] uppercase tracking-wide text-white/40 mt-0.5">Clicks</div>
+                        <div className="text-[10px] uppercase tracking-wide text-white/50 mt-1">Clicks</div>
                       </div>
                     </div>
                   </div>
 
-                  <p className="text-[10px] text-black/25 mt-auto">Resets at midnight UTC · 5:30 AM IST</p>
+                  <p className="text-[10px] text-black/40 text-center">Resets at midnight UTC · 5:30 AM IST</p>
                 </div>
+
               </div>
             </div>
           )}
