@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import type { User } from "@supabase/supabase-js";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { getLeaderboard, type LeaderboardRow } from "@/lib/leaderboard.functions";
+import { getLeaderboard, getNetworkActivity, type LeaderboardRow } from "@/lib/leaderboard.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Trophy, ExternalLink } from "lucide-react";
 
