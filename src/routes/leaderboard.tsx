@@ -23,6 +23,7 @@ interface NetworkActivity {
 
 function LeaderboardPage() {
   const fetchLeaderboard = useServerFn(getLeaderboard);
+  const fetchNetworkActivity = useServerFn(getNetworkActivity);
   const [rowsByReceived, setRowsByReceived] = useState<LeaderboardRow[]>([]);
   const [rowsByGiven, setRowsByGiven] = useState<LeaderboardRow[]>([]);
   const [tab, setTab] = useState<"received" | "given">("received");
