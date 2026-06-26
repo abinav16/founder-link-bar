@@ -210,6 +210,7 @@ function DashboardPage() {
     setChartData([0, 0, 0, 0, 0, 0, 0]);
     checkInstall(s.website_url);
     loadDailyImpressions(s.id);
+    loadRank(s.id);
     const [{ count: imp }, { count: clk }] = await Promise.all([
       supabase.from("impressions").select("*", { count: "exact", head: true }).eq("shown_startup_id", s.id),
       supabase.from("clicks").select("*", { count: "exact", head: true }).eq("shown_startup_id", s.id),
