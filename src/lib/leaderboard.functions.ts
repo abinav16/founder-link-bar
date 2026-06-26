@@ -7,6 +7,7 @@ export interface LeaderboardRow {
   description: string;
   impressions: number;
   clicks: number;
+  impressions_given: number;
 }
 
 export const getLeaderboard = createServerFn({ method: "GET" }).handler(async () => {
@@ -21,7 +22,7 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
 
   const rows = await Promise.all(
     (startups ?? []).map(async (startup) => {
-      const [{ count: impressions }, { count: clicks }] = await Promise.all([
+      const [{ count: impressions }, { count: clicks }, { count: impressions_given }] = await Promise.all([
         supabaseAdmin
           .from("impressions")
           .select("*", { count: "exact", head: true })
@@ -30,17 +31,23 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
           .from("clicks")
           .select("*", { count: "exact", head: true })
           .eq("shown_startup_id", startup.id),
+        supabaseAdmin
+          .from("impressions")
+          .select("*", { count: "exact", head: true })
+          .eq("host_startup_id", startup.id),
       ]);
 
       return {
         ...startup,
         impressions: impressions ?? 0,
         clicks: clicks ?? 0,
+        impressions_given: impressions_given ?? 0,
       } satisfies LeaderboardRow;
     }),
   );
 
-  rows.sort((a, b) => b.impressions - a.impressions);
+  const rowsByReceived = [...rows].sort((a, b) => b.impressions - a.impressions);
+  const rowsByGiven = [...rows].sort((a, b) => b.impressions_given - a.impressions_given);
 
-  return { rows };
+  return { rowsByReceived, rowsByGiven };
 });

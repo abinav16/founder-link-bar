@@ -1,11 +1,11 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import type { User } from "@supabase/supabase-js";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { getLeaderboard, type LeaderboardRow } from "@/lib/leaderboard.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { Trophy, ExternalLink, LayoutDashboard } from "lucide-react";
+import { Trophy, ExternalLink } from "lucide-react";
 
 export const Route = createFileRoute("/leaderboard")({
   head: () => ({ meta: [{ title: "Leaderboard — StartupBar" }] }),
@@ -16,7 +16,9 @@ const MEDALS = ["🥇", "🥈", "🥉"];
 
 function LeaderboardPage() {
   const fetchLeaderboard = useServerFn(getLeaderboard);
-  const [rows, setRows] = useState<LeaderboardRow[]>([]);
+  const [rowsByReceived, setRowsByReceived] = useState<LeaderboardRow[]>([]);
+  const [rowsByGiven, setRowsByGiven] = useState<LeaderboardRow[]>([]);
+  const [tab, setTab] = useState<"received" | "given">("received");
   const [myId, setMyId] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [authReady, setAuthReady] = useState(false);
@@ -26,7 +28,8 @@ function LeaderboardPage() {
     (async () => {
       try {
         const data = await fetchLeaderboard();
-        setRows(data.rows);
+        setRowsByReceived(data.rowsByReceived);
+        setRowsByGiven(data.rowsByGiven);
       } finally {
         setLoading(false);
       }
@@ -62,112 +65,203 @@ function LeaderboardPage() {
   const ctr = (row: LeaderboardRow) =>
     row.impressions > 0 ? ((row.clicks / row.impressions) * 100).toFixed(1) + "%" : "—";
 
+  const primaryMetric = (row: LeaderboardRow) =>
+    tab === "received" ? row.impressions : row.impressions_given;
+
+  const activeRows = tab === "received" ? rowsByReceived : rowsByGiven;
+  const podium = activeRows.slice(0, 3);
+  // Display order: 2nd, 1st, 3rd
+  const podiumDisplay = [podium[1], podium[0], podium[2]].filter(Boolean) as LeaderboardRow[];
+  const podiumOriginalIndex = (row: LeaderboardRow) => podium.findIndex((r) => r.id === row.id);
+
   const body = (
     <div>
-      <div className="flex items-center gap-3">
-        <Trophy className="h-5 w-5 text-black/30" />
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-            Network Leaderboard
+          <div className="flex items-center gap-2 mb-1">
+            <Trophy className="h-4 w-4 text-black/30" />
+            <span className="text-xs font-semibold uppercase tracking-[0.12em] text-black/30">Network</span>
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+            Leaderboard
           </h1>
-          <p className="text-sm text-black/40">All approved startups, ranked by impressions.</p>
+        </div>
+
+        <div className="inline-flex rounded-xl border border-black/10 bg-black/[0.03] p-1 gap-1 self-start sm:self-end">
+          <button
+            onClick={() => setTab("received")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              tab === "received" ? "bg-black text-white shadow-sm" : "text-black/50 hover:text-black"
+            }`}
+          >
+            🏆 Most Seen
+          </button>
+          <button
+            onClick={() => setTab("given")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              tab === "given" ? "bg-black text-white shadow-sm" : "text-black/50 hover:text-black"
+            }`}
+          >
+            ⚡ Top Contributors
+          </button>
         </div>
       </div>
 
+      <p className="text-sm text-black/45 -mt-4 mb-8">
+        {tab === "received"
+          ? "Startups that appear most across the network — ranked by total impressions received."
+          : "Sites generating the most traffic for others — ranked by impressions they gave to the network."}
+      </p>
+
       {loading ? (
         <div className="flex items-center justify-center py-40 text-sm text-black/30">Loading…</div>
-      ) : rows.length === 0 ? (
+      ) : activeRows.length === 0 ? (
         <div className="mt-16 text-center text-sm text-black/40">No approved startups yet.</div>
       ) : (
         <>
-          {rows.length >= 1 && (
-            <div className="mt-8 grid gap-4 md:grid-cols-3">
-              {rows.slice(0, 3).map((row, i) => (
-                <div
-                  key={row.id}
-                  className={`rounded-xl border bg-white p-5 ${
-                    row.id === myId ? "border-black/25 ring-2 ring-black/8" : "border-black/8"
-                  } ${i === 0 ? "md:order-2" : i === 1 ? "md:order-1" : "md:order-3"}`}
-                >
-                  <div className="text-2xl">{MEDALS[i]}</div>
-                  <div className="mt-3 flex items-center justify-between gap-2">
-                    <p className="font-semibold text-black truncate">{row.name}</p>
+          {podiumDisplay.length > 0 && (
+            <div className="grid gap-4 md:grid-cols-3 md:items-end">
+              {podiumDisplay.map((row) => {
+                const i = podiumOriginalIndex(row);
+                return (
+                  <div
+                    key={row.id}
+                    className={`rounded-2xl border p-6 flex flex-col items-center text-center transition-all ${
+                      i === 0
+                        ? "border-black bg-black text-white md:py-8 md:-mt-2 md:shadow-2xl md:shadow-black/20 md:z-10 relative"
+                        : "border-black/8 bg-white"
+                    }`}
+                  >
+                    {i === 0 && (
+                      <div className="mb-3 text-[9px] font-bold tracking-[0.15em] uppercase text-white/40">
+                        Network Leader
+                      </div>
+                    )}
+                    <div className="text-3xl mb-3">{MEDALS[i]}</div>
+                    <img
+                      src={`https://www.google.com/s2/favicons?domain=${row.website_url}&sz=64`}
+                      alt=""
+                      className={`w-10 h-10 rounded-xl mb-3 ${i === 0 ? "ring-2 ring-white/20" : "ring-1 ring-black/8"}`}
+                      onError={(e) => (e.currentTarget.style.display = "none")}
+                    />
+                    <p className={`font-bold text-base leading-tight truncate max-w-full ${i === 0 ? "text-white" : "text-black"}`}>
+                      {row.name}
+                    </p>
                     {row.id === myId && (
-                      <span className="shrink-0 rounded-full bg-black px-2 py-0.5 text-[10px] font-medium text-white">You</span>
+                      <span className={`mt-1 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide ${
+                        i === 0 ? "bg-white/20 text-white" : "bg-black text-white"
+                      }`}>You</span>
+                    )}
+                    <p className={`mt-1 text-xs line-clamp-1 max-w-full ${i === 0 ? "text-white/50" : "text-black/35"}`}>
+                      {row.description}
+                    </p>
+                    <div className="mt-4 w-full">
+                      <div className={`text-3xl font-bold tabular-nums ${i === 0 ? "text-white" : "text-black"}`}>
+                        {primaryMetric(row).toLocaleString()}
+                      </div>
+                      <div className={`text-[10px] uppercase tracking-widest mt-1 font-semibold ${i === 0 ? "text-white/40" : "text-black/30"}`}>
+                        {tab === "received" ? "impressions" : "given to network"}
+                      </div>
+                    </div>
+                    {tab === "received" ? (
+                      <div className={`mt-4 flex gap-4 text-center border-t pt-4 w-full justify-center ${i === 0 ? "border-white/10" : "border-black/6"}`}>
+                        <div>
+                          <div className={`text-sm font-semibold ${i === 0 ? "text-white" : "text-black"}`}>{row.clicks}</div>
+                          <div className={`text-[9px] uppercase tracking-wide ${i === 0 ? "text-white/35" : "text-black/30"}`}>Clicks</div>
+                        </div>
+                        <div>
+                          <div className={`text-sm font-semibold ${i === 0 ? "text-white" : "text-black"}`}>{ctr(row)}</div>
+                          <div className={`text-[9px] uppercase tracking-wide ${i === 0 ? "text-white/35" : "text-black/30"}`}>CTR</div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className={`mt-4 flex gap-4 text-center border-t pt-4 w-full justify-center ${i === 0 ? "border-white/10" : "border-black/6"}`}>
+                        <div>
+                          <div className={`text-sm font-semibold ${i === 0 ? "text-white" : "text-black"}`}>{row.impressions}</div>
+                          <div className={`text-[9px] uppercase tracking-wide ${i === 0 ? "text-white/35" : "text-black/30"}`}>Received</div>
+                        </div>
+                      </div>
                     )}
                   </div>
-                  <p className="mt-0.5 text-xs text-black/40 line-clamp-1">{row.description}</p>
-                  <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-                    <div>
-                      <div className="text-base font-semibold">{row.impressions.toLocaleString()}</div>
-                      <div className="text-[10px] text-black/35 uppercase tracking-wide">Impr.</div>
-                    </div>
-                    <div>
-                      <div className="text-base font-semibold">{row.clicks.toLocaleString()}</div>
-                      <div className="text-[10px] text-black/35 uppercase tracking-wide">Clicks</div>
-                    </div>
-                    <div>
-                      <div className="text-base font-semibold">{ctr(row)}</div>
-                      <div className="text-[10px] text-black/35 uppercase tracking-wide">CTR</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 
-          <div className="mt-6 overflow-hidden rounded-xl border border-black/8 bg-white">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[520px] text-sm">
-                <thead>
-                  <tr className="border-b border-black/6 bg-black/[0.02]">
-                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 sm:px-5">#</th>
-                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 sm:px-5">Startup</th>
-                    <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 sm:px-5">Impressions</th>
-                    <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 sm:px-5">Clicks</th>
-                    <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 sm:px-5">CTR</th>
-                    <th className="px-4 py-3 sm:px-5" />
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-black/5">
-                  {rows.map((row, i) => (
-                    <tr
-                      key={row.id}
-                      className={`transition-colors hover:bg-black/[0.02] ${row.id === myId ? "bg-black/[0.015]" : ""}`}
-                    >
-                      <td className="px-4 py-3.5 tabular-nums text-black/30 sm:px-5">
-                        {i < 3 ? MEDALS[i] : `${i + 1}`}
-                      </td>
-                      <td className="px-4 py-3.5 sm:px-5">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-black">{row.name}</span>
-                          {row.id === myId && (
-                            <span className="rounded-full bg-black px-2 py-0.5 text-[9px] font-medium text-white">You</span>
-                          )}
-                        </div>
-                        <div className="max-w-[180px] truncate text-xs text-black/35 sm:max-w-xs">{row.description}</div>
-                      </td>
-                      <td className="px-4 py-3.5 text-right tabular-nums font-medium sm:px-5">{row.impressions.toLocaleString()}</td>
-                      <td className="px-4 py-3.5 text-right tabular-nums font-medium sm:px-5">{row.clicks.toLocaleString()}</td>
-                      <td className="px-4 py-3.5 text-right tabular-nums text-black/60 sm:px-5">{ctr(row)}</td>
-                      <td className="px-4 py-3.5 text-right sm:px-5">
-                        <a href={row.website_url} target="_blank" rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-black/30 hover:text-black transition-colors">
-                          <ExternalLink className="h-3 w-3" />
-                        </a>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          <div className="mt-6 space-y-2">
+            {activeRows.map((row, i) => {
+              const maxVal = activeRows[0] ? primaryMetric(activeRows[0]) : 1;
+              const pct = maxVal > 0 ? (primaryMetric(row) / maxVal) * 100 : 0;
+              return (
+                <div
+                  key={row.id}
+                  className={`group flex items-center gap-4 rounded-2xl border bg-white px-5 py-4 transition-all hover:border-black/20 hover:shadow-sm ${
+                    row.id === myId ? "border-black/20 ring-1 ring-black/8" : "border-black/8"
+                  }`}
+                >
+                  <div className="w-8 shrink-0 text-center">
+                    {i < 3 ? (
+                      <span className="text-xl">{MEDALS[i]}</span>
+                    ) : (
+                      <span className="text-sm font-semibold text-black/25 tabular-nums">{i + 1}</span>
+                    )}
+                  </div>
+
+                  <img
+                    src={`https://www.google.com/s2/favicons?domain=${row.website_url}&sz=32`}
+                    alt=""
+                    className="h-8 w-8 rounded-lg ring-1 ring-black/8 shrink-0"
+                    onError={(e) => (e.currentTarget.style.display = "none")}
+                  />
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-black text-sm">{row.name}</span>
+                      {row.id === myId && (
+                        <span className="rounded-full bg-black px-2 py-0.5 text-[9px] font-bold text-white uppercase tracking-wide">You</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-black/35 truncate mt-0.5">{row.description}</p>
+                    <div className="mt-2 h-1 w-full rounded-full bg-black/6 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-black transition-all duration-700"
+                        style={{ width: `${pct}%`, opacity: i === 0 ? 1 : 0.25 + (pct / 100) * 0.75 }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="shrink-0 text-right">
+                    <div className="text-base font-bold tabular-nums text-black">{primaryMetric(row).toLocaleString()}</div>
+                    <div className="text-[10px] uppercase tracking-wide text-black/30">
+                      {tab === "received" ? "impressions" : "given"}
+                    </div>
+                  </div>
+
+                  {tab === "received" && (
+                    <div className="hidden sm:flex shrink-0 flex-col items-end gap-0.5">
+                      <span className="text-xs font-medium tabular-nums text-black/50">{row.clicks} clicks</span>
+                      <span className="text-[11px] text-black/30">{ctr(row)} CTR</span>
+                    </div>
+                  )}
+
+                  <a
+                    href={row.website_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Visit ${row.name}`}
+                    className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5 text-black/30 hover:text-black transition-colors" />
+                  </a>
+                </div>
+              );
+            })}
           </div>
         </>
       )}
     </div>
   );
 
-  // Before auth resolves, render a neutral shell to avoid flashing the wrong header.
   if (!authReady) {
     return <div className="min-h-screen bg-[#f7f7f6]" />;
   }
