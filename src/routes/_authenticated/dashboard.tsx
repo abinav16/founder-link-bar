@@ -53,10 +53,22 @@ function StatCard({ icon: Icon, label, value, sub, accent }: {
 function Sparkline({ data }: { data: number[] }) {
   const max = Math.max(...data, 1);
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const [hover, setHover] = useState<number | null>(null);
   return (
     <div className="flex h-20 items-end gap-2">
       {data.map((v, i) => (
-        <div key={i} className="flex flex-1 flex-col items-center gap-1.5">
+        <div
+          key={i}
+          className="relative flex flex-1 flex-col items-center gap-1.5"
+          onMouseEnter={() => setHover(i)}
+          onMouseLeave={() => setHover(null)}
+        >
+          {hover === i && (
+            <div className="absolute -top-10 z-10 whitespace-nowrap rounded-md bg-black px-2 py-1 text-[10px] font-medium text-white shadow-md">
+              {v} {v === 1 ? "impression" : "impressions"} · {dayNames[i]}
+            </div>
+          )}
           <div
             className="w-full rounded-t-sm bg-black transition-all duration-500"
             style={{ height: `${Math.max((v / max) * 64, v > 0 ? 4 : 2)}px`, opacity: v > 0 ? 1 : 0.12 }}
