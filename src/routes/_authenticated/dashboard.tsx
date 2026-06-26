@@ -322,7 +322,7 @@ function DashboardPage() {
               <StatCard icon={BarChart2} label="Impressions" value={stats.impressions.toLocaleString()} sub="Times shown on the network" />
               <StatCard icon={MousePointerClick} label="Clicks" value={stats.clicks.toLocaleString()} sub="Visits driven to your site" />
               <StatCard icon={Percent} label="CTR" value={`${ctr}%`} sub="Click-through rate" />
-              <StatCard icon={BarChart2} label="Rank" value="—" sub="Coming soon" />
+              <StatCard icon={BarChart2} label="Rank" value={rank ? `#${rank}` : "—"} sub="By impressions" />
             </div>
 
             <div className="rounded-xl border border-black/8 bg-white p-6">
