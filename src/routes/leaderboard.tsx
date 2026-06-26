@@ -153,72 +153,112 @@ function LeaderboardPage() {
         <div className="mt-16 text-center text-sm text-black/40">No approved startups yet.</div>
       ) : (
         <>
-          {podiumDisplay.length > 0 && (
-            <div className="grid gap-3 md:grid-cols-3 md:items-end">
-              {podiumDisplay.map((row) => {
-                const i = podiumOriginalIndex(row);
-                return (
-                  <div
-                    key={row.id}
-                    className={`rounded-2xl border p-3 flex flex-col items-center text-center transition-all ${
-                      i === 0
-                        ? "border-black bg-black text-white md:py-4 md:-mt-2 md:shadow-2xl md:shadow-black/20 md:z-10 relative"
-                        : "border-black/8 bg-white"
-                    }`}
-                  >
-                    {i === 0 && (
-                      <div className="mb-1 text-[9px] font-bold tracking-[0.15em] uppercase text-white/40">
-                        Network Leader
+          {podium.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="md:col-span-2">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-black/30 mb-2">Top 3</p>
+                <div className="space-y-2">
+                  {podium.map((row, i) => (
+                    <div
+                      key={row.id}
+                      className={`flex items-center gap-3 rounded-xl border p-3 ${
+                        i === 0 ? "bg-black border-black" : "bg-white border-black/8"
+                      }`}
+                    >
+                      <span className="text-xl shrink-0">{MEDALS[i]}</span>
+                      <img
+                        src={`https://www.google.com/s2/favicons?domain=${row.website_url}&sz=32`}
+                        alt=""
+                        className={`w-8 h-8 rounded-lg shrink-0 ${i === 0 ? "ring-2 ring-white/20" : "ring-1 ring-black/8"}`}
+                        onError={(e) => (e.currentTarget.style.display = "none")}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className={`font-semibold text-sm truncate ${i === 0 ? "text-white" : "text-black"}`}>
+                            {row.name}
+                          </span>
+                          {i === 0 && (
+                            <span className="text-[9px] font-bold tracking-widest uppercase text-white/40 shrink-0">Leader</span>
+                          )}
+                          {row.id === myId && (
+                            <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase shrink-0 ${
+                              i === 0 ? "bg-white/20 text-white" : "bg-black text-white"
+                            }`}>You</span>
+                          )}
+                        </div>
+                        <p className={`text-[11px] truncate mt-0.5 ${i === 0 ? "text-white/40" : "text-black/35"}`}>
+                          {row.description}
+                        </p>
                       </div>
-                    )}
-                    <div className="text-lg mb-1">{MEDALS[i]}</div>
-                    <img
-                      src={`https://www.google.com/s2/favicons?domain=${row.website_url}&sz=64`}
-                      alt=""
-                      className={`w-7 h-7 rounded-md mb-1.5 ${i === 0 ? "ring-2 ring-white/20" : "ring-1 ring-black/8"}`}
-                      onError={(e) => (e.currentTarget.style.display = "none")}
-                    />
-                    <p className={`font-semibold text-xs leading-tight truncate max-w-full ${i === 0 ? "text-white" : "text-black"}`}>
-                      {row.name}
-                    </p>
-                    {row.id === myId && (
-                      <span className={`mt-1 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide ${
-                        i === 0 ? "bg-white/20 text-white" : "bg-black text-white"
-                      }`}>You</span>
-                    )}
-                    <div className="mt-2 w-full">
-                      <div className={`text-xl font-bold tabular-nums ${i === 0 ? "text-white" : "text-black"}`}>
-                        {primaryMetric(row).toLocaleString()}
-                      </div>
-                      <div className={`text-[9px] uppercase tracking-widest mt-0.5 font-semibold ${i === 0 ? "text-white/40" : "text-black/30"}`}>
-                        {tab === "received" ? "impressions" : "given to network"}
+                      <div className="shrink-0 text-right">
+                        <div className={`text-lg font-bold tabular-nums ${i === 0 ? "text-white" : "text-black"}`}>
+                          {primaryMetric(row).toLocaleString()}
+                        </div>
+                        <div className={`text-[9px] uppercase tracking-wide ${i === 0 ? "text-white/40" : "text-black/30"}`}>
+                          {tab === "received" ? "impr." : "given"}
+                        </div>
                       </div>
                     </div>
-                    {tab === "received" ? (
-                      <div className={`mt-2 flex gap-4 text-center border-t pt-2 w-full justify-center ${i === 0 ? "border-white/10" : "border-black/6"}`}>
-                        <div>
-                          <div className={`text-xs font-semibold ${i === 0 ? "text-white" : "text-black"}`}>{row.clicks}</div>
-                          <div className={`text-[9px] uppercase tracking-wide ${i === 0 ? "text-white/35" : "text-black/30"}`}>Clicks</div>
-                        </div>
-                        <div>
-                          <div className={`text-xs font-semibold ${i === 0 ? "text-white" : "text-black"}`}>{ctr(row)}</div>
-                          <div className={`text-[9px] uppercase tracking-wide ${i === 0 ? "text-white/35" : "text-black/30"}`}>CTR</div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className={`mt-2 flex gap-4 text-center border-t pt-2 w-full justify-center ${i === 0 ? "border-white/10" : "border-black/6"}`}>
-                        <div>
-                          <div className={`text-xs font-semibold ${i === 0 ? "text-white" : "text-black"}`}>{row.impressions}</div>
-                          <div className={`text-[9px] uppercase tracking-wide ${i === 0 ? "text-white/35" : "text-black/30"}`}>Received</div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                  ))}
+                </div>
+              </div>
 
+              <div className="md:col-span-1">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-black/30 mb-2">Network Activity</p>
+                <div className="rounded-xl border border-black/8 bg-white p-4 h-full flex flex-col gap-4">
+                  <div>
+                    <div className="flex items-center gap-1.5 mb-3">
+                      <div className="h-1.5 w-1.5 rounded-full bg-black/20" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-black/30">Yesterday</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="rounded-lg bg-black/[0.03] p-3">
+                        <div className="text-xl font-bold tabular-nums text-black">
+                          {activity?.yesterdayImpressions.toLocaleString() ?? "—"}
+                        </div>
+                        <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">Impressions</div>
+                      </div>
+                      <div className="rounded-lg bg-black/[0.03] p-3">
+                        <div className="text-xl font-bold tabular-nums text-black">
+                          {activity?.yesterdayClicks.toLocaleString() ?? "—"}
+                        </div>
+                        <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">Clicks</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-black/6" />
+
+                  <div>
+                    <div className="flex items-center gap-1.5 mb-3">
+                      <span className="relative flex h-1.5 w-1.5">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-black opacity-30" />
+                        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-black" />
+                      </span>
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-black/30">Today so far</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="rounded-lg bg-black p-3">
+                        <div className="text-xl font-bold tabular-nums text-white">
+                          {activity?.todayImpressions.toLocaleString() ?? "—"}
+                        </div>
+                        <div className="text-[9px] uppercase tracking-wide text-white/40 mt-0.5">Impressions</div>
+                      </div>
+                      <div className="rounded-lg bg-black p-3">
+                        <div className="text-xl font-bold tabular-nums text-white">
+                          {activity?.todayClicks.toLocaleString() ?? "—"}
+                        </div>
+                        <div className="text-[9px] uppercase tracking-wide text-white/40 mt-0.5">Clicks</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <p className="text-[10px] text-black/25 mt-auto">Resets at midnight UTC · 5:30 AM IST</p>
+                </div>
+              </div>
+            </div>
           )}
+
 
           <div className="mt-6 space-y-2">
             {activeRows.map((row, i) => {
