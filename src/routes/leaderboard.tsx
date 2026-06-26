@@ -14,6 +14,13 @@ export const Route = createFileRoute("/leaderboard")({
 
 const MEDALS = ["🥇", "🥈", "🥉"];
 
+interface NetworkActivity {
+  todayImpressions: number;
+  todayClicks: number;
+  yesterdayImpressions: number;
+  yesterdayClicks: number;
+}
+
 function LeaderboardPage() {
   const fetchLeaderboard = useServerFn(getLeaderboard);
   const [rowsByReceived, setRowsByReceived] = useState<LeaderboardRow[]>([]);
