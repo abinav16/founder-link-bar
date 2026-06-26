@@ -175,9 +175,9 @@ function LeaderboardPage() {
                         </div>
                       </div>
                     ) : (
-                      <div className={`mt-4 flex gap-4 text-center border-t pt-4 w-full justify-center ${i === 0 ? "border-white/10" : "border-black/6"}`}>
+                      <div className={`mt-3 flex gap-4 text-center border-t pt-3 w-full justify-center ${i === 0 ? "border-white/10" : "border-black/6"}`}>
                         <div>
-                          <div className={`text-sm font-semibold ${i === 0 ? "text-white" : "text-black"}`}>{row.impressions}</div>
+                          <div className={`text-xs font-semibold ${i === 0 ? "text-white" : "text-black"}`}>{row.impressions}</div>
                           <div className={`text-[9px] uppercase tracking-wide ${i === 0 ? "text-white/35" : "text-black/30"}`}>Received</div>
                         </div>
                       </div>
