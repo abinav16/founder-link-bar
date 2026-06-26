@@ -108,9 +108,11 @@ function LeaderboardPage() {
   const activeRows = tab === "received" ? rowsByReceived : rowsByGiven;
   const podium = activeRows.slice(0, 3);
 
+  const podiumDisplay = [podium[1], podium[0], podium[2]].filter(Boolean) as LeaderboardRow[];
+
   const body = (
-    <div>
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+    <div className="max-w-5xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Trophy className="h-4 w-4 text-black/30" />
@@ -141,7 +143,7 @@ function LeaderboardPage() {
         </div>
       </div>
 
-      <p className="text-sm text-black/45 -mt-4 mb-8">
+      <p className="text-sm text-black/45 mb-6">
         {tab === "received"
           ? "Startups that appear most across the network — ranked by total impressions received."
           : "Sites generating the most traffic for others — ranked by impressions they gave to the network."}
@@ -154,57 +156,74 @@ function LeaderboardPage() {
       ) : (
         <>
           {podium.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="md:col-span-2">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-black/30 mb-2">Top 3</p>
-                <div className="space-y-2">
-                  {podium.map((row, i) => (
-                    <div
-                      key={row.id}
-                      className={`flex items-center gap-3 rounded-xl border p-3 ${
-                        i === 0 ? "bg-black border-black" : "bg-white border-black/8"
-                      }`}
-                    >
-                      <span className="text-xl shrink-0">{MEDALS[i]}</span>
-                      <img
-                        src={`https://www.google.com/s2/favicons?domain=${row.website_url}&sz=32`}
-                        alt=""
-                        className={`w-8 h-8 rounded-lg shrink-0 ${i === 0 ? "ring-2 ring-white/20" : "ring-1 ring-black/8"}`}
-                        onError={(e) => (e.currentTarget.style.display = "none")}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className={`font-semibold text-sm truncate ${i === 0 ? "text-white" : "text-black"}`}>
-                            {row.name}
-                          </span>
-                          {i === 0 && (
-                            <span className="text-[9px] font-bold tracking-widest uppercase text-white/40 shrink-0">Leader</span>
-                          )}
-                          {row.id === myId && (
-                            <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase shrink-0 ${
-                              i === 0 ? "bg-white/20 text-white" : "bg-black text-white"
-                            }`}>You</span>
-                          )}
-                        </div>
-                        <p className={`text-[11px] truncate mt-0.5 ${i === 0 ? "text-white/40" : "text-black/35"}`}>
-                          {row.description}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+              <div className="lg:col-span-2">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-black/30 mb-3">Top 3</p>
+                <div className="grid grid-cols-3 gap-3 items-end">
+                  {podiumDisplay.map((row) => {
+                    const originalIndex = podium.findIndex((r) => r.id === row.id);
+                    return (
+                      <div
+                        key={row.id}
+                        className={`rounded-2xl border flex flex-col items-center text-center p-3 transition-all ${
+                          originalIndex === 0
+                            ? "bg-black border-black lg:-mt-3 shadow-xl shadow-black/15 relative z-10"
+                            : "bg-white border-black/8"
+                        }`}
+                      >
+                        {originalIndex === 0 && (
+                          <p className="text-[8px] font-bold tracking-[0.15em] uppercase text-white/40 mb-1">Leader</p>
+                        )}
+                        <div className="text-xl mb-1">{MEDALS[originalIndex]}</div>
+                        <img
+                          src={`https://www.google.com/s2/favicons?domain=${row.website_url}&sz=32`}
+                          alt=""
+                          className={`w-7 h-7 rounded-lg mb-2 ${originalIndex === 0 ? "ring-2 ring-white/20" : "ring-1 ring-black/8"}`}
+                          onError={(e) => (e.currentTarget.style.display = "none")}
+                        />
+                        <p className={`font-semibold text-xs truncate w-full ${originalIndex === 0 ? "text-white" : "text-black"}`}>
+                          {row.name}
                         </p>
-                      </div>
-                      <div className="shrink-0 text-right">
-                        <div className={`text-lg font-bold tabular-nums ${i === 0 ? "text-white" : "text-black"}`}>
-                          {primaryMetric(row).toLocaleString()}
+                        {row.id === myId && (
+                          <span className={`mt-0.5 rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase ${
+                            originalIndex === 0 ? "bg-white/20 text-white" : "bg-black text-white"
+                          }`}>You</span>
+                        )}
+                        <div className="mt-2 w-full">
+                          <div className={`text-xl font-bold tabular-nums ${originalIndex === 0 ? "text-white" : "text-black"}`}>
+                            {primaryMetric(row).toLocaleString()}
+                          </div>
+                          <div className={`text-[8px] uppercase tracking-widest font-semibold mt-0.5 ${originalIndex === 0 ? "text-white/40" : "text-black/30"}`}>
+                            {tab === "received" ? "impressions" : "given"}
+                          </div>
                         </div>
-                        <div className={`text-[9px] uppercase tracking-wide ${i === 0 ? "text-white/40" : "text-black/30"}`}>
-                          {tab === "received" ? "impr." : "given"}
+                        <div className={`mt-2 pt-2 border-t w-full flex gap-3 justify-center ${originalIndex === 0 ? "border-white/10" : "border-black/6"}`}>
+                          {tab === "received" ? (
+                            <>
+                              <div>
+                                <div className={`text-xs font-semibold ${originalIndex === 0 ? "text-white" : "text-black"}`}>{row.clicks}</div>
+                                <div className={`text-[8px] uppercase tracking-wide ${originalIndex === 0 ? "text-white/35" : "text-black/30"}`}>Clicks</div>
+                              </div>
+                              <div>
+                                <div className={`text-xs font-semibold ${originalIndex === 0 ? "text-white" : "text-black"}`}>{ctr(row)}</div>
+                                <div className={`text-[8px] uppercase tracking-wide ${originalIndex === 0 ? "text-white/35" : "text-black/30"}`}>CTR</div>
+                              </div>
+                            </>
+                          ) : (
+                            <div>
+                              <div className={`text-xs font-semibold ${originalIndex === 0 ? "text-white" : "text-black"}`}>{row.impressions}</div>
+                              <div className={`text-[8px] uppercase tracking-wide ${originalIndex === 0 ? "text-white/35" : "text-black/30"}`}>Received</div>
+                            </div>
+                          )}
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
-              <div className="md:col-span-1">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-black/30 mb-2">Network Activity</p>
+              <div className="lg:col-span-1">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-black/30 mb-3">Network Activity</p>
                 <div className="rounded-xl border border-black/8 bg-white p-4 h-full flex flex-col gap-4">
                   <div>
                     <div className="flex items-center gap-1.5 mb-3">
@@ -260,7 +279,8 @@ function LeaderboardPage() {
           )}
 
 
-          <div className="mt-6 space-y-2">
+          <div className="mt-8 space-y-2">
+
             {activeRows.map((row, i) => {
               const maxVal = activeRows[0] ? primaryMetric(activeRows[0]) : 1;
               const pct = maxVal > 0 ? (primaryMetric(row) / maxVal) * 100 : 0;
