@@ -389,7 +389,7 @@ function LeaderboardPage() {
 
                 {/* Visit link */}
                 <a
-                  href={row.website_url}
+                  href={`/api/public/widget/click?id=${row.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`Visit ${row.name}`}
