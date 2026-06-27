@@ -67,6 +67,51 @@
       if (document.body) observer.observe(document.body, opts);
     }
 
+    function isWidgetVisible() {
+      try {
+        var el = iframe;
+        if (!el) return false;
+        var style = getComputedStyle(el);
+        if (style.display === 'none') return false;
+        if (style.visibility === 'hidden') return false;
+        if (parseFloat(style.opacity) === 0) return false;
+        var rect = el.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) return false;
+        if (rect.right < 0 || rect.bottom < 0) return false;
+        var parent = el.parentElement;
+        while (parent) {
+          var ps = getComputedStyle(parent);
+          if (ps.display === 'none' || ps.visibility === 'hidden' || parseFloat(ps.opacity) === 0) return false;
+          if (ps.overflow === 'hidden') {
+            var pr = parent.getBoundingClientRect();
+            if (pr.width === 0 || pr.height === 0) return false;
+          }
+          parent = parent.parentElement;
+        }
+        var cx = rect.left + rect.width / 2;
+        var cy = rect.top + rect.height / 2;
+        if (cx >= 0 && cy >= 0) {
+          var top = document.elementFromPoint(cx, cy);
+          if (top && top !== el && !el.contains(top)) return false;
+        }
+        var inlineLeft = el.style.left;
+        var inlineTop = el.style.top;
+        if (inlineLeft && parseInt(inlineLeft) < -500) return false;
+        if (inlineTop && parseInt(inlineTop) < -500) return false;
+        return true;
+      } catch (e) {
+        return true;
+      }
+    }
+
+    function sendHeartbeat() {
+      try {
+        var visible = isWidgetVisible();
+        var img = new Image();
+        img.src = origin + '/api/public/widget/heartbeat?id=' + encodeURIComponent(id) + '&visible=' + visible;
+      } catch (e) {}
+    }
+
     function inject() {
       document.body && document.body.appendChild(iframe);
       var html = document.documentElement;
@@ -75,6 +120,7 @@
         if (document.body) document.body.style.marginTop = (parseInt(getComputedStyle(document.body).marginTop) || 0) + 36 + 'px';
       }
       startObserver();
+      setTimeout(sendHeartbeat, 1500);
     }
 
     if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', inject); } else { inject(); }
