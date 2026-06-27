@@ -8,6 +8,8 @@ export interface LeaderboardRow {
   impressions: number;
   clicks: number;
   impressions_given: number;
+  dailyImpressions: number[];
+  dailyGiven: number[];
 }
 
 export const getLeaderboard = createServerFn({ method: "GET" }).handler(async () => {
@@ -19,6 +21,33 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
     .eq("status", "approved");
 
   if (error) throw error;
+
+  const since = new Date();
+  since.setDate(since.getDate() - 6);
+  since.setHours(0, 0, 0, 0);
+
+  const { data: recentImps } = await supabaseAdmin
+    .from("impressions")
+    .select("shown_startup_id, host_startup_id, created_at")
+    .gte("created_at", since.toISOString());
+
+  function buildDailyBuckets(
+    rows: typeof recentImps,
+    field: "shown_startup_id" | "host_startup_id",
+    startupId: string,
+  ): number[] {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const counts = [0, 0, 0, 0, 0, 0, 0];
+    (rows ?? []).forEach((r) => {
+      if ((r as any)[field] !== startupId) return;
+      const d = new Date(r.created_at);
+      d.setHours(0, 0, 0, 0);
+      const diff = Math.round((today.getTime() - d.getTime()) / 86400000);
+      if (diff >= 0 && diff <= 6) counts[6 - diff]++;
+    });
+    return counts;
+  }
 
   const rows = await Promise.all(
     (startups ?? []).map(async (startup) => {
@@ -42,6 +71,8 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
         impressions: impressions ?? 0,
         clicks: clicks ?? 0,
         impressions_given: impressions_given ?? 0,
+        dailyImpressions: buildDailyBuckets(recentImps, "shown_startup_id", startup.id),
+        dailyGiven: buildDailyBuckets(recentImps, "host_startup_id", startup.id),
       } satisfies LeaderboardRow;
     }),
   );
