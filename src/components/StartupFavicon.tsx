@@ -31,13 +31,10 @@ export function StartupFavicon({ url, name, size = 32, className = "", alt = "" 
   const sources = useMemo(() => {
     if (!domain) return [];
     return [
-      `${origin}/favicon.ico`,
-      `${origin}/favicon.png`,
-      `${origin}/favicon.svg`,
-      `${origin}/apple-touch-icon.png`,
       `https://www.google.com/s2/favicons?domain=${domain}&sz=${Math.max(size * 2, 64)}`,
     ];
-  }, [domain, origin, size]);
+  }, [domain, size]);
+
 
   const [idx, setIdx] = useState(0);
   useEffect(() => setIdx(0), [url, size]);
