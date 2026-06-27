@@ -299,75 +299,98 @@ function LeaderboardPage() {
 
 
           <div className="mt-6 space-y-2">
+            {activeRows.map((row, i) => (
+              <div
+                key={row.id}
+                className={`group flex items-center gap-4 rounded-2xl border bg-white px-5 py-4 transition-all hover:border-black/20 hover:shadow-sm ${
+                  row.id === myId ? "border-black/20 ring-1 ring-black/8" : "border-black/8"
+                }`}
+              >
+                {/* Rank */}
+                <div className="w-7 shrink-0 text-center">
+                  {i < 3 ? (
+                    <span className="text-lg">{MEDALS[i]}</span>
+                  ) : (
+                    <span className="text-sm font-semibold text-black/25 tabular-nums">{i + 1}</span>
+                  )}
+                </div>
 
-            {activeRows.map((row, i) => {
-              const maxVal = activeRows[0] ? primaryMetric(activeRows[0]) : 1;
-              const pct = maxVal > 0 ? (primaryMetric(row) / maxVal) * 100 : 0;
-              return (
-                <div
-                  key={row.id}
-                  className={`group flex items-center gap-4 rounded-2xl border bg-white px-5 py-4 transition-all hover:border-black/20 hover:shadow-sm ${
-                    row.id === myId ? "border-black/20 ring-1 ring-black/8" : "border-black/8"
-                  }`}
-                >
-                  <div className="w-8 shrink-0 text-center">
-                    {i < 3 ? (
-                      <span className="text-xl">{MEDALS[i]}</span>
-                    ) : (
-                      <span className="text-sm font-semibold text-black/25 tabular-nums">{i + 1}</span>
+                {/* Logo */}
+                <img
+                  src={`https://www.google.com/s2/favicons?domain=${row.website_url}&sz=32`}
+                  alt=""
+                  className="h-9 w-9 rounded-xl ring-1 ring-black/8 shrink-0 object-contain bg-white"
+                  onError={(e) => (e.currentTarget.style.display = "none")}
+                />
+
+                {/* Name + description */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-sm text-black truncate">{row.name}</span>
+                    {row.id === myId && (
+                      <span className="rounded-full bg-black px-1.5 py-0.5 text-[8px] font-bold text-white uppercase tracking-wide shrink-0">You</span>
                     )}
                   </div>
-
-                  <img
-                    src={`https://www.google.com/s2/favicons?domain=${row.website_url}&sz=32`}
-                    alt=""
-                    className="h-8 w-8 rounded-lg ring-1 ring-black/8 shrink-0"
-                    onError={(e) => (e.currentTarget.style.display = "none")}
-                  />
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-black text-sm">{row.name}</span>
-                      {row.id === myId && (
-                        <span className="rounded-full bg-black px-2 py-0.5 text-[9px] font-bold text-white uppercase tracking-wide">You</span>
-                      )}
-                    </div>
-                    <p className="text-xs text-black/35 truncate mt-0.5">{row.description}</p>
-                    <div className="mt-2 h-1 w-full rounded-full bg-black/6 overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-black transition-all duration-700"
-                        style={{ width: `${pct}%`, opacity: i === 0 ? 1 : 0.25 + (pct / 100) * 0.75 }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="shrink-0 text-right">
-                    <div className="text-base font-bold tabular-nums text-black">{primaryMetric(row).toLocaleString()}</div>
-                    <div className="text-[10px] uppercase tracking-wide text-black/30">
-                      {tab === "received" ? "impressions" : "given"}
-                    </div>
-                  </div>
-
-                  {tab === "received" && (
-                    <div className="hidden sm:flex shrink-0 flex-col items-end gap-0.5">
-                      <span className="text-xs font-medium tabular-nums text-black/50">{row.clicks} clicks</span>
-                      <span className="text-[11px] text-black/30">{ctr(row)} CTR</span>
-                    </div>
-                  )}
-
-                  <a
-                    href={row.website_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`Visit ${row.name}`}
-                    className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <ExternalLink className="h-3.5 w-3.5 text-black/30 hover:text-black transition-colors" />
-                  </a>
+                  <p className="text-xs text-black/40 truncate mt-0.5">{row.description}</p>
                 </div>
-              );
-            })}
+
+                {/* Mini sparkline — 7 day chart */}
+                <div className="shrink-0 hidden sm:flex flex-col items-center gap-1">
+                  <MiniSparkline
+                    data={tab === "received" ? row.dailyImpressions : row.dailyGiven}
+                  />
+                  <span className="text-[8px] uppercase tracking-wide text-black/20">7 days</span>
+                </div>
+
+                {/* Stats columns */}
+                {tab === "received" ? (
+                  <div className="shrink-0 flex gap-5 text-right">
+                    <div>
+                      <div className="text-base font-bold tabular-nums text-black">{row.impressions.toLocaleString()}</div>
+                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">Impressions</div>
+                    </div>
+                    <div>
+                      <div className="text-base font-bold tabular-nums text-black">{row.clicks.toLocaleString()}</div>
+                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">Clicks</div>
+                    </div>
+                    <div>
+                      <div className="text-base font-bold tabular-nums text-black">{ctr(row)}</div>
+                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">CTR</div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="shrink-0 flex gap-5 text-right">
+                    <div>
+                      <div className="text-base font-bold tabular-nums text-black">{row.impressions_given.toLocaleString()}</div>
+                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">Given</div>
+                    </div>
+                    <div>
+                      <div className="text-base font-bold tabular-nums text-black">{row.impressions.toLocaleString()}</div>
+                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">Received</div>
+                    </div>
+                    <div>
+                      <div className="text-base font-bold tabular-nums text-black">
+                        {row.impressions > 0 ? `${(row.impressions_given / row.impressions).toFixed(1)}x` : "—"}
+                      </div>
+                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">Ratio</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Visit link */}
+                <a
+                  href={row.website_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Visit ${row.name}`}
+                  className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <ExternalLink className="h-3.5 w-3.5 text-black/30 hover:text-black transition-colors" />
+                </a>
+              </div>
+            ))}
           </div>
+
         </>
       )}
     </div>
