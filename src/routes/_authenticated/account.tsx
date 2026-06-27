@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { StartupFavicon } from "@/components/StartupFavicon";
 import { Save, User, Globe, Trash2, Plus, ChevronDown, ChevronUp, ExternalLink, Info } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/account")({
