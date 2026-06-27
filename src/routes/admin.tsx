@@ -2,7 +2,7 @@ import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-ro
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Check, X, ExternalLink, LogOut, Clock, RefreshCw, Radio, CircleSlash, Loader2 } from "lucide-react";
+import { Check, X, ExternalLink, LogOut, Clock, RefreshCw, Radio, CircleSlash, Loader2, Eye, EyeOff, ShieldOff, Ban } from "lucide-react";
 
 const ADMIN_EMAIL = "danielabinav16@gmail.com";
 
@@ -35,6 +35,11 @@ interface Startup {
   user_id: string;
   warned_at: string | null;
   warn_expires_at: string | null;
+  widget_hidden_at: string | null;
+  widget_last_heartbeat_at: string | null;
+  strike_count: number;
+  rejection_reason: string | null;
+  banned: boolean;
 }
 
 const STATUS_TABS = ["all", "pending", "approved", "warned", "rejected"] as const;
@@ -231,6 +236,7 @@ function AdminPage() {
                     <th className="hidden px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 md:table-cell">One-liner</th>
                     <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 sm:px-5">Status</th>
                     <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 sm:px-5">Embed</th>
+                    <th className="hidden px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 lg:table-cell">Widget Health</th>
                     <th className="hidden px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 sm:table-cell">Applied</th>
                     <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 sm:px-5">Actions</th>
                   </tr>
@@ -300,6 +306,37 @@ function AdminPage() {
                             <><RefreshCw className="h-3 w-3" /> Check</>
                           )}
                         </button>
+                      </td>
+                      <td className="hidden px-5 py-4 lg:table-cell">
+                        {s.banned ? (
+                          <span className="inline-flex items-center gap-1.5 rounded-full border border-red-300 bg-red-50 px-2.5 py-0.5 text-xs font-medium text-red-700">
+                            <Ban className="h-3 w-3" /> Banned
+                          </span>
+                        ) : s.rejection_reason === "widget_hidden" ? (
+                          <span className="inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-2.5 py-0.5 text-xs font-medium text-orange-700">
+                            <ShieldOff className="h-3 w-3" /> Suspended
+                          </span>
+                        ) : s.widget_hidden_at ? (
+                          <div className="flex flex-col gap-1">
+                            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700">
+                              <EyeOff className="h-3 w-3" /> Hidden · Strike {s.strike_count}
+                            </span>
+                            <span className="text-[10px] text-black/35">
+                              since {new Date(s.widget_hidden_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })} {new Date(s.widget_hidden_at).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+                            </span>
+                          </div>
+                        ) : s.widget_last_heartbeat_at ? (
+                          <div className="flex flex-col gap-1">
+                            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
+                              <Eye className="h-3 w-3" /> Visible
+                            </span>
+                            <span className="text-[10px] text-black/35">
+                              last seen {new Date(s.widget_last_heartbeat_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-black/25">No heartbeat yet</span>
+                        )}
                       </td>
                       <td className="hidden px-5 py-4 text-xs text-black/35 sm:table-cell">
                         {new Date(s.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
