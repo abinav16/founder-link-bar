@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Info, X } from "lucide-react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { StartupFavicon } from "@/components/StartupFavicon";
 
 const search = z.object({
   host: z.string().uuid().optional(),
@@ -153,11 +154,11 @@ function WidgetBar() {
         </a>
         {startup ? (
           <>
-            <img
-              src={`https://www.google.com/s2/favicons?domain=${startup.website_url}&sz=32`}
-              alt=""
-              style={{ width: 14, height: 14, borderRadius: 2, flexShrink: 0, objectFit: "contain" }}
-              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+            <StartupFavicon
+              url={startup.website_url}
+              name={startup.name}
+              size={14}
+              className="rounded-sm shrink-0"
             />
             <span style={{ fontWeight: 600, color: tokens.text, flexShrink: 0 }}>{startup.name}</span>
             <span style={{ color: tokens.textMuted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { StartupFavicon } from "@/components/StartupFavicon";
 import {
   ArrowRight, ArrowLeft, ExternalLink,
   Copy, Check, CheckCircle2, XCircle, Loader2,
@@ -361,7 +362,7 @@ function Apply() {
           </p>
 
           <div className="mt-8 flex items-center gap-3 rounded-xl border border-black/8 bg-black/[0.02] px-5 py-4">
-            {url && <img src={`https://www.google.com/s2/favicons?domain=${url}&sz=32`} alt="" className="h-5 w-5 rounded-sm" onError={(e) => (e.currentTarget.style.display = "none")} />}
+            {url && <StartupFavicon url={url} name={name} size={20} className="rounded-sm" />}
             <div className="min-w-0">
               <p className="font-medium text-black">{name}</p>
               <p className="truncate text-xs text-black/40">{url}</p>

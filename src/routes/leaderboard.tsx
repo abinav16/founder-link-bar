@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import type { User } from "@supabase/supabase-js";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { StartupFavicon } from "@/components/StartupFavicon";
 import { getLeaderboard, getNetworkActivity, type LeaderboardRow } from "@/lib/leaderboard.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Trophy, ExternalLink } from "lucide-react";
@@ -178,11 +179,11 @@ function LeaderboardPage() {
                           <p className="text-[8px] font-bold tracking-[0.15em] uppercase text-white/40 mb-1">Leader</p>
                         )}
                         <div className="text-xl mb-1">{MEDALS[originalIndex]}</div>
-                        <img
-                          src={`https://www.google.com/s2/favicons?domain=${row.website_url}&sz=32`}
-                          alt=""
-                          className={`w-7 h-7 rounded-lg mb-2 ${originalIndex === 0 ? "ring-2 ring-white/20" : "ring-1 ring-black/8"}`}
-                          onError={(e) => (e.currentTarget.style.display = "none")}
+                        <StartupFavicon
+                          url={row.website_url}
+                          name={row.name}
+                          size={28}
+                          className={`rounded-lg mb-2 bg-white ${originalIndex === 0 ? "ring-2 ring-white/20" : "ring-1 ring-black/8"}`}
                         />
                         <p className={`font-semibold text-xs truncate w-full ${originalIndex === 0 ? "text-white" : "text-black"}`}>
                           {row.name}
@@ -326,11 +327,11 @@ function LeaderboardPage() {
                 </div>
 
                 {/* Logo */}
-                <img
-                  src={`https://www.google.com/s2/favicons?domain=${row.website_url}&sz=32`}
-                  alt=""
-                  className="h-9 w-9 rounded-xl ring-1 ring-black/8 shrink-0 object-contain bg-white"
-                  onError={(e) => (e.currentTarget.style.display = "none")}
+                <StartupFavicon
+                  url={row.website_url}
+                  name={row.name}
+                  size={36}
+                  className="rounded-xl ring-1 ring-black/8 shrink-0 bg-white"
                 />
 
                 {/* Name + description */}

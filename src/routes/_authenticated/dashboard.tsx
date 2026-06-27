@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Copy, Check, Code2, ArrowRight, BarChart2, MousePointerClick, Layers, Percent, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { StartupFavicon } from "@/components/StartupFavicon";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Overview — StartupBar" }] }),
@@ -301,7 +302,7 @@ function DashboardPage() {
                             onClick={() => switchStartup(s)}
                             className={`flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm hover:bg-black/[0.03] transition-colors ${s.id === startup.id ? "font-medium text-black" : "text-black/60"}`}
                           >
-                            <img src={`https://www.google.com/s2/favicons?domain=${s.website_url}&sz=32`} alt="" className="h-4 w-4 rounded-sm" onError={(e) => (e.currentTarget.style.display = "none")} />
+                            <StartupFavicon url={s.website_url} name={s.name} size={16} className="rounded-sm" />
                             <span className="truncate">{s.name}</span>
                             {s.id === startup.id && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-black" />}
                           </button>
