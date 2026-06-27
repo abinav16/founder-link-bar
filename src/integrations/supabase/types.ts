@@ -115,40 +115,55 @@ export type Database = {
       }
       startups: {
         Row: {
+          banned: boolean
           created_at: string
           description: string
           id: string
           name: string
+          rejection_reason: string | null
           status: Database["public"]["Enums"]["startup_status"]
+          strike_count: number
           updated_at: string
           user_id: string
           warn_expires_at: string | null
           warned_at: string | null
           website_url: string
+          widget_hidden_at: string | null
+          widget_last_heartbeat_at: string | null
         }
         Insert: {
+          banned?: boolean
           created_at?: string
           description: string
           id?: string
           name: string
+          rejection_reason?: string | null
           status?: Database["public"]["Enums"]["startup_status"]
+          strike_count?: number
           updated_at?: string
           user_id: string
           warn_expires_at?: string | null
           warned_at?: string | null
           website_url: string
+          widget_hidden_at?: string | null
+          widget_last_heartbeat_at?: string | null
         }
         Update: {
+          banned?: boolean
           created_at?: string
           description?: string
           id?: string
           name?: string
+          rejection_reason?: string | null
           status?: Database["public"]["Enums"]["startup_status"]
+          strike_count?: number
           updated_at?: string
           user_id?: string
           warn_expires_at?: string | null
           warned_at?: string | null
           website_url?: string
+          widget_hidden_at?: string | null
+          widget_last_heartbeat_at?: string | null
         }
         Relationships: []
       }

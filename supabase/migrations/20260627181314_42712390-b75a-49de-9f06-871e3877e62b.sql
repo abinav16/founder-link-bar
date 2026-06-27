@@ -1,0 +1,8 @@
+ALTER TABLE public.startups
+  ADD COLUMN IF NOT EXISTS widget_hidden_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS widget_last_heartbeat_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS strike_count INTEGER NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS rejection_reason TEXT,
+  ADD COLUMN IF NOT EXISTS banned BOOLEAN NOT NULL DEFAULT false;
+
+GRANT UPDATE ON public.startups TO service_role;
