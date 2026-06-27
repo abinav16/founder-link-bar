@@ -327,11 +327,11 @@ function LeaderboardPage() {
                 </div>
 
                 {/* Logo */}
-                <img
-                  src={`https://www.google.com/s2/favicons?domain=${row.website_url}&sz=32`}
-                  alt=""
-                  className="h-9 w-9 rounded-xl ring-1 ring-black/8 shrink-0 object-contain bg-white"
-                  onError={(e) => (e.currentTarget.style.display = "none")}
+                <StartupFavicon
+                  url={row.website_url}
+                  name={row.name}
+                  size={36}
+                  className="rounded-xl ring-1 ring-black/8 shrink-0 bg-white"
                 />
 
                 {/* Name + description */}
