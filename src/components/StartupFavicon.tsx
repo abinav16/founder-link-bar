@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface Props {
   url: string;
@@ -18,21 +18,29 @@ function extractDomain(url: string): string {
   }
 }
 
-const LOGO_DEV_KEY = import.meta.env.VITE_LOVABLE_CONNECTOR_LOGO_DEV_API_KEY as string | undefined;
-
 export function StartupFavicon({ url, name, size = 32, className = "", alt = "" }: Props) {
   const domain = extractDomain(url);
-  const sources: string[] = [];
-  if (LOGO_DEV_KEY && domain) {
-    sources.push(`https://img.logo.dev/${domain}?token=${LOGO_DEV_KEY}&size=${size * 2}&format=png&fallback=404`);
-  }
-  if (domain) {
-    sources.push(`https://www.google.com/s2/favicons?domain=${domain}&sz=${Math.max(size * 2, 64)}`);
-    sources.push(`https://icons.duckduckgo.com/ip3/${domain}.ico`);
-  }
+  const origin = useMemo(() => {
+    if (!domain) return "";
+    try {
+      return new URL(url.startsWith("http") ? url : `https://${url}`).origin;
+    } catch {
+      return `https://${domain}`;
+    }
+  }, [domain, url]);
+  const sources = useMemo(() => {
+    if (!domain) return [];
+    return [
+      `${origin}/favicon.ico`,
+      `${origin}/favicon.png`,
+      `${origin}/favicon.svg`,
+      `${origin}/apple-touch-icon.png`,
+      `https://www.google.com/s2/favicons?domain=${domain}&sz=${Math.max(size * 2, 64)}`,
+    ];
+  }, [domain, origin, size]);
 
   const [idx, setIdx] = useState(0);
-  useEffect(() => setIdx(0), [url]);
+  useEffect(() => setIdx(0), [url, size]);
 
   if (idx >= sources.length || sources.length === 0) {
     const letter = (name || domain || "?").trim().charAt(0).toUpperCase();
