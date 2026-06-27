@@ -219,6 +219,16 @@ function LeaderboardPage() {
                             </div>
                           )}
                         </div>
+                        <a
+                          href={`/api/public/widget/click?id=${row.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`mt-2 inline-flex items-center gap-1 text-[10px] font-semibold transition-opacity hover:opacity-70 ${
+                            originalIndex === 0 ? "text-white/60" : "text-black/40"
+                          }`}
+                        >
+                          Visit site <ExternalLink className="h-2.5 w-2.5" />
+                        </a>
                       </div>
                     );
                   })}
