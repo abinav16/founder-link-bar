@@ -23,6 +23,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as ApiPublicVerifyInstallRouteImport } from './routes/api/public/verify-install'
 import { Route as ApiPublicWidgetPickRouteImport } from './routes/api/public/widget.pick'
+import { Route as ApiPublicWidgetHeartbeatRouteImport } from './routes/api/public/widget.heartbeat'
 import { Route as ApiPublicWidgetClickRouteImport } from './routes/api/public/widget.click'
 
 const TermsRoute = TermsRouteImport.update({
@@ -94,6 +95,12 @@ const ApiPublicWidgetPickRoute = ApiPublicWidgetPickRouteImport.update({
   path: '/api/public/widget/pick',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicWidgetHeartbeatRoute =
+  ApiPublicWidgetHeartbeatRouteImport.update({
+    id: '/api/public/widget/heartbeat',
+    path: '/api/public/widget/heartbeat',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicWidgetClickRoute = ApiPublicWidgetClickRouteImport.update({
   id: '/api/public/widget/click',
   path: '/api/public/widget/click',
@@ -114,6 +121,7 @@ export interface FileRoutesByFullPath {
   '/widget/bar': typeof WidgetBarRoute
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
   '/api/public/widget/click': typeof ApiPublicWidgetClickRoute
+  '/api/public/widget/heartbeat': typeof ApiPublicWidgetHeartbeatRoute
   '/api/public/widget/pick': typeof ApiPublicWidgetPickRoute
 }
 export interface FileRoutesByTo {
@@ -130,6 +138,7 @@ export interface FileRoutesByTo {
   '/widget/bar': typeof WidgetBarRoute
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
   '/api/public/widget/click': typeof ApiPublicWidgetClickRoute
+  '/api/public/widget/heartbeat': typeof ApiPublicWidgetHeartbeatRoute
   '/api/public/widget/pick': typeof ApiPublicWidgetPickRoute
 }
 export interface FileRoutesById {
@@ -148,6 +157,7 @@ export interface FileRoutesById {
   '/widget/bar': typeof WidgetBarRoute
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
   '/api/public/widget/click': typeof ApiPublicWidgetClickRoute
+  '/api/public/widget/heartbeat': typeof ApiPublicWidgetHeartbeatRoute
   '/api/public/widget/pick': typeof ApiPublicWidgetPickRoute
 }
 export interface FileRouteTypes {
@@ -166,6 +176,7 @@ export interface FileRouteTypes {
     | '/widget/bar'
     | '/api/public/verify-install'
     | '/api/public/widget/click'
+    | '/api/public/widget/heartbeat'
     | '/api/public/widget/pick'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -182,6 +193,7 @@ export interface FileRouteTypes {
     | '/widget/bar'
     | '/api/public/verify-install'
     | '/api/public/widget/click'
+    | '/api/public/widget/heartbeat'
     | '/api/public/widget/pick'
   id:
     | '__root__'
@@ -199,6 +211,7 @@ export interface FileRouteTypes {
     | '/widget/bar'
     | '/api/public/verify-install'
     | '/api/public/widget/click'
+    | '/api/public/widget/heartbeat'
     | '/api/public/widget/pick'
   fileRoutesById: FileRoutesById
 }
@@ -215,6 +228,7 @@ export interface RootRouteChildren {
   WidgetBarRoute: typeof WidgetBarRoute
   ApiPublicVerifyInstallRoute: typeof ApiPublicVerifyInstallRoute
   ApiPublicWidgetClickRoute: typeof ApiPublicWidgetClickRoute
+  ApiPublicWidgetHeartbeatRoute: typeof ApiPublicWidgetHeartbeatRoute
   ApiPublicWidgetPickRoute: typeof ApiPublicWidgetPickRoute
 }
 
@@ -318,6 +332,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWidgetPickRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/widget/heartbeat': {
+      id: '/api/public/widget/heartbeat'
+      path: '/api/public/widget/heartbeat'
+      fullPath: '/api/public/widget/heartbeat'
+      preLoaderRoute: typeof ApiPublicWidgetHeartbeatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/widget/click': {
       id: '/api/public/widget/click'
       path: '/api/public/widget/click'
@@ -354,6 +375,7 @@ const rootRouteChildren: RootRouteChildren = {
   WidgetBarRoute: WidgetBarRoute,
   ApiPublicVerifyInstallRoute: ApiPublicVerifyInstallRoute,
   ApiPublicWidgetClickRoute: ApiPublicWidgetClickRoute,
+  ApiPublicWidgetHeartbeatRoute: ApiPublicWidgetHeartbeatRoute,
   ApiPublicWidgetPickRoute: ApiPublicWidgetPickRoute,
 }
 export const routeTree = rootRouteImport
