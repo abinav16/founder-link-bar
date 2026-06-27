@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Copy, Check, Code2, ArrowRight, BarChart2, MousePointerClick, Layers, Percent, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { StartupFavicon } from "@/components/StartupFavicon";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Overview — StartupBar" }] }),
