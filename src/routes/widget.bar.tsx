@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Info, X } from "lucide-react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { StartupFavicon } from "@/components/StartupFavicon";
 
 const search = z.object({
   host: z.string().uuid().optional(),
