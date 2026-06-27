@@ -14,6 +14,25 @@ export const Route = createFileRoute("/leaderboard")({
 
 const MEDALS = ["🥇", "🥈", "🥉"];
 
+function MiniSparkline({ data, color = "#000" }: { data: number[]; color?: string }) {
+  const max = Math.max(...data, 1);
+  return (
+    <div className="flex items-end gap-[2px] h-7">
+      {data.map((v, i) => (
+        <div
+          key={i}
+          className="w-[3px] rounded-full transition-all duration-500"
+          style={{
+            height: `${Math.max((v / max) * 100, v > 0 ? 15 : 8)}%`,
+            background: color,
+            opacity: v > 0 ? (0.3 + (v / max) * 0.7) : 0.12,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 interface NetworkActivity {
   todayImpressions: number;
   todayClicks: number;
