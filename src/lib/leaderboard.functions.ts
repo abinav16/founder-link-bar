@@ -1,4 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
+
+function getClient() {
+  return createClient<Database>(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_PUBLISHABLE_KEY!,
+    { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } }
+  );
+}
 
 export interface LeaderboardRow {
   id: string;
@@ -13,9 +23,9 @@ export interface LeaderboardRow {
 }
 
 export const getLeaderboard = createServerFn({ method: "GET" }).handler(async () => {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const supabase = getClient();
 
-  const { data: startups, error } = await supabaseAdmin
+  const { data: startups, error } = await supabase
     .from("startups")
     .select("id, name, website_url, description")
     .eq("status", "approved");
@@ -26,7 +36,7 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
   since.setDate(since.getDate() - 6);
   since.setHours(0, 0, 0, 0);
 
-  const { data: recentImps } = await supabaseAdmin
+  const { data: recentImps } = await supabase
     .from("impressions")
     .select("shown_startup_id, host_startup_id, created_at")
     .gte("created_at", since.toISOString());
@@ -52,15 +62,15 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
   const rows = await Promise.all(
     (startups ?? []).map(async (startup) => {
       const [{ count: impressions }, { count: clicks }, { count: impressions_given }] = await Promise.all([
-        supabaseAdmin
+        supabase
           .from("impressions")
           .select("*", { count: "exact", head: true })
           .eq("shown_startup_id", startup.id),
-        supabaseAdmin
+        supabase
           .from("clicks")
           .select("*", { count: "exact", head: true })
           .eq("shown_startup_id", startup.id),
-        supabaseAdmin
+        supabase
           .from("impressions")
           .select("*", { count: "exact", head: true })
           .eq("host_startup_id", startup.id),
@@ -91,7 +101,7 @@ export interface NetworkActivityResult {
 }
 
 export const getNetworkActivity = createServerFn({ method: "GET" }).handler(async (): Promise<NetworkActivityResult> => {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const supabase = getClient();
 
   const todayStart = new Date();
   todayStart.setUTCHours(0, 0, 0, 0);
@@ -99,10 +109,10 @@ export const getNetworkActivity = createServerFn({ method: "GET" }).handler(asyn
   yesterdayStart.setUTCDate(yesterdayStart.getUTCDate() - 1);
 
   const [ti, tc, yi, yc] = await Promise.all([
-    supabaseAdmin.from("impressions").select("*", { count: "exact", head: true }).gte("created_at", todayStart.toISOString()),
-    supabaseAdmin.from("clicks").select("*", { count: "exact", head: true }).gte("created_at", todayStart.toISOString()),
-    supabaseAdmin.from("impressions").select("*", { count: "exact", head: true }).gte("created_at", yesterdayStart.toISOString()).lt("created_at", todayStart.toISOString()),
-    supabaseAdmin.from("clicks").select("*", { count: "exact", head: true }).gte("created_at", yesterdayStart.toISOString()).lt("created_at", todayStart.toISOString()),
+    supabase.from("impressions").select("*", { count: "exact", head: true }).gte("created_at", todayStart.toISOString()),
+    supabase.from("clicks").select("*", { count: "exact", head: true }).gte("created_at", todayStart.toISOString()),
+    supabase.from("impressions").select("*", { count: "exact", head: true }).gte("created_at", yesterdayStart.toISOString()).lt("created_at", todayStart.toISOString()),
+    supabase.from("clicks").select("*", { count: "exact", head: true }).gte("created_at", yesterdayStart.toISOString()).lt("created_at", todayStart.toISOString()),
   ]);
 
   return {
