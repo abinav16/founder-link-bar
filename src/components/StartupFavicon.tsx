@@ -31,9 +31,9 @@ export function StartupFavicon({ url, name, size = 32, className = "", alt = "" 
   const sources = useMemo(() => {
     if (!domain) return [];
     return [
-      `https://www.google.com/s2/favicons?domain=${domain}&sz=${Math.max(size * 2, 64)}`,
+      `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
     ];
-  }, [domain, size]);
+  }, [domain]);
 
 
   const [idx, setIdx] = useState(0);
