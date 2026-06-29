@@ -228,7 +228,7 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
         const r = node.size / 2;
 
         if (node.snapped) {
-          node.snapCooldown--;
+          node.snapCooldown -= dt;
           if (node.snapCooldown <= 0) node.snapped = false;
         }
 
@@ -237,7 +237,7 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
           const dy = mouse.y - node.y;
           const dist = Math.sqrt(dx * dx + dy * dy) || 1;
           if (dist < ATTRACT_RADIUS) {
-            const force = ATTRACT_K * dist;
+            const force = ATTRACT_K * dist * dt;
             node.vx += (dx / dist) * force;
             node.vy += (dy / dist) * force;
             if (dist > MAX_THREAD) {
@@ -249,9 +249,9 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
           }
         }
 
-        node.vy += GRAVITY;
-        node.x += node.vx;
-        node.y += node.vy;
+        node.vy += GRAVITY * dt;
+        node.x += node.vx * dt;
+        node.y += node.vy * dt;
 
         const { w: sw, h: sh } = sizeRef.current;
         const pillR = sh / 2;
@@ -262,11 +262,11 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
           node.y = node.homeY;
           node.vy = 0;
           node.av = node.vx / r;
-          node.vx *= GROUND_FRICTION;
+          node.vx *= Math.pow(GROUND_FRICTION, dt);
         } else {
-          node.vx *= AIR_DAMPING;
-          node.vy *= AIR_DAMPING;
-          node.av *= 0.98;
+          node.vx *= Math.pow(AIR_DAMPING, dt);
+          node.vy *= Math.pow(AIR_DAMPING, dt);
+          node.av *= Math.pow(0.98, dt);
         }
 
         if (node.y < margin) { node.y = margin; node.vy = Math.abs(node.vy) * 0.5; node.av *= -0.5; }
@@ -295,8 +295,9 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
           }
         }
 
-        node.angle += node.av;
+        node.angle += node.av * dt;
       });
+
 
       if (mouseActive) {
         nodes.forEach((node) => {
