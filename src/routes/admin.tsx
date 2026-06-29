@@ -109,7 +109,7 @@ function AdminPage() {
 
   async function setStatus(id: string, status: "approved" | "rejected", reason?: string) {
     setUpdating(id);
-    const update: Record<string, unknown> = { status };
+    const update: { status: string; rejection_reason?: string } = { status };
     if (status === "rejected" && reason) update.rejection_reason = reason;
     const { error } = await supabase.from("startups").update(update).eq("id", id);
     if (error) {
