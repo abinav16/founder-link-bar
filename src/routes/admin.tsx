@@ -80,7 +80,6 @@ function AdminPage() {
       const j = await r.json();
       const status: "live" | "missing" | "error" = j.installed ? "live" : (j.error ? "error" : "missing");
       setEmbed((p) => ({ ...p, [id]: status }));
-      // Auto-clear warning if reinstalled
       if (status === "live") {
         const s = startups.find((x) => x.id === id);
         if (s?.warn_expires_at) {
@@ -103,21 +102,27 @@ function AdminPage() {
     const list = (data as Startup[]) ?? [];
     setStartups(list);
     setLoading(false);
-    // Auto-check embed for approved startups
     list.filter((s) => s.status === "approved" && s.website_url).forEach((s) => checkEmbed(s.id, s.website_url));
   }
 
   useEffect(() => { load(); }, []);
 
-  async function setStatus(id: string, status: "approved" | "rejected") {
+  async function setStatus(id: string, status: "approved" | "rejected", reason?: string) {
     setUpdating(id);
-    const { error } = await supabase.from("startups").update({ status }).eq("id", id);
+    const update: Partial<Startup> = { status };
+    if (status === "rejected" && reason) update.rejection_reason = reason;
+    const { error } = await supabase.from("startups").update(update).eq("id", id);
     if (error) {
       toast.error(error.message);
     } else {
       toast.success(`Startup ${status}`);
-      setStartups((prev) => prev.map((s) => s.id === id ? { ...s, status } : s));
-      supabase.functions.invoke("send-email", { body: { type: status === "approved" ? "startup-approved" : "startup-rejected", data: { startupId: id } } }).catch(() => {});
+      setStartups((prev) => prev.map((s) => s.id === id ? { ...s, status, rejection_reason: reason ?? s.rejection_reason } : s));
+      const emailType = status === "approved"
+        ? "startup-approved"
+        : reason === "widget_not_installed"
+          ? "startup-removed-no-widget"
+          : "startup-rejected";
+      supabase.functions.invoke("send-email", { body: { type: emailType, data: { startupId: id } } }).catch(() => {});
     }
     setUpdating(null);
   }
@@ -249,7 +254,7 @@ function AdminPage() {
                       <td className="px-4 py-4 sm:px-5">
                         <div className="flex items-center gap-2">
                           <span className="font-medium text-black">{s.name}</span>
-                          <a href={s.website_url} target="_blank" rel="noopener noreferrer"
+                          <a href={s.website_url?.startsWith("http") ? s.website_url : `https://${s.website_url}`} target="_blank" rel="noopener noreferrer"
                             className="text-black/25 hover:text-black transition-colors">
                             <ExternalLink className="h-3.5 w-3.5" />
                           </a>
@@ -360,8 +365,9 @@ function AdminPage() {
                           )}
                           {s.status !== "rejected" && (() => {
                             const warnExpired = !!s.warn_expires_at && new Date(s.warn_expires_at).getTime() <= now;
+                            const isWidgetRemoval = warnExpired || (!!s.warn_expires_at && s.status === "approved");
                             return (
-                              <button onClick={() => setStatus(s.id, "rejected")} disabled={updating === s.id}
+                              <button onClick={() => setStatus(s.id, "rejected", isWidgetRemoval ? "widget_not_installed" : undefined)} disabled={updating === s.id}
                                 className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors disabled:opacity-50 sm:gap-1.5 sm:px-3 ${
                                   warnExpired
                                     ? "border-red-400 bg-red-100 text-red-700 hover:bg-red-200 ring-1 ring-red-300"
