@@ -81,8 +81,15 @@ function StartupCard({ startup, onUpdate, onDelete }: {
     if (file.size > 2 * 1024 * 1024) { toast.error("Image must be under 2 MB"); return; }
 
     setUploading(true);
+    const { data: userData, error: userErr } = await supabase.auth.getUser();
+    if (userErr || !userData.user) {
+      toast.error("Please sign in again to upload your logo");
+      setUploading(false);
+      return;
+    }
+
     const ext = file.name.split(".").pop();
-    const path = `${startup.user_id}/${startup.id}.${ext}`;
+    const path = `${userData.user.id}/${startup.id}.${ext}`;
 
     const { error: uploadErr } = await supabase.storage
       .from("startup-logos")
