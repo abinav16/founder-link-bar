@@ -6,6 +6,7 @@ interface Props {
   size?: number;
   className?: string;
   alt?: string;
+  logoUrl?: string | null;
 }
 
 function extractDomain(url: string): string {
@@ -18,26 +19,17 @@ function extractDomain(url: string): string {
   }
 }
 
-export function StartupFavicon({ url, name, size = 32, className = "", alt = "" }: Props) {
+export function StartupFavicon({ url, name, size = 32, className = "", alt = "", logoUrl }: Props) {
   const domain = extractDomain(url);
-  const origin = useMemo(() => {
-    if (!domain) return "";
-    try {
-      return new URL(url.startsWith("http") ? url : `https://${url}`).origin;
-    } catch {
-      return `https://${domain}`;
-    }
-  }, [domain, url]);
   const sources = useMemo(() => {
-    if (!domain) return [];
-    return [
-      `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
-    ];
-  }, [domain]);
-
+    const list: string[] = [];
+    if (logoUrl) list.push(logoUrl);
+    if (domain) list.push(`https://www.google.com/s2/favicons?domain=${domain}&sz=128`);
+    return list;
+  }, [domain, logoUrl]);
 
   const [idx, setIdx] = useState(0);
-  useEffect(() => setIdx(0), [url, size]);
+  useEffect(() => setIdx(0), [url, size, logoUrl]);
 
   if (idx >= sources.length || sources.length === 0) {
     const letter = (name || domain || "?").trim().charAt(0).toUpperCase();

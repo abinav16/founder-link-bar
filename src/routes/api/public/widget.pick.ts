@@ -19,7 +19,7 @@ export const Route = createFileRoute("/api/public/widget/pick")({
 
         let query = supabase
           .from("startups")
-          .select("id, name, website_url, description")
+          .select("id, name, website_url, description, logo_url")
           .eq("status", "approved");
 
         if (host) query = query.neq("id", host);
