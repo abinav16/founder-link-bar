@@ -51,13 +51,32 @@ serve(async (req) => {
 
   if (type === "startup-approved") {
     subject = `🎉 ${name} is now live on StartupBar`;
-    html = `
-      <p>Hi ${founderName},</p>
-      <p>Great news — <strong>${name}</strong> has been approved and is now live on the StartupBar network.</p>
-      <p>Your startup is being shown to thousands of founders across member sites. Make sure your widget is installed and visible so you appear on their bars too.</p>
-      <p>Welcome to the network!</p>
-      <p>— The StartupBar Team</p>
-    `;
+    html = `<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f5f5f4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#0a0a0a;-webkit-font-smoothing:antialiased;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f5f5f4;padding:32px 16px;">
+    <tr><td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;">
+        <tr><td style="padding:4px 8px 20px 8px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+            <td style="background:#0a0a0a;border-radius:999px;width:28px;height:10px;font-size:0;line-height:0;">&nbsp;</td>
+            <td style="padding-left:10px;font-size:14px;font-weight:600;color:#0a0a0a;letter-spacing:-0.01em;">StartupBar</td>
+          </tr></table>
+        </td></tr>
+        <tr><td style="background:#ffffff;border-radius:14px;padding:36px 36px 32px 36px;box-shadow:0 1px 2px rgba(0,0,0,0.04);">
+          <h1 style="margin:0 0 20px 0;font-size:26px;line-height:1.2;font-weight:700;letter-spacing:-0.02em;color:#0a0a0a;">You're live. 🎉</h1>
+          <p style="margin:0 0 16px 0;font-size:15px;line-height:1.6;color:#27272a;">Hi ${founderName},</p>
+          <p style="margin:0 0 16px 0;font-size:15px;line-height:1.6;color:#27272a;"><strong style="color:#0a0a0a;">${name}</strong> has been approved and is now showing across the StartupBar network. Other founders' sites are already discovering your startup.</p>
+          <p style="margin:0 0 28px 0;font-size:15px;line-height:1.6;color:#27272a;">Keep the embed code on your site as long as you'd like to be featured across the StartupBar network — if it's removed, your startup will stop being shown to other founders.</p>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#71717a;">— Abinav from StartupBar</p>
+        </td></tr>
+        <tr><td style="padding:20px 8px 0 8px;font-size:12px;line-height:1.6;color:#a1a1aa;text-align:center;">
+          © 2026 StartupBar · <a href="https://startupbar.co" style="color:#a1a1aa;text-decoration:none;">startupbar.co</a> · <a href="https://startupbar.co/privacy" style="color:#a1a1aa;text-decoration:none;">Privacy</a>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>`;
   } else if (type === "startup-rejected") {
     subject = `Update on your StartupBar application — ${name}`;
     html = `
