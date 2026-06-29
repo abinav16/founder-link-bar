@@ -211,7 +211,8 @@ function Apply() {
     }
     if (!authed) {
       sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ step: 2, name, url, desc }));
-      navigate({ to: "/auth", search: { next: "/apply" } });
+      sessionStorage.setItem("startupbar:auth-next", "/apply");
+      navigate({ to: "/auth" });
       return;
     }
     setStep(2);
