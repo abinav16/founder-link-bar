@@ -287,6 +287,7 @@ function Apply() {
     supabase.functions.invoke("send-email", { body: { type: "startup-submitted", data: { email: userData.user!.email, name: userData.user!.user_metadata?.full_name ?? "", startupName: parsed.name } } }).catch(() => {});
     supabase.functions.invoke("send-email", { body: { type: "admin-new-application", data: { startupName: parsed.name, startupUrl: parsed.website_url, description: parsed.description, applicantEmail: userData.user!.email } } }).catch(() => {});
 
+    sessionStorage.removeItem(DRAFT_KEY);
     toast.success("Application submitted!");
     navigate({ to: "/dashboard" });
   }
