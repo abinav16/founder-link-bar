@@ -357,10 +357,14 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
     const ro = new ResizeObserver(() => {
       if (!container || !canvas) return;
       const { width: nw, height: nh } = container.getBoundingClientRect();
-      canvas.width = nw;
-      canvas.height = nh;
+      canvas.width = Math.round(nw * dpr);
+      canvas.height = Math.round(nh * dpr);
+      canvas.style.width = `${nw}px`;
+      canvas.style.height = `${nh}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       sizeRef.current = { w: nw, h: nh };
     });
+
     ro.observe(container);
 
     return () => { cancelAnimationFrame(rafRef.current); ro.disconnect(); };
