@@ -187,6 +187,13 @@ function Apply() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoSubmitPending, hasPrepaid]);
 
+  // Persist draft so the form survives the sign-in round-trip.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!name && !url && !desc) return;
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ step, name, url, desc }));
+  }, [step, name, url, desc]);
+
   const snippet = `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}"></script>`;
 
   function copySnippet() {
