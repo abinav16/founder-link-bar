@@ -93,6 +93,23 @@
   --ring: oklch(0.55 0.03 264);
 }
 
+@keyframes page-in {
+  from { transform: translateY(5px); }
+  to   { transform: translateY(0); }
+}
+.page-enter {
+  animation: page-in 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes progress-bar {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.progress-bar {
+  transform-origin: left center;
+  animation: progress-bar 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 @layer base {
   * { border-color: var(--color-border); }
   body {
@@ -129,13 +146,10 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-.sb-orb { position: absolute; border-radius: 9999px; filter: blur(80px); opacity: 0.55; pointer-events: none; }
-.sb-orb-a { animation: sb-drift 18s ease-in-out infinite; }
-.sb-orb-b { animation: sb-drift-2 22s ease-in-out infinite; }
+.sb-orb { display: none; }
+.sb-orb-a { display: none; }
+.sb-orb-b { display: none; }
 .sb-hero-bg {
-  background: linear-gradient(130deg, #0a0a0f 0%, #0d0a1f 35%, #140b2e 65%, #0a0a0f 100%);
-  background-size: 200% 200%;
-  animation: sb-gradient-shift 18s ease infinite;
+  background: #0a0a0a;
 }
 .sb-fade-up { animation: sb-fade-up 0.8s ease-out both; }
-

@@ -9,6 +9,7 @@ export const Route = createFileRoute("/api/public/widget/pick")({
         const url = new URL(request.url);
         const host = url.searchParams.get("host");
         const domain = url.searchParams.get("domain");
+        const preview = url.searchParams.get("preview") === "true";
 
         const supabase = createClient<Database>(
           process.env.SUPABASE_URL!,
@@ -42,12 +43,12 @@ export const Route = createFileRoute("/api/public/widget/pick")({
 
         const pick = filtered[Math.floor(Math.random() * filtered.length)];
 
-        // Record impression server-side so cross-origin iframes (where browser
-        // localStorage is partitioned/blocked) still count.
-        await supabase.from("impressions").insert({
-          shown_startup_id: pick.id,
-          host_startup_id: host ?? null,
-        });
+        if (!preview) {
+          await supabase.from("impressions").insert({
+            shown_startup_id: pick.id,
+            host_startup_id: host ?? null,
+          });
+        }
 
         return Response.json(pick, {
           headers: { "Cache-Control": "no-store", "Access-Control-Allow-Origin": "*" },
