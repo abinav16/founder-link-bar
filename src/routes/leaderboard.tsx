@@ -1,15 +1,71 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import type { User } from "@supabase/supabase-js";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { getLeaderboard, getNetworkActivity, type LeaderboardRow } from "@/lib/leaderboard.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Trophy, ExternalLink } from "lucide-react";
 
+function LeaderboardPending() {
+  return (
+    <DashboardLayout>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <div className="h-3 w-20 bg-black/[0.05] rounded-full animate-pulse" />
+            <div className="h-7 w-40 bg-black/[0.07] rounded-lg animate-pulse" />
+            <div className="h-3 w-64 bg-black/[0.04] rounded-full animate-pulse" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="rounded-2xl bg-white border border-black/[0.06] p-6 animate-pulse space-y-4">
+              <div className="h-3 w-8 bg-black/[0.05] rounded-full" />
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-black/[0.06] shrink-0" />
+                <div className="space-y-2 flex-1">
+                  <div className="h-3.5 bg-black/[0.05] rounded-full w-2/3" />
+                  <div className="h-2.5 bg-black/[0.03] rounded-full w-full" />
+                </div>
+              </div>
+              <div className="h-7 bg-black/[0.03] rounded-lg" />
+              <div className="h-px bg-black/[0.04]" />
+              <div className="flex gap-4">
+                <div className="h-3 w-16 bg-black/[0.04] rounded-full" />
+                <div className="h-3 w-12 bg-black/[0.04] rounded-full" />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="rounded-2xl bg-white border border-black/[0.06] overflow-hidden">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-4 px-5 py-4 border-b border-black/[0.04] last:border-0 animate-pulse">
+              <div className="w-5 h-3 bg-black/[0.04] rounded-full shrink-0" />
+              <div className="w-9 h-9 rounded-lg bg-black/[0.05] shrink-0" />
+              <div className="flex-1 space-y-1.5">
+                <div className="h-3 bg-black/[0.05] rounded-full w-1/4" />
+                <div className="h-2.5 bg-black/[0.03] rounded-full w-1/2" />
+              </div>
+              <div className="h-7 w-16 bg-black/[0.03] rounded-lg" />
+              <div className="space-y-1 text-right">
+                <div className="h-3.5 w-12 bg-black/[0.05] rounded-full ml-auto" />
+                <div className="h-2.5 w-8 bg-black/[0.03] rounded-full ml-auto" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </DashboardLayout>
+  );
+}
+
 export const Route = createFileRoute("/leaderboard")({
   head: () => ({ meta: [{ title: "Leaderboard — StartupBar" }] }),
+  loader: async () => {
+    const [leaderboard, activity] = await Promise.all([getLeaderboard(), getNetworkActivity()]);
+    return { leaderboard, activity };
+  },
+
   component: LeaderboardPage,
 });
 
@@ -34,44 +90,18 @@ function MiniSparkline({ data, color = "#000" }: { data: number[]; color?: strin
   );
 }
 
-interface NetworkActivity {
-  todayImpressions: number;
-  todayClicks: number;
-  yesterdayImpressions: number;
-  yesterdayClicks: number;
-}
-
 function LeaderboardPage() {
-  const fetchLeaderboard = useServerFn(getLeaderboard);
-  const fetchNetworkActivity = useServerFn(getNetworkActivity);
-  const [rowsByReceived, setRowsByReceived] = useState<LeaderboardRow[]>([]);
-  const [rowsByGiven, setRowsByGiven] = useState<LeaderboardRow[]>([]);
+  const { leaderboard, activity } = Route.useLoaderData();
+  const rowsByReceived = leaderboard.rowsByReceived;
+  const rowsByGiven = leaderboard.rowsByGiven;
   const [tab, setTab] = useState<"received" | "given">("received");
   const [myId, setMyId] = useState<string | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [authReady, setAuthReady] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [activity, setActivity] = useState<NetworkActivity | null>(null);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const data = await fetchLeaderboard();
-        setRowsByReceived(data.rowsByReceived);
-        setRowsByGiven(data.rowsByGiven);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [fetchLeaderboard]);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const { data } = await supabase.auth.getUser();
       if (cancelled) return;
-      setUser(data.user ?? null);
-      setAuthReady(true);
       if (data.user) {
         const { data: mine } = await supabase
           .from("startups")
@@ -82,7 +112,6 @@ function LeaderboardPage() {
       }
     })();
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
-      setUser(session?.user ?? null);
       if (!session?.user) setMyId(null);
     });
     return () => {
@@ -90,17 +119,6 @@ function LeaderboardPage() {
       sub.subscription.unsubscribe();
     };
   }, []);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const data = await fetchNetworkActivity();
-        setActivity(data);
-      } catch (e) {
-        console.error("network activity load failed", e);
-      }
-    })();
-  }, [fetchNetworkActivity]);
 
 
   const ctr = (row: LeaderboardRow) =>
@@ -153,9 +171,7 @@ function LeaderboardPage() {
           : "Sites generating the most traffic for others — ranked by impressions they gave to the network."}
       </p>
 
-      {loading ? (
-        <div className="flex items-center justify-center py-40 text-sm text-black/30">Loading…</div>
-      ) : activeRows.length === 0 ? (
+      {activeRows.length === 0 ? (
         <div className="mt-16 text-center text-sm text-black/40">No approved startups yet.</div>
       ) : (
         <>
@@ -243,7 +259,6 @@ function LeaderboardPage() {
                 </div>
                 <div className="rounded-xl border border-black/8 bg-white p-3 flex-1 flex flex-col">
                   <div className="grid grid-cols-2 gap-2 flex-1 min-h-0">
-                    {/* Yesterday Impressions */}
                     <div className="rounded-lg bg-black/[0.03] p-2.5 flex flex-col justify-between">
                       <div className="flex items-center gap-1">
                         <div className="h-1 w-1 rounded-full bg-black/25" />
@@ -256,7 +271,6 @@ function LeaderboardPage() {
                         <div className="text-[10px] uppercase tracking-wide text-black/40 mt-1">Impressions</div>
                       </div>
                     </div>
-                    {/* Yesterday Clicks */}
                     <div className="rounded-lg bg-black/[0.03] p-2.5 flex flex-col justify-between">
                       <div className="flex items-center gap-1">
                         <div className="h-1 w-1 rounded-full bg-black/25" />
@@ -269,7 +283,6 @@ function LeaderboardPage() {
                         <div className="text-[10px] uppercase tracking-wide text-black/40 mt-1">Clicks</div>
                       </div>
                     </div>
-                    {/* Today Impressions */}
                     <div className="rounded-lg bg-black p-2.5 flex flex-col justify-between">
                       <div className="flex items-center gap-1">
                         <span className="relative flex h-1 w-1">
@@ -285,7 +298,6 @@ function LeaderboardPage() {
                         <div className="text-[10px] uppercase tracking-wide text-white/50 mt-1">Impressions</div>
                       </div>
                     </div>
-                    {/* Today Clicks */}
                     <div className="rounded-lg bg-black p-2.5 flex flex-col justify-between">
                       <div className="flex items-center gap-1">
                         <span className="relative flex h-1 w-1">
@@ -317,7 +329,6 @@ function LeaderboardPage() {
                   row.id === myId ? "border-black/20 ring-1 ring-black/8" : "border-black/8"
                 }`}
               >
-                {/* Rank */}
                 <div className="w-7 shrink-0 text-center">
                   {i < 3 ? (
                     <span className="text-lg">{MEDALS[i]}</span>
@@ -326,7 +337,6 @@ function LeaderboardPage() {
                   )}
                 </div>
 
-                {/* Logo */}
                 <StartupFavicon
                   url={row.website_url}
                   name={row.name}
@@ -334,7 +344,6 @@ function LeaderboardPage() {
                   className="rounded-xl ring-1 ring-black/8 shrink-0 bg-white"
                 />
 
-                {/* Name + description */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-sm text-black truncate">{row.name}</span>
@@ -345,7 +354,6 @@ function LeaderboardPage() {
                   <p className="text-xs text-black/40 truncate mt-0.5">{row.description}</p>
                 </div>
 
-                {/* Mini sparkline — 7 day chart */}
                 <div className="shrink-0 hidden sm:flex flex-col items-center gap-1">
                   <MiniSparkline
                     data={tab === "received" ? row.dailyImpressions : row.dailyGiven}
@@ -353,33 +361,32 @@ function LeaderboardPage() {
                   <span className="text-[8px] uppercase tracking-wide text-black/20">7 days</span>
                 </div>
 
-                {/* Stats columns */}
                 {tab === "received" ? (
-                  <div className="shrink-0 flex gap-5 text-right">
+                  <div className="shrink-0 flex gap-3 sm:gap-5 text-right">
                     <div>
-                      <div className="text-base font-bold tabular-nums text-black">{row.impressions.toLocaleString()}</div>
-                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">Impressions</div>
+                      <div className="text-sm sm:text-base font-bold tabular-nums text-black">{row.impressions.toLocaleString()}</div>
+                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">Impr.</div>
                     </div>
                     <div>
-                      <div className="text-base font-bold tabular-nums text-black">{row.clicks.toLocaleString()}</div>
+                      <div className="text-sm sm:text-base font-bold tabular-nums text-black">{row.clicks.toLocaleString()}</div>
                       <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">Clicks</div>
                     </div>
-                    <div>
+                    <div className="hidden sm:block">
                       <div className="text-base font-bold tabular-nums text-black">{ctr(row)}</div>
                       <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">CTR</div>
                     </div>
                   </div>
                 ) : (
-                  <div className="shrink-0 flex gap-5 text-right">
+                  <div className="shrink-0 flex gap-3 sm:gap-5 text-right">
                     <div>
-                      <div className="text-base font-bold tabular-nums text-black">{row.impressions_given.toLocaleString()}</div>
+                      <div className="text-sm sm:text-base font-bold tabular-nums text-black">{row.impressions_given.toLocaleString()}</div>
                       <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">Given</div>
                     </div>
                     <div>
-                      <div className="text-base font-bold tabular-nums text-black">{row.impressions.toLocaleString()}</div>
-                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">Received</div>
+                      <div className="text-sm sm:text-base font-bold tabular-nums text-black">{row.impressions.toLocaleString()}</div>
+                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">Recv.</div>
                     </div>
-                    <div>
+                    <div className="hidden sm:block">
                       <div className="text-base font-bold tabular-nums text-black">
                         {row.impressions > 0 ? `${(row.impressions_given / row.impressions).toFixed(1)}x` : "—"}
                       </div>
@@ -388,13 +395,12 @@ function LeaderboardPage() {
                   </div>
                 )}
 
-                {/* Visit link */}
                 <a
                   href={`/api/public/widget/click?id=${row.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`Visit ${row.name}`}
-                  className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                 >
                   <ExternalLink className="h-3.5 w-3.5 text-black/30 hover:text-black transition-colors" />
                 </a>
@@ -407,36 +413,5 @@ function LeaderboardPage() {
     </div>
   );
 
-  if (!authReady) {
-    return <div className="min-h-screen bg-[#f7f7f6]" />;
-  }
-
-  if (user) {
-    return <DashboardLayout>{body}</DashboardLayout>;
-  }
-
-  return (
-    <div className="min-h-screen bg-[#f7f7f6]">
-      <header className="sticky top-0 z-30 border-b border-black/8 bg-white">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-          <Link to="/" className="flex shrink-0 items-center gap-2">
-            <div className="h-2 w-6 rounded-sm bg-black" />
-            <span className="text-sm font-semibold tracking-tight text-black">StartupBar</span>
-          </Link>
-          <nav className="flex items-center gap-1 text-sm">
-            <Link to="/leaderboard" className="flex items-center gap-1.5 px-2 py-2 text-black sm:px-3">
-              <Trophy className="h-4 w-4" />
-              <span className="hidden sm:inline">Leaderboard</span>
-            </Link>
-            <Link to="/auth" className="px-3 py-2 text-black/50 hover:text-black transition-colors">Sign in</Link>
-            <Link to="/apply" className="inline-flex h-9 items-center rounded-md bg-black px-3 text-sm font-medium text-white hover:bg-black/80 transition-colors sm:px-4">
-              <span className="hidden sm:inline">Join the network</span>
-              <span className="sm:hidden">Join</span>
-            </Link>
-          </nav>
-        </div>
-      </header>
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">{body}</main>
-    </div>
-  );
+  return <DashboardLayout>{body}</DashboardLayout>;
 }
