@@ -22,6 +22,7 @@ export interface StartupCard {
   name: string;
   website_url: string;
   description: string;
+  logo_url: string | null;
   created_at: string;
   impressions_24h: number;
   clicks_24h: number;
@@ -46,7 +47,7 @@ export const getNetworkDashboard = createServerFn({ method: "GET" }).handler(
 
     const { data: startups } = await supabase
       .from("startups")
-      .select("id, name, website_url, description, created_at")
+      .select("id, name, website_url, description, logo_url, created_at")
       .eq("status", "approved")
       .order("created_at", { ascending: false })
       .limit(200);
@@ -88,11 +89,12 @@ export const getNetworkDashboard = createServerFn({ method: "GET" }).handler(
       click24hMap[r.shown_startup_id] = (click24hMap[r.shown_startup_id] ?? 0) + 1;
     }
 
-    const cards: StartupCard[] = (startups ?? []).map((s) => ({
+    const cards: StartupCard[] = (startups ?? []).map((s: any) => ({
       id: s.id,
       name: s.name,
       website_url: s.website_url,
       description: s.description,
+      logo_url: s.logo_url ?? null,
       created_at: s.created_at,
       impressions_24h: imp24hMap[s.id] ?? 0,
       clicks_24h: click24hMap[s.id] ?? 0,

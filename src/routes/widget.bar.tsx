@@ -21,6 +21,7 @@ interface Startup {
   name: string;
   website_url: string;
   description: string;
+  logo_url?: string | null;
 }
 
 const lightTokens = {
@@ -159,6 +160,7 @@ function WidgetBar() {
             <StartupFavicon
               url={startup.website_url}
               name={startup.name}
+              logoUrl={startup.logo_url}
               size={14}
               className="rounded-sm shrink-0"
             />

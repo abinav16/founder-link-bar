@@ -198,6 +198,7 @@ function LeaderboardPage() {
                         <StartupFavicon
                           url={row.website_url}
                           name={row.name}
+                          logoUrl={row.logo_url}
                           size={28}
                           className={`rounded-lg mb-2 bg-white ${originalIndex === 0 ? "ring-2 ring-white/20" : "ring-1 ring-black/8"}`}
                         />
@@ -340,6 +341,7 @@ function LeaderboardPage() {
                 <StartupFavicon
                   url={row.website_url}
                   name={row.name}
+                  logoUrl={row.logo_url}
                   size={36}
                   className="rounded-xl ring-1 ring-black/8 shrink-0 bg-white"
                 />

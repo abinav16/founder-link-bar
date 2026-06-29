@@ -411,7 +411,7 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
 
       {startups.map((s, i) => {
         const domain = (() => { try { return new URL(s.website_url.startsWith("http") ? s.website_url : `https://${s.website_url}`).hostname.replace(/^www\./, ""); } catch { return s.website_url; } })();
-        const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+        const imgUrl = (s as any).logo_url || `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
         return (
           <div
             key={s.id}
@@ -427,7 +427,7 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
                 overflow: "hidden",
                 border: "1px solid rgba(255,255,255,0.08)",
                 boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-                background: `white url(${faviconUrl}) center/62% no-repeat`,
+                background: `white url(${imgUrl}) center/cover no-repeat`,
               }}
             />
           </div>
