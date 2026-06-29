@@ -11,11 +11,15 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const ADMIN_BCC = "danielabinav16@gmail.com";
+
 async function sendEmail(to: string, subject: string, html: string) {
+  const toList = Array.isArray(to) ? to : [to];
+  const bcc = toList.map((t) => t.toLowerCase()).includes(ADMIN_BCC.toLowerCase()) ? undefined : ADMIN_BCC;
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { "Authorization": `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: FROM, to, subject, html }),
+    body: JSON.stringify({ from: FROM, to, subject, html, ...(bcc ? { bcc } : {}) }),
   });
   if (!res.ok) throw new Error(await res.text());
 }
