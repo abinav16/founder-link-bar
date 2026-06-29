@@ -23,6 +23,7 @@ import { Route as WidgetBarRouteImport } from './routes/widget.bar'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as ApiPublicVerifyInstallRouteImport } from './routes/api/public/verify-install'
+import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicWidgetPickRouteImport } from './routes/api/public/widget.pick'
 import { Route as ApiPublicWidgetHeartbeatRouteImport } from './routes/api/public/widget.heartbeat'
 import { Route as ApiPublicWidgetClickRouteImport } from './routes/api/public/widget.click'
@@ -96,6 +97,12 @@ const ApiPublicVerifyInstallRoute = ApiPublicVerifyInstallRouteImport.update({
   path: '/api/public/verify-install',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LovableEmailQueueProcessRoute =
+  LovableEmailQueueProcessRouteImport.update({
+    id: '/lovable/email/queue/process',
+    path: '/lovable/email/queue/process',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicWidgetPickRoute = ApiPublicWidgetPickRouteImport.update({
   id: '/api/public/widget/pick',
   path: '/api/public/widget/pick',
@@ -130,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/api/public/widget/click': typeof ApiPublicWidgetClickRoute
   '/api/public/widget/heartbeat': typeof ApiPublicWidgetHeartbeatRoute
   '/api/public/widget/pick': typeof ApiPublicWidgetPickRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -148,6 +156,7 @@ export interface FileRoutesByTo {
   '/api/public/widget/click': typeof ApiPublicWidgetClickRoute
   '/api/public/widget/heartbeat': typeof ApiPublicWidgetHeartbeatRoute
   '/api/public/widget/pick': typeof ApiPublicWidgetPickRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -168,6 +177,7 @@ export interface FileRoutesById {
   '/api/public/widget/click': typeof ApiPublicWidgetClickRoute
   '/api/public/widget/heartbeat': typeof ApiPublicWidgetHeartbeatRoute
   '/api/public/widget/pick': typeof ApiPublicWidgetPickRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -188,6 +198,7 @@ export interface FileRouteTypes {
     | '/api/public/widget/click'
     | '/api/public/widget/heartbeat'
     | '/api/public/widget/pick'
+    | '/lovable/email/queue/process'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -206,6 +217,7 @@ export interface FileRouteTypes {
     | '/api/public/widget/click'
     | '/api/public/widget/heartbeat'
     | '/api/public/widget/pick'
+    | '/lovable/email/queue/process'
   id:
     | '__root__'
     | '/'
@@ -225,6 +237,7 @@ export interface FileRouteTypes {
     | '/api/public/widget/click'
     | '/api/public/widget/heartbeat'
     | '/api/public/widget/pick'
+    | '/lovable/email/queue/process'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -243,6 +256,7 @@ export interface RootRouteChildren {
   ApiPublicWidgetClickRoute: typeof ApiPublicWidgetClickRoute
   ApiPublicWidgetHeartbeatRoute: typeof ApiPublicWidgetHeartbeatRoute
   ApiPublicWidgetPickRoute: typeof ApiPublicWidgetPickRoute
+  LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -345,6 +359,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicVerifyInstallRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lovable/email/queue/process': {
+      id: '/lovable/email/queue/process'
+      path: '/lovable/email/queue/process'
+      fullPath: '/lovable/email/queue/process'
+      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/widget/pick': {
       id: '/api/public/widget/pick'
       path: '/api/public/widget/pick'
@@ -398,6 +419,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicWidgetClickRoute: ApiPublicWidgetClickRoute,
   ApiPublicWidgetHeartbeatRoute: ApiPublicWidgetHeartbeatRoute,
   ApiPublicWidgetPickRoute: ApiPublicWidgetPickRoute,
+  LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
