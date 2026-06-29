@@ -71,6 +71,23 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 
 const inputCls = "w-full rounded-lg border border-black/12 bg-white px-4 py-3 text-sm text-black placeholder:text-black/25 outline-none ring-0 transition focus:border-black/30 focus:ring-2 focus:ring-black/8";
 
+const DRAFT_KEY = "startupbar:apply-draft";
+
+function readDraft(): { step: 1 | 2; name: string; url: string; desc: string } | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(DRAFT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return {
+      step: parsed.step === 2 ? 2 : 1,
+      name: parsed.name ?? "",
+      url: parsed.url ?? "",
+      desc: parsed.desc ?? "",
+    };
+  } catch { return null; }
+}
+
 function readInitialFromUrl() {
   if (typeof window === "undefined") return { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "" };
   const p = new URLSearchParams(window.location.search);
@@ -83,6 +100,10 @@ function readInitialFromUrl() {
       paid: true,
       paymentId: p.get("payment_id") ?? "",
     };
+  }
+  const draft = readDraft();
+  if (draft) {
+    return { step: draft.step, name: draft.name, url: draft.url, desc: draft.desc, paid: false, paymentId: "" };
   }
   return { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "" };
 }
@@ -166,6 +187,13 @@ function Apply() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoSubmitPending, hasPrepaid]);
 
+  // Persist draft so the form survives the sign-in round-trip.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!name && !url && !desc) return;
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ step, name, url, desc }));
+  }, [step, name, url, desc]);
+
   const snippet = `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}"></script>`;
 
   function copySnippet() {
@@ -176,10 +204,15 @@ function Apply() {
 
   function goToStep2(e: React.FormEvent) {
     e.preventDefault();
-    if (!authed) { navigate({ to: "/auth" }); return; }
     const parsed = schema.safeParse({ name, website_url: url, description: desc });
     if (!parsed.success) {
       toast.error(parsed.error.issues[0]?.message ?? "Invalid input");
+      return;
+    }
+    if (!authed) {
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ step: 2, name, url, desc }));
+      sessionStorage.setItem("startupbar:auth-next", "/apply");
+      navigate({ to: "/auth" });
       return;
     }
     setStep(2);
@@ -254,6 +287,7 @@ function Apply() {
     supabase.functions.invoke("send-email", { body: { type: "startup-submitted", data: { email: userData.user!.email, name: userData.user!.user_metadata?.full_name ?? "", startupName: parsed.name } } }).catch(() => {});
     supabase.functions.invoke("send-email", { body: { type: "admin-new-application", data: { startupName: parsed.name, startupUrl: parsed.website_url, description: parsed.description, applicantEmail: userData.user!.email } } }).catch(() => {});
 
+    sessionStorage.removeItem(DRAFT_KEY);
     toast.success("Application submitted!");
     navigate({ to: "/dashboard" });
   }
@@ -272,9 +306,13 @@ function Apply() {
             <span className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold ${step === 2 ? "bg-black text-white" : "bg-black/10 text-black/30"}`}>2</span>
           </div>
 
-          <Link to="/auth" className="text-sm text-black/40 hover:text-black transition-colors">
-            <span className="hidden sm:inline">Already a member? </span>Sign in
-          </Link>
+          {authed ? (
+            <Link to="/dashboard" className="text-sm text-black/40 hover:text-black transition-colors">Dashboard →</Link>
+          ) : (
+            <Link to="/auth" className="text-sm text-black/40 hover:text-black transition-colors">
+              <span className="hidden sm:inline">Already a member? </span>Sign in
+            </Link>
+          )}
         </div>
       </header>
 

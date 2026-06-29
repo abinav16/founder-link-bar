@@ -166,20 +166,32 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => { supabase.auth.getUser().then(({ data }) => { if (data.user) navigate({ to: "/dashboard" }); }); }, [navigate]);
+  function consumeNext(): "/apply" | "/dashboard" {
+    if (typeof window === "undefined") return "/dashboard";
+    const next = sessionStorage.getItem("startupbar:auth-next");
+    if (next === "/apply") {
+      sessionStorage.removeItem("startupbar:auth-next");
+      return "/apply";
+    }
+    return "/dashboard";
+  }
+
+  useEffect(() => { supabase.auth.getUser().then(({ data }) => { if (data.user) navigate({ to: consumeNext() }); }); }, [navigate]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault(); setLoading(true);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}/dashboard`, data: { full_name: name } } });
+        const next = typeof window !== "undefined" ? sessionStorage.getItem("startupbar:auth-next") : null;
+        const redirectPath = next === "/apply" ? "/apply" : "/dashboard";
+        const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}${redirectPath}`, data: { full_name: name } } });
         if (error) throw error;
         supabase.functions.invoke("send-email", { body: { type: "welcome", data: { email, name } } }).catch(() => {});
         toast.success("Account created — check your email to confirm."); setMode("signin");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate({ to: "/dashboard" });
+        navigate({ to: consumeNext() });
       }
     } catch (err: unknown) { toast.error(err instanceof Error ? err.message : "Something went wrong"); }
     finally { setLoading(false); }
@@ -198,10 +210,12 @@ function AuthPage() {
             type="button"
             onClick={async () => {
               setLoading(true);
-              const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: `${window.location.origin}/dashboard` });
+              const next = typeof window !== "undefined" ? sessionStorage.getItem("startupbar:auth-next") : null;
+              const redirectPath = next === "/apply" ? "/apply" : "/dashboard";
+              const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: `${window.location.origin}${redirectPath}` });
               if (result.error) { toast.error(result.error.message); setLoading(false); return; }
               if (result.redirected) return;
-              navigate({ to: "/dashboard" });
+              navigate({ to: consumeNext() });
             }}
             disabled={loading}
             className="mt-8 flex w-full items-center justify-center gap-3 rounded-lg border border-black/12 bg-white py-3 text-sm font-medium text-black transition-all hover:bg-black/[0.03] hover:border-black/25 disabled:opacity-50"
