@@ -210,10 +210,12 @@ function AuthPage() {
             type="button"
             onClick={async () => {
               setLoading(true);
-              const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: `${window.location.origin}/dashboard` });
+              const next = typeof window !== "undefined" ? sessionStorage.getItem("startupbar:auth-next") : null;
+              const redirectPath = next === "/apply" ? "/apply" : "/dashboard";
+              const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: `${window.location.origin}${redirectPath}` });
               if (result.error) { toast.error(result.error.message); setLoading(false); return; }
               if (result.redirected) return;
-              navigate({ to: "/dashboard" });
+              navigate({ to: consumeNext() });
             }}
             disabled={loading}
             className="mt-8 flex w-full items-center justify-center gap-3 rounded-lg border border-black/12 bg-white py-3 text-sm font-medium text-black transition-all hover:bg-black/[0.03] hover:border-black/25 disabled:opacity-50"
