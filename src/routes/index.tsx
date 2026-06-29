@@ -578,7 +578,7 @@ function Landing() {
                   to="/network"
                   className="flex items-center gap-1.5 px-2 py-2 text-black/50 hover:text-black transition-colors sm:px-3"
                 >
-                  <span className="hidden sm:inline">Dashboard</span>
+                  <span className="hidden sm:inline">Network</span>
                 </Link>
                 <Link
                   to="/leaderboard"
@@ -613,7 +613,7 @@ function Landing() {
             ) : (
               <>
                 <Link to="/network" className="flex items-center gap-1.5 px-3 py-2 text-black/50 hover:text-black transition-colors text-[13px]">
-                  <span className="hidden sm:inline">Dashboard</span>
+                  <span className="hidden sm:inline">Network</span>
                 </Link>
                 <Link to="/leaderboard" className="flex items-center gap-1.5 px-3 py-2 text-black/50 hover:text-black transition-colors text-[13px]">
                   <Trophy className="h-4 w-4" />
