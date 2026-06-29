@@ -438,7 +438,7 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
 }
 
 function NetworkDashboardPage() {
-  const data = Route.useLoaderData();
+  const data = Route.useLoaderData() as NetworkDashboardResult;
   const stats = data?.stats;
 
   return (
