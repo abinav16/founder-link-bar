@@ -180,8 +180,8 @@ function LeaderboardPage() {
               <div className="lg:col-span-2">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-black/30 mb-3">Top 3</p>
                 <div className="grid grid-cols-3 gap-3 items-end">
-                  {podiumDisplay.map((row) => {
-                    const originalIndex = podium.findIndex((r) => r.id === row.id);
+                  {podiumDisplay.map((row: LeaderboardRow) => {
+                    const originalIndex = podium.findIndex((r: LeaderboardRow) => r.id === row.id);
                     return (
                       <div
                         key={row.id}
@@ -322,7 +322,7 @@ function LeaderboardPage() {
 
 
           <div className="mt-6 space-y-2">
-            {activeRows.map((row, i) => (
+            {activeRows.map((row: LeaderboardRow, i: number) => (
               <div
                 key={row.id}
                 className={`group flex items-center gap-4 rounded-2xl border bg-white px-5 py-4 transition-all hover:border-black/20 hover:shadow-sm ${
