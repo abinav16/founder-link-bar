@@ -174,11 +174,15 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
     const canvas = canvasRef.current;
     if (!container || !canvas || startups.length === 0) return;
 
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const { width: w, height: h } = container.getBoundingClientRect();
     sizeRef.current = { w, h };
-    canvas.width = w;
-    canvas.height = h;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    canvas.style.width = `${w}px`;
+    canvas.style.height = `${h}px`;
     const ctx = canvas.getContext("2d")!;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     const NODE_SIZE = w < 500 ? 26 : 38;
     const n = startups.length;
@@ -208,12 +212,17 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
       if (el) el.style.transform = `translate(${node.x - node.size / 2}px, ${node.y - node.size / 2}px) rotate(0rad)`;
     });
 
-    function tick() {
+    let lastT = performance.now();
+    function tick(now: number) {
+      // dt in units of "60fps frames"; clamp so a stalled tab doesn't teleport nodes.
+      const dt = Math.min(Math.max((now - lastT) / 16.6667, 0.5), 3);
+      lastT = now;
       const mouse = mouseRef.current;
       const nodes = stateRef.current;
 
       ctx.clearRect(0, 0, w, h);
       const mouseActive = mouse.x > 0 && mouse.x < w && mouse.y > 0 && mouse.y < h;
+
 
       nodes.forEach((node) => {
         const r = node.size / 2;
