@@ -253,7 +253,7 @@ function SlideVisual2() {
         </div>
         <span className="text-[11px] text-white/20">{`</>`}</span>
       </div>
-      <div className="px-5 py-5 font-mono text-[13px] leading-7">
+      <div className="overflow-x-auto px-5 py-5 font-mono text-[11px] sm:text-[13px] leading-7">
         <p className="text-white/30">{`<!-- paste anywhere on your site -->`}</p>
         <p><span className="text-[#7dd3fc]">{`<script`}</span></p>
         <p className="pl-5"><span className="text-white/50">src=</span><span className="text-[#86efac]">"https://startupbar.co</span></p>
@@ -363,7 +363,7 @@ function HowItWorks() {
   const slide = SLIDES[active];
 
   return (
-    <section id="how" className="border-t border-black/8 bg-white px-6 py-14 sm:py-20 md:py-28">
+    <section id="how" className="border-t border-black/8 bg-white px-6 py-14 sm:py-20 md:py-28 overflow-hidden">
       <div className="mx-auto max-w-5xl">
         <p className="mb-12 text-xs font-semibold uppercase tracking-[0.18em] text-black/35">How it works</p>
         <div
@@ -393,7 +393,7 @@ function HowItWorks() {
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
-          <div>{slide.visual}</div>
+          <div className="min-w-0 overflow-hidden">{slide.visual}</div>
         </div>
         <div className="mt-12 flex items-center justify-center gap-2.5">
           {SLIDES.map((_, i) => (
@@ -407,7 +407,6 @@ function HowItWorks() {
               }`}
             />
           ))}
-
         </div>
       </div>
     </section>
@@ -438,7 +437,7 @@ function WhyItWorks() {
             The fairest growth channel<br />you'll ever ship.
           </h2>
         </div>
-        <div className="mt-16 grid md:grid-cols-3">
+        <div className="mt-16 grid gap-3 md:grid-cols-3 md:gap-0">
           {FACTS.map((f, i) => (
             <FactCell key={i} fact={f} delay={i * 100} total={FACTS.length} index={i} />
           ))}
@@ -576,11 +575,10 @@ function Landing() {
             {!authReady ? null : user ? (
               <>
                 <Link
-                  to="/dashboard"
+                  to="/network"
                   className="flex items-center gap-1.5 px-2 py-2 text-black/50 hover:text-black transition-colors sm:px-3"
                 >
-                  <LayoutDashboard className="h-4 w-4" />
-                  <span className="hidden sm:inline">Overview</span>
+                  <span className="hidden sm:inline">Dashboard</span>
                 </Link>
                 <Link
                   to="/leaderboard"
@@ -588,6 +586,13 @@ function Landing() {
                 >
                   <Trophy className="h-4 w-4" />
                   <span className="hidden sm:inline">Leaderboard</span>
+                </Link>
+                <Link
+                  to="/dashboard"
+                  className="flex items-center gap-1.5 px-2 py-2 text-black/50 hover:text-black transition-colors sm:px-3"
+                >
+                  <LayoutDashboard className="h-4 w-4" />
+                  <span className="hidden sm:inline">Overview</span>
                 </Link>
                 <Link
                   to="/account"
@@ -601,13 +606,15 @@ function Landing() {
                   aria-label="Sign out"
                   className="flex items-center gap-1.5 rounded-md border border-black/12 px-2 py-1.5 text-black/60 hover:border-black/25 hover:text-black transition-all sm:px-3"
                 >
-
                   <LogOut className="h-3.5 w-3.5" />
                   <span className="hidden sm:inline">Sign out</span>
                 </button>
               </>
             ) : (
               <>
+                <Link to="/network" className="flex items-center gap-1.5 px-3 py-2 text-black/50 hover:text-black transition-colors text-[13px]">
+                  <span className="hidden sm:inline">Dashboard</span>
+                </Link>
                 <Link to="/leaderboard" className="flex items-center gap-1.5 px-3 py-2 text-black/50 hover:text-black transition-colors text-[13px]">
                   <Trophy className="h-4 w-4" />
                   <span className="hidden sm:inline">Leaderboard</span>
@@ -626,13 +633,13 @@ function Landing() {
       {/* HERO */}
       <section className="relative overflow-hidden bg-white">
         <HeroCanvas />
-        <div className="relative z-10 mx-auto max-w-5xl px-6 pt-14 pb-20 text-center sb-fade-up sm:pt-20 sm:pb-28">
+        <div className="relative z-10 mx-auto max-w-5xl px-4 pt-10 pb-12 text-center sb-fade-up sm:px-6 sm:pt-20 sm:pb-28">
           <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-black/30">
             Free forever&nbsp;&nbsp;·&nbsp;&nbsp;No money, ever
           </p>
 
           <h1
-            className="mt-6 text-[2.4rem] font-medium leading-[1.08] tracking-tight text-black sm:mt-8 sm:text-5xl md:text-7xl"
+            className="mt-6 text-[1.9rem] font-medium leading-[1.08] tracking-tight text-black sm:mt-8 sm:text-5xl md:text-7xl"
             style={{ fontFamily: "var(--font-display)" }}
           >
             Founders helping founders
@@ -652,7 +659,7 @@ function Landing() {
           </div>
 
           {/* Browser mock */}
-          <div className="relative mx-auto mt-20 max-w-3xl">
+          <div className="relative mx-auto mt-10 sm:mt-20 max-w-3xl">
             <div className="relative overflow-hidden rounded-xl border border-black/10 bg-white shadow-[0_20px_60px_-20px_rgba(0,0,0,0.15)]">
               <div className="flex h-9 items-center gap-2 border-b border-black/8 bg-black/[0.02] px-4">
                 <div className="h-2.5 w-2.5 rounded-full bg-red-400/80" />
@@ -699,7 +706,7 @@ function Landing() {
                   )}
                 </div>
               )}
-              <div className="grid place-items-center bg-black/[0.02] px-6 py-14 text-xs text-black/20 sm:py-24">
+              <div className="grid place-items-center bg-black/[0.02] px-6 py-10 text-xs text-black/20 sm:py-24">
                 your website continues here as normal
               </div>
             </div>
