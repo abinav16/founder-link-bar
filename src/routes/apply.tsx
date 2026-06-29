@@ -71,6 +71,23 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 
 const inputCls = "w-full rounded-lg border border-black/12 bg-white px-4 py-3 text-sm text-black placeholder:text-black/25 outline-none ring-0 transition focus:border-black/30 focus:ring-2 focus:ring-black/8";
 
+const DRAFT_KEY = "startupbar:apply-draft";
+
+function readDraft(): { step: 1 | 2; name: string; url: string; desc: string } | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(DRAFT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return {
+      step: parsed.step === 2 ? 2 : 1,
+      name: parsed.name ?? "",
+      url: parsed.url ?? "",
+      desc: parsed.desc ?? "",
+    };
+  } catch { return null; }
+}
+
 function readInitialFromUrl() {
   if (typeof window === "undefined") return { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "" };
   const p = new URLSearchParams(window.location.search);
@@ -83,6 +100,10 @@ function readInitialFromUrl() {
       paid: true,
       paymentId: p.get("payment_id") ?? "",
     };
+  }
+  const draft = readDraft();
+  if (draft) {
+    return { step: draft.step, name: draft.name, url: draft.url, desc: draft.desc, paid: false, paymentId: "" };
   }
   return { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "" };
 }
