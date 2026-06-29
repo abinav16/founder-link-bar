@@ -90,9 +90,22 @@ function RootShell({ children }: { children: ReactNode }) {
           }}
         />
         <script
-          async
-          src="https://startupbar.co/widget/loader.js"
-          data-startup-id="0d2db708-f4e9-4b77-bd83-c446826c76b1"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                var p = window.location.pathname;
+                var appRoutes = ['/network', '/leaderboard', '/dashboard', '/account', '/auth'];
+                var isApp = appRoutes.some(function(r) { return p === r || p.startsWith(r + '/'); });
+                if (!isApp) {
+                  var s = document.createElement('script');
+                  s.src = 'https://startupbar.co/widget/loader.js';
+                  s.setAttribute('data-startup-id', '0d2db708-f4e9-4b77-bd83-c446826c76b1');
+                  s.async = true;
+                  document.head.appendChild(s);
+                }
+              })();
+            `,
+          }}
         />
 
       </head>

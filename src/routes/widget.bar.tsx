@@ -65,8 +65,10 @@ function WidgetBar() {
 
   useEffect(() => {
     function onMessage(e: MessageEvent) {
+      if (e.source !== window.parent) return;
       if (e.data && e.data.type === "startupbar:theme") {
-        setActiveTheme(e.data.theme);
+        const t = e.data.theme;
+        if (t === "light" || t === "dark") setActiveTheme(t);
       }
     }
     window.addEventListener("message", onMessage);
