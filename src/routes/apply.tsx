@@ -204,10 +204,14 @@ function Apply() {
 
   function goToStep2(e: React.FormEvent) {
     e.preventDefault();
-    if (!authed) { navigate({ to: "/auth" }); return; }
     const parsed = schema.safeParse({ name, website_url: url, description: desc });
     if (!parsed.success) {
       toast.error(parsed.error.issues[0]?.message ?? "Invalid input");
+      return;
+    }
+    if (!authed) {
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ step: 2, name, url, desc }));
+      navigate({ to: "/auth", search: { next: "/apply" } });
       return;
     }
     setStep(2);
