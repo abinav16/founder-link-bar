@@ -1,13 +1,113 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Copy, Check, Code2, ArrowRight, BarChart2, MousePointerClick, Layers, Percent, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { StartupFavicon } from "@/components/StartupFavicon";
 
+function DashboardPending() {
+  return (
+    <DashboardLayout>
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <div className="h-3 w-24 bg-black/[0.04] rounded-full animate-pulse" />
+          <div className="h-7 w-48 bg-black/[0.07] rounded-lg animate-pulse" />
+          <div className="h-3 w-64 bg-black/[0.04] rounded-full animate-pulse" />
+        </div>
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="rounded-xl border border-black/8 bg-white p-5 space-y-3 animate-pulse">
+              <div className="h-2.5 w-20 bg-black/[0.05] rounded-full" />
+              <div className="h-9 w-16 bg-black/[0.07] rounded-lg" />
+              <div className="h-2.5 w-32 bg-black/[0.04] rounded-full" />
+            </div>
+          ))}
+        </div>
+        <div className="rounded-xl border border-black/8 bg-white p-6 space-y-4 animate-pulse">
+          <div className="flex items-center justify-between">
+            <div className="h-3 w-36 bg-black/[0.05] rounded-full" />
+            <div className="h-3 w-16 bg-black/[0.04] rounded-full" />
+          </div>
+          <div className="flex items-end gap-2 h-20">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
+                <div className="w-full rounded-t-sm bg-black/[0.06]" style={{ height: `${20 + Math.random() * 44}px` }} />
+                <div className="h-2 w-4 bg-black/[0.04] rounded-full" />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="grid gap-4 lg:grid-cols-2">
+          {[0, 1].map((i) => (
+            <div key={i} className="rounded-xl border border-black/8 bg-white p-6 space-y-3 animate-pulse">
+              <div className="h-3 w-28 bg-black/[0.05] rounded-full" />
+              <div className="h-3 w-64 bg-black/[0.04] rounded-full" />
+              <div className="h-10 bg-black/[0.04] rounded-lg" />
+              <div className="h-8 w-28 bg-black/[0.05] rounded-lg" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </DashboardLayout>
+  );
+}
+
+async function loadDashboardData(startupId: string) {
+  const since = new Date();
+  since.setDate(since.getDate() - 6);
+  since.setHours(0, 0, 0, 0);
+
+  const [impsR, clksR, dailyR, allImpsR, current] = await Promise.all([
+    supabase.from("impressions").select("*", { count: "exact", head: true }).eq("shown_startup_id", startupId),
+    supabase.from("clicks").select("*", { count: "exact", head: true }).eq("shown_startup_id", startupId),
+    supabase.from("impressions").select("created_at").eq("shown_startup_id", startupId).gte("created_at", since.toISOString()),
+    supabase.from("impressions").select("shown_startup_id"),
+    fetch(`/api/public/widget/pick?host=${startupId}&preview=true`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+  ]);
+
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const chartData = [0, 0, 0, 0, 0, 0, 0];
+  (dailyR.data ?? []).forEach((row: { created_at: string }) => {
+    const d = new Date(row.created_at); d.setHours(0, 0, 0, 0);
+    const diff = Math.round((today.getTime() - d.getTime()) / 86400000);
+    if (diff >= 0 && diff <= 6) chartData[6 - diff]++;
+  });
+
+  const countMap = new Map<string, number>();
+  (allImpsR.data ?? []).forEach((r: { shown_startup_id: string }) => {
+    countMap.set(r.shown_startup_id, (countMap.get(r.shown_startup_id) ?? 0) + 1);
+  });
+  const myCount = countMap.get(startupId) ?? 0;
+  const rank = [...countMap.values()].filter((c) => c > myCount).length + 1;
+
+  return {
+    stats: { impressions: impsR.count ?? 0, clicks: clksR.count ?? 0 },
+    chartData,
+    rank,
+    current: current as Startup | null,
+  };
+}
+
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Overview — StartupBar" }] }),
+  head: () => ({ meta: [{ title: "Dashboard — StartupBar" }] }),
+  loader: async () => {
+    const { data: u } = await supabase.auth.getUser();
+    const userName = u.user?.user_metadata?.full_name?.split(" ")[0] ?? "";
+
+    const { data: rows } = await supabase
+      .from("startups").select("*").eq("user_id", u.user!.id).order("created_at", { ascending: true });
+    const allStartups = (rows as Startup[]) ?? [];
+    const startup = allStartups[0] ?? null;
+
+    if (!startup) {
+      return { userName, allStartups, startup: null, stats: { impressions: 0, clicks: 0 }, chartData: [0, 0, 0, 0, 0, 0, 0], rank: null as number | null, current: null as Startup | null };
+    }
+
+    const extra = await loadDashboardData(startup.id);
+    return { userName, allStartups, startup, ...extra };
+  },
+
   component: DashboardPage,
 });
 
@@ -90,51 +190,39 @@ function Sparkline({ data, labels }: { data: number[]; labels: string[] }) {
 }
 
 function DashboardPage() {
-  const [allStartups, setAllStartups] = useState<Startup[]>([]);
-  const [startup, setStartup] = useState<Startup | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({ impressions: 0, clicks: 0 });
-  const [current, setCurrent] = useState<Startup | null>(null);
+  const loaderData = Route.useLoaderData();
+  const [allStartups, setAllStartups] = useState<Startup[]>(loaderData.allStartups);
+  const [startup, setStartup] = useState<Startup | null>(loaderData.startup);
+  const [stats, setStats] = useState(loaderData.stats);
+  const [current, setCurrent] = useState<Startup | null>(loaderData.current);
   const [copied, setCopied] = useState(false);
-  const [userName, setUserName] = useState("");
+  const [userName] = useState(loaderData.userName);
   const [switcherOpen, setSwitcherOpen] = useState(false);
-  const [installStatus, setInstallStatus] = useState<"checking" | "live" | "disconnected" | "unknown">("unknown");
-  const [chartData, setChartData] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
-  const [rank, setRank] = useState<number | null>(null);
+  const switcherRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (!switcherOpen) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (switcherRef.current && !switcherRef.current.contains(e.target as Node)) {
+        setSwitcherOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [switcherOpen]);
+  const [installStatus, setInstallStatus] = useState<"checking" | "live" | "disconnected" | "unknown">("unknown");
+  const [chartData, setChartData] = useState<number[]>(loaderData.chartData);
+  const [rank, setRank] = useState<number | null>(loaderData.rank);
+
+  useEffect(() => {
+    if (startup) checkInstall(startup.website_url);
+
     let userId: string | null = null;
     let channel: ReturnType<typeof supabase.channel> | null = null;
 
-    async function load() {
-      const { data: u } = await supabase.auth.getUser();
+    supabase.auth.getUser().then(({ data: u }) => {
       if (!u.user) return;
       userId = u.user.id;
-      setUserName(u.user.user_metadata?.full_name?.split(" ")[0] ?? "");
-
-      const { data: rows } = await supabase
-        .from("startups").select("*").eq("user_id", u.user.id).order("created_at", { ascending: true });
-      const list = (rows as Startup[]) ?? [];
-      setAllStartups(list);
-      const data = list[0] ?? null;
-      setStartup(data);
-
-      if (data) {
-        const [{ count: imp }, { count: clk }] = await Promise.all([
-          supabase.from("impressions").select("*", { count: "exact", head: true }).eq("shown_startup_id", data.id),
-          supabase.from("clicks").select("*", { count: "exact", head: true }).eq("shown_startup_id", data.id),
-        ]);
-        setStats({ impressions: imp ?? 0, clicks: clk ?? 0 });
-        try {
-          const res = await fetch(`/api/public/widget/pick?host=${data.id}`);
-          if (res.ok) setCurrent(await res.json());
-        } catch {/* ignore */}
-        checkInstall(data.website_url);
-        loadDailyImpressions(data.id);
-        loadRank(data.id);
-      }
-      setLoading(false);
-
       channel = supabase
         .channel("dashboard-startup")
         .on("postgres_changes", {
@@ -152,9 +240,7 @@ function DashboardPage() {
           }
         })
         .subscribe();
-    }
-
-    load();
+    });
 
     const onDeleted = () => {
       setAllStartups([]);
@@ -181,40 +267,6 @@ function DashboardPage() {
     }
   }
 
-  async function loadDailyImpressions(startupId: string) {
-    const since = new Date();
-    since.setDate(since.getDate() - 6);
-    since.setHours(0, 0, 0, 0);
-    const { data: dailyImps } = await supabase
-      .from("impressions")
-      .select("created_at")
-      .eq("shown_startup_id", startupId)
-      .gte("created_at", since.toISOString());
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const counts = [0, 0, 0, 0, 0, 0, 0];
-    (dailyImps ?? []).forEach((row) => {
-      const d = new Date(row.created_at);
-      d.setHours(0, 0, 0, 0);
-      const diffDays = Math.round((today.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
-      if (diffDays >= 0 && diffDays <= 6) {
-        counts[6 - diffDays] = (counts[6 - diffDays] ?? 0) + 1;
-      }
-    });
-    setChartData(counts);
-  }
-
-  async function loadRank(startupId: string) {
-    const { data: allImps } = await supabase.from("impressions").select("shown_startup_id");
-    const countPerStartup = new Map<string, number>();
-    (allImps ?? []).forEach((r: { shown_startup_id: string }) => {
-      countPerStartup.set(r.shown_startup_id, (countPerStartup.get(r.shown_startup_id) ?? 0) + 1);
-    });
-    const myCount = countPerStartup.get(startupId) ?? 0;
-    const r = [...countPerStartup.values()].filter((c) => c > myCount).length + 1;
-    setRank(r);
-  }
-
   async function switchStartup(s: Startup) {
     setSwitcherOpen(false);
     setStartup(s);
@@ -222,17 +274,11 @@ function DashboardPage() {
     setCurrent(null);
     setChartData([0, 0, 0, 0, 0, 0, 0]);
     checkInstall(s.website_url);
-    loadDailyImpressions(s.id);
-    loadRank(s.id);
-    const [{ count: imp }, { count: clk }] = await Promise.all([
-      supabase.from("impressions").select("*", { count: "exact", head: true }).eq("shown_startup_id", s.id),
-      supabase.from("clicks").select("*", { count: "exact", head: true }).eq("shown_startup_id", s.id),
-    ]);
-    setStats({ impressions: imp ?? 0, clicks: clk ?? 0 });
-    try {
-      const res = await fetch(`/api/public/widget/pick?host=${s.id}`);
-      if (res.ok) setCurrent(await res.json());
-    } catch {/* ignore */}
+    const extra = await loadDashboardData(s.id);
+    setStats(extra.stats);
+    setChartData(extra.chartData);
+    setRank(extra.rank);
+    setCurrent(extra.current);
   }
 
   const snippet = startup
@@ -242,8 +288,6 @@ function DashboardPage() {
   const ctr = stats.impressions > 0
     ? ((stats.clicks / stats.impressions) * 100).toFixed(1)
     : "0.0";
-
-  
 
   function copy() {
     navigator.clipboard.writeText(snippet);
@@ -258,9 +302,7 @@ function DashboardPage() {
   return (
     <DashboardLayout>
       <div>
-        {loading ? (
-          <div className="flex items-center justify-center py-40 text-sm text-black/30">Loading…</div>
-        ) : !startup ? (
+        {!startup ? (
           <div className="flex flex-col items-center justify-center py-40 text-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-black/8 bg-white">
               <Layers className="h-6 w-6 text-black/25" />
@@ -284,7 +326,7 @@ function DashboardPage() {
               </p>
               <div className="mt-1 flex items-center gap-3 flex-wrap">
                 {allStartups.length > 1 ? (
-                  <div className="relative">
+                  <div className="relative" ref={switcherRef}>
                     <button
                       onClick={() => setSwitcherOpen(!switcherOpen)}
                       className="flex items-center gap-2 rounded-lg border border-black/10 bg-white px-3 py-1.5 hover:border-black/25 transition-all"
@@ -348,8 +390,8 @@ function DashboardPage() {
               </div>
             </div>
 
-            <div className="grid gap-4 lg:grid-cols-2">
-              <div className="rounded-xl border border-black/8 bg-white p-6">
+            <div className="grid gap-4 lg:grid-cols-2 min-w-0">
+              <div className="rounded-xl border border-black/8 bg-white p-6 min-w-0 overflow-hidden">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Code2 className="h-4 w-4 text-black/30" />
@@ -403,7 +445,7 @@ function DashboardPage() {
                 </div>
               </div>
 
-              <div className="rounded-xl border border-black/8 bg-white p-6">
+              <div className="rounded-xl border border-black/8 bg-white p-6 min-w-0 overflow-hidden">
                 <p className="text-sm font-semibold text-black">Currently showing on your site</p>
                 {current ? (
                   <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-black/8 bg-black/[0.02] px-4 py-3">
