@@ -119,6 +119,7 @@ export type Database = {
           created_at: string
           description: string
           id: string
+          logo_url: string | null
           name: string
           rejection_reason: string | null
           status: Database["public"]["Enums"]["startup_status"]
@@ -136,6 +137,7 @@ export type Database = {
           created_at?: string
           description: string
           id?: string
+          logo_url?: string | null
           name: string
           rejection_reason?: string | null
           status?: Database["public"]["Enums"]["startup_status"]
@@ -153,6 +155,7 @@ export type Database = {
           created_at?: string
           description?: string
           id?: string
+          logo_url?: string | null
           name?: string
           rejection_reason?: string | null
           status?: Database["public"]["Enums"]["startup_status"]
