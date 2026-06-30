@@ -154,15 +154,83 @@ serve(async (req) => {
         `,
       });
     } else if (type === "startup-rejected") {
-      subject = `Update on your StartupBar application — ${name}`;
-      html = shell({
-        heading: "Update on your application",
-        bodyHtml: `
-          ${p(`Hi ${founderName},`)}
-          ${p(`Thank you for applying to StartupBar. After reviewing ${strong(name)}, we're unable to approve it at this time.`)}
-          ${p(`If you think this was a mistake or would like to reapply with changes, just reply to this email and we'll take another look.`)}
-        `,
-      });
+      const reason: string = data?.reason ?? "generic";
+      const customNote: string = (data?.note ?? "").toString().trim();
+
+      const REASONS: Record<string, { subject: string; heading: string; body: string }> = {
+        not_allowed_type: {
+          subject: `Update on your StartupBar application — ${name}`,
+          heading: "Your site type isn't a fit",
+          body: `
+            ${p(`Hi ${founderName},`)}
+            ${p(`Thanks for applying to StartupBar. After reviewing ${strong(name)}, we're unable to approve it because the site type doesn't fit the kind of products we feature on the network.`)}
+            ${p(`StartupBar is built for live SaaS, indie products and founder-led startups. Directories, affiliate sites, adult content, gambling, scrapers and link-farms aren't allowed.`)}
+            ${p(`If you're building something else under the same brand, you're welcome to reapply with that project.`)}
+          `,
+        },
+        widget_hidden: {
+          subject: `Action needed: StartupBar widget is hidden on ${site}`,
+          heading: "Widget is installed but hidden",
+          body: `
+            ${p(`Hi ${founderName},`)}
+            ${p(`We found the StartupBar script on ${strong(site)} — but the widget bar is being hidden (CSS display:none, visibility:hidden, 0-height wrapper, or a parent element clipping it).`)}
+            ${p(`The network only works when every member shows the bar to their visitors. Hiding it breaks the mutual-exchange that gives every startup free traffic — so we can't approve ${strong(name)} while it's hidden.`)}
+            ${p(`Remove the CSS that hides the iframe, then reapply at <a href="https://startupbar.co/apply" style="color:#0a0a0a;">startupbar.co/apply</a> and we'll take another look right away.`)}
+          `,
+        },
+        widget_not_installed: {
+          subject: `${name} — StartupBar widget not installed`,
+          heading: "Widget snippet not found",
+          body: `
+            ${p(`Hi ${founderName},`)}
+            ${p(`We couldn't find the StartupBar embed script on ${strong(site)}. Every startup on the network needs the widget live before it can be approved.`)}
+            ${p(`Add the snippet from your <a href="https://startupbar.co/dashboard" style="color:#0a0a0a;">dashboard</a> into the ${strong("&lt;head&gt;")} of your site, then reapply — approval usually happens within a few hours.`)}
+          `,
+        },
+        low_quality: {
+          subject: `Update on your StartupBar application — ${name}`,
+          heading: "Site isn't ready yet",
+          body: `
+            ${p(`Hi ${founderName},`)}
+            ${p(`Thanks for applying. After reviewing ${strong(name)}, the site doesn't quite meet the bar for the network yet — most often that's placeholder content, a broken landing page, missing product information, or a "coming soon" page.`)}
+            ${p(`Once the site has a working product page with a clear value proposition, you're very welcome to reapply.`)}
+          `,
+        },
+        duplicate: {
+          subject: `Update on your StartupBar application — ${name}`,
+          heading: "Duplicate submission",
+          body: `
+            ${p(`Hi ${founderName},`)}
+            ${p(`${strong(name)} (or another submission for ${strong(site)}) is already in our system, so we've closed this duplicate application.`)}
+            ${p(`If you're locked out of the original account, just reply to this email and we'll help you regain access.`)}
+          `,
+        },
+        broken_site: {
+          subject: `Update on your StartupBar application — ${name}`,
+          heading: "We couldn't load your site",
+          body: `
+            ${p(`Hi ${founderName},`)}
+            ${p(`We tried to review ${strong(name)} but ${strong(site)} wouldn't load — it returned an error, timed out, or wasn't reachable from our servers.`)}
+            ${p(`Once the site is back up and serving normally, please reapply at <a href="https://startupbar.co/apply" style="color:#0a0a0a;">startupbar.co/apply</a>.`)}
+          `,
+        },
+        generic: {
+          subject: `Update on your StartupBar application — ${name}`,
+          heading: "Update on your application",
+          body: `
+            ${p(`Hi ${founderName},`)}
+            ${p(`Thank you for applying to StartupBar. After reviewing ${strong(name)}, we're unable to approve it at this time.`)}
+            ${p(`If you think this was a mistake or would like to reapply with changes, just reply to this email and we'll take another look.`)}
+          `,
+        },
+      };
+
+      const r = REASONS[reason] ?? REASONS.generic;
+      const noteBlock = customNote
+        ? `<div style="margin:0 0 16px 0;border-left:3px solid #0a0a0a;background:#fafafa;padding:12px 14px;border-radius:6px;font-size:14px;line-height:1.6;color:#27272a;">${customNote.replace(/</g, "&lt;").replace(/\n/g, "<br>")}</div>`
+        : "";
+      subject = r.subject;
+      html = shell({ heading: r.heading, bodyHtml: r.body + noteBlock });
     } else if (type === "startup-warning") {
       const snippet = `&lt;script async src="https://startupbar.co/widget/loader.js" data-startup-id="YOUR_ID"&gt;&lt;/script&gt;`;
       subject = `⚠️ Action required: StartupBar widget not detected on ${site}`;

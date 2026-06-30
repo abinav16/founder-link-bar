@@ -76,6 +76,9 @@ function AdminPage() {
   const [updating, setUpdating] = useState<string | null>(null);
   const [embed, setEmbed] = useState<Record<string, EmbedState>>({});
   const [now, setNow] = useState<number>(() => Date.now());
+  const [rejectTarget, setRejectTarget] = useState<Startup | null>(null);
+  const [rejectReason, setRejectReason] = useState<string>("not_allowed_type");
+  const [rejectNote, setRejectNote] = useState<string>("");
 
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 60_000);
@@ -122,7 +125,7 @@ function AdminPage() {
 
   useEffect(() => { load(); }, []);
 
-  async function setStatus(id: string, status: "approved" | "rejected", reason?: string) {
+  async function setStatus(id: string, status: "approved" | "rejected", reason?: string, note?: string) {
     setUpdating(id);
     const update: Partial<Startup> = { status };
     if (status === "rejected" && reason) update.rejection_reason = reason;
@@ -137,7 +140,12 @@ function AdminPage() {
         : reason === "widget_not_installed"
           ? "startup-removed-no-widget"
           : "startup-rejected";
-      supabase.functions.invoke("send-email", { body: { type: emailType, data: { startupId: id } } }).catch(() => {});
+      const emailBody: Record<string, unknown> = { startupId: id };
+      if (status === "rejected" && emailType === "startup-rejected") {
+        emailBody.reason = reason ?? "generic";
+        if (note) emailBody.note = note;
+      }
+      supabase.functions.invoke("send-email", { body: { type: emailType, data: emailBody } }).catch(() => {});
     }
     setUpdating(null);
   }
@@ -414,8 +422,22 @@ function AdminPage() {
                           {s.status !== "rejected" && (() => {
                             const warnExpired = !!s.warn_expires_at && new Date(s.warn_expires_at).getTime() <= now;
                             const isWidgetRemoval = warnExpired || (!!s.warn_expires_at && s.status === "approved");
+                            const openModal = () => {
+                              const defaultReason = isWidgetRemoval
+                                ? "widget_not_installed"
+                                : badge === "hidden"
+                                  ? "widget_hidden"
+                                  : badge === "missing"
+                                    ? "widget_not_installed"
+                                    : badge === "error"
+                                      ? "broken_site"
+                                      : "not_allowed_type";
+                              setRejectReason(defaultReason);
+                              setRejectNote("");
+                              setRejectTarget(s);
+                            };
                             return (
-                              <button onClick={() => setStatus(s.id, "rejected", isWidgetRemoval ? "widget_not_installed" : undefined)} disabled={updating === s.id}
+                              <button onClick={openModal} disabled={updating === s.id}
                                 className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors disabled:opacity-50 sm:gap-1.5 sm:px-3 ${
                                   warnExpired
                                     ? "border-red-400 bg-red-100 text-red-700 hover:bg-red-200 ring-1 ring-red-300"
@@ -437,6 +459,63 @@ function AdminPage() {
           </div>
         )}
       </div>
+
+      {rejectTarget && (() => {
+        const REASONS: { value: string; label: string; hint: string }[] = [
+          { value: "not_allowed_type", label: "Site type not allowed", hint: "Directory, affiliate, adult, gambling, scraper, link farm, etc." },
+          { value: "widget_hidden", label: "Widget bar is hidden", hint: "Script is installed but bar is hidden via CSS or wrapped in a 0-height element." },
+          { value: "widget_not_installed", label: "Widget not installed", hint: "Embed script is missing from the site's <head>." },
+          { value: "low_quality", label: "Site not ready / low quality", hint: "Placeholder content, broken pages, coming-soon, no real product." },
+          { value: "duplicate", label: "Duplicate submission", hint: "We already have this startup or domain on file." },
+          { value: "broken_site", label: "Site unreachable", hint: "Site returned an error, timed out, or wouldn't load." },
+          { value: "generic", label: "Other (generic rejection)", hint: "Use the note field below to add context." },
+        ];
+        const target = rejectTarget;
+        const close = () => setRejectTarget(null);
+        const submit = async () => {
+          close();
+          await setStatus(target.id, "rejected", rejectReason, rejectNote.trim() || undefined);
+        };
+        return (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 px-3 py-4" onClick={close}>
+            <div onClick={(e) => e.stopPropagation()} className="w-full max-w-lg rounded-2xl bg-white shadow-2xl border border-black/8 overflow-hidden">
+              <div className="px-5 py-4 border-b border-black/8 flex items-center justify-between">
+                <div>
+                  <div className="text-[11px] uppercase tracking-[0.15em] text-black/40 font-semibold">Reject application</div>
+                  <div className="text-base font-semibold text-black mt-0.5">{target.name}</div>
+                </div>
+                <button onClick={close} className="text-black/40 hover:text-black p-1"><X className="h-4 w-4" /></button>
+              </div>
+              <div className="px-5 py-4 max-h-[60vh] overflow-y-auto">
+                <p className="text-xs text-black/50 mb-3">Pick a reason — the founder gets a branded email matching it.</p>
+                <div className="space-y-2">
+                  {REASONS.map((r) => (
+                    <label key={r.value} className={`flex gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${rejectReason === r.value ? "border-black bg-black/[0.03]" : "border-black/10 hover:bg-black/[0.02]"}`}>
+                      <input type="radio" name="reject-reason" value={r.value} checked={rejectReason === r.value} onChange={() => setRejectReason(r.value)} className="mt-0.5 accent-black" />
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-black">{r.label}</div>
+                        <div className="text-xs text-black/50 mt-0.5">{r.hint}</div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+                <div className="mt-4">
+                  <label className="text-[11px] uppercase tracking-[0.15em] text-black/40 font-semibold">Optional note to founder</label>
+                  <textarea value={rejectNote} onChange={(e) => setRejectNote(e.target.value)} rows={3} placeholder="Add specifics they should know (appended to the email)…"
+                    className="mt-1.5 w-full rounded-lg border border-black/12 bg-white px-3 py-2 text-sm text-black placeholder:text-black/30 focus:border-black focus:outline-none resize-none" />
+                </div>
+              </div>
+              <div className="px-5 py-3 border-t border-black/8 bg-black/[0.02] flex items-center justify-end gap-2">
+                <button onClick={close} className="px-3 py-1.5 text-sm text-black/60 hover:text-black rounded-lg">Cancel</button>
+                <button onClick={submit} disabled={updating === target.id}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white px-3.5 py-1.5 text-sm font-medium disabled:opacity-50">
+                  <X className="h-3.5 w-3.5" /> Reject &amp; send email
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
