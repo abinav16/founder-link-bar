@@ -137,11 +137,9 @@ function AdminPage() {
       setStartups((prev) => prev.map((s) => s.id === id ? { ...s, status, rejection_reason: reason ?? s.rejection_reason } : s));
       const emailType = status === "approved"
         ? "startup-approved"
-        : reason === "widget_not_installed"
-          ? "startup-removed-no-widget"
-          : "startup-rejected";
+        : "startup-rejected";
       const emailBody: Record<string, unknown> = { startupId: id };
-      if (status === "rejected" && emailType === "startup-rejected") {
+      if (status === "rejected") {
         emailBody.reason = reason ?? "generic";
         if (note) emailBody.note = note;
       }
