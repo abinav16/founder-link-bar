@@ -317,31 +317,49 @@ function AdminPage() {
                       <td className="px-4 py-4 sm:px-5">
                         <button
                           onClick={() => checkEmbed(s.id, s.website_url)}
-                          disabled={!s.website_url || e === "checking"}
-                          title="Re-check embed installation"
+                          disabled={!s.website_url || badge === "checking"}
+                          title={
+                            badge === "live" ? "Script installed and widget visible to visitors"
+                            : badge === "hidden" ? (scriptSuspicious
+                                ? "Script is wrapped in a hidden element (display:none / visibility:hidden / height:0)"
+                                : "Script installed but widget reports as hidden on the page")
+                            : badge === "installed-unseen" ? "Script tag detected, but no recent visibility ping. The page may not have been loaded yet."
+                            : badge === "missing" ? "Loader script not found in page HTML"
+                            : badge === "error" ? "Could not reach the site"
+                            : "Click to re-check"
+                          }
                           className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors disabled:opacity-60 ${
-                            e === "live"
+                            badge === "live"
                               ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                              : e === "missing"
+                              : badge === "hidden"
+                              ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
+                              : badge === "installed-unseen"
+                              ? "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
+                              : badge === "missing"
                               ? "border-red-200 bg-red-50 text-red-600 hover:bg-red-100"
-                              : e === "error"
+                              : badge === "error"
                               ? "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
                               : "border-black/10 bg-black/[0.02] text-black/45 hover:bg-black/[0.04]"
                           }`}
                         >
-                          {e === "checking" ? (
+                          {badge === "checking" ? (
                             <><Loader2 className="h-3 w-3 animate-spin" /> Checking</>
-                          ) : e === "live" ? (
+                          ) : badge === "live" ? (
                             <><Radio className="h-3 w-3" /> Live</>
-                          ) : e === "missing" ? (
+                          ) : badge === "hidden" ? (
+                            <><EyeOff className="h-3 w-3" /> {scriptSuspicious ? "Hidden (CSS)" : "Hidden"}</>
+                          ) : badge === "installed-unseen" ? (
+                            <><Eye className="h-3 w-3" /> Installed · not seen</>
+                          ) : badge === "missing" ? (
                             <><CircleSlash className="h-3 w-3" /> Not installed</>
-                          ) : e === "error" ? (
+                          ) : badge === "error" ? (
                             <><CircleSlash className="h-3 w-3" /> Unreachable</>
                           ) : (
                             <><RefreshCw className="h-3 w-3" /> Check</>
                           )}
                         </button>
                       </td>
+
                       <td className="hidden px-5 py-4 lg:table-cell">
                         {s.banned ? (
                           <span className="inline-flex items-center gap-1.5 rounded-full border border-red-300 bg-red-50 px-2.5 py-0.5 text-xs font-medium text-red-700">
