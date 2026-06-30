@@ -95,12 +95,36 @@ function WidgetBar() {
     })();
   }, [host]);
 
+  const lastSentHeight = useRef<number>(-1);
   useEffect(() => {
     const el = wrapperRef.current;
     if (!el) return;
-    const height = dismissed ? 0 : el.scrollHeight;
-    window.parent.postMessage({ type: "startupbar:resize", height }, "*");
-  }, [showInfo, dismissed, loaded]);
+
+    const send = (h: number) => {
+      const rounded = Math.round(h);
+      if (rounded === lastSentHeight.current) return;
+      lastSentHeight.current = rounded;
+      window.parent.postMessage({ type: "startupbar:resize", height: rounded }, "*");
+    };
+
+    if (dismissed) {
+      send(0);
+      return;
+    }
+
+    send(el.scrollHeight);
+
+    if (typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        send(entry.contentRect.height);
+      }
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [dismissed, loaded, showInfo]);
+
+
 
   if (!loaded || dismissed) return null;
 
