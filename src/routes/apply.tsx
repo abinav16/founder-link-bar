@@ -131,6 +131,11 @@ function Apply() {
     supabase.auth.getUser().then(({ data }) => setAuthed(!!data.user));
   }, []);
 
+  // Never allow step 2 without an authenticated session — it gates the script + submission.
+  useEffect(() => {
+    if (authed === false && step === 2) setStep(1);
+  }, [authed, step]);
+
   async function refreshGateData(userId: string) {
     const [{ count }, { data: prepaid }] = await Promise.all([
       supabase.from("startups").select("*", { count: "exact", head: true }).eq("user_id", userId),
