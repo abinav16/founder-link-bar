@@ -1,30 +1,53 @@
-## Problem
+## Goal
 
-On iOS Safari, the page jumps upward every few seconds. Root cause is the iframe height pipeline:
+Make the StartupBar widget auto-offset the host page so nothing hides behind the 36px fixed bar — including fixed/sticky headers that pin to `top: 0`, and any such elements added later.
 
-1. `widget.bar.tsx` posts `startupbar:resize` on every render where `loaded`/`showInfo`/`dismissed` change, sending `wrapperRef.current.scrollHeight`. iOS Safari can report sub-pixel/fluctuating `scrollHeight` values after font load, favicon load, and theme repaints.
-2. `loader.js` unconditionally assigns `iframe.style.height = e.data.height + 'px'` on every message. Even setting the same height re-lays-out the fixed iframe and, combined with the one-time `document.body.style.marginTop += 36`, nudges iOS scroll anchoring.
-3. The heartbeat itself (`new Image()` ping) is harmless, but it runs 1.5s after inject — which is exactly when users report the first jump, making it a red herring.
+## Changes — `public/widget/loader.js` only
 
-## Fix
+All other files (`widget.bar.tsx`, heartbeat, theme detection, resize contract) stay untouched.
 
-**`public/widget/loader.js`**
-- Track `currentHeight`; in the `message` handler, ignore messages where `Math.round(e.data.height) === currentHeight`. Only assign `iframe.style.height` when it actually changes.
-- Replace the one-shot `document.body.style.marginTop += 36` with a stable `document.documentElement.style.setProperty('scroll-padding-top', '36px')` plus a single `body.style.paddingTop = '36px'` (idempotent — guard with a `data-startupbar-injected` attribute so re-injection can't double it). Padding doesn't shift scroll anchor on iOS the way margin does.
-- Keep heartbeat, MutationObserver theme detection, and resize message contract unchanged.
+### 1. Keep existing body padding behavior
 
-**`src/routes/widget.bar.tsx`**
-- Replace the `[showInfo, dismissed, loaded]` effect that posts `scrollHeight` with a `ResizeObserver` on `wrapperRef.current` that:
-  - Rounds height to integer.
-  - Only calls `window.parent.postMessage` when the rounded value differs from the last sent value (kept in a `useRef`).
-  - Sends `0` once on dismiss, then disconnects.
-- This eliminates the redundant posts on every re-render and on no-op scrollHeight fluctuations.
+The current `inject()` already sets `body.paddingTop += 36px` guarded by `data-startupbar-injected`. Leave that as-is (it already satisfies requirement #1).
+
+### 2. New helper: `shiftFixedElement(el)`
+
+Runs only on `Element` nodes. Logic:
+
+- Read `getComputedStyle(el).position`. Bail unless `fixed` or `sticky`.
+- Skip the widget iframe itself and anything inside it.
+- Skip if `el.dataset.startupbarShifted === '1'` (idempotent).
+- Read the computed `top` value:
+  - If `top` is `auto` → treat as 0, qualifies for shift.
+  - If `top` parses to a px value `<= 36` → qualifies.
+  - If `top` parses to `> 36px`, or uses a non-px unit we can't safely compare (`%`, `vh`, `calc(...)` we didn't author) → leave alone.
+- When shifting: set `el.style.top = (originalTopPx + 36) + 'px'` (so a header at `top:0` becomes `top:36px`, a banner at `top:10px` becomes `top:46px` — only when original ≤ 36), mark `el.dataset.startupbarShifted = '1'`, and stash the original inline `top` in `el.dataset.startupbarOriginalTop` for safety.
+
+### 3. Initial sweep
+
+Right after `inject()` appends the iframe and sets body padding, walk `document.querySelectorAll('*')` and call `shiftFixedElement` on each. Done once.
+
+### 4. MutationObserver for late-added elements
+
+Add a second observer (separate from the theme observer so its filter stays narrow):
+
+- `observe(document.documentElement, { childList: true, subtree: true })`.
+- On each mutation, iterate `addedNodes`; for each `Element`, run `shiftFixedElement` on the node itself and on `node.querySelectorAll('*')`.
+- Cheap guard: skip nodes inside the StartupBar iframe.
+
+Style mutations (e.g. JS later flipping an element to `position: fixed`) are out of scope — covering them would require observing `attributes: ['style', 'class']` subtree-wide, which is expensive and risks loops. The childList observer handles the common case (frameworks mounting headers/banners after hydration).
+
+### 5. Preserve everything else
+
+No changes to: iframe creation, `startupbar:resize` handler, theme `detectTheme` / theme MutationObserver, `isWidgetVisible`, heartbeat, iframe guard, or the `data-startupbar-injected` idempotency flag.
 
 ## Verification
 
-- iOS Safari (or Playwright iPhone emulation) on a host page with the widget — confirm no periodic scroll jump after load, after theme toggle, and after opening the info panel.
-- Confirm: bar still appears, info panel still expands/collapses, dismiss still collapses to 0, dark/light theme still flips via host class change, heartbeat request still fires at ~1.5s.
+- Playwright against a test host page with: (a) a `position: fixed; top: 0` header, (b) a `position: sticky; top: 0` nav, (c) an element with `top: 50px` (must NOT move), (d) a header injected via `setTimeout` after load (must shift). Screenshot before/after.
+- Confirm widget bar still renders at the top, heartbeat fires, theme toggle still flips colors, resize messages still adjust iframe height.
 
 ## Out of scope
 
-No changes to the heartbeat endpoint, theme tokens, or widget visual design.
+- Restoring shifted `top` values on widget removal (widget has no removal API).
+- Handling elements that become fixed later via inline style/class changes.
+- Adjusting `bottom`-anchored elements (widget is at top only).
