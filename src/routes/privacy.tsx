@@ -49,9 +49,23 @@ function PrivacyPage() {
         </div>
       </main>
       <footer className="border-t border-black/8 px-6 py-8">
-        <div className="mx-auto flex max-w-2xl items-center justify-between text-xs text-black/30">
+        <div className="mx-auto flex max-w-2xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-xs text-black/30">
           <span>© {new Date().getFullYear()} StartupBar</span>
-          <Link to="/terms" className="hover:text-black transition-colors">Terms of Service</Link>
+          <div className="flex flex-wrap items-center gap-4">
+            <a href="mailto:hello@startupbar.co" className="hover:text-black transition-colors">Support</a>
+            <Link to="/terms" className="hover:text-black transition-colors">Terms of Service</Link>
+            <a
+              href="https://x.com/danielabinav16"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="X (Twitter)"
+              className="hover:text-black transition-colors"
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current" aria-hidden="true">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+              </svg>
+            </a>
+          </div>
         </div>
       </footer>
     </div>
