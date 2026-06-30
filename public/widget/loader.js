@@ -178,6 +178,8 @@
         }
       }
       startObserver();
+      sweepFixedElements();
+      startFixedObserver();
       setTimeout(sendHeartbeat, 1500);
     }
 
