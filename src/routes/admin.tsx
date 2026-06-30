@@ -74,7 +74,7 @@ function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>("pending");
   const [updating, setUpdating] = useState<string | null>(null);
-  const [embed, setEmbed] = useState<Record<string, "checking" | "live" | "missing" | "error">>({});
+  const [embed, setEmbed] = useState<Record<string, EmbedState>>({});
   const [now, setNow] = useState<number>(() => Date.now());
 
   useEffect(() => {
@@ -83,13 +83,17 @@ function AdminPage() {
   }, []);
 
   async function checkEmbed(id: string, website: string) {
-    setEmbed((p) => ({ ...p, [id]: "checking" }));
+    setEmbed((p) => ({ ...p, [id]: { state: "checking" } }));
     try {
       const r = await fetch(`/api/public/verify-install?url=${encodeURIComponent(website)}`);
       const j = await r.json();
-      const status: "live" | "missing" | "error" = j.installed ? "live" : (j.error ? "error" : "missing");
-      setEmbed((p) => ({ ...p, [id]: status }));
-      if (status === "live") {
+      const next: EmbedState = j.installed
+        ? { state: "installed", suspicious: !!j.suspicious }
+        : j.error
+          ? { state: "error" }
+          : { state: "missing" };
+      setEmbed((p) => ({ ...p, [id]: next }));
+      if (next.state === "installed" && !next.suspicious) {
         const s = startups.find((x) => x.id === id);
         if (s?.warn_expires_at) {
           await supabase.from("startups").update({ warned_at: null, warn_expires_at: null }).eq("id", id);
@@ -98,7 +102,7 @@ function AdminPage() {
         }
       }
     } catch {
-      setEmbed((p) => ({ ...p, [id]: "error" }));
+      setEmbed((p) => ({ ...p, [id]: { state: "error" } }));
     }
   }
 
@@ -111,8 +115,10 @@ function AdminPage() {
     const list = (data as Startup[]) ?? [];
     setStartups(list);
     setLoading(false);
-    list.filter((s) => s.status === "approved" && s.website_url).forEach((s) => checkEmbed(s.id, s.website_url));
+    // Check embed for any startup with a website (including pending — that's the point)
+    list.filter((s) => s.website_url && s.status !== "rejected").forEach((s) => checkEmbed(s.id, s.website_url));
   }
+
 
   useEffect(() => { load(); }, []);
 
