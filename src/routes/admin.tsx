@@ -422,8 +422,22 @@ function AdminPage() {
                           {s.status !== "rejected" && (() => {
                             const warnExpired = !!s.warn_expires_at && new Date(s.warn_expires_at).getTime() <= now;
                             const isWidgetRemoval = warnExpired || (!!s.warn_expires_at && s.status === "approved");
+                            const openModal = () => {
+                              const defaultReason = isWidgetRemoval
+                                ? "widget_not_installed"
+                                : badge === "hidden"
+                                  ? "widget_hidden"
+                                  : badge === "missing"
+                                    ? "widget_not_installed"
+                                    : badge === "error"
+                                      ? "broken_site"
+                                      : "not_allowed_type";
+                              setRejectReason(defaultReason);
+                              setRejectNote("");
+                              setRejectTarget(s);
+                            };
                             return (
-                              <button onClick={() => setStatus(s.id, "rejected", isWidgetRemoval ? "widget_not_installed" : undefined)} disabled={updating === s.id}
+                              <button onClick={openModal} disabled={updating === s.id}
                                 className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors disabled:opacity-50 sm:gap-1.5 sm:px-3 ${
                                   warnExpired
                                     ? "border-red-400 bg-red-100 text-red-700 hover:bg-red-200 ring-1 ring-red-300"
