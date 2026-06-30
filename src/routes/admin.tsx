@@ -275,18 +275,20 @@ function AdminPage() {
                     const scriptInstalled = e.state === "installed";
                     const scriptSuspicious = e.state === "installed" && e.suspicious;
                     const hbFresh = !!s.widget_last_heartbeat_at && (now - new Date(s.widget_last_heartbeat_at).getTime()) < 24 * 60 * 60_000;
-                    // Combined embed badge state
+                    // Combined embed badge state.
+                    // Heartbeats are the most reliable signal — if a fresh visible heartbeat
+                    // exists, the widget IS running on the page, even if the static HTML check
+                    // misses it (SPAs / JS-injected scripts / login-walled homepages).
+                    const hbVisible = hbFresh && s.widget_currently_visible === true;
+                    const hbHidden = hbFresh && s.widget_currently_visible === false;
                     const badge: "checking" | "live" | "hidden" | "installed-unseen" | "missing" | "error" | "idle" =
                       e.state === "checking" ? "checking"
+                      : hbVisible && !scriptSuspicious ? "live"
+                      : hbHidden || scriptSuspicious ? "hidden"
+                      : scriptInstalled ? "installed-unseen"
                       : e.state === "error" ? "error"
                       : e.state === "missing" ? "missing"
-                      : scriptInstalled
-                        ? (s.widget_currently_visible === false || scriptSuspicious
-                            ? "hidden"
-                            : (hbFresh && s.widget_currently_visible === true)
-                              ? "live"
-                              : "installed-unseen")
-                        : "idle";
+                      : "idle";
                     return (
                     <tr key={s.id} className="hover:bg-black/[0.01] transition-colors">
                       <td className="px-4 py-4 sm:px-5">
