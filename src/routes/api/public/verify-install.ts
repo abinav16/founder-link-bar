@@ -51,7 +51,25 @@ export const Route = createFileRoute("/api/public/verify-install")({
             html.includes("widget/loader.js") ||
             html.includes("data-startup-id");
 
-          return Response.json({ installed }, { headers: NO_STORE });
+          // Defense-in-depth: detect cheap CSS hiding around the loader script.
+          // Look for an ancestor element with display:none / visibility:hidden /
+          // opacity:0 / height:0 within ~400 chars before the script tag.
+          let suspicious = false;
+          if (installed) {
+            const re = /<script[^>]*(?:startupbar\.co\/widget|widget\/loader\.js|data-startup-id)[^>]*>/i;
+            const m = html.match(re);
+            if (m && typeof m.index === "number") {
+              const window = html.slice(Math.max(0, m.index - 400), m.index).toLowerCase();
+              suspicious =
+                /display\s*:\s*none/.test(window) ||
+                /visibility\s*:\s*hidden/.test(window) ||
+                /opacity\s*:\s*0(?!\.)/.test(window) ||
+                /height\s*:\s*0(?:px)?\b/.test(window) ||
+                /\bhidden\b\s*[>"']/.test(window);
+            }
+          }
+
+          return Response.json({ installed, suspicious }, { headers: NO_STORE });
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : "Unreachable";
           return Response.json({ installed: false, error: `Could not reach site: ${message}` }, { headers: NO_STORE });

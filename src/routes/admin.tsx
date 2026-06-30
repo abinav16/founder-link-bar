@@ -37,10 +37,19 @@ interface Startup {
   warn_expires_at: string | null;
   widget_hidden_at: string | null;
   widget_last_heartbeat_at: string | null;
+  widget_currently_visible: boolean | null;
   strike_count: number;
   rejection_reason: string | null;
   banned: boolean;
 }
+
+type EmbedState =
+  | { state: "idle" }
+  | { state: "checking" }
+  | { state: "installed"; suspicious: boolean }
+  | { state: "missing" }
+  | { state: "error" };
+
 
 const STATUS_TABS = ["all", "pending", "approved", "warned", "rejected"] as const;
 type Tab = typeof STATUS_TABS[number];
@@ -65,7 +74,7 @@ function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>("pending");
   const [updating, setUpdating] = useState<string | null>(null);
-  const [embed, setEmbed] = useState<Record<string, "checking" | "live" | "missing" | "error">>({});
+  const [embed, setEmbed] = useState<Record<string, EmbedState>>({});
   const [now, setNow] = useState<number>(() => Date.now());
 
   useEffect(() => {
@@ -74,13 +83,17 @@ function AdminPage() {
   }, []);
 
   async function checkEmbed(id: string, website: string) {
-    setEmbed((p) => ({ ...p, [id]: "checking" }));
+    setEmbed((p) => ({ ...p, [id]: { state: "checking" } }));
     try {
       const r = await fetch(`/api/public/verify-install?url=${encodeURIComponent(website)}`);
       const j = await r.json();
-      const status: "live" | "missing" | "error" = j.installed ? "live" : (j.error ? "error" : "missing");
-      setEmbed((p) => ({ ...p, [id]: status }));
-      if (status === "live") {
+      const next: EmbedState = j.installed
+        ? { state: "installed", suspicious: !!j.suspicious }
+        : j.error
+          ? { state: "error" }
+          : { state: "missing" };
+      setEmbed((p) => ({ ...p, [id]: next }));
+      if (next.state === "installed" && !next.suspicious) {
         const s = startups.find((x) => x.id === id);
         if (s?.warn_expires_at) {
           await supabase.from("startups").update({ warned_at: null, warn_expires_at: null }).eq("id", id);
@@ -89,7 +102,7 @@ function AdminPage() {
         }
       }
     } catch {
-      setEmbed((p) => ({ ...p, [id]: "error" }));
+      setEmbed((p) => ({ ...p, [id]: { state: "error" } }));
     }
   }
 
@@ -102,8 +115,10 @@ function AdminPage() {
     const list = (data as Startup[]) ?? [];
     setStartups(list);
     setLoading(false);
-    list.filter((s) => s.status === "approved" && s.website_url).forEach((s) => checkEmbed(s.id, s.website_url));
+    // Check embed for any startup with a website (including pending — that's the point)
+    list.filter((s) => s.website_url && s.status !== "rejected").forEach((s) => checkEmbed(s.id, s.website_url));
   }
+
 
   useEffect(() => { load(); }, []);
 
@@ -248,7 +263,22 @@ function AdminPage() {
                 </thead>
                 <tbody className="divide-y divide-black/5">
                   {filtered.map((s) => {
-                    const e = embed[s.id];
+                    const e: EmbedState = embed[s.id] ?? { state: "idle" };
+                    const scriptInstalled = e.state === "installed";
+                    const scriptSuspicious = e.state === "installed" && e.suspicious;
+                    const hbFresh = !!s.widget_last_heartbeat_at && (now - new Date(s.widget_last_heartbeat_at).getTime()) < 10 * 60_000;
+                    // Combined embed badge state
+                    const badge: "checking" | "live" | "hidden" | "installed-unseen" | "missing" | "error" | "idle" =
+                      e.state === "checking" ? "checking"
+                      : e.state === "error" ? "error"
+                      : e.state === "missing" ? "missing"
+                      : scriptInstalled
+                        ? (s.widget_currently_visible === false || scriptSuspicious
+                            ? "hidden"
+                            : (hbFresh && s.widget_currently_visible === true)
+                              ? "live"
+                              : "installed-unseen")
+                        : "idle";
                     return (
                     <tr key={s.id} className="hover:bg-black/[0.01] transition-colors">
                       <td className="px-4 py-4 sm:px-5">
@@ -287,31 +317,49 @@ function AdminPage() {
                       <td className="px-4 py-4 sm:px-5">
                         <button
                           onClick={() => checkEmbed(s.id, s.website_url)}
-                          disabled={!s.website_url || e === "checking"}
-                          title="Re-check embed installation"
+                          disabled={!s.website_url || badge === "checking"}
+                          title={
+                            badge === "live" ? "Script installed and widget visible to visitors"
+                            : badge === "hidden" ? (scriptSuspicious
+                                ? "Script is wrapped in a hidden element (display:none / visibility:hidden / height:0)"
+                                : "Script installed but widget reports as hidden on the page")
+                            : badge === "installed-unseen" ? "Script tag detected, but no recent visibility ping. The page may not have been loaded yet."
+                            : badge === "missing" ? "Loader script not found in page HTML"
+                            : badge === "error" ? "Could not reach the site"
+                            : "Click to re-check"
+                          }
                           className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors disabled:opacity-60 ${
-                            e === "live"
+                            badge === "live"
                               ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                              : e === "missing"
+                              : badge === "hidden"
+                              ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
+                              : badge === "installed-unseen"
+                              ? "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
+                              : badge === "missing"
                               ? "border-red-200 bg-red-50 text-red-600 hover:bg-red-100"
-                              : e === "error"
+                              : badge === "error"
                               ? "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
                               : "border-black/10 bg-black/[0.02] text-black/45 hover:bg-black/[0.04]"
                           }`}
                         >
-                          {e === "checking" ? (
+                          {badge === "checking" ? (
                             <><Loader2 className="h-3 w-3 animate-spin" /> Checking</>
-                          ) : e === "live" ? (
+                          ) : badge === "live" ? (
                             <><Radio className="h-3 w-3" /> Live</>
-                          ) : e === "missing" ? (
+                          ) : badge === "hidden" ? (
+                            <><EyeOff className="h-3 w-3" /> {scriptSuspicious ? "Hidden (CSS)" : "Hidden"}</>
+                          ) : badge === "installed-unseen" ? (
+                            <><Eye className="h-3 w-3" /> Installed · not seen</>
+                          ) : badge === "missing" ? (
                             <><CircleSlash className="h-3 w-3" /> Not installed</>
-                          ) : e === "error" ? (
+                          ) : badge === "error" ? (
                             <><CircleSlash className="h-3 w-3" /> Unreachable</>
                           ) : (
                             <><RefreshCw className="h-3 w-3" /> Check</>
                           )}
                         </button>
                       </td>
+
                       <td className="hidden px-5 py-4 lg:table-cell">
                         {s.banned ? (
                           <span className="inline-flex items-center gap-1.5 rounded-full border border-red-300 bg-red-50 px-2.5 py-0.5 text-xs font-medium text-red-700">
@@ -348,7 +396,7 @@ function AdminPage() {
                       </td>
                       <td className="px-4 py-4 sm:px-5">
                         <div className="flex items-center justify-end gap-1.5">
-                          {s.status === "approved" && e !== "live" && !s.warn_expires_at && (
+                          {s.status === "approved" && badge !== "live" && !s.warn_expires_at && (
                             <button onClick={() => warnStartup(s)} disabled={updating === s.id}
                               title="Email founder a 48-hour reinstall warning"
                               className="inline-flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-100 transition-colors disabled:opacity-50 sm:gap-1.5 sm:px-3">
