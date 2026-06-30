@@ -76,6 +76,9 @@ function AdminPage() {
   const [updating, setUpdating] = useState<string | null>(null);
   const [embed, setEmbed] = useState<Record<string, EmbedState>>({});
   const [now, setNow] = useState<number>(() => Date.now());
+  const [rejectTarget, setRejectTarget] = useState<Startup | null>(null);
+  const [rejectReason, setRejectReason] = useState<string>("not_allowed_type");
+  const [rejectNote, setRejectNote] = useState<string>("");
 
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 60_000);
