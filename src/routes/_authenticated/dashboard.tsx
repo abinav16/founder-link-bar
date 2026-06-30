@@ -316,19 +316,60 @@ function DashboardPage() {
     <DashboardLayout>
       <div>
         {!startup ? (
-          <div className="flex flex-col items-center justify-center py-40 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-black/8 bg-white">
-              <Layers className="h-6 w-6 text-black/25" />
-            </div>
-            <h2 className="mt-5 text-2xl font-medium tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-              No startup yet
-            </h2>
-            <p className="mt-2 max-w-xs text-sm text-black/40">
-              Apply your startup to start exchanging traffic with other founders across the network.
+          <div className="mx-auto max-w-2xl py-10 sm:py-16">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">
+              {draft ? "Draft saved" : "Welcome"}
+            </span>
+            <h1 className="mt-3 text-3xl font-medium leading-tight tracking-tight sm:text-4xl" style={{ fontFamily: "var(--font-display)" }}>
+              {draft ? "Pick up where you left off." : "You're one step away from free traffic."}
+            </h1>
+            <p className="mt-3 text-[15px] leading-relaxed text-black/45">
+              {draft
+                ? "We saved your application. Finish submitting it to start exchanging traffic with founders across the network."
+                : "Submit your startup to get featured on other founders' sites — and show one of theirs on yours. Reviewed within 24 hours."}
             </p>
-            <Link to="/apply"
-              className="group mt-8 inline-flex items-center gap-2 rounded-lg bg-black px-5 py-3 text-sm font-medium text-white hover:bg-black/80 transition-all">
-              Apply your startup <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+
+            {draft && (
+              <div className="mt-6 flex items-center gap-3 rounded-xl border border-black/10 bg-white px-5 py-4">
+                {draft.url && <StartupFavicon url={draft.url} name={draft.name || "Startup"} size={24} className="rounded-sm" />}
+                <div className="min-w-0">
+                  <p className="font-medium text-black">{draft.name || "Untitled"}</p>
+                  {draft.url && <p className="truncate text-xs text-black/40">{draft.url}</p>}
+                </div>
+              </div>
+            )}
+
+            <Link
+              to="/apply"
+              className="group mt-6 inline-flex items-center gap-2 rounded-lg bg-black px-5 py-3 text-sm font-medium text-white hover:bg-black/80 transition-all"
+            >
+              {draft ? "Resume application" : "Apply your startup"}
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+
+            <div className="mt-8 flex items-center gap-3 text-[12px] text-black/40">
+              <span className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-500" /> Sign up</span>
+              <span className="text-black/15">—</span>
+              <span className="inline-flex items-center gap-1.5 font-medium text-black"><span className="h-1.5 w-1.5 rounded-full bg-black" /> Submit startup</span>
+              <span className="text-black/15">—</span>
+              <span className="text-black/35">Get approved & live</span>
+            </div>
+
+            <div className="mt-10 space-y-3 border-t border-black/8 pt-8">
+              {[
+                "Your bar shows on sites across the network within 24h of approval.",
+                "In return, you show one other startup on your site — fully automatic.",
+                "Free forever. Cancel anytime by removing the script tag.",
+              ].map((t) => (
+                <div key={t} className="flex items-start gap-3">
+                  <div className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
+                  <p className="text-[13px] leading-relaxed text-black/50">{t}</p>
+                </div>
+              ))}
+            </div>
+
+            <Link to="/leaderboard" className="mt-8 inline-flex items-center gap-1.5 text-xs text-black/35 hover:text-black transition-colors">
+              See who's already in the network →
             </Link>
           </div>
         ) : (
