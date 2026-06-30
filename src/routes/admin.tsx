@@ -122,7 +122,7 @@ function AdminPage() {
 
   useEffect(() => { load(); }, []);
 
-  async function setStatus(id: string, status: "approved" | "rejected", reason?: string) {
+  async function setStatus(id: string, status: "approved" | "rejected", reason?: string, note?: string) {
     setUpdating(id);
     const update: Partial<Startup> = { status };
     if (status === "rejected" && reason) update.rejection_reason = reason;
@@ -137,7 +137,12 @@ function AdminPage() {
         : reason === "widget_not_installed"
           ? "startup-removed-no-widget"
           : "startup-rejected";
-      supabase.functions.invoke("send-email", { body: { type: emailType, data: { startupId: id } } }).catch(() => {});
+      const emailBody: Record<string, unknown> = { startupId: id };
+      if (status === "rejected" && emailType === "startup-rejected") {
+        emailBody.reason = reason ?? "generic";
+        if (note) emailBody.note = note;
+      }
+      supabase.functions.invoke("send-email", { body: { type: emailType, data: emailBody } }).catch(() => {});
     }
     setUpdating(null);
   }
