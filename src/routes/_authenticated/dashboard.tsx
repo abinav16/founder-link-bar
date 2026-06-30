@@ -199,6 +199,19 @@ function DashboardPage() {
   const [userName] = useState(loaderData.userName);
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const switcherRef = useRef<HTMLDivElement>(null);
+  const [draft, setDraft] = useState<{ name: string; url: string; desc: string } | null>(null);
+
+  useEffect(() => {
+    if (startup) return;
+    try {
+      const raw = sessionStorage.getItem("startupbar:apply-draft");
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed?.name || parsed?.url) {
+        setDraft({ name: parsed.name ?? "", url: parsed.url ?? "", desc: parsed.desc ?? "" });
+      }
+    } catch { /* ignore */ }
+  }, [startup]);
 
   useEffect(() => {
     if (!switcherOpen) return;
