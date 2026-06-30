@@ -216,6 +216,7 @@ export type Database = {
           warn_expires_at: string | null
           warned_at: string | null
           website_url: string
+          widget_currently_visible: boolean | null
           widget_hidden_at: string | null
           widget_last_heartbeat_at: string | null
         }
@@ -234,6 +235,7 @@ export type Database = {
           warn_expires_at?: string | null
           warned_at?: string | null
           website_url: string
+          widget_currently_visible?: boolean | null
           widget_hidden_at?: string | null
           widget_last_heartbeat_at?: string | null
         }
@@ -252,6 +254,7 @@ export type Database = {
           warn_expires_at?: string | null
           warned_at?: string | null
           website_url?: string
+          widget_currently_visible?: boolean | null
           widget_hidden_at?: string | null
           widget_last_heartbeat_at?: string | null
         }

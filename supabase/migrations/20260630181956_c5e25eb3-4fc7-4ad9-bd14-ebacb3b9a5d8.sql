@@ -1,0 +1,1 @@
+ALTER TABLE public.startups ADD COLUMN IF NOT EXISTS widget_currently_visible boolean;
