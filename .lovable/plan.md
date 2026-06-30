@@ -1,53 +1,44 @@
-## Goal
+## Problem
 
-Make the StartupBar widget auto-offset the host page so nothing hides behind the 36px fixed bar — including fixed/sticky headers that pin to `top: 0`, and any such elements added later.
+The admin "Embed: Live" badge only confirms the `<script src="…loader.js">` tag is present in the site's HTML (see `src/routes/api/public/verify-install.ts`). It does **not** check whether the widget iframe is actually visible. Sites like getvisibly.app can ship the snippet and then hide it with CSS (`display:none`, `visibility:hidden`, `height:0`, off-screen positioning, parent container hidden, etc.) and still pass the check.
 
-## Changes — `public/widget/loader.js` only
+We do have real visibility detection — `public/widget/loader.js` runs an `IntersectionObserver` inside the iframe and pings `/api/public/widget/heartbeat?visible=…`. But that endpoint only accepts heartbeats for `status='approved'` startups (`src/routes/api/public/widget.heartbeat.ts`), so for a **pending** application like Visibly we never record any visibility data — hence "No heartbeat yet" and a green Live badge that means nothing.
 
-All other files (`widget.bar.tsx`, heartbeat, theme detection, resize contract) stay untouched.
+## Fix
 
-### 1. Keep existing body padding behavior
+Make visibility verifiable **before** approval and surface it in the admin table.
 
-The current `inject()` already sets `body.paddingTop += 36px` guarded by `data-startupbar-injected`. Leave that as-is (it already satisfies requirement #1).
+### 1. Accept heartbeats for pending startups
 
-### 2. New helper: `shiftFixedElement(el)`
+In `src/routes/api/public/widget.heartbeat.ts`:
+- Drop the `.eq("status", "approved")` filter; accept pending too (still reject banned).
+- Only run the strike/suspension/ban escalation flow when `status === 'approved'`. For pending, just record `widget_last_heartbeat_at`, `widget_hidden_at`, and a new boolean `widget_currently_visible` — no emails, no status changes.
 
-Runs only on `Element` nodes. Logic:
+### 2. Track current visibility on the startup row
 
-- Read `getComputedStyle(el).position`. Bail unless `fixed` or `sticky`.
-- Skip the widget iframe itself and anything inside it.
-- Skip if `el.dataset.startupbarShifted === '1'` (idempotent).
-- Read the computed `top` value:
-  - If `top` is `auto` → treat as 0, qualifies for shift.
-  - If `top` parses to a px value `<= 36` → qualifies.
-  - If `top` parses to `> 36px`, or uses a non-px unit we can't safely compare (`%`, `vh`, `calc(...)` we didn't author) → leave alone.
-- When shifting: set `el.style.top = (originalTopPx + 36) + 'px'` (so a header at `top:0` becomes `top:36px`, a banner at `top:10px` becomes `top:46px` — only when original ≤ 36), mark `el.dataset.startupbarShifted = '1'`, and stash the original inline `top` in `el.dataset.startupbarOriginalTop` for safety.
+Migration: add `widget_currently_visible boolean` to `public.startups` (nullable; null = unknown). Update it on every heartbeat. Keep existing grants/RLS.
 
-### 3. Initial sweep
+### 3. Stronger "Embed" check in admin
 
-Right after `inject()` appends the iframe and sets body padding, walk `document.querySelectorAll('*')` and call `shiftFixedElement` on each. Done once.
+Update `src/routes/admin.tsx` Embed column to a 3-state badge driven by both signals:
+- **Live & visible** — script detected AND last heartbeat within 5 min AND `widget_currently_visible = true`.
+- **Hidden** (red) — script detected AND heartbeat received AND `widget_currently_visible = false`. This is the case Visibly would land in.
+- **Installed, not seen yet** (amber) — script detected but no heartbeat in the last 5 min (iframe never loaded or page not visited).
+- **Not installed** (grey) — script not detected.
 
-### 4. MutationObserver for late-added elements
+No auto-rejection for pending — admin decides. Tooltip explains each state.
 
-Add a second observer (separate from the theme observer so its filter stays narrow):
+### 4. Light HTML heuristic (defense in depth)
 
-- `observe(document.documentElement, { childList: true, subtree: true })`.
-- On each mutation, iterate `addedNodes`; for each `Element`, run `shiftFixedElement` on the node itself and on `node.querySelectorAll('*')`.
-- Cheap guard: skip nodes inside the StartupBar iframe.
+In `verify-install.ts`, additionally flag suspicious wrappers: script tag inside an element whose inline style contains `display:none`, `visibility:hidden`, `height:0`, or `opacity:0`. Returned as `suspicious: true` alongside `installed`. Admin badge shows a small "⚠ wrapped in hidden element" hint when true. This catches the cheap CSS-hide-the-script trick even when the iframe never gets a chance to load.
 
-Style mutations (e.g. JS later flipping an element to `position: fixed`) are out of scope — covering them would require observing `attributes: ['style', 'class']` subtree-wide, which is expensive and risks loops. The childList observer handles the common case (frameworks mounting headers/banners after hydration).
+## Technical details
 
-### 5. Preserve everything else
+Files touched:
+- `supabase/migrations/<ts>_widget_visibility_pending.sql` — add `widget_currently_visible boolean`.
+- `src/routes/api/public/widget.heartbeat.ts` — allow pending, gate escalation on approved, write new column.
+- `src/routes/api/public/verify-install.ts` — add hidden-wrapper heuristic, return `suspicious`.
+- `src/routes/admin.tsx` — fetch `widget_currently_visible`, `widget_last_heartbeat_at`; compute combined badge; render new states with tooltips.
+- `src/integrations/supabase/types.ts` — regenerated row type for new column (or cast where needed).
 
-No changes to: iframe creation, `startupbar:resize` handler, theme `detectTheme` / theme MutationObserver, `isWidgetVisible`, heartbeat, iframe guard, or the `data-startupbar-injected` idempotency flag.
-
-## Verification
-
-- Playwright against a test host page with: (a) a `position: fixed; top: 0` header, (b) a `position: sticky; top: 0` nav, (c) an element with `top: 50px` (must NOT move), (d) a header injected via `setTimeout` after load (must shift). Screenshot before/after.
-- Confirm widget bar still renders at the top, heartbeat fires, theme toggle still flips colors, resize messages still adjust iframe height.
-
-## Out of scope
-
-- Restoring shifted `top` values on widget removal (widget has no removal API).
-- Handling elements that become fixed later via inline style/class changes.
-- Adjusting `bottom`-anchored elements (widget is at top only).
+No changes to `loader.js` or `widget.bar.tsx` — they already report visibility correctly; we're just listening to that signal earlier.
