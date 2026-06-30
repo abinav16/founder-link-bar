@@ -1,42 +1,32 @@
-## Three separate problems, three fixes
+## Goal
 
-### 1. Rejection / warning / removal emails look "classic"
+Cut signup → submission drop-off. Of the last 18 signups, 14 never submitted a startup. The current dashboard empty state is a single line + "Apply your startup" button — it doesn't surface a saved draft, show progress, or explain the exchange clearly.
 
-In `supabase/functions/send-email/index.ts`, only `startup-approved` uses the branded shell (neutral background, StartupBar pill badge, white card, refined typography, footer). The other three types — `startup-rejected`, `startup-warning`, `startup-removed-no-widget` — still use raw `<p>` tags.
+## What changes
 
-**Fix:** Rewrite the HTML for all three using the same shell as `startup-approved`, keeping per-type copy. Also fix two stale URLs in the warning/removal copy that point to `startupbar.dev` (should be `startupbar.co`) and the wrong widget snippet.
+**Only `src/routes/_authenticated/dashboard.tsx`** — the `!startup` branch (the empty state around lines 305–320). Nothing else touched: no DB, no auth, no email, no other routes.
 
-### 2. No admin email when a startup is submitted
+### New empty state ("Finish your application" card)
 
-This is the real bug — not a domain issue. `src/routes/apply.tsx` calls `send-email` with two types:
+Replace the centered "No startup yet" block with a left-aligned hero card that:
 
-- `startup-submitted` (founder confirmation)
-- `admin-new-application` (admin notification)
+1. **Detects a saved draft** from `sessionStorage["startupbar:apply-draft"]` on mount (client-only, inside `useEffect`, so SSR/hydration stays clean).
+2. **If a draft exists** → headline "Pick up where you left off", show the draft `name` + `url` in a small card, primary CTA **"Resume application →"** linking to `/apply` (apply.tsx already restores the draft).
+3. **If no draft** → headline "You're one step away from free traffic", primary CTA **"Apply your startup →"** linking to `/apply`.
+4. Below the CTA, a compact 3-step progress strip showing where they are: `① Sign up ✓ — ② Submit startup (current) — ③ Get approved & live`.
+5. A 3-bullet value reminder ("Show on other founders' sites within 24h", "One startup shown on yours in return", "Free forever, cancel by removing the script") so users who landed on dashboard without context understand the exchange.
+6. Secondary muted link to `/leaderboard` ("See who's already in the network") for users not ready to apply yet.
 
-Neither of these types exists in `send-email/index.ts`. The function hits the final `else` and returns `400 Unknown email type`, so nothing is sent — and because the call is fire-and-forget (`.catch(() => {})`), the failure is silent. The BCC mechanism never runs because the send never happens.
+Visual style matches the existing dashboard: white card, `border-black/8`, `rounded-xl`, display font for headline, same button styling as the current Apply CTA.
 
-**Fix:** Add two handlers in `send-email/index.ts`:
-- `startup-submitted` → branded "We received your application for {name}" email to the founder, explaining the 24h review window.
-- `admin-new-application` → branded email to `danielabinav16@gmail.com` (sent as `to:`, not BCC) with startup name, website, one-liner, applicant email, and a link to `/admin`. This handler reads `data.startupName`, `data.startupUrl`, `data.description`, `data.applicantEmail` directly — it does not look up a startup row (the apply flow doesn't pass `startupId` for these two types).
+### Technical notes
 
-Refactor the top of the function so the startup/user lookup only runs for the founder-targeted types, not for the admin notification.
+- Read `sessionStorage` inside `useEffect` (not at render) — the route is under `_authenticated` (`ssr: false`), but keep the pattern consistent with apply.tsx and avoid any hydration risk.
+- Pure presentation change in the `!startup` branch. No new dependencies, no loader changes, no schema changes.
+- The existing `startup-deleted` event listener and realtime subscription already re-render this branch correctly when a user deletes their only startup.
 
-### 3. Signup confirmation emails not arriving for users
+## Out of scope (can be follow-up plans)
 
-This is a separate system from `send-email`. Signup/confirmation/password-reset emails are sent by the auth layer, not by your edge function. Right now this project has **no email domain configured**, so Lovable's managed auth-email pipeline is not active. Auth emails are either falling back to Lovable's default (low-volume, often filtered) or not being sent at all depending on auth config.
-
-**Fix:** Set up a proper sender domain and Lovable's managed auth-email templates so signup/confirmation/reset emails actually deliver from `@startupbar.co`. Because this requires DNS work on your domain, I'll surface the setup dialog as part of the implementation — you'll click through it once, then auth emails will route through the same verified pipeline as the rest of your branded mail. No code changes needed in your auth flow.
-
-While we're there, I'll also brand the six auth templates (signup confirm, magic link, password recovery, invite, email change, reauthentication) to match the StartupBar look — same pill badge, white card, footer — so users get a consistent experience from the very first email.
-
-## Out of scope
-
-- `send-weekly-digest` already has its own branded shell — no changes.
-- No changes to send-flow logic, the BCC mechanism, or any other route/file.
-- No changes to Supabase auth settings (auto-confirm, signup toggle, etc.) — only the email delivery path.
-
-## Verify
-
-1. Submit a test startup → confirm founder gets a branded "we received it" email AND `danielabinav16@gmail.com` gets the admin notification.
-2. Reject a test startup → confirm the rejection email is now branded.
-3. After DNS verifies for the email domain, sign up a new test user → confirm the confirmation email arrives and is branded.
+- Re-engagement email to signups who never submitted
+- Allowing submission before script install
+- Dashboard-side analytics on the apply funnel
