@@ -263,7 +263,22 @@ function AdminPage() {
                 </thead>
                 <tbody className="divide-y divide-black/5">
                   {filtered.map((s) => {
-                    const e = embed[s.id];
+                    const e: EmbedState = embed[s.id] ?? { state: "idle" };
+                    const scriptInstalled = e.state === "installed";
+                    const scriptSuspicious = e.state === "installed" && e.suspicious;
+                    const hbFresh = !!s.widget_last_heartbeat_at && (now - new Date(s.widget_last_heartbeat_at).getTime()) < 10 * 60_000;
+                    // Combined embed badge state
+                    const badge: "checking" | "live" | "hidden" | "installed-unseen" | "missing" | "error" | "idle" =
+                      e.state === "checking" ? "checking"
+                      : e.state === "error" ? "error"
+                      : e.state === "missing" ? "missing"
+                      : scriptInstalled
+                        ? (s.widget_currently_visible === false || scriptSuspicious
+                            ? "hidden"
+                            : (hbFresh && s.widget_currently_visible === true)
+                              ? "live"
+                              : "installed-unseen")
+                        : "idle";
                     return (
                     <tr key={s.id} className="hover:bg-black/[0.01] transition-colors">
                       <td className="px-4 py-4 sm:px-5">
