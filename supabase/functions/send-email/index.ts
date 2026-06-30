@@ -226,11 +226,12 @@ serve(async (req) => {
       };
 
       const r = REASONS[reason] ?? REASONS.generic;
+      const reasonBlock = `<div style="margin:0 0 20px 0;background:#fafafa;border:1px solid #e4e4e7;border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.5;color:#27272a;"><span style="display:inline-block;background:#0a0a0a;color:#ffffff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;border-radius:4px;padding:3px 8px;margin-right:8px;vertical-align:middle;">Reason</span>${r.reasonLine}</div>`;
       const noteBlock = customNote
         ? `<div style="margin:0 0 16px 0;border-left:3px solid #0a0a0a;background:#fafafa;padding:12px 14px;border-radius:6px;font-size:14px;line-height:1.6;color:#27272a;">${customNote.replace(/</g, "&lt;").replace(/\n/g, "<br>")}</div>`
         : "";
       subject = r.subject;
-      html = shell({ heading: r.heading, bodyHtml: r.body + noteBlock });
+      html = shell({ heading: r.heading, bodyHtml: p(`Hi ${founderName},`) + reasonBlock + r.body + noteBlock });
     } else if (type === "startup-warning") {
       const snippet = `&lt;script async src="https://startupbar.co/widget/loader.js" data-startup-id="YOUR_ID"&gt;&lt;/script&gt;`;
       subject = `⚠️ Action required: StartupBar widget not detected on ${site}`;
