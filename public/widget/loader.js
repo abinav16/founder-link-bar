@@ -47,9 +47,13 @@
     iframe.setAttribute('scrolling', 'no');
     iframe.style.cssText = ['position:fixed','top:0','left:0','width:100%','height:36px','border:0','margin:0','padding:0','z-index:2147483647','background:' + bg,'display:block'].join(';');
 
+    var currentHeight = 36;
     window.addEventListener('message', function(e) {
       if (e.data && e.data.type === 'startupbar:resize') {
-        iframe.style.height = e.data.height + 'px';
+        var next = Math.round(e.data.height);
+        if (next === currentHeight) return;
+        currentHeight = next;
+        iframe.style.height = next + 'px';
       }
     });
 
@@ -113,11 +117,16 @@
     }
 
     function inject() {
+      if (document.documentElement && document.documentElement.getAttribute('data-startupbar-injected') === '1') return;
       document.body && document.body.appendChild(iframe);
       var html = document.documentElement;
       if (html) {
+        html.setAttribute('data-startupbar-injected', '1');
         html.style.scrollPaddingTop = '36px';
-        if (document.body) document.body.style.marginTop = (parseInt(getComputedStyle(document.body).marginTop) || 0) + 36 + 'px';
+        if (document.body) {
+          var existingPad = parseInt(getComputedStyle(document.body).paddingTop) || 0;
+          document.body.style.paddingTop = (existingPad + 36) + 'px';
+        }
       }
       startObserver();
       setTimeout(sendHeartbeat, 1500);

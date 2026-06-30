@@ -1,32 +1,30 @@
-## Goal
+## Problem
 
-Cut signup → submission drop-off. Of the last 18 signups, 14 never submitted a startup. The current dashboard empty state is a single line + "Apply your startup" button — it doesn't surface a saved draft, show progress, or explain the exchange clearly.
+On iOS Safari, the page jumps upward every few seconds. Root cause is the iframe height pipeline:
 
-## What changes
+1. `widget.bar.tsx` posts `startupbar:resize` on every render where `loaded`/`showInfo`/`dismissed` change, sending `wrapperRef.current.scrollHeight`. iOS Safari can report sub-pixel/fluctuating `scrollHeight` values after font load, favicon load, and theme repaints.
+2. `loader.js` unconditionally assigns `iframe.style.height = e.data.height + 'px'` on every message. Even setting the same height re-lays-out the fixed iframe and, combined with the one-time `document.body.style.marginTop += 36`, nudges iOS scroll anchoring.
+3. The heartbeat itself (`new Image()` ping) is harmless, but it runs 1.5s after inject — which is exactly when users report the first jump, making it a red herring.
 
-**Only `src/routes/_authenticated/dashboard.tsx`** — the `!startup` branch (the empty state around lines 305–320). Nothing else touched: no DB, no auth, no email, no other routes.
+## Fix
 
-### New empty state ("Finish your application" card)
+**`public/widget/loader.js`**
+- Track `currentHeight`; in the `message` handler, ignore messages where `Math.round(e.data.height) === currentHeight`. Only assign `iframe.style.height` when it actually changes.
+- Replace the one-shot `document.body.style.marginTop += 36` with a stable `document.documentElement.style.setProperty('scroll-padding-top', '36px')` plus a single `body.style.paddingTop = '36px'` (idempotent — guard with a `data-startupbar-injected` attribute so re-injection can't double it). Padding doesn't shift scroll anchor on iOS the way margin does.
+- Keep heartbeat, MutationObserver theme detection, and resize message contract unchanged.
 
-Replace the centered "No startup yet" block with a left-aligned hero card that:
+**`src/routes/widget.bar.tsx`**
+- Replace the `[showInfo, dismissed, loaded]` effect that posts `scrollHeight` with a `ResizeObserver` on `wrapperRef.current` that:
+  - Rounds height to integer.
+  - Only calls `window.parent.postMessage` when the rounded value differs from the last sent value (kept in a `useRef`).
+  - Sends `0` once on dismiss, then disconnects.
+- This eliminates the redundant posts on every re-render and on no-op scrollHeight fluctuations.
 
-1. **Detects a saved draft** from `sessionStorage["startupbar:apply-draft"]` on mount (client-only, inside `useEffect`, so SSR/hydration stays clean).
-2. **If a draft exists** → headline "Pick up where you left off", show the draft `name` + `url` in a small card, primary CTA **"Resume application →"** linking to `/apply` (apply.tsx already restores the draft).
-3. **If no draft** → headline "You're one step away from free traffic", primary CTA **"Apply your startup →"** linking to `/apply`.
-4. Below the CTA, a compact 3-step progress strip showing where they are: `① Sign up ✓ — ② Submit startup (current) — ③ Get approved & live`.
-5. A 3-bullet value reminder ("Show on other founders' sites within 24h", "One startup shown on yours in return", "Free forever, cancel by removing the script") so users who landed on dashboard without context understand the exchange.
-6. Secondary muted link to `/leaderboard` ("See who's already in the network") for users not ready to apply yet.
+## Verification
 
-Visual style matches the existing dashboard: white card, `border-black/8`, `rounded-xl`, display font for headline, same button styling as the current Apply CTA.
+- iOS Safari (or Playwright iPhone emulation) on a host page with the widget — confirm no periodic scroll jump after load, after theme toggle, and after opening the info panel.
+- Confirm: bar still appears, info panel still expands/collapses, dismiss still collapses to 0, dark/light theme still flips via host class change, heartbeat request still fires at ~1.5s.
 
-### Technical notes
+## Out of scope
 
-- Read `sessionStorage` inside `useEffect` (not at render) — the route is under `_authenticated` (`ssr: false`), but keep the pattern consistent with apply.tsx and avoid any hydration risk.
-- Pure presentation change in the `!startup` branch. No new dependencies, no loader changes, no schema changes.
-- The existing `startup-deleted` event listener and realtime subscription already re-render this branch correctly when a user deletes their only startup.
-
-## Out of scope (can be follow-up plans)
-
-- Re-engagement email to signups who never submitted
-- Allowing submission before script install
-- Dashboard-side analytics on the apply funnel
+No changes to the heartbeat endpoint, theme tokens, or widget visual design.
