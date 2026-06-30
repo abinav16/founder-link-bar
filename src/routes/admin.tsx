@@ -396,7 +396,7 @@ function AdminPage() {
                       </td>
                       <td className="px-4 py-4 sm:px-5">
                         <div className="flex items-center justify-end gap-1.5">
-                          {s.status === "approved" && e !== "live" && !s.warn_expires_at && (
+                          {s.status === "approved" && badge !== "live" && !s.warn_expires_at && (
                             <button onClick={() => warnStartup(s)} disabled={updating === s.id}
                               title="Email founder a 48-hour reinstall warning"
                               className="inline-flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-100 transition-colors disabled:opacity-50 sm:gap-1.5 sm:px-3">
