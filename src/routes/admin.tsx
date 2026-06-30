@@ -37,10 +37,19 @@ interface Startup {
   warn_expires_at: string | null;
   widget_hidden_at: string | null;
   widget_last_heartbeat_at: string | null;
+  widget_currently_visible: boolean | null;
   strike_count: number;
   rejection_reason: string | null;
   banned: boolean;
 }
+
+type EmbedState =
+  | { state: "idle" }
+  | { state: "checking" }
+  | { state: "installed"; suspicious: boolean }
+  | { state: "missing" }
+  | { state: "error" };
+
 
 const STATUS_TABS = ["all", "pending", "approved", "warned", "rejected"] as const;
 type Tab = typeof STATUS_TABS[number];
