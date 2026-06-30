@@ -74,20 +74,39 @@ export const Route = createFileRoute("/api/public/widget/heartbeat")({
 
           const { data: startup, error } = await supabaseAdmin
             .from("startups")
-            .select("id, name, status, widget_hidden_at, strike_count, banned")
+            .select("id, name, status, widget_hidden_at, strike_count, banned, user_id")
             .eq("id", id)
-            .eq("status", "approved")
             .maybeSingle();
 
           if (error || !startup) return new Response(null, { status: 404, headers: cors });
           if (startup.banned) return new Response(null, { status: 403, headers: cors });
 
           const now = new Date();
+          const isApproved = startup.status === "approved";
 
+          // For non-approved (pending/rejected) startups: just record visibility, no escalation
+          if (!isApproved) {
+            await supabaseAdmin
+              .from("startups")
+              .update({
+                widget_currently_visible: visible,
+                widget_last_heartbeat_at: now.toISOString(),
+                widget_hidden_at: visible ? null : (startup.widget_hidden_at ?? now.toISOString()),
+              })
+              .eq("id", id);
+            return new Response(null, { status: 200, headers: cors });
+          }
+
+          // Approved: run strike / suspension / ban escalation
           if (visible) {
             await supabaseAdmin
               .from("startups")
-              .update({ widget_hidden_at: null, strike_count: 0, widget_last_heartbeat_at: now.toISOString() })
+              .update({
+                widget_hidden_at: null,
+                strike_count: 0,
+                widget_last_heartbeat_at: now.toISOString(),
+                widget_currently_visible: true,
+              })
               .eq("id", id);
           } else {
             const hiddenAt = startup.widget_hidden_at ? new Date(startup.widget_hidden_at) : null;
@@ -97,40 +116,37 @@ export const Route = createFileRoute("/api/public/widget/heartbeat")({
             if (!hiddenAt) {
               await supabaseAdmin
                 .from("startups")
-                .update({ widget_hidden_at: now.toISOString(), strike_count: 1, widget_last_heartbeat_at: now.toISOString() })
+                .update({ widget_hidden_at: now.toISOString(), strike_count: 1, widget_last_heartbeat_at: now.toISOString(), widget_currently_visible: false })
                 .eq("id", id);
 
-              const { data: s } = await supabaseAdmin.from("startups").select("user_id").eq("id", id).single();
-              const { data: user } = await supabaseAdmin.auth.admin.getUserById(s?.user_id ?? "");
+              const { data: user } = await supabaseAdmin.auth.admin.getUserById(startup.user_id ?? "");
               if (user?.user?.email) {
                 await sendEmail(user.user.email, "Your StartupBar widget is hidden ⚠️", warningEmail(startup.name));
               }
             } else if (strike === 1 && elapsedHours >= 24) {
               await supabaseAdmin
                 .from("startups")
-                .update({ status: "rejected", strike_count: 2, rejection_reason: "widget_hidden", widget_last_heartbeat_at: now.toISOString() })
+                .update({ status: "rejected", strike_count: 2, rejection_reason: "widget_hidden", widget_last_heartbeat_at: now.toISOString(), widget_currently_visible: false })
                 .eq("id", id);
 
-              const { data: s } = await supabaseAdmin.from("startups").select("user_id").eq("id", id).single();
-              const { data: user } = await supabaseAdmin.auth.admin.getUserById(s?.user_id ?? "");
+              const { data: user } = await supabaseAdmin.auth.admin.getUserById(startup.user_id ?? "");
               if (user?.user?.email) {
                 await sendEmail(user.user.email, "Your StartupBar startup has been suspended", suspensionEmail(startup.name));
               }
             } else if (strike >= 2 && elapsedHours >= 48) {
               await supabaseAdmin
                 .from("startups")
-                .update({ banned: true, status: "rejected", rejection_reason: "widget_hidden_permanent", widget_last_heartbeat_at: now.toISOString() })
+                .update({ banned: true, status: "rejected", rejection_reason: "widget_hidden_permanent", widget_last_heartbeat_at: now.toISOString(), widget_currently_visible: false })
                 .eq("id", id);
 
-              const { data: s } = await supabaseAdmin.from("startups").select("user_id").eq("id", id).single();
-              const { data: user } = await supabaseAdmin.auth.admin.getUserById(s?.user_id ?? "");
+              const { data: user } = await supabaseAdmin.auth.admin.getUserById(startup.user_id ?? "");
               if (user?.user?.email) {
                 await sendEmail(user.user.email, "Your StartupBar account has been permanently removed", banEmail(startup.name));
               }
             } else {
               await supabaseAdmin
                 .from("startups")
-                .update({ widget_last_heartbeat_at: now.toISOString() })
+                .update({ widget_last_heartbeat_at: now.toISOString(), widget_currently_visible: false })
                 .eq("id", id);
             }
           }
