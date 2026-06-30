@@ -459,6 +459,63 @@ function AdminPage() {
           </div>
         )}
       </div>
+
+      {rejectTarget && (() => {
+        const REASONS: { value: string; label: string; hint: string }[] = [
+          { value: "not_allowed_type", label: "Site type not allowed", hint: "Directory, affiliate, adult, gambling, scraper, link farm, etc." },
+          { value: "widget_hidden", label: "Widget bar is hidden", hint: "Script is installed but bar is hidden via CSS or wrapped in a 0-height element." },
+          { value: "widget_not_installed", label: "Widget not installed", hint: "Embed script is missing from the site's <head>." },
+          { value: "low_quality", label: "Site not ready / low quality", hint: "Placeholder content, broken pages, coming-soon, no real product." },
+          { value: "duplicate", label: "Duplicate submission", hint: "We already have this startup or domain on file." },
+          { value: "broken_site", label: "Site unreachable", hint: "Site returned an error, timed out, or wouldn't load." },
+          { value: "generic", label: "Other (generic rejection)", hint: "Use the note field below to add context." },
+        ];
+        const target = rejectTarget;
+        const close = () => setRejectTarget(null);
+        const submit = async () => {
+          close();
+          await setStatus(target.id, "rejected", rejectReason, rejectNote.trim() || undefined);
+        };
+        return (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 px-3 py-4" onClick={close}>
+            <div onClick={(e) => e.stopPropagation()} className="w-full max-w-lg rounded-2xl bg-white shadow-2xl border border-black/8 overflow-hidden">
+              <div className="px-5 py-4 border-b border-black/8 flex items-center justify-between">
+                <div>
+                  <div className="text-[11px] uppercase tracking-[0.15em] text-black/40 font-semibold">Reject application</div>
+                  <div className="text-base font-semibold text-black mt-0.5">{target.name}</div>
+                </div>
+                <button onClick={close} className="text-black/40 hover:text-black p-1"><X className="h-4 w-4" /></button>
+              </div>
+              <div className="px-5 py-4 max-h-[60vh] overflow-y-auto">
+                <p className="text-xs text-black/50 mb-3">Pick a reason — the founder gets a branded email matching it.</p>
+                <div className="space-y-2">
+                  {REASONS.map((r) => (
+                    <label key={r.value} className={`flex gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${rejectReason === r.value ? "border-black bg-black/[0.03]" : "border-black/10 hover:bg-black/[0.02]"}`}>
+                      <input type="radio" name="reject-reason" value={r.value} checked={rejectReason === r.value} onChange={() => setRejectReason(r.value)} className="mt-0.5 accent-black" />
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-black">{r.label}</div>
+                        <div className="text-xs text-black/50 mt-0.5">{r.hint}</div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+                <div className="mt-4">
+                  <label className="text-[11px] uppercase tracking-[0.15em] text-black/40 font-semibold">Optional note to founder</label>
+                  <textarea value={rejectNote} onChange={(e) => setRejectNote(e.target.value)} rows={3} placeholder="Add specifics they should know (appended to the email)…"
+                    className="mt-1.5 w-full rounded-lg border border-black/12 bg-white px-3 py-2 text-sm text-black placeholder:text-black/30 focus:border-black focus:outline-none resize-none" />
+                </div>
+              </div>
+              <div className="px-5 py-3 border-t border-black/8 bg-black/[0.02] flex items-center justify-end gap-2">
+                <button onClick={close} className="px-3 py-1.5 text-sm text-black/60 hover:text-black rounded-lg">Cancel</button>
+                <button onClick={submit} disabled={updating === target.id}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white px-3.5 py-1.5 text-sm font-medium disabled:opacity-50">
+                  <X className="h-3.5 w-3.5" /> Reject &amp; send email
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
