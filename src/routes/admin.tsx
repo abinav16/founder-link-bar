@@ -274,7 +274,7 @@ function AdminPage() {
                     const e: EmbedState = embed[s.id] ?? { state: "idle" };
                     const scriptInstalled = e.state === "installed";
                     const scriptSuspicious = e.state === "installed" && e.suspicious;
-                    const hbFresh = !!s.widget_last_heartbeat_at && (now - new Date(s.widget_last_heartbeat_at).getTime()) < 10 * 60_000;
+                    const hbFresh = !!s.widget_last_heartbeat_at && (now - new Date(s.widget_last_heartbeat_at).getTime()) < 24 * 60 * 60_000;
                     // Combined embed badge state
                     const badge: "checking" | "live" | "hidden" | "installed-unseen" | "missing" | "error" | "idle" =
                       e.state === "checking" ? "checking"
