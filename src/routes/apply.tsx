@@ -277,7 +277,6 @@ function Apply() {
   }, [autoSubmitPending, hasPrepaid]);
 
   // Persist draft so the form survives the sign-in round-trip.
-  // Persist draft so the form survives the sign-in round-trip.
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (resubmitId) return; // resubmits are URL-driven — don't overwrite the fresh-apply draft
