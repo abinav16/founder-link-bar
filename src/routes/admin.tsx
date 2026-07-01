@@ -2,7 +2,7 @@ import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-ro
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Check, X, ExternalLink, LogOut, Clock, RefreshCw, Radio, CircleSlash, Loader2, Eye, EyeOff, ShieldOff, Ban } from "lucide-react";
+import { Check, X, ExternalLink, LogOut, Clock, RefreshCw, Radio, CircleSlash, Loader2, Eye, EyeOff, ShieldOff, Ban, Send, Users, Mail } from "lucide-react";
 
 const ADMIN_EMAIL = "danielabinav16@gmail.com";
 
@@ -209,6 +209,8 @@ function AdminPage() {
       </header>
 
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+        <BroadcastPanel />
+
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
@@ -516,6 +518,169 @@ function AdminPage() {
           </div>
         );
       })()}
+    </div>
+  );
+}
+
+const SEGMENTS: { value: string; label: string; hint: string }[] = [
+  { value: "all", label: "All users", hint: "Every signed-up user" },
+  { value: "no_startup", label: "Signed up · no startup yet", hint: "Users who never submitted a startup" },
+  { value: "has_startup", label: "Any startup submitted", hint: "Users with at least one startup (any status)" },
+  { value: "approved_only", label: "Approved founders", hint: "Users with ≥1 approved startup" },
+  { value: "pending_only", label: "Pending only", hint: "Have pending startup, none approved" },
+  { value: "rejected_only", label: "Only rejected", hint: "All their startups are rejected" },
+];
+
+function BroadcastPanel() {
+  const [open, setOpen] = useState(false);
+  const [segment, setSegment] = useState("no_startup");
+  const [subject, setSubject] = useState("");
+  const [headline, setHeadline] = useState("");
+  const [body, setBody] = useState("");
+  const [count, setCount] = useState<number | null>(null);
+  const [loadingCount, setLoadingCount] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState<string>("");
+  const [sending, setSending] = useState(false);
+
+  async function refreshCount(seg: string) {
+    setLoadingCount(true);
+    setCount(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-email", {
+        body: { type: "admin-broadcast-recipients", data: { segment: seg } },
+      });
+      if (error) throw error;
+      setCount((data as { count: number })?.count ?? 0);
+    } catch (e) {
+      toast.error("Couldn't load recipient count");
+    } finally {
+      setLoadingCount(false);
+    }
+  }
+
+  useEffect(() => { if (open) refreshCount(segment); }, [segment, open]);
+
+  async function refreshPreview() {
+    if (!subject.trim() || !body.trim()) { toast.error("Subject and body required"); return; }
+    const { data, error } = await supabase.functions.invoke("send-email", {
+      body: { type: "admin-broadcast-preview", data: { subject, headline, bodyMarkdown: body } },
+    });
+    if (error) { toast.error("Preview failed"); return; }
+    setPreviewHtml((data as { html: string }).html);
+  }
+
+  async function send(testOnly: boolean) {
+    if (!subject.trim() || !body.trim()) { toast.error("Subject and body required"); return; }
+    if (!testOnly) {
+      const n = count ?? 0;
+      if (n === 0) { toast.error("No recipients in this segment"); return; }
+      if (!confirm(`Send to ${n} recipient${n === 1 ? "" : "s"}? Each gets their own email with you in BCC.`)) return;
+    }
+    setSending(true);
+    const toastId = toast.loading(testOnly ? "Sending test…" : `Sending to ${count} recipients…`);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-email", {
+        body: { type: "admin-broadcast", data: { segment, subject, headline, bodyMarkdown: body, testOnly } },
+      });
+      if (error) throw error;
+      const r = data as { sent: number; failed: number; total: number; errors: { email: string; error: string }[] };
+      toast.success(`Sent ${r.sent}/${r.total}${r.failed ? ` · ${r.failed} failed` : ""}`, { id: toastId });
+      if (r.failed && r.errors?.length) console.warn("Broadcast errors:", r.errors);
+    } catch (e) {
+      toast.error(`Send failed: ${String(e).slice(0, 200)}`, { id: toastId });
+    } finally {
+      setSending(false);
+    }
+  }
+
+  if (!open) {
+    return (
+      <div className="mb-6 flex items-center justify-between rounded-xl border border-black/8 bg-white px-4 py-3">
+        <div className="flex items-center gap-2.5 text-sm">
+          <Mail className="h-4 w-4 text-black/50" />
+          <span className="font-medium text-black">Broadcast email</span>
+          <span className="text-black/40">— write a custom message to a user segment</span>
+        </div>
+        <button onClick={() => setOpen(true)} className="inline-flex items-center gap-1.5 rounded-lg bg-black px-3 py-1.5 text-xs font-medium text-white hover:bg-black/80">
+          <Send className="h-3.5 w-3.5" /> Compose
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mb-6 rounded-xl border border-black/8 bg-white">
+      <div className="flex items-center justify-between border-b border-black/8 px-5 py-3">
+        <div className="flex items-center gap-2 text-sm font-semibold text-black">
+          <Mail className="h-4 w-4" /> Broadcast email
+        </div>
+        <button onClick={() => setOpen(false)} className="text-black/40 hover:text-black"><X className="h-4 w-4" /></button>
+      </div>
+
+      <div className="grid gap-5 p-5 md:grid-cols-2">
+        <div className="space-y-4">
+          <div>
+            <label className="text-[11px] uppercase tracking-[0.15em] text-black/40 font-semibold">Recipients</label>
+            <select value={segment} onChange={(e) => setSegment(e.target.value)}
+              className="mt-1.5 w-full rounded-lg border border-black/12 bg-white px-3 py-2 text-sm text-black focus:border-black focus:outline-none">
+              {SEGMENTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+            </select>
+            <div className="mt-1.5 flex items-center gap-1.5 text-xs text-black/50">
+              <Users className="h-3 w-3" />
+              {loadingCount ? "Counting…" : count === null ? "—" : `${count} recipient${count === 1 ? "" : "s"}`}
+              <span className="text-black/30">· {SEGMENTS.find((s) => s.value === segment)?.hint}</span>
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[11px] uppercase tracking-[0.15em] text-black/40 font-semibold">Subject</label>
+            <input value={subject} onChange={(e) => setSubject(e.target.value)} maxLength={140} placeholder="e.g. Your StartupBar spot is waiting"
+              className="mt-1.5 w-full rounded-lg border border-black/12 bg-white px-3 py-2 text-sm text-black placeholder:text-black/30 focus:border-black focus:outline-none" />
+          </div>
+
+          <div>
+            <label className="text-[11px] uppercase tracking-[0.15em] text-black/40 font-semibold">Headline (optional)</label>
+            <input value={headline} onChange={(e) => setHeadline(e.target.value)} maxLength={140} placeholder="Defaults to subject"
+              className="mt-1.5 w-full rounded-lg border border-black/12 bg-white px-3 py-2 text-sm text-black placeholder:text-black/30 focus:border-black focus:outline-none" />
+          </div>
+
+          <div>
+            <label className="text-[11px] uppercase tracking-[0.15em] text-black/40 font-semibold">Body</label>
+            <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={10}
+              placeholder={"Hi {{name}},\n\nQuick note — you signed up but haven't listed a startup yet.\n\n- Free listing\n- 60-sec install\n- Live in the network within 24h\n\nGet started: [startupbar.co/apply](https://startupbar.co/apply)"}
+              className="mt-1.5 w-full rounded-lg border border-black/12 bg-white px-3 py-2 font-mono text-[13px] text-black placeholder:text-black/30 focus:border-black focus:outline-none resize-y" />
+            <div className="mt-1.5 text-[11px] text-black/40">
+              Supports <code className="text-black/60">**bold**</code>, <code className="text-black/60">[link](https://…)</code>, <code className="text-black/60">- bullets</code>, blank line for paragraphs. Use <code className="text-black/60">{"{{name}}"}</code> for first name.
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <button onClick={refreshPreview} disabled={sending} className="inline-flex items-center gap-1.5 rounded-lg border border-black/12 px-3 py-1.5 text-xs font-medium text-black/70 hover:bg-black/5 disabled:opacity-50">
+              <Eye className="h-3.5 w-3.5" /> Preview
+            </button>
+            <button onClick={() => send(true)} disabled={sending} className="inline-flex items-center gap-1.5 rounded-lg border border-black/12 px-3 py-1.5 text-xs font-medium text-black/70 hover:bg-black/5 disabled:opacity-50">
+              <Mail className="h-3.5 w-3.5" /> Send test to me
+            </button>
+            <button onClick={() => send(false)} disabled={sending || !count} className="ml-auto inline-flex items-center gap-1.5 rounded-lg bg-black px-3.5 py-1.5 text-xs font-medium text-white hover:bg-black/80 disabled:opacity-50">
+              {sending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+              Send to {count ?? "…"} recipient{count === 1 ? "" : "s"}
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label className="text-[11px] uppercase tracking-[0.15em] text-black/40 font-semibold">Preview</label>
+          <div className="mt-1.5 h-[520px] overflow-hidden rounded-lg border border-black/10 bg-[#f5f5f4]">
+            {previewHtml ? (
+              <iframe title="Email preview" srcDoc={previewHtml} className="h-full w-full" />
+            ) : (
+              <div className="flex h-full items-center justify-center text-center text-xs text-black/40 px-6">
+                Fill out subject + body then click Preview to see the rendered email.
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
