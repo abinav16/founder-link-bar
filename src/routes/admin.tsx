@@ -473,6 +473,7 @@ function AdminPage() {
         const REASONS: { value: string; label: string; hint: string }[] = [
           { value: "not_allowed_type", label: "Site type not allowed", hint: "Directory, affiliate, adult, gambling, scraper, link farm, etc." },
           { value: "widget_hidden", label: "Widget bar is hidden", hint: "Script is installed but bar is hidden via CSS or wrapped in a 0-height element." },
+          { value: "csp_blocked", label: "CSP blocks our widget", hint: "Site's Content Security Policy refuses to load startupbar.co/widget/loader.js." },
           { value: "widget_not_installed", label: "Widget not installed", hint: "Embed script is missing from the site's <head>." },
           { value: "low_quality", label: "Site not ready / low quality", hint: "Placeholder content, broken pages, coming-soon, no real product." },
           { value: "duplicate", label: "Duplicate submission", hint: "We already have this startup or domain on file." },
