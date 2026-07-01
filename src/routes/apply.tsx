@@ -487,7 +487,7 @@ function Apply() {
                 <p className="mt-0.5 text-xs text-black/40 truncate">We'll check if the script is live on <span className="font-medium text-black/60">{url}</span></p>
               </div>
               <button
-                onClick={checkInstallation}
+                onClick={() => checkInstallation()}
                 disabled={verifyStatus === "checking"}
                 className="shrink-0 inline-flex items-center gap-2 rounded-lg border border-black/15 px-4 py-2 text-sm font-medium text-black hover:bg-black/[0.04] transition-all disabled:opacity-40"
               >
