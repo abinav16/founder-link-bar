@@ -335,7 +335,7 @@ serve(async (req) => {
             ${p(`Once the policy is updated, reapply at <a href="https://startupbar.co/apply" style="color:#0a0a0a;">startupbar.co/apply</a> and we'll re-check within a few hours.`)}
           `,
         },
-
+        widget_not_installed: {
           subject: `${name} — StartupBar widget not installed`,
           heading: "Widget snippet not found",
           reasonLine: "StartupBar widget is not installed",
