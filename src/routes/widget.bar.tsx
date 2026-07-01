@@ -2,7 +2,6 @@ import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { Info, X } from "lucide-react";
 import { z } from "zod";
-import { supabase } from "@/integrations/supabase/client";
 import { StartupFavicon } from "@/components/StartupFavicon";
 
 const search = z.object({
@@ -97,9 +96,6 @@ function WidgetBar() {
 
   const lastSentHeight = useRef<number>(-1);
   useEffect(() => {
-    const el = wrapperRef.current;
-    if (!el) return;
-
     const send = (h: number) => {
       const rounded = Math.round(h);
       if (rounded === lastSentHeight.current) return;
@@ -112,21 +108,20 @@ function WidgetBar() {
       return;
     }
 
-    send(el.scrollHeight);
+    if (!showInfo) {
+      send(36);
+      return;
+    }
 
-    if (typeof ResizeObserver === "undefined") return;
-    const ro = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        send(entry.contentRect.height);
-      }
+    const frame = window.requestAnimationFrame(() => {
+      send(wrapperRef.current?.scrollHeight || 36);
     });
-    ro.observe(el);
-    return () => ro.disconnect();
+    return () => window.cancelAnimationFrame(frame);
   }, [dismissed, loaded, showInfo]);
 
 
 
-  if (!loaded || dismissed) return null;
+  if (dismissed) return null;
 
   const barStyle: React.CSSProperties = {
     display: "flex",
@@ -179,7 +174,7 @@ function WidgetBar() {
         <a href="https://startupbar.co" target="_blank" rel="noopener noreferrer" style={labelStyle}>
           STARTUPBAR
         </a>
-        {startup ? (
+        {loaded && startup ? (
           <>
             <StartupFavicon
               url={startup.website_url}
