@@ -306,24 +306,35 @@ function Apply() {
 
     const parsed = schema.parse({ name, website_url: url, description: desc });
 
-    // If this is a paid additional listing, atomically consume one prepaid slot first.
-    if (existingCount >= 1) {
-      const { data: consumedId, error: consumeErr } = await supabase.rpc(
-        "consume_prepaid_listing",
-        { _user_id: user_id },
-      );
-      if (consumeErr || !consumedId) {
-        setLoading(false);
-        toast.error("No prepaid listing available. Please complete payment.");
-        return;
+    // Resubmit path: update the existing rejected row back to pending — no new row, no payment gate.
+    if (resubmitId) {
+      const { error: updErr } = await supabase
+        .from("startups")
+        .update({ ...parsed, status: "pending", rejection_reason: null })
+        .eq("id", resubmitId)
+        .eq("user_id", user_id);
+      setLoading(false);
+      if (updErr) { toast.error(updErr.message); return; }
+    } else {
+      // If this is a paid additional listing, atomically consume one prepaid slot first.
+      if (existingCount >= 1) {
+        const { data: consumedId, error: consumeErr } = await supabase.rpc(
+          "consume_prepaid_listing",
+          { _user_id: user_id },
+        );
+        if (consumeErr || !consumedId) {
+          setLoading(false);
+          toast.error("No prepaid listing available. Please complete payment.");
+          return;
+        }
       }
-    }
 
-    const { error } = await supabase.from("startups").insert(
-      { id: startupId, user_id, ...parsed }
-    );
-    setLoading(false);
-    if (error) { toast.error(error.message); return; }
+      const { error } = await supabase.from("startups").insert(
+        { id: startupId, user_id, ...parsed }
+      );
+      setLoading(false);
+      if (error) { toast.error(error.message); return; }
+    }
 
     supabase.functions.invoke("send-email", { body: { type: "startup-submitted", data: { email: userData.user!.email, name: userData.user!.user_metadata?.full_name ?? "", startupName: parsed.name } } }).catch(() => {});
     supabase.functions.invoke("send-email", { body: { type: "admin-new-application", data: { startupName: parsed.name, startupUrl: parsed.website_url, description: parsed.description, applicantEmail: userData.user!.email } } }).catch(() => {});
