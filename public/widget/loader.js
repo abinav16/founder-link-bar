@@ -158,7 +158,32 @@
       }
       startObserver();
       sweepFixedElements();
-      // no MutationObserver-based re-shifting: causes iOS Safari jump on DOM churn
+      // no MutationObserver-based re-shifting: causes iOS Safari jump on DOM churn.
+      // Instead, re-sweep only on discrete navigation events (SPA route changes,
+      // back/forward, hash changes, full load) so newly mounted fixed headers
+      // get shifted below the bar without polling the DOM.
+      try {
+        var resweep = function () {
+          sweepFixedElements();
+          setTimeout(sweepFixedElements, 250);
+          setTimeout(sweepFixedElements, 800);
+        };
+        var wrap = function (name) {
+          var orig = history[name];
+          if (typeof orig !== 'function') return;
+          history[name] = function () {
+            var ret = orig.apply(this, arguments);
+            try { window.dispatchEvent(new Event('startupbar:locationchange')); } catch (e) {}
+            return ret;
+          };
+        };
+        wrap('pushState');
+        wrap('replaceState');
+        window.addEventListener('popstate', resweep);
+        window.addEventListener('hashchange', resweep);
+        window.addEventListener('startupbar:locationchange', resweep);
+        window.addEventListener('load', resweep);
+      } catch (e) {}
       setTimeout(sendHeartbeat, 1500);
     }
 
