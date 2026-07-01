@@ -110,7 +110,7 @@ export const getNetworkDashboard = createServerFn({ method: "GET" }).handler(
         totalClicks: tc,
         ctr: ti > 0 ? Math.round((tc / ti) * 1000) / 10 : 0,
       },
-      recentStartups: cards.slice(0, 12),
+      recentStartups: cards,
       newThisWeek: cards.filter((c) => c.created_at >= since7d),
       recentlyActive: [...cards]
         .filter((c) => c.impressions_24h > 0)
