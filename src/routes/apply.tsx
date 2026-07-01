@@ -72,6 +72,47 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 
 const inputCls = "w-full rounded-lg border border-black/12 bg-white px-4 py-3 text-sm text-black placeholder:text-black/25 outline-none ring-0 transition focus:border-black/30 focus:ring-2 focus:ring-black/8";
 
+function CopyableCode({ code, label = "HTML", tone = "neutral" }: { code: string; label?: string; tone?: "neutral" | "red" }) {
+  const [copied, setCopied] = useState(false);
+  const toneCls = tone === "red"
+    ? "border-red-200 bg-red-50/60"
+    : "border-black/10 bg-black/[0.025]";
+  const headerCls = tone === "red" ? "border-red-200 text-red-700/60" : "border-black/8 text-black/30";
+  const preCls = tone === "red" ? "text-red-900/80" : "text-black/60";
+  return (
+    <div className={`overflow-hidden rounded-lg border ${toneCls}`}>
+      <div className={`flex items-center justify-between border-b px-3 py-1.5 ${headerCls}`}>
+        <span className="text-[10px] font-medium uppercase tracking-wider">{label}</span>
+        <button
+          type="button"
+          onClick={() => { navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
+          className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium hover:bg-black/5 transition-colors"
+        >
+          {copied ? <><Check className="h-3 w-3 text-emerald-500" /> Copied!</> : <><Copy className="h-3 w-3" /> Copy</>}
+        </button>
+      </div>
+      <div className="overflow-x-auto px-3 py-2.5">
+        <pre className={`whitespace-pre font-mono text-[11.5px] leading-relaxed ${preCls}`}>{code}</pre>
+      </div>
+    </div>
+  );
+}
+
+function GuideItem({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <details className="group rounded-lg border border-black/8 bg-black/[0.015] open:bg-white transition-colors">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-medium text-black">
+        <span>{title}</span>
+        <ChevronDown className="h-4 w-4 shrink-0 text-black/40 transition-transform group-open:rotate-180" />
+      </summary>
+      <div className="border-t border-black/8 px-4 py-3.5 text-[13px] leading-relaxed text-black/65 space-y-1.5">
+        {children}
+      </div>
+    </details>
+  );
+}
+
+
 const DRAFT_KEY = "startupbar:apply-draft";
 
 function readDraft(): { step: 1 | 2; name: string; url: string; desc: string } | null {
