@@ -1,56 +1,38 @@
-## Goal
-Upgrade Step 2 of `/apply` so founders catch install issues themselves before submitting, add clear guidance for theme, padding, and common gotchas. Same page, richer verification + docs, cleaner design. No business-logic changes.
+## Why the user sees it on iPhone but you don't on iPad
 
-## What changes
+iPad Safari (even with "Request Mobile Website") does **not** have the collapsing address bar that iPhone Safari has. The jump the reporter describes is caused by iPhone Safari recalculating the visual viewport every time the URL bar shrinks/expands on scroll. Our current embed has two things that make WebKit re-anchor during that recalculation:
 
-### 1. Verification results — surface CSP and other failure modes
-`verify-install` already returns `{ installed, cspBlocked, error }`. Update `checkInstallation()` and the result panel in `src/routes/apply.tsx` to render distinct states with actionable fix text:
+1. A **fixed iframe at `top: 0`** covering the top 36px.
+2. A permanent **`body { padding-top: 36px }`** we inject.
 
-- **Live** (`installed && !cspBlocked`) — green, "Script detected and running." Unlocks submit.
-- **Blocked by CSP** (`installed && cspBlocked`) — red, explains their `Content-Security-Policy` disallows `startupbar.co`, shows the exact directives to add with a copy button:
-  ```
-  script-src https://startupbar.co;
-  frame-src  https://startupbar.co;
-  ```
-  Blocks submit until re-verified.
-- **Not detected** (`!installed`) — amber, existing "paste it in `<head>` and try again" copy, plus a "common causes" list (script in `<body>`, CDN cache, wrong domain typed, SPA route not yet hit).
-- **Unreachable / error** — neutral, shows returned error.
+Together these are a well-documented trigger for the iOS 26 Safari "fixed/sticky elements shift vertically" bug (WebKit bug 297779 and Stack Overflow reports with 49k+ views). It won't reproduce on iPad, macOS Safari, Chrome iOS, or desktop DevTools mobile emulation.
 
-Note: the "hidden by CSS" (`suspicious`) branch is intentionally NOT surfaced — the flag stays in the API for admin use only.
+So the reporter isn't lying — it's an iPhone-Safari-only WebKit issue we have to work around.
 
-Submit button gate changes from `verifyStatus === "found"` to `"live"` AND not CSP-blocked.
+## Plan (safe, no widget functionality changes)
 
-### 2. New "How to install" guidance block
-Below the embed code, a compact accordion (native `<details>`/`<summary>`, no new deps) with three sections:
+### 1. Detect iPhone Safari only
+In `public/widget/loader.js`, add a narrow UA check for iPhone/iPod Safari (exclude iPad, Chrome iOS, in-app WebViews). Everything below only changes behavior for that subset.
 
-- **Where to paste it** — `<head>` recommended, works in `<body>`. Framework snippets: Next.js (`app/layout.tsx`), Astro (`Layout.astro`), WordPress (header.php or a header-scripts plugin), Webflow (Project Settings → Custom Code → Head), Framer (Site Settings → Custom Code), plain HTML.
-- **Theme (light / dark)** — the widget auto-detects the host site's theme via `prefers-color-scheme` and the `.dark` class on `<html>`. To force a theme, add `data-theme="dark"` or `data-theme="light"` on the script tag. Shows the modified snippet with a copy button.
-- **Keep your header from hiding behind the bar** — the widget is 36px tall and pinned to the top. The loader already tries to shift `fixed`/`sticky` headers automatically, but if your header still sits under the bar, add this CSS as a manual fallback:
-  ```css
-  /* Nudge a fixed header down by the StartupBar height */
-  header.your-header { top: 36px; }
-  /* Or add breathing room to the page body */
-  body { padding-top: 36px; }
-  ```
-  Also mention: on mobile, if the site jumps slightly on load, that's the auto-shift; setting the padding manually removes the jump.
-- **Troubleshooting** — CSP fix (same directives as above), SPA / client-side routers (loader re-mounts on `pushState`), cache-busting tip (hard reload), and how to remove the widget cleanly (delete the script tag).
+### 2. Switch iPhone Safari to a non-shifting layout mode
+On iPhone Safari only:
+- Do **not** add `body { padding-top: 36px }`.
+- Do **not** sweep and rewrite host `fixed` / `sticky` headers.
+- Keep the iframe rendered, but change it from `position: fixed; top: 0` to a normal in-flow element inserted at the top of `<body>` (or use `position: sticky; top: 0` on a lightweight wrapper). This eliminates the fixed-element / viewport-recalc interaction that WebKit mishandles.
 
-### 3. Design polish (Step 2 only)
-- Group "embed code → verify → guide" inside one bordered card region so the page reads as a single install checklist.
-- Small numbered pills at the top of Step 2: `1 Paste · 2 Verify · 3 Submit`.
-- Verification card gets a status-colored left border matching the current state.
-- Site summary chip (favicon + name + Edit) stays; Submit CTA and copy at the bottom stay the same.
-- No token or font changes. Step 1 untouched.
+Result: the bar still appears at the top on every page, but there is no more fixed-position + padding combo for Safari to re-anchor around, so the jump stops.
 
-### 4. Safety
-- Only file touched: `src/routes/apply.tsx`.
-- No changes to `verify-install.ts`, edge functions, DB, payment flow, or Step 1.
-- Resubmit auto-check now surfaces the exact reason (e.g. CSP) so founders can fix before re-submitting — bonus reduction in rejection loops.
-- No new npm packages.
+### 3. Preserve everything else
+- Desktop and non-iPhone browsers keep the current fixed iframe + body padding + header shifting (works well there).
+- Widget picking, clicks/UTMs, dark-mode detection, dismiss, heartbeat, admin health tracking, SPA re-sweeps — all untouched.
+- Height messaging from `widget.bar.tsx` untouched; only the outer positioning strategy differs on iPhone Safari.
 
-## Technical details
+### 4. Verify
+- Read the final `loader.js` to confirm iPhone Safari branch never mutates host `body` padding or host headers.
+- Confirm desktop path is byte-identical to current behavior.
+- Ask the reporter to retest on iPhone Safari after publish.
 
-- Extend `verifyStatus` union to `"idle" | "checking" | "live" | "csp" | "not-found" | "error"`. Map response: `cspBlocked → "csp"`, `installed → "live"`, else `"not-found"` / `"error"`. `suspicious` is ignored client-side.
-- Rename existing `"found"` → `"live"`; update submit-gate condition and helper text accordingly.
-- New small in-file components: `InstallGuide` (accordion), `CopyableCode` (thin wrapper around the existing copy pattern), `VerifyStatusPanel`.
-- All existing state, effects, payment logic, and submit handler unchanged.
+## Technical notes
+- UA test: `/iPhone|iPod/.test(navigator.userAgent) && /Safari/.test(navigator.userAgent) && !/CriOS|FxiOS|EdgiOS/.test(navigator.userAgent)`.
+- In-flow injection: prepend the iframe as the first child of `<body>` with `position: static; display: block; width: 100%; height: 36px`. Content below flows naturally, no padding needed, no fixed-element shifting.
+- If any host site has `body { margin: 0 }` overridden weirdly, the iframe still renders correctly because it's a block element with explicit width/height.

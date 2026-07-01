@@ -41,11 +41,24 @@
     var currentTheme = theme;
     var bg = theme === 'dark' ? '#18181b' : '#ffffff';
 
+    // iPhone/iPod Safari has a collapsing address bar that recalculates the
+    // visual viewport on scroll. A fixed iframe at top:0 combined with body
+    // padding-top triggers a WebKit bug (bug 297779 / iOS 26 regression) where
+    // fixed/sticky elements shift vertically every few seconds. On that subset
+    // only, we render the bar as an in-flow block at the top of <body> instead
+    // of a fixed overlay, and skip mutating host padding/headers.
+    var ua = navigator.userAgent || '';
+    var isIphoneSafari = /iPhone|iPod/.test(ua) && /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|GSA/.test(ua);
+
     var iframe = document.createElement('iframe');
     iframe.src = origin + '/widget/bar?host=' + encodeURIComponent(id) + '&theme=' + theme + '&domain=' + encodeURIComponent(window.location.hostname);
     iframe.setAttribute('title', 'StartupBar');
     iframe.setAttribute('scrolling', 'no');
-    iframe.style.cssText = ['position:fixed','top:0','left:0','width:100%','height:36px','border:0','margin:0','padding:0','z-index:2147483647','background:' + bg,'display:block'].join(';');
+    if (isIphoneSafari) {
+      iframe.style.cssText = ['position:static','top:auto','left:auto','width:100%','height:36px','border:0','margin:0','padding:0','background:' + bg,'display:block'].join(';');
+    } else {
+      iframe.style.cssText = ['position:fixed','top:0','left:0','width:100%','height:36px','border:0','margin:0','padding:0','z-index:2147483647','background:' + bg,'display:block'].join(';');
+    }
 
     var currentHeight = 36;
     window.addEventListener('message', function(e) {
@@ -146,8 +159,28 @@
 
     function inject() {
       if (document.documentElement && document.documentElement.getAttribute('data-startupbar-injected') === '1') return;
-      document.body && document.body.appendChild(iframe);
       var html = document.documentElement;
+      if (isIphoneSafari) {
+        // In-flow: prepend as first child of <body> so page content flows below.
+        // No body padding, no host header shifting — avoids the iOS Safari
+        // scroll-jump caused by fixed+padding recalculations.
+        if (document.body) {
+          if (document.body.firstChild) {
+            document.body.insertBefore(iframe, document.body.firstChild);
+          } else {
+            document.body.appendChild(iframe);
+          }
+        }
+        if (html) {
+          html.setAttribute('data-startupbar-injected', '1');
+          html.style.scrollPaddingTop = '36px';
+        }
+        startObserver();
+        setTimeout(sendHeartbeat, 1500);
+        return;
+      }
+
+      document.body && document.body.appendChild(iframe);
       if (html) {
         html.setAttribute('data-startupbar-injected', '1');
         html.style.scrollPaddingTop = '36px';
