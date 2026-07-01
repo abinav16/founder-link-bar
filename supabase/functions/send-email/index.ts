@@ -168,6 +168,24 @@ serve(async (req) => {
         ? [{ email: ADMIN_EMAIL, name: "Admin", userId: "" }]
         : await getRecipients();
 
+      // Send one email, returning {ok, status, message}. Retries once on 429.
+      async function sendOne(toAddr: string, subj: string, htmlBody: string): Promise<{ ok: boolean; status: number; message: string }> {
+        const bcc = toAddr.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? undefined : ADMIN_EMAIL;
+        const doFetch = () => fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ from: FROM, to: toAddr, subject: subj, html: htmlBody, ...(bcc ? { bcc } : {}) }),
+        });
+        let res = await doFetch();
+        if (res.status === 429) {
+          const ra = Number(res.headers.get("retry-after") ?? "1");
+          await new Promise((r) => setTimeout(r, Math.max(1000, ra * 1000)));
+          res = await doFetch();
+        }
+        const text = res.ok ? "" : (await res.text()).slice(0, 300);
+        return { ok: res.ok, status: res.status, message: text };
+      }
+
       let sent = 0;
       const errors: { email: string; error: string }[] = [];
       for (const r of recipients) {
@@ -176,16 +194,24 @@ serve(async (req) => {
         const personalizedBody = bodyHtml.replace(/\{\{\s*name\s*\}\}/gi, firstName);
         const html = shell({ heading: (headlineIn || subjectIn).replace(/\{\{\s*name\s*\}\}/gi, firstName), bodyHtml: personalizedBody });
         try {
-          await sendEmail(r.email, personalizedSubject, html);
-          sent += 1;
+          const result = await sendOne(r.email, personalizedSubject, html);
+          if (result.ok) {
+            sent += 1;
+          } else {
+            const msg = `HTTP ${result.status} ${result.message}`;
+            console.error(`broadcast send failed for ${r.email}: ${msg}`);
+            errors.push({ email: r.email, error: msg });
+          }
         } catch (e) {
-          errors.push({ email: r.email, error: String(e).slice(0, 200) });
+          const msg = String(e).slice(0, 200);
+          console.error(`broadcast send exception for ${r.email}: ${msg}`);
+          errors.push({ email: r.email, error: msg });
         }
-        // Simple pacing to stay well under Resend's rate limit
-        await new Promise((res) => setTimeout(res, 120));
+        // Pace under Resend's 2 req/s default rate limit
+        await new Promise((res) => setTimeout(res, 550));
       }
 
-      return new Response(JSON.stringify({ sent, failed: errors.length, total: recipients.length, errors: errors.slice(0, 10) }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ sent, failed: errors.length, total: recipients.length, errors: errors.slice(0, 25) }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     // ---- Admin notification: no startup row lookup, sends to admin only ----
