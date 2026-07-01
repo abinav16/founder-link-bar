@@ -432,13 +432,15 @@ function AdminPage() {
                             const openModal = () => {
                               const defaultReason = isWidgetRemoval
                                 ? "widget_not_installed"
-                                : badge === "hidden"
-                                  ? "widget_hidden"
-                                  : badge === "missing"
-                                    ? "widget_not_installed"
-                                    : badge === "error"
-                                      ? "broken_site"
-                                      : "not_allowed_type";
+                                : badge === "csp-blocked"
+                                  ? "csp_blocked"
+                                  : badge === "hidden"
+                                    ? "widget_hidden"
+                                    : badge === "missing"
+                                      ? "widget_not_installed"
+                                      : badge === "error"
+                                        ? "broken_site"
+                                        : "not_allowed_type";
                               setRejectReason(defaultReason);
                               setRejectNote("");
                               setRejectTarget(s);
