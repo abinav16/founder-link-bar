@@ -671,6 +671,19 @@ function BroadcastPanel() {
               Send to {count ?? "…"} recipient{count === 1 ? "" : "s"}
             </button>
           </div>
+
+          {lastErrors.length > 0 && (
+            <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3">
+              <div className="mb-1.5 text-xs font-semibold text-red-800">
+                {lastErrors.length} send{lastErrors.length === 1 ? "" : "s"} failed
+              </div>
+              <ul className="max-h-40 space-y-1 overflow-auto text-[11px] text-red-900/80 font-mono">
+                {lastErrors.map((e, i) => (
+                  <li key={i}><span className="font-semibold">{e.email}</span> — {e.error}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         <div>
