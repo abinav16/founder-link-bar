@@ -91,12 +91,12 @@ function AdminPage() {
       const r = await fetch(`/api/public/verify-install?url=${encodeURIComponent(website)}`);
       const j = await r.json();
       const next: EmbedState = j.installed
-        ? { state: "installed", suspicious: !!j.suspicious }
+        ? { state: "installed", suspicious: !!j.suspicious, cspBlocked: !!j.cspBlocked }
         : j.error
           ? { state: "error" }
           : { state: "missing" };
       setEmbed((p) => ({ ...p, [id]: next }));
-      if (next.state === "installed" && !next.suspicious) {
+      if (next.state === "installed" && !next.suspicious && !next.cspBlocked) {
         const s = startups.find((x) => x.id === id);
         if (s?.warn_expires_at) {
           await supabase.from("startups").update({ warned_at: null, warn_expires_at: null }).eq("id", id);
