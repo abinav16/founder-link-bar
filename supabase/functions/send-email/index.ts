@@ -68,6 +68,126 @@ serve(async (req) => {
     let html = "";
     let to: string | string[] = "";
 
+    // ---- Admin broadcast: custom subject + body to a recipient segment ----
+    if (type === "admin-broadcast" || type === "admin-broadcast-preview" || type === "admin-broadcast-recipients") {
+      // Verify caller is admin
+      const authHeader = req.headers.get("Authorization") ?? "";
+      const token = authHeader.replace("Bearer ", "").trim();
+      if (!token) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      const { data: userData, error: userErr } = await supabase.auth.getUser(token);
+      if (userErr || userData.user?.email?.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      const segment: string = data?.segment ?? "all";
+
+      // Compute recipients per segment
+      async function getRecipients(): Promise<{ email: string; name: string; userId: string }[]> {
+        const perPage = 1000;
+        let page = 1;
+        const users: { id: string; email: string; name: string }[] = [];
+        // paginate up to 5000 users
+        for (let i = 0; i < 5; i++) {
+          const { data: u, error } = await supabase.auth.admin.listUsers({ page, perPage });
+          if (error) throw error;
+          const list = u?.users ?? [];
+          for (const usr of list) {
+            if (!usr.email) continue;
+            users.push({ id: usr.id, email: usr.email, name: (usr.user_metadata?.full_name as string | undefined) ?? "" });
+          }
+          if (list.length < perPage) break;
+          page += 1;
+        }
+
+        const { data: startups } = await supabase.from("startups").select("user_id,status");
+        const byUser = new Map<string, string[]>();
+        for (const s of (startups as { user_id: string; status: string }[] | null) ?? []) {
+          const arr = byUser.get(s.user_id) ?? [];
+          arr.push(s.status);
+          byUser.set(s.user_id, arr);
+        }
+
+        return users
+          .filter((u) => {
+            const statuses = byUser.get(u.id) ?? [];
+            switch (segment) {
+              case "all": return true;
+              case "no_startup": return statuses.length === 0;
+              case "has_startup": return statuses.length > 0;
+              case "approved_only": return statuses.includes("approved");
+              case "pending_only": return statuses.includes("pending") && !statuses.includes("approved");
+              case "rejected_only": return statuses.length > 0 && statuses.every((s) => s === "rejected");
+              default: return false;
+            }
+          })
+          .map((u) => ({ email: u.email, name: u.name, userId: u.id }));
+      }
+
+      // Markdown-lite → HTML (safe)
+      function renderBody(md: string): string {
+        const escaped = md.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        // links [text](url) — url must be http(s)
+        let s = escaped.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" style="color:#0a0a0a;text-decoration:underline;">$1</a>');
+        // bold **text**
+        s = s.replace(/\*\*([^*]+)\*\*/g, '<strong style="color:#0a0a0a;">$1</strong>');
+        // split into blocks by blank lines
+        const blocks = s.split(/\n\s*\n/);
+        return blocks.map((block) => {
+          const lines = block.split(/\n/);
+          if (lines.every((l) => l.trim().startsWith("- "))) {
+            const items = lines.map((l) => `<li style="margin:0 0 6px 0;">${l.replace(/^\s*-\s+/, "")}</li>`).join("");
+            return `<ul style="margin:0 0 16px 20px;padding:0;font-size:15px;line-height:1.6;color:#27272a;">${items}</ul>`;
+          }
+          return `<p style="margin:0 0 16px 0;font-size:15px;line-height:1.6;color:#27272a;">${lines.join("<br>")}</p>`;
+        }).join("");
+      }
+
+      // Recipients-only lookup for UI count
+      if (type === "admin-broadcast-recipients") {
+        const list = await getRecipients();
+        return new Response(JSON.stringify({ count: list.length, sample: list.slice(0, 5).map((r) => r.email) }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      const subjectIn: string = (data?.subject ?? "").toString().trim();
+      const headlineIn: string = (data?.headline ?? subjectIn).toString().trim();
+      const bodyIn: string = (data?.bodyMarkdown ?? "").toString();
+      if (!subjectIn || !bodyIn.trim()) {
+        return new Response(JSON.stringify({ error: "Missing subject or body" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      const bodyHtml = renderBody(bodyIn);
+      const emailHtml = shell({ heading: headlineIn || subjectIn, bodyHtml });
+
+      // Preview render — return HTML for the panel
+      if (type === "admin-broadcast-preview") {
+        return new Response(JSON.stringify({ html: emailHtml }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      // Send. Personalization uses {{name}} in subject/body (optional).
+      const testOnly: boolean = !!data?.testOnly;
+      const recipients = testOnly
+        ? [{ email: ADMIN_EMAIL, name: "Admin", userId: "" }]
+        : await getRecipients();
+
+      let sent = 0;
+      const errors: { email: string; error: string }[] = [];
+      for (const r of recipients) {
+        const firstName = (r.name || "").split(" ")[0] || "there";
+        const personalizedSubject = subjectIn.replace(/\{\{\s*name\s*\}\}/gi, firstName);
+        const personalizedBody = bodyHtml.replace(/\{\{\s*name\s*\}\}/gi, firstName);
+        const html = shell({ heading: (headlineIn || subjectIn).replace(/\{\{\s*name\s*\}\}/gi, firstName), bodyHtml: personalizedBody });
+        try {
+          await sendEmail(r.email, personalizedSubject, html);
+          sent += 1;
+        } catch (e) {
+          errors.push({ email: r.email, error: String(e).slice(0, 200) });
+        }
+        // Simple pacing to stay well under Resend's rate limit
+        await new Promise((res) => setTimeout(res, 120));
+      }
+
+      return new Response(JSON.stringify({ sent, failed: errors.length, total: recipients.length, errors: errors.slice(0, 10) }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     // ---- Admin notification: no startup row lookup, sends to admin only ----
     if (type === "admin-new-application") {
       const startupName: string = data?.startupName ?? "Unknown";
