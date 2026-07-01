@@ -1,53 +1,56 @@
-## Full resubmit-flow verification — clean, with one small hygiene fix
+## Goal
+Upgrade Step 2 of `/apply` so founders catch install issues themselves before submitting, add clear guidance for theme, padding, and common gotchas. Same page, richer verification + docs, cleaner design. No business-logic changes.
 
-I traced every hop end to end:
+## What changes
 
-### Path 1 — Dashboard → `/apply?resubmit=<id>`
-`_authenticated/dashboard.tsx:446` renders the rejection banner only when `startup.status === "rejected"` and links via `<Link to="/apply" search={{ resubmit: startup.id }} />`. Produces `/apply?resubmit=<id>`. ✓
+### 1. Verification results — surface CSP and other failure modes
+`verify-install` already returns `{ installed, cspBlocked, error }`. Update `checkInstallation()` and the result panel in `src/routes/apply.tsx` to render distinct states with actionable fix text:
 
-### Path 2 — URL parse → initial state
-`readInitialFromUrl()` prioritizes `?paid=true` → `?resubmit=` → sessionStorage draft → blank. With `?resubmit=<id>` it returns `{ step: 2, resubmitId: id, name/url/desc: "" }`. `useState` uses `initial.resubmitId` for both `resubmitId` and `startupId`, so the same DB row / same embed ID is reused. ✓
+- **Live** (`installed && !cspBlocked`) — green, "Script detected and running." Unlocks submit.
+- **Blocked by CSP** (`installed && cspBlocked`) — red, explains their `Content-Security-Policy` disallows `startupbar.co`, shows the exact directives to add with a copy button:
+  ```
+  script-src https://startupbar.co;
+  frame-src  https://startupbar.co;
+  ```
+  Blocks submit until re-verified.
+- **Not detected** (`!installed`) — amber, existing "paste it in `<head>` and try again" copy, plus a "common causes" list (script in `<body>`, CDN cache, wrong domain typed, SPA route not yet hit).
+- **Unreachable / error** — neutral, shows returned error.
 
-### Path 3 — Prefill + auto-verify
-Effect at `apply.tsx:162` runs once `authed === true` and `resubmitId` is set:
-- Fetches the row scoped to `user_id === auth.user.id` — ownership guard. ✓
-- Bails if `status !== "rejected"` — prevents re-triggering on already-approved rows. ✓
-- Sets name/url/desc, `startupId = data.id`, `step = 2`, then calls `checkInstallation(data.website_url)` (URL passed explicitly — no stale-closure regression). ✓
+Note: the "hidden by CSS" (`suspicious`) branch is intentionally NOT surfaced — the flag stays in the API for admin use only.
 
-Guard at `apply.tsx:141` (`authed === false && step === 2 → setStep(1)`) uses strict `false`, so the null loading state won't bounce a signed-in resubmit back to step 1. ✓
+Submit button gate changes from `verifyStatus === "found"` to `"live"` AND not CSP-blocked.
 
-### Path 4 — Payment gate override
-`needsPayment = !resubmitId && existingCount >= 1 && !hasPrepaid` → always `false` on the resubmit path. Button label is "Submit application", `onClick = onSubmit`. No `handlePayment`, no Dodo redirect, no `consume_prepaid_listing` RPC. ✓
+### 2. New "How to install" guidance block
+Below the embed code, a compact accordion (native `<details>`/`<summary>`, no new deps) with three sections:
 
-### Path 5 — `onSubmit` resubmit branch
-`apply.tsx:314`:
-```
-update({ ...parsed, status: "pending", rejection_reason: null })
-  .eq("id", resubmitId).eq("user_id", user_id)
-```
-No `insert`, so no duplicate row and the same UUID (== embed script `data-startup-id`) is preserved. Ownership double-scoped by `user_id`. ✓
+- **Where to paste it** — `<head>` recommended, works in `<body>`. Framework snippets: Next.js (`app/layout.tsx`), Astro (`Layout.astro`), WordPress (header.php or a header-scripts plugin), Webflow (Project Settings → Custom Code → Head), Framer (Site Settings → Custom Code), plain HTML.
+- **Theme (light / dark)** — the widget auto-detects the host site's theme via `prefers-color-scheme` and the `.dark` class on `<html>`. To force a theme, add `data-theme="dark"` or `data-theme="light"` on the script tag. Shows the modified snippet with a copy button.
+- **Keep your header from hiding behind the bar** — the widget is 36px tall and pinned to the top. The loader already tries to shift `fixed`/`sticky` headers automatically, but if your header still sits under the bar, add this CSS as a manual fallback:
+  ```css
+  /* Nudge a fixed header down by the StartupBar height */
+  header.your-header { top: 36px; }
+  /* Or add breathing room to the page body */
+  body { padding-top: 36px; }
+  ```
+  Also mention: on mobile, if the site jumps slightly on load, that's the auto-shift; setting the padding manually removes the jump.
+- **Troubleshooting** — CSP fix (same directives as above), SPA / client-side routers (loader re-mounts on `pushState`), cache-busting tip (hard reload), and how to remove the widget cleanly (delete the script tag).
 
-### Path 6 — DB trigger
-`prevent_user_status_change` (migration `20260629112141_…`) allows owner-driven status change **only when `NEW.status = 'pending'`**. The resubmit update sets exactly that → trigger passes. Admin can later flip to `approved`/`rejected`. ✓
+### 3. Design polish (Step 2 only)
+- Group "embed code → verify → guide" inside one bordered card region so the page reads as a single install checklist.
+- Small numbered pills at the top of Step 2: `1 Paste · 2 Verify · 3 Submit`.
+- Verification card gets a status-colored left border matching the current state.
+- Site summary chip (favicon + name + Edit) stays; Submit CTA and copy at the bottom stay the same.
+- No token or font changes. Step 1 untouched.
 
-### Path 7 — Post-submit
-- `sessionStorage.removeItem(DRAFT_KEY)` clears the draft.
-- Startup-submitted + admin-new-application emails fire.
-- `navigate({ to: "/dashboard" })`.
-- Dashboard's realtime channel (now `dashboard-startup:<userId>:<uuid>`) receives the `UPDATE` payload and swaps in the pending row — the rejection banner disappears, the "Under review" amber banner appears. ✓
+### 4. Safety
+- Only file touched: `src/routes/apply.tsx`.
+- No changes to `verify-install.ts`, edge functions, DB, payment flow, or Step 1.
+- Resubmit auto-check now surfaces the exact reason (e.g. CSP) so founders can fix before re-submitting — bonus reduction in rejection loops.
+- No new npm packages.
 
-### One small hygiene fix
+## Technical details
 
-The draft-persistence effect (`apply.tsx:231-235`) unconditionally writes `{step, name, url, desc}` to `sessionStorage`. During a resubmit it overwrites the draft with the resubmitted startup's data — so if the founder later opens a fresh `/apply` (no query params) in the same tab, they'll land on step 2 with the old resubmitted values.
-
-Fix: skip draft persistence when `resubmitId` is set (resubmits are stateless — the URL param is the source of truth):
-
-```
-if (resubmitId) return;
-```
-
-Everything else in the flow is correct and there are no duplicate-startup or unwanted-charge paths.
-
-### Files touched
-
-- `src/routes/apply.tsx` — one-line guard in the draft-persistence `useEffect`.
+- Extend `verifyStatus` union to `"idle" | "checking" | "live" | "csp" | "not-found" | "error"`. Map response: `cspBlocked → "csp"`, `installed → "live"`, else `"not-found"` / `"error"`. `suspicious` is ignored client-side.
+- Rename existing `"found"` → `"live"`; update submit-gate condition and helper text accordingly.
+- New small in-file components: `InstallGuide` (accordion), `CopyableCode` (thin wrapper around the existing copy pattern), `VerifyStatusPanel`.
+- All existing state, effects, payment logic, and submit handler unchanged.

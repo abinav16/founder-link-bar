@@ -6,8 +6,9 @@ import { toast } from "sonner";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import {
   ArrowRight, ArrowLeft, ExternalLink,
-  Copy, Check, CheckCircle2, XCircle, Loader2,
+  Copy, Check, CheckCircle2, XCircle, Loader2, ShieldAlert, ChevronDown,
 } from "lucide-react";
+
 
 export const Route = createFileRoute("/apply")({
   head: () => ({
@@ -71,6 +72,47 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 
 const inputCls = "w-full rounded-lg border border-black/12 bg-white px-4 py-3 text-sm text-black placeholder:text-black/25 outline-none ring-0 transition focus:border-black/30 focus:ring-2 focus:ring-black/8";
 
+function CopyableCode({ code, label = "HTML", tone = "neutral" }: { code: string; label?: string; tone?: "neutral" | "red" }) {
+  const [copied, setCopied] = useState(false);
+  const toneCls = tone === "red"
+    ? "border-red-200 bg-red-50/60"
+    : "border-black/10 bg-black/[0.025]";
+  const headerCls = tone === "red" ? "border-red-200 text-red-700/60" : "border-black/8 text-black/30";
+  const preCls = tone === "red" ? "text-red-900/80" : "text-black/60";
+  return (
+    <div className={`overflow-hidden rounded-lg border ${toneCls}`}>
+      <div className={`flex items-center justify-between border-b px-3 py-1.5 ${headerCls}`}>
+        <span className="text-[10px] font-medium uppercase tracking-wider">{label}</span>
+        <button
+          type="button"
+          onClick={() => { navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
+          className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium hover:bg-black/5 transition-colors"
+        >
+          {copied ? <><Check className="h-3 w-3 text-emerald-500" /> Copied!</> : <><Copy className="h-3 w-3" /> Copy</>}
+        </button>
+      </div>
+      <div className="overflow-x-auto px-3 py-2.5">
+        <pre className={`whitespace-pre font-mono text-[11.5px] leading-relaxed ${preCls}`}>{code}</pre>
+      </div>
+    </div>
+  );
+}
+
+function GuideItem({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <details className="group rounded-lg border border-black/8 bg-black/[0.015] open:bg-white transition-colors">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-medium text-black">
+        <span>{title}</span>
+        <ChevronDown className="h-4 w-4 shrink-0 text-black/40 transition-transform group-open:rotate-180" />
+      </summary>
+      <div className="border-t border-black/8 px-4 py-3.5 text-[13px] leading-relaxed text-black/65 space-y-1.5">
+        {children}
+      </div>
+    </details>
+  );
+}
+
+
 const DRAFT_KEY = "startupbar:apply-draft";
 
 function readDraft(): { step: 1 | 2; name: string; url: string; desc: string } | null {
@@ -124,8 +166,9 @@ function Apply() {
   const [resubmitId, setResubmitId] = useState<string>(initial.resubmitId);
   const [startupId, setStartupId] = useState<string>(() => initial.resubmitId || crypto.randomUUID());
   const [copied, setCopied] = useState(false);
-  const [verifyStatus, setVerifyStatus] = useState<"idle" | "checking" | "found" | "not-found" | "error">("idle");
+  const [verifyStatus, setVerifyStatus] = useState<"idle" | "checking" | "live" | "csp" | "not-found" | "error">("idle");
   const [verifyMsg, setVerifyMsg] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [existingCount, setExistingCount] = useState(0);
   const [hasPrepaid, setHasPrepaid] = useState(false);
@@ -288,20 +331,24 @@ function Apply() {
     try {
       const res = await fetch(`/api/public/verify-install?url=${encodeURIComponent(checkUrl)}`);
       const json = await res.json();
-      if (json.installed) {
-        setVerifyStatus("found");
-        setVerifyMsg("Script detected on your site!");
+      if (json.installed && json.cspBlocked) {
+        setVerifyStatus("csp");
+        setVerifyMsg("Your site's Content-Security-Policy is blocking startupbar.co. Add the directives below and re-check.");
+      } else if (json.installed) {
+        setVerifyStatus("live");
+        setVerifyMsg("Script detected and running on your site.");
       } else if (json.error) {
         setVerifyStatus("error");
         setVerifyMsg(json.error);
       } else {
         setVerifyStatus("not-found");
-        setVerifyMsg("Not found yet — paste it in your <head> and try again.");
+        setVerifyMsg("Not found yet — paste the snippet in your <head> and try again.");
       }
     } catch {
       setVerifyStatus("error");
       setVerifyMsg("Could not reach verification service.");
     }
+
   }
 
   async function onSubmit() {
@@ -457,6 +504,21 @@ function Apply() {
             Paste this once inside the <code className="rounded bg-black/8 px-1.5 py-0.5 font-mono text-sm">&lt;head&gt;</code> of your site, then verify it's live.
           </p>
 
+          {/* Progress pills */}
+          <div className="mt-6 flex items-center gap-2 text-[11px] font-medium text-black/50">
+            {[
+              { n: 1, label: "Paste", active: true },
+              { n: 2, label: "Verify", active: verifyStatus !== "idle" },
+              { n: 3, label: "Submit", active: verifyStatus === "live" },
+            ].map((s, i) => (
+              <div key={s.n} className="flex items-center gap-2">
+                <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-semibold ${s.active ? "bg-black text-white" : "bg-black/8 text-black/40"}`}>{s.n}</span>
+                <span className={s.active ? "text-black" : ""}>{s.label}</span>
+                {i < 2 && <span className="mx-1 h-px w-6 bg-black/10" />}
+              </div>
+            ))}
+          </div>
+
           <div className="mt-8 flex items-center gap-3 rounded-xl border border-black/8 bg-black/[0.02] px-5 py-4">
             {url && <StartupFavicon url={url} name={name} size={20} className="rounded-sm" />}
             <div className="min-w-0">
@@ -466,49 +528,140 @@ function Apply() {
             <button onClick={() => setStep(1)} className="ml-auto text-xs text-black/35 hover:text-black transition-colors">Edit</button>
           </div>
 
-          <div className="mt-8">
-            <p className="text-sm font-semibold text-black">Your embed code</p>
-            <p className="mt-1 text-xs text-black/45">This is your unique startup ID — it won't change after you apply.</p>
-            <div className="mt-3 rounded-xl border border-black/10 bg-black/[0.025]">
-              <div className="flex items-center justify-between border-b border-black/8 px-4 py-2">
-                <span className="text-[11px] font-medium uppercase tracking-wider text-black/30">HTML</span>
-                <button onClick={copySnippet} className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium text-black/50 hover:bg-black/8 hover:text-black transition-all">
-                  {copied ? <><Check className="h-3.5 w-3.5 text-emerald-500" /> Copied!</> : <><Copy className="h-3.5 w-3.5" /> Copy</>}
+          {/* Install checklist card */}
+          <div className="mt-6 overflow-hidden rounded-2xl border border-black/10 bg-white">
+            {/* Embed code */}
+            <div className="border-b border-black/8 p-5 sm:p-6">
+              <p className="text-sm font-semibold text-black">1 · Your embed code</p>
+              <p className="mt-1 text-xs text-black/45">This is your unique startup ID — it won't change after you apply.</p>
+              <CopyableCode code={snippet} />
+            </div>
+
+            {/* Verify */}
+            <div className={`border-b border-black/8 p-5 sm:p-6 border-l-2 ${
+              verifyStatus === "live" ? "border-l-emerald-500" :
+              verifyStatus === "csp" ? "border-l-red-500" :
+              verifyStatus === "not-found" ? "border-l-amber-500" :
+              verifyStatus === "error" ? "border-l-black/20" :
+              "border-l-transparent"
+            }`}>
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-black">2 · Verify installation</p>
+                  <p className="mt-0.5 text-xs text-black/40 truncate">We'll check if the script is live on <span className="font-medium text-black/60">{url}</span></p>
+                </div>
+                <button
+                  onClick={() => checkInstallation()}
+                  disabled={verifyStatus === "checking"}
+                  className="shrink-0 inline-flex items-center gap-2 rounded-lg border border-black/15 px-4 py-2 text-sm font-medium text-black hover:bg-black/[0.04] transition-all disabled:opacity-40"
+                >
+                  {verifyStatus === "checking" ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Checking…</> : "Check now"}
                 </button>
               </div>
-              <div className="overflow-x-auto px-4 py-3">
-                <pre className="text-[12px] font-mono text-black/60 whitespace-nowrap">{snippet}</pre>
+
+              {verifyStatus === "live" && (
+                <div className="mt-4 flex items-start gap-2.5 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>{verifyMsg}</span>
+                </div>
+              )}
+
+              {verifyStatus === "csp" && (
+                <div className="mt-4 space-y-3 rounded-lg bg-red-50 px-4 py-3.5 text-sm text-red-800">
+                  <div className="flex items-start gap-2.5">
+                    <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" />
+                    <div>
+                      <p className="font-medium">Blocked by your Content-Security-Policy</p>
+                      <p className="mt-0.5 text-[13px] text-red-800/80">The script is on your page, but your CSP disallows loading from <code className="rounded bg-red-100 px-1 py-0.5 font-mono text-[11px]">startupbar.co</code>. Add these directives (or merge them into your existing CSP), then re-check:</p>
+                    </div>
+                  </div>
+                  <CopyableCode
+                    tone="red"
+                    label="CSP"
+                    code={`script-src https://startupbar.co;\nframe-src  https://startupbar.co;`}
+                  />
+                </div>
+              )}
+
+              {verifyStatus === "not-found" && (
+                <div className="mt-4 rounded-lg bg-amber-50 px-4 py-3.5 text-sm text-amber-800">
+                  <div className="flex items-start gap-2.5">
+                    <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                    <div>
+                      <p className="font-medium">{verifyMsg}</p>
+                      <ul className="mt-2 list-disc space-y-0.5 pl-4 text-[12.5px] text-amber-900/75">
+                        <li>Make sure it's on the exact URL above (not a subpage).</li>
+                        <li>If you deploy through a CDN, purge the cache or hard-reload.</li>
+                        <li>SPAs: hit the homepage once so the script mounts.</li>
+                        <li>Check the tag lives in <code className="font-mono">&lt;head&gt;</code> or top of <code className="font-mono">&lt;body&gt;</code>.</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {verifyStatus === "error" && (
+                <div className="mt-4 flex items-start gap-2.5 rounded-lg bg-black/[0.03] px-4 py-3 text-sm text-black/60">
+                  <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>{verifyMsg}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Install guide */}
+            <div className="p-5 sm:p-6">
+              <p className="text-sm font-semibold text-black">3 · Install guide & options</p>
+              <p className="mt-1 text-xs text-black/45">Optional reading — expand what you need.</p>
+              <div className="mt-4 space-y-2">
+                <GuideItem title="Where to paste it">
+                  <p><strong>Recommended:</strong> inside <code className="font-mono">&lt;head&gt;</code>. Works in <code className="font-mono">&lt;body&gt;</code> too.</p>
+                  <ul className="mt-2 list-disc space-y-1 pl-4">
+                    <li><strong>Next.js</strong> — <code className="font-mono">app/layout.tsx</code> inside <code className="font-mono">&lt;head&gt;</code>, or <code className="font-mono">pages/_document.tsx</code>.</li>
+                    <li><strong>Astro</strong> — your top-level <code className="font-mono">Layout.astro</code> inside <code className="font-mono">&lt;head&gt;</code>.</li>
+                    <li><strong>WordPress</strong> — <code className="font-mono">header.php</code>, or a "header scripts" plugin.</li>
+                    <li><strong>Webflow</strong> — Project Settings → Custom Code → Head Code.</li>
+                    <li><strong>Framer</strong> — Site Settings → Custom Code → Head.</li>
+                    <li><strong>Plain HTML</strong> — anywhere inside <code className="font-mono">&lt;head&gt;</code>.</li>
+                  </ul>
+                </GuideItem>
+
+                <GuideItem title="Force light or dark theme">
+                  <p>The bar auto-detects your site's theme (<code className="font-mono">prefers-color-scheme</code> + a <code className="font-mono">.dark</code> class on <code className="font-mono">&lt;html&gt;</code>). To force a theme, add <code className="font-mono">data-theme</code> to the script tag:</p>
+                  <div className="mt-2">
+                    <CopyableCode
+                      code={`<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}" data-theme="dark"></script>`}
+                    />
+                  </div>
+                  <p className="mt-2 text-black/50">Values: <code className="font-mono">"light"</code> or <code className="font-mono">"dark"</code>.</p>
+                </GuideItem>
+
+                <GuideItem title="Keep your header from hiding behind the bar">
+                  <p>The widget is <strong>36px tall</strong> and pinned to the top of the page. Our loader tries to shift <code className="font-mono">fixed</code>/<code className="font-mono">sticky</code> headers automatically, but if yours still sits underneath, add this CSS as a manual fallback:</p>
+                  <div className="mt-2">
+                    <CopyableCode
+                      code={`/* Push a fixed/sticky header down */\nheader { top: 36px; }\n\n/* Or give the whole page breathing room */\nbody { padding-top: 36px; }`}
+                    />
+                  </div>
+                  <p className="mt-2 text-black/50">On mobile, if the page appears to "jump" once on load, that's the auto-shift kicking in — setting the padding yourself removes the jump.</p>
+                </GuideItem>
+
+                <GuideItem title="Troubleshooting">
+                  <ul className="list-disc space-y-1.5 pl-4">
+                    <li><strong>CSP blocks the script</strong> — add <code className="font-mono">script-src https://startupbar.co;</code> and <code className="font-mono">frame-src https://startupbar.co;</code>.</li>
+                    <li><strong>SPA routing</strong> — the loader re-mounts on <code className="font-mono">pushState</code>, no extra work needed.</li>
+                    <li><strong>Doesn't appear after deploy</strong> — hard-reload (Cmd/Ctrl + Shift + R) or purge your CDN cache.</li>
+                    <li><strong>Remove the widget</strong> — just delete the <code className="font-mono">&lt;script&gt;</code> tag. No account changes needed.</li>
+                    <li><strong>Still stuck?</strong> Email <a href="mailto:hello@startupbar.co" className="underline">hello@startupbar.co</a>.</li>
+                  </ul>
+                </GuideItem>
               </div>
             </div>
-          </div>
-
-          <div className="mt-6 rounded-xl border border-black/8 bg-white p-5">
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-black">Verify installation</p>
-                <p className="mt-0.5 text-xs text-black/40 truncate">We'll check if the script is live on <span className="font-medium text-black/60">{url}</span></p>
-              </div>
-              <button
-                onClick={() => checkInstallation()}
-                disabled={verifyStatus === "checking"}
-                className="shrink-0 inline-flex items-center gap-2 rounded-lg border border-black/15 px-4 py-2 text-sm font-medium text-black hover:bg-black/[0.04] transition-all disabled:opacity-40"
-              >
-                {verifyStatus === "checking" ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Checking…</> : "Check now"}
-              </button>
-            </div>
-
-            {verifyStatus !== "idle" && verifyStatus !== "checking" && (
-              <div className={`mt-4 flex items-start gap-2.5 rounded-lg px-4 py-3 text-sm ${verifyStatus === "found" ? "bg-emerald-50 text-emerald-700" : verifyStatus === "not-found" ? "bg-amber-50 text-amber-700" : "bg-black/[0.03] text-black/50"}`}>
-                {verifyStatus === "found" ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" /> : <XCircle className="mt-0.5 h-4 w-4 shrink-0" />}
-                <span>{verifyMsg}</span>
-              </div>
-            )}
           </div>
 
           <div className="mt-8 space-y-3">
             {(() => {
               const needsPayment = !resubmitId && existingCount >= 1 && !hasPrepaid;
-              const verified = verifyStatus === "found";
+              const verified = verifyStatus === "live";
               const busy = loading || paymentLoading || verifyingPayment;
               const disabled = !verified || busy;
               const onClick = needsPayment ? handlePayment : onSubmit;
@@ -532,7 +685,7 @@ function Apply() {
               );
             })()}
             <p className="text-center text-xs text-black/30">
-              {verifyStatus !== "found"
+              {verifyStatus !== "live"
                 ? "Install the script and verify it's live to continue."
                 : !resubmitId && existingCount >= 1 && !hasPrepaid
                 ? "Script verified ✓ — one-time $9.99 for additional listings."
@@ -540,6 +693,7 @@ function Apply() {
             </p>
           </div>
         </div>
+
       )}
     </div>
   );
