@@ -238,7 +238,7 @@ function DashboardPage() {
       if (!u.user) return;
       userId = u.user.id;
       channel = supabase
-        .channel("dashboard-startup")
+        .channel(`dashboard-startup:${userId}:${crypto.randomUUID()}`)
         .on("postgres_changes", {
           event: "*",
           schema: "public",
