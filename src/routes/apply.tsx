@@ -530,7 +530,7 @@ function Apply() {
             <p className="text-center text-xs text-black/30">
               {verifyStatus !== "found"
                 ? "Install the script and verify it's live to continue."
-                : existingCount >= 1 && !hasPrepaid
+                : !resubmitId && existingCount >= 1 && !hasPrepaid
                 ? "Script verified ✓ — one-time $9.99 for additional listings."
                 : "Script verified ✓ — you're all set."}
             </p>
