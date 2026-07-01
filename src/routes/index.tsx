@@ -39,12 +39,22 @@ function HeroCanvas() {
   const logosRef = useRef<{ img: HTMLImageElement; dotIdx: number }[]>([]);
 
   useEffect(() => {
-    supabase.from("startups").select("website_url").eq("status", "approved").then(({ data }) => {
+    supabase.from("startups").select("website_url,logo_url").eq("status", "approved").then(({ data }) => {
       if (!data || data.length === 0) return;
-      logosRef.current = data.map((s, i) => {
+      // Total dots across all rings = 8+12+16+20 = 56. Spread logos evenly
+      // across unique dot slots so every approved startup gets its own orbit spot.
+      const TOTAL_DOTS = 56;
+      const shuffled = [...data].sort(() => Math.random() - 0.5).slice(0, TOTAL_DOTS);
+      const step = Math.max(1, Math.floor(TOTAL_DOTS / shuffled.length));
+      const used = new Set<number>();
+      logosRef.current = shuffled.map((s: any, i) => {
+        let slot = (i * step) % TOTAL_DOTS;
+        while (used.has(slot)) slot = (slot + 1) % TOTAL_DOTS;
+        used.add(slot);
         const img = new Image();
-        img.src = `https://www.google.com/s2/favicons?domain=${s.website_url}&sz=64`;
-        return { img, dotIdx: i * 7 };
+        const domain = (s.website_url || "").replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+        img.src = s.logo_url || `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+        return { img, dotIdx: slot };
       });
     });
   }, []);
