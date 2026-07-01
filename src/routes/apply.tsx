@@ -89,7 +89,7 @@ function readDraft(): { step: 1 | 2; name: string; url: string; desc: string } |
 }
 
 function readInitialFromUrl() {
-  if (typeof window === "undefined") return { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "" };
+  if (typeof window === "undefined") return { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "", resubmitId: "" };
   const p = new URLSearchParams(window.location.search);
   if (p.get("paid") === "true") {
     return {
@@ -99,24 +99,30 @@ function readInitialFromUrl() {
       desc: p.get("desc") ?? "",
       paid: true,
       paymentId: p.get("payment_id") ?? "",
+      resubmitId: "",
     };
+  }
+  const resubmitId = p.get("resubmit") ?? "";
+  if (resubmitId) {
+    return { step: 2 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "", resubmitId };
   }
   const draft = readDraft();
   if (draft) {
-    return { step: draft.step, name: draft.name, url: draft.url, desc: draft.desc, paid: false, paymentId: "" };
+    return { step: draft.step, name: draft.name, url: draft.url, desc: draft.desc, paid: false, paymentId: "", resubmitId: "" };
   }
-  return { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "" };
+  return { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "", resubmitId: "" };
 }
 
 function Apply() {
   const navigate = useNavigate();
-  const initial = (typeof window !== "undefined" ? readInitialFromUrl() : { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "" });
+  const initial = (typeof window !== "undefined" ? readInitialFromUrl() : { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "", resubmitId: "" });
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [step, setStep] = useState<1 | 2>(initial.step);
   const [name, setName] = useState(initial.name);
   const [url, setUrl] = useState(initial.url);
   const [desc, setDesc] = useState(initial.desc);
-  const [startupId] = useState(() => crypto.randomUUID());
+  const [resubmitId, setResubmitId] = useState<string>(initial.resubmitId);
+  const [startupId, setStartupId] = useState<string>(() => initial.resubmitId || crypto.randomUUID());
   const [copied, setCopied] = useState(false);
   const [verifyStatus, setVerifyStatus] = useState<"idle" | "checking" | "found" | "not-found" | "error">("idle");
   const [verifyMsg, setVerifyMsg] = useState("");
