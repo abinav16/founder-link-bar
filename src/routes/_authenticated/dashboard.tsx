@@ -117,6 +117,7 @@ interface Startup {
   website_url: string;
   description: string;
   status: "pending" | "approved" | "rejected";
+  rejection_reason?: string | null;
 }
 
 function StatusPill({ status }: { status: Startup["status"] }) {
@@ -424,6 +425,32 @@ function DashboardPage() {
             {startup.status === "pending" && (
               <div className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-3.5 text-sm text-amber-800">
                 <strong>Under review</strong> — we approve applications within 24 hours. The embed script unlocks once you're approved.
+              </div>
+            )}
+
+            {startup.status === "rejected" && (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-800">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-red-900">Not approved</p>
+                    {startup.rejection_reason ? (
+                      <p className="mt-1 text-red-800/90">
+                        <span className="font-medium">Reason:</span> {startup.rejection_reason}
+                      </p>
+                    ) : (
+                      <p className="mt-1 text-red-800/80">
+                        Fix the issue and resubmit — no need to pay again.
+                      </p>
+                    )}
+                  </div>
+                  <Link
+                    to="/apply"
+                    search={{ resubmit: startup.id } as never}
+                    className="shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-red-900 px-3.5 py-2 text-xs font-medium text-white hover:bg-red-800 transition-colors"
+                  >
+                    Fix & resubmit →
+                  </Link>
+                </div>
               </div>
             )}
 

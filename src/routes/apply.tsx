@@ -89,7 +89,7 @@ function readDraft(): { step: 1 | 2; name: string; url: string; desc: string } |
 }
 
 function readInitialFromUrl() {
-  if (typeof window === "undefined") return { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "" };
+  if (typeof window === "undefined") return { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "", resubmitId: "" };
   const p = new URLSearchParams(window.location.search);
   if (p.get("paid") === "true") {
     return {
@@ -99,24 +99,30 @@ function readInitialFromUrl() {
       desc: p.get("desc") ?? "",
       paid: true,
       paymentId: p.get("payment_id") ?? "",
+      resubmitId: "",
     };
+  }
+  const resubmitId = p.get("resubmit") ?? "";
+  if (resubmitId) {
+    return { step: 2 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "", resubmitId };
   }
   const draft = readDraft();
   if (draft) {
-    return { step: draft.step, name: draft.name, url: draft.url, desc: draft.desc, paid: false, paymentId: "" };
+    return { step: draft.step, name: draft.name, url: draft.url, desc: draft.desc, paid: false, paymentId: "", resubmitId: "" };
   }
-  return { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "" };
+  return { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "", resubmitId: "" };
 }
 
 function Apply() {
   const navigate = useNavigate();
-  const initial = (typeof window !== "undefined" ? readInitialFromUrl() : { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "" });
+  const initial = (typeof window !== "undefined" ? readInitialFromUrl() : { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "", resubmitId: "" });
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [step, setStep] = useState<1 | 2>(initial.step);
   const [name, setName] = useState(initial.name);
   const [url, setUrl] = useState(initial.url);
   const [desc, setDesc] = useState(initial.desc);
-  const [startupId] = useState(() => crypto.randomUUID());
+  const [resubmitId, setResubmitId] = useState<string>(initial.resubmitId);
+  const [startupId, setStartupId] = useState<string>(() => initial.resubmitId || crypto.randomUUID());
   const [copied, setCopied] = useState(false);
   const [verifyStatus, setVerifyStatus] = useState<"idle" | "checking" | "found" | "not-found" | "error">("idle");
   const [verifyMsg, setVerifyMsg] = useState("");
@@ -151,6 +157,35 @@ function Apply() {
       if (data.user) refreshGateData(data.user.id);
     });
   }, [authed]);
+
+  // Load existing rejected startup when resubmitting: fills form + reuses same startup ID/embed.
+  useEffect(() => {
+    if (!authed || !resubmitId) return;
+    (async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) return;
+      const { data, error } = await supabase
+        .from("startups")
+        .select("id, name, website_url, description, status, user_id")
+        .eq("id", resubmitId)
+        .maybeSingle();
+      if (error || !data || data.user_id !== u.user.id) {
+        setResubmitId("");
+        toast.error("Couldn't load that startup for resubmission.");
+        return;
+      }
+      if (data.status !== "rejected") {
+        setResubmitId("");
+        toast.info("That startup isn't rejected — no resubmission needed.");
+        return;
+      }
+      setName(data.name);
+      setUrl(data.website_url);
+      setDesc(data.description);
+      setStartupId(data.id);
+      setStep(2);
+    })();
+  }, [authed, resubmitId]);
 
   // Verify payment server-side once on return from Dodo, then auto-submit.
   useEffect(() => {
@@ -271,24 +306,35 @@ function Apply() {
 
     const parsed = schema.parse({ name, website_url: url, description: desc });
 
-    // If this is a paid additional listing, atomically consume one prepaid slot first.
-    if (existingCount >= 1) {
-      const { data: consumedId, error: consumeErr } = await supabase.rpc(
-        "consume_prepaid_listing",
-        { _user_id: user_id },
-      );
-      if (consumeErr || !consumedId) {
-        setLoading(false);
-        toast.error("No prepaid listing available. Please complete payment.");
-        return;
+    // Resubmit path: update the existing rejected row back to pending — no new row, no payment gate.
+    if (resubmitId) {
+      const { error: updErr } = await supabase
+        .from("startups")
+        .update({ ...parsed, status: "pending", rejection_reason: null })
+        .eq("id", resubmitId)
+        .eq("user_id", user_id);
+      setLoading(false);
+      if (updErr) { toast.error(updErr.message); return; }
+    } else {
+      // If this is a paid additional listing, atomically consume one prepaid slot first.
+      if (existingCount >= 1) {
+        const { data: consumedId, error: consumeErr } = await supabase.rpc(
+          "consume_prepaid_listing",
+          { _user_id: user_id },
+        );
+        if (consumeErr || !consumedId) {
+          setLoading(false);
+          toast.error("No prepaid listing available. Please complete payment.");
+          return;
+        }
       }
-    }
 
-    const { error } = await supabase.from("startups").insert(
-      { id: startupId, user_id, ...parsed }
-    );
-    setLoading(false);
-    if (error) { toast.error(error.message); return; }
+      const { error } = await supabase.from("startups").insert(
+        { id: startupId, user_id, ...parsed }
+      );
+      setLoading(false);
+      if (error) { toast.error(error.message); return; }
+    }
 
     supabase.functions.invoke("send-email", { body: { type: "startup-submitted", data: { email: userData.user!.email, name: userData.user!.user_metadata?.full_name ?? "", startupName: parsed.name } } }).catch(() => {});
     supabase.functions.invoke("send-email", { body: { type: "admin-new-application", data: { startupName: parsed.name, startupUrl: parsed.website_url, description: parsed.description, applicantEmail: userData.user!.email } } }).catch(() => {});
