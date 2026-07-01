@@ -214,11 +214,15 @@ function Apply() {
         .maybeSingle();
       if (error || !data || data.user_id !== u.user.id) {
         setResubmitId("");
+        setStep(1);
+        window.history.replaceState({}, "", "/apply");
         toast.error("Couldn't load that startup for resubmission.");
         return;
       }
       if (data.status !== "rejected") {
         setResubmitId("");
+        setStep(1);
+        window.history.replaceState({}, "", "/apply");
         toast.info("That startup isn't rejected — no resubmission needed.");
         return;
       }
@@ -272,7 +276,6 @@ function Apply() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoSubmitPending, hasPrepaid]);
 
-  // Persist draft so the form survives the sign-in round-trip.
   // Persist draft so the form survives the sign-in round-trip.
   useEffect(() => {
     if (typeof window === "undefined") return;
