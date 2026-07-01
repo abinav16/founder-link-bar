@@ -541,6 +541,7 @@ function BroadcastPanel() {
   const [loadingCount, setLoadingCount] = useState(false);
   const [previewHtml, setPreviewHtml] = useState<string>("");
   const [sending, setSending] = useState(false);
+  const [lastErrors, setLastErrors] = useState<{ email: string; error: string }[]>([]);
 
   async function refreshCount(seg: string) {
     setLoadingCount(true);
