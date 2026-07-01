@@ -1,27 +1,33 @@
 ## Root cause (high confidence)
 
-Resend's default rate limit is **2 requests/second**. The broadcast loop in `supabase/functions/send-email/index.ts` currently sleeps only 120ms between sends (~8/sec), so most sends after the first couple hit `429 Too Many Requests` and are recorded as failures. 13/41 failing on a first burst matches this pattern exactly.
+The Reddit comment "on mobile Safari the site jumps around every couple of seconds" points at the widget's fixed-element shifter in `public/widget/loader.js`, not the iframe height. Two iOS Safari–specific behaviours combine to cause the jump:
 
-Secondary issue: per-recipient errors are only bundled into the response JSON (first 10) and never `console.error`'d, so nothing showed up in edge-function logs, and the admin UI toast just says "13 failed" with no detail.
+1. iOS Safari's URL bar collapse/expand fires layout + DOM mutations on the host page every couple of seconds while the user scrolls or the visual viewport changes.
+2. Our loader's `MutationObserver` on `document.documentElement` catches every added node and re-runs `shiftFixedElement` on it. If the host site re-renders any `position: fixed` / `sticky` header (very common on SPA sites — React portals, Framer/Webflow sticky nav, cookie banners), the element is added fresh without the `data-startupbar-shifted` guard, so we shift it by another 36px. That's the "jump" the user sees.
 
-## Fix
+Secondary cause: on iOS Safari, mutating inline `top` on a fixed element that also has a CSS transition triggers a visible animated slide — every few seconds — which matches the report exactly.
 
-### 1. `supabase/functions/send-email/index.ts` — broadcast loop only
-- Slow the base pacing from `120ms` to `550ms` (safely under Resend's 2 req/s).
-- On a `429` response from Resend, respect the `Retry-After` header (fallback 1s), wait, and **retry that recipient once** before counting it as failed.
-- On any non-2xx from Resend, still catch and record — but also `console.error` the recipient + status + short message so future issues show up in edge logs.
-- Keep the existing `errors` return shape; bump the returned sample from 10 → 25 so the admin UI can see more detail.
+## Fix (minimal, loader-only)
 
-To make retries possible, `sendEmail()` needs to surface the HTTP status. Smallest change: keep `sendEmail` as-is for other callers, and inline a small `sendOne(recipient)` helper inside the broadcast branch that does the fetch, handles 429 retry, and throws with `{status, message}` on final failure.
+Edit only `public/widget/loader.js`. No changes to `widget.bar.tsx`, no schema, no other files.
 
-### 2. `src/routes/admin.tsx` — BroadcastPanel result toast/summary
-- When the send response comes back, if `failed > 0`, show a small expandable list of failed recipients + their error messages (from the `errors` array the function returns), not just the count. Keep the success toast unchanged.
+1. **Stop the MutationObserver-driven shifting.** Remove `startFixedObserver()` and its call site. Keep the one-time `sweepFixedElements()` at inject time so the initial pass still handles the site's existing sticky header.
+2. **Skip elements that already sit below 36px.** Tighten `shiftFixedElement` so we only touch elements whose computed `top` is `0px` (the ones that would actually be hidden). Anything with `top >= 1px` is left alone — this eliminates almost all false positives (cookie banners, chat bubbles, toasts pinned lower on the page) without losing coverage of true top-anchored nav bars.
+3. **Never re-shift.** Keep the `data-startupbar-shifted` guard; combined with removing the observer, an element can be shifted at most once for the page's lifetime.
+4. **Body padding stays as-is.** `body { padding-top: 36px }` already prevents the initial content overlap, so most sites don't need any per-element shifting anyway.
+
+## Why this fixes the iOS jump
+
+- No mutation-driven re-shifts means the periodic DOM churn Safari triggers during URL-bar collapse no longer moves anything.
+- The single sweep at inject runs before the user can perceive a jump.
+- Sites whose header we do shift get shifted exactly once, at load, so any CSS transition on `top` fires imperceptibly during initial paint rather than every few seconds mid-scroll.
 
 ## What this does NOT change
 
-- No template changes, no recipient-segmentation changes, no schema changes.
-- Regular one-off emails (approved/rejected/warning/submitted/etc.) are untouched — they go through the same `sendEmail()` and aren't affected by rate limits because they're single sends.
+- Iframe height behaviour, dismiss, theme detection, heartbeat, click tracking — all untouched.
+- Widget still ends up visible on top; body padding still prevents content from hiding under the bar.
+- If a specific site's sticky header still overlaps because it renders after inject, we can add a small `setTimeout` re-sweep at 1s/3s in a follow-up — but that's opt-in, not the current behaviour that causes the jump.
 
-## Expected outcome
+## Verification
 
-Next broadcast of ~41 recipients takes ~25s instead of ~5s, and should show **0 failed** (or, if any address genuinely bounces / is suppressed, the admin panel will show exactly which one and why).
+After the change I'll drive Playwright against a page with a `position: fixed; top: 0` header to confirm the shift happens exactly once and no repeated mutations occur, then ask you to reload the reporter's site on iOS Safari to confirm the jump is gone.

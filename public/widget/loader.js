@@ -65,15 +65,14 @@
         var cs = getComputedStyle(el);
         if (cs.position !== 'fixed' && cs.position !== 'sticky') return;
         var topRaw = cs.top;
-        var originalPx = 0;
-        if (topRaw && topRaw !== 'auto') {
-          if (!/px$/.test(topRaw)) return;
-          originalPx = parseFloat(topRaw);
-          if (isNaN(originalPx)) return;
-          if (originalPx > 36) return;
-        }
+        if (!topRaw || topRaw === 'auto') return;
+        if (!/px$/.test(topRaw)) return;
+        var originalPx = parseFloat(topRaw);
+        if (isNaN(originalPx)) return;
+        // Only shift elements truly anchored to the very top; leave banners/toasts alone.
+        if (originalPx !== 0) return;
         el.dataset.startupbarOriginalTop = el.style.top || '';
-        el.style.top = (originalPx + 36) + 'px';
+        el.style.top = '36px';
         el.dataset.startupbarShifted = '1';
       } catch (e) {}
     }
@@ -85,26 +84,6 @@
       } catch (e) {}
     }
 
-    function startFixedObserver() {
-      try {
-        var mo = new MutationObserver(function(muts) {
-          for (var i = 0; i < muts.length; i++) {
-            var added = muts[i].addedNodes;
-            for (var j = 0; j < added.length; j++) {
-              var n = added[j];
-              if (!n || n.nodeType !== 1) continue;
-              if (n === iframe || (iframe.contains && iframe.contains(n))) continue;
-              shiftFixedElement(n);
-              if (n.querySelectorAll) {
-                var sub = n.querySelectorAll('*');
-                for (var k = 0; k < sub.length; k++) shiftFixedElement(sub[k]);
-              }
-            }
-          }
-        });
-        mo.observe(document.documentElement, { childList: true, subtree: true });
-      } catch (e) {}
-    }
 
     function startObserver() {
       var observer = new MutationObserver(function() {
