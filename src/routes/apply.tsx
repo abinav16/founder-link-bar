@@ -158,6 +158,35 @@ function Apply() {
     });
   }, [authed]);
 
+  // Load existing rejected startup when resubmitting: fills form + reuses same startup ID/embed.
+  useEffect(() => {
+    if (!authed || !resubmitId) return;
+    (async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) return;
+      const { data, error } = await supabase
+        .from("startups")
+        .select("id, name, website_url, description, status, user_id")
+        .eq("id", resubmitId)
+        .maybeSingle();
+      if (error || !data || data.user_id !== u.user.id) {
+        setResubmitId("");
+        toast.error("Couldn't load that startup for resubmission.");
+        return;
+      }
+      if (data.status !== "rejected") {
+        setResubmitId("");
+        toast.info("That startup isn't rejected — no resubmission needed.");
+        return;
+      }
+      setName(data.name);
+      setUrl(data.website_url);
+      setDesc(data.description);
+      setStartupId(data.id);
+      setStep(2);
+    })();
+  }, [authed, resubmitId]);
+
   // Verify payment server-side once on return from Dodo, then auto-submit.
   useEffect(() => {
     if (!initial.paid) return;
