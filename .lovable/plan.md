@@ -1,28 +1,37 @@
-The exact issue is likely this: the widget iframe is still changing height after the host page loads. On iPhone Safari, even small iframe height changes plus browser address-bar resizing can make the page re-anchor, so the bar appears to move between positions every few seconds. The reporter’s “banner under the View dashboard button changes its size” comment points to our dynamic `startupbar:resize` messages and the widget’s loading-to-content height transition, not the network/heartbeat logic.
+## Why the false-positive emails are happening
 
-Plan:
-1. Make the widget height stable by default
-   - Keep the normal bar fixed at exactly `36px`.
-   - Do not resize the iframe for ordinary loading/content changes.
-   - Only allow height expansion when the user manually opens the info panel.
+The widget loader sends **one heartbeat 1.5s after injection**. That single snapshot decides whether to strike + email. Common transient conditions at t=1.5s that wrongly flag "hidden":
 
-2. Fix the loading-to-content shift
-   - In `src/routes/widget.bar.tsx`, render a stable 36px skeleton/fallback immediately instead of returning `null` while loading.
-   - This prevents the iframe from briefly being empty/0-height and then expanding.
+- Splash / cookie banner / hero overlay still covering the top strip → `elementFromPoint` returns the overlay, not the iframe.
+- Iframe hasn't first-painted, `rect.height` briefly 0.
+- Sticky header stacked above the widget for a moment before `sweepFixedElements()` shifted it.
+- A wrapping element with `overflow: hidden` (very common) that momentarily clips during layout.
 
-3. Gate resize messages
-   - Send `startupbar:resize` only for intentional states:
-     - `36px` for the normal bar
-     - expanded height when the info panel is open
-     - `0px` only when dismissed
-   - Remove/avoid ResizeObserver-driven height changes for the normal bar because it can fire from tiny font/layout changes on mobile Safari.
+Server-side (`widget.heartbeat.ts`), the **very first** `visible=false` for an approved startup writes `widget_hidden_at`, `strike_count=1`, and immediately fires the warning email — no confirmation, no grace period.
 
-4. Keep iPhone Safari safe
-   - Keep the current iPhone-Safari-only in-flow rendering branch.
-   - Do not change widget picking, impressions, clicks, heartbeat, visibility detection, CSP detection, payments, admin, or application flow.
+## Plan
 
-5. Verify carefully
-   - Check the widget route renders a visible 36px bar immediately.
-   - Check opening the info panel still expands correctly.
-   - Check dismiss still collapses to 0.
-   - Check no unrelated widget APIs or tracking behavior changed.
+### 1. Kill the automated emails permanently
+In `src/routes/api/public/widget.heartbeat.ts`:
+- Remove all `sendEmail(...)` calls (warning, suspension, ban).
+- Remove all automatic status flips (`status: "rejected"`, `banned: true`, `rejection_reason: "widget_hidden*"`).
+- Keep only bookkeeping: `widget_currently_visible`, `widget_last_heartbeat_at`, `widget_hidden_at`, `strike_count` — so the admin panel still shows accurate widget health and you can act manually.
+- Drop the `warningEmail` / `suspensionEmail` / `banEmail` helpers and the `RESEND_API_KEY` / `sendEmail` code (dead code after removal).
+
+No auto-emails will ever be sent from the heartbeat endpoint again. Manual reject/warn from `/admin` is untouched.
+
+### 2. Harden client-side visibility detection
+In `public/widget/loader.js`:
+- Delay the first heartbeat from **1.5s → 8s** so splash screens, cookie banners, and framework hydration have settled.
+- Send a **confirmation heartbeat at 30s**, then every 5 minutes while the tab is visible (`document.visibilityState === 'visible'`).
+- Only report `visible=false` when the widget has been hidden across **two consecutive local samples**; otherwise report `visible=true`. This eliminates single-snapshot false positives even before the server sees them.
+- Tighten `isWidgetVisible()`:
+  - Remove the `overflow: hidden` parent bail-out (too many false positives from normal wrappers with non-zero size).
+  - For the `elementFromPoint` check, accept the hit when the covering element has `pointer-events: none`, `opacity < 0.1`, or is `aria-hidden="true"`.
+  - Wait for the iframe's `load` event (or `contentDocument.readyState === 'complete'`) before the first sample.
+
+## Files changed
+- `src/routes/api/public/widget.heartbeat.ts` — strip all email sending and auto status/ban logic; keep bookkeeping only.
+- `public/widget/loader.js` — delayed + repeated + confirmed heartbeats, looser `isWidgetVisible()`.
+
+No changes to `send-email`, admin panel, tracking, or any other widget behavior.

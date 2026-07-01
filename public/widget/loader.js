@@ -127,17 +127,27 @@
         while (parent) {
           var ps = getComputedStyle(parent);
           if (ps.display === 'none' || ps.visibility === 'hidden' || parseFloat(ps.opacity) === 0) return false;
-          if (ps.overflow === 'hidden') {
-            var pr = parent.getBoundingClientRect();
-            if (pr.width === 0 || pr.height === 0) return false;
-          }
+          // Intentionally do NOT bail on overflow:hidden parents with
+          // non-zero size — that produced many false positives on normal
+          // page wrappers.
           parent = parent.parentElement;
         }
+        // Point-hit test: only treat as hidden if a solid, interactive
+        // element is truly covering the bar. Ignore transparent / decorative
+        // overlays (splash screens, cookie banners fading out, aria-hidden).
         var cx = rect.left + rect.width / 2;
         var cy = rect.top + rect.height / 2;
         if (cx >= 0 && cy >= 0) {
           var top = document.elementFromPoint(cx, cy);
-          if (top && top !== el && !el.contains(top)) return false;
+          if (top && top !== el && !el.contains(top)) {
+            try {
+              var ts = getComputedStyle(top);
+              var transient = ts.pointerEvents === 'none'
+                || parseFloat(ts.opacity) < 0.1
+                || top.getAttribute('aria-hidden') === 'true';
+              if (!transient) return false;
+            } catch (e) {}
+          }
         }
         var inlineLeft = el.style.left;
         var inlineTop = el.style.top;
@@ -149,12 +159,44 @@
       }
     }
 
+    // Two-sample confirmation: only report visible=false when two
+    // consecutive local samples agree the widget is hidden. Kills
+    // single-snapshot false positives from splash screens, hydration,
+    // and transient overlays.
+    var lastSample = null;
     function sendHeartbeat() {
       try {
-        var visible = isWidgetVisible();
+        if (document.visibilityState && document.visibilityState !== 'visible') return;
+        var sample = isWidgetVisible();
+        var report;
+        if (sample) {
+          report = true;
+        } else if (lastSample === false) {
+          report = false;
+        } else {
+          lastSample = false;
+          return;
+        }
+        lastSample = sample;
         var img = new Image();
-        img.src = origin + '/api/public/widget/heartbeat?id=' + encodeURIComponent(id) + '&visible=' + visible;
+        img.src = origin + '/api/public/widget/heartbeat?id=' + encodeURIComponent(id) + '&visible=' + report;
       } catch (e) {}
+    }
+
+    function scheduleHeartbeats() {
+      var started = false;
+      var start = function () {
+        if (started) return;
+        started = true;
+        // First sample after page + widget have settled (splash screens,
+        // hydration, cookie banners). 8s, confirmation at 30s, then every
+        // 5 minutes while the tab is visible.
+        setTimeout(sendHeartbeat, 8000);
+        setTimeout(sendHeartbeat, 30000);
+        setInterval(sendHeartbeat, 5 * 60 * 1000);
+      };
+      try { iframe.addEventListener('load', start); } catch (e) {}
+      setTimeout(start, 10000);
     }
 
     function inject() {
@@ -176,7 +218,7 @@
           html.style.scrollPaddingTop = '36px';
         }
         startObserver();
-        setTimeout(sendHeartbeat, 1500);
+        scheduleHeartbeats();
         return;
       }
 
@@ -217,7 +259,7 @@
         window.addEventListener('startupbar:locationchange', resweep);
         window.addEventListener('load', resweep);
       } catch (e) {}
-      setTimeout(sendHeartbeat, 1500);
+      scheduleHeartbeats();
     }
 
     if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', inject); } else { inject(); }
