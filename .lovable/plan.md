@@ -1,47 +1,31 @@
-## What's happening on boltfox.net
+## Problem
 
-The embed `<script src="https://startupbar.co/widget/loader.js" ...>` is in their HTML, so our HTML-scan says **Embed: Live** and their previous heartbeat (probably from an earlier test) left **Widget Health: Visible**. But the browser is refusing to execute our script:
+On hunchbank.com the top nav is a `position: fixed; top: 0` bar. On first load, `loader.js` runs `sweepFixedElements()` once and shifts it down by 36px — works. But when the user clicks a header tab, the site does client-side navigation (SPA route change) and re-mounts the header (or a new page's fixed header appears). Our loader never re-sweeps, so the freshly mounted fixed element stays at `top: 0` and sits **behind** the StartupBar.
 
-```
-Refused to load the script 'https://startupbar.co/widget/loader.js' because it violates
-the following Content Security Policy directive: "script-src 'self' 'unsafe-inline'
-https://www.googletagmanager.com https://static.cloudflareinsights.com ..."
-```
+We removed the `MutationObserver` earlier because it caused the iOS Safari "page jumps every few seconds" bug, so right now there is no re-sweep at all after the initial paint.
 
-boltfox.net ships a strict CSP that doesn't allow `startupbar.co` under `script-src`. Result: loader never runs → no iframe → no bar visible → no new heartbeats. Our current signals (HTML scan + last heartbeat) can't distinguish "installed but CSP-blocked" from "installed and working".
+## Fix (loader.js only — no impact on startup listing / picking / analytics)
 
-## Fix
+Re-run `sweepFixedElements()` on discrete navigation-ish events instead of on every DOM mutation. These fire rarely, so they won't cause the iOS jump loop:
 
-Two parts:
+1. Wrap `history.pushState` and `history.replaceState` to dispatch a `startupbar:locationchange` event, and listen for `popstate` + `hashchange` too.
+2. On any of those events, run `sweepFixedElements()` twice: once immediately and once after ~250ms (to catch the header that the SPA mounts after the route transition).
+3. Also re-sweep on `load` (some sites mount the sticky header after `DOMContentLoaded`).
+4. Keep the existing `data-startupbar-shifted="1"` guard so already-shifted nodes are skipped — re-sweeps are cheap and idempotent.
+5. Keep the strict `top === 0px` + `position: fixed|sticky` filter so we still don't touch toasts / modals / mid-page banners.
+6. Do NOT re-add `MutationObserver` — that's what caused the iOS jump.
 
-### 1. Server-side CSP detection in `verify-install.ts`
+## Why this is safe
 
-When we fetch the site HTML, also read the `Content-Security-Policy` header (and any `<meta http-equiv="Content-Security-Policy">`). If the tag is present but the policy has a `script-src` (or `default-src` fallback) that doesn't allow `startupbar.co` / `*.startupbar.co` / `https:` / `*`, return a new state: `csp_blocked`.
+- No change to `widget.pick.ts`, heartbeat, click tracking, admin panel, or picking logic.
+- No change to iframe sizing or `startupbar:resize` messaging.
+- Events used (`popstate`, `hashchange`, wrapped `pushState`/`replaceState`) fire only on real navigation, not on every DOM mutation → no iOS Safari scroll-jump regression.
+- Idempotent: `data-startupbar-shifted` guard prevents double-shifting the same node.
 
-Rules:
-- If no CSP header/meta → treat as allowed (current behavior).
-- Parse the effective `script-src` (fallback to `default-src`).
-- Allowed if any of: `*`, `https:`, `startupbar.co`, `*.startupbar.co`, or an explicit `https://startupbar.co` entry.
-- Otherwise → `csp_blocked`.
+## Files touched
 
-### 2. Admin "Embed" column state
+- `public/widget/loader.js` — add navigation-event listeners + re-sweep, no other logic changes.
 
-Add a new pill in `src/routes/admin.tsx`:
-- **CSP blocked** (red/amber) — takes priority over heartbeat freshness, since a stale heartbeat here is misleading.
-- Tooltip: "Site's Content Security Policy is blocking startupbar.co/widget/loader.js. Ask the founder to add `https://startupbar.co` to their `script-src` directive."
+## Immediate note for hunchbank.com
 
-### 3. Rejection reason template
-
-Add one entry to the rejection modal in `admin.tsx`:  
-**"CSP blocks our widget"** → email body explains the CSP issue and the one-line fix (`script-src ... https://startupbar.co;`).
-
-### Files touched
-- `src/routes/api/public/verify-install.ts` — parse CSP, return new `csp_blocked` state.
-- `src/routes/admin.tsx` — render new pill, prioritize over heartbeat, add rejection template.
-- `supabase/functions/send-email/index.ts` — add the `csp_blocked` rejection reason copy.
-
-No DB migration needed — this is purely derived at read time.
-
-## Immediate answer for boltfox.net
-
-Ask them to update their CSP `script-src` to include `https://startupbar.co` (and `frame-src https://startupbar.co` if they also restrict frames). Their `Visible` widget-health badge is stale — from an earlier heartbeat before this CSP was in place; new heartbeats haven't arrived because the loader never executes.
+Once this ships, their SPA tab-clicks will re-shift the newly mounted fixed header on `pushState` and after a 250ms settle. No action needed from the founder.
