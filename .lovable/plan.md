@@ -1,33 +1,47 @@
-## Root cause (high confidence)
+## What's happening on boltfox.net
 
-The Reddit comment "on mobile Safari the site jumps around every couple of seconds" points at the widget's fixed-element shifter in `public/widget/loader.js`, not the iframe height. Two iOS Safari–specific behaviours combine to cause the jump:
+The embed `<script src="https://startupbar.co/widget/loader.js" ...>` is in their HTML, so our HTML-scan says **Embed: Live** and their previous heartbeat (probably from an earlier test) left **Widget Health: Visible**. But the browser is refusing to execute our script:
 
-1. iOS Safari's URL bar collapse/expand fires layout + DOM mutations on the host page every couple of seconds while the user scrolls or the visual viewport changes.
-2. Our loader's `MutationObserver` on `document.documentElement` catches every added node and re-runs `shiftFixedElement` on it. If the host site re-renders any `position: fixed` / `sticky` header (very common on SPA sites — React portals, Framer/Webflow sticky nav, cookie banners), the element is added fresh without the `data-startupbar-shifted` guard, so we shift it by another 36px. That's the "jump" the user sees.
+```
+Refused to load the script 'https://startupbar.co/widget/loader.js' because it violates
+the following Content Security Policy directive: "script-src 'self' 'unsafe-inline'
+https://www.googletagmanager.com https://static.cloudflareinsights.com ..."
+```
 
-Secondary cause: on iOS Safari, mutating inline `top` on a fixed element that also has a CSS transition triggers a visible animated slide — every few seconds — which matches the report exactly.
+boltfox.net ships a strict CSP that doesn't allow `startupbar.co` under `script-src`. Result: loader never runs → no iframe → no bar visible → no new heartbeats. Our current signals (HTML scan + last heartbeat) can't distinguish "installed but CSP-blocked" from "installed and working".
 
-## Fix (minimal, loader-only)
+## Fix
 
-Edit only `public/widget/loader.js`. No changes to `widget.bar.tsx`, no schema, no other files.
+Two parts:
 
-1. **Stop the MutationObserver-driven shifting.** Remove `startFixedObserver()` and its call site. Keep the one-time `sweepFixedElements()` at inject time so the initial pass still handles the site's existing sticky header.
-2. **Skip elements that already sit below 36px.** Tighten `shiftFixedElement` so we only touch elements whose computed `top` is `0px` (the ones that would actually be hidden). Anything with `top >= 1px` is left alone — this eliminates almost all false positives (cookie banners, chat bubbles, toasts pinned lower on the page) without losing coverage of true top-anchored nav bars.
-3. **Never re-shift.** Keep the `data-startupbar-shifted` guard; combined with removing the observer, an element can be shifted at most once for the page's lifetime.
-4. **Body padding stays as-is.** `body { padding-top: 36px }` already prevents the initial content overlap, so most sites don't need any per-element shifting anyway.
+### 1. Server-side CSP detection in `verify-install.ts`
 
-## Why this fixes the iOS jump
+When we fetch the site HTML, also read the `Content-Security-Policy` header (and any `<meta http-equiv="Content-Security-Policy">`). If the tag is present but the policy has a `script-src` (or `default-src` fallback) that doesn't allow `startupbar.co` / `*.startupbar.co` / `https:` / `*`, return a new state: `csp_blocked`.
 
-- No mutation-driven re-shifts means the periodic DOM churn Safari triggers during URL-bar collapse no longer moves anything.
-- The single sweep at inject runs before the user can perceive a jump.
-- Sites whose header we do shift get shifted exactly once, at load, so any CSS transition on `top` fires imperceptibly during initial paint rather than every few seconds mid-scroll.
+Rules:
+- If no CSP header/meta → treat as allowed (current behavior).
+- Parse the effective `script-src` (fallback to `default-src`).
+- Allowed if any of: `*`, `https:`, `startupbar.co`, `*.startupbar.co`, or an explicit `https://startupbar.co` entry.
+- Otherwise → `csp_blocked`.
 
-## What this does NOT change
+### 2. Admin "Embed" column state
 
-- Iframe height behaviour, dismiss, theme detection, heartbeat, click tracking — all untouched.
-- Widget still ends up visible on top; body padding still prevents content from hiding under the bar.
-- If a specific site's sticky header still overlaps because it renders after inject, we can add a small `setTimeout` re-sweep at 1s/3s in a follow-up — but that's opt-in, not the current behaviour that causes the jump.
+Add a new pill in `src/routes/admin.tsx`:
+- **CSP blocked** (red/amber) — takes priority over heartbeat freshness, since a stale heartbeat here is misleading.
+- Tooltip: "Site's Content Security Policy is blocking startupbar.co/widget/loader.js. Ask the founder to add `https://startupbar.co` to their `script-src` directive."
 
-## Verification
+### 3. Rejection reason template
 
-After the change I'll drive Playwright against a page with a `position: fixed; top: 0` header to confirm the shift happens exactly once and no repeated mutations occur, then ask you to reload the reporter's site on iOS Safari to confirm the jump is gone.
+Add one entry to the rejection modal in `admin.tsx`:  
+**"CSP blocks our widget"** → email body explains the CSP issue and the one-line fix (`script-src ... https://startupbar.co;`).
+
+### Files touched
+- `src/routes/api/public/verify-install.ts` — parse CSP, return new `csp_blocked` state.
+- `src/routes/admin.tsx` — render new pill, prioritize over heartbeat, add rejection template.
+- `supabase/functions/send-email/index.ts` — add the `csp_blocked` rejection reason copy.
+
+No DB migration needed — this is purely derived at read time.
+
+## Immediate answer for boltfox.net
+
+Ask them to update their CSP `script-src` to include `https://startupbar.co` (and `frame-src https://startupbar.co` if they also restrict frames). Their `Visible` widget-health badge is stale — from an earlier heartbeat before this CSP was in place; new heartbeats haven't arrived because the loader never executes.

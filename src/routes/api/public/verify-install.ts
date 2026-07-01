@@ -52,8 +52,6 @@ export const Route = createFileRoute("/api/public/verify-install")({
             html.includes("data-startup-id");
 
           // Defense-in-depth: detect cheap CSS hiding around the loader script.
-          // Look for an ancestor element with display:none / visibility:hidden /
-          // opacity:0 / height:0 within ~400 chars before the script tag.
           let suspicious = false;
           if (installed) {
             const re = /<script[^>]*(?:startupbar\.co\/widget|widget\/loader\.js|data-startup-id)[^>]*>/i;
@@ -69,7 +67,44 @@ export const Route = createFileRoute("/api/public/verify-install")({
             }
           }
 
-          return Response.json({ installed, suspicious }, { headers: NO_STORE });
+          // Detect Content-Security-Policy that blocks startupbar.co/widget/loader.js.
+          let cspBlocked = false;
+          if (installed) {
+            const policies: string[] = [];
+            const headerCsp = res.headers.get("content-security-policy");
+            if (headerCsp) policies.push(headerCsp);
+            const metaRe = /<meta[^>]+http-equiv=["']?content-security-policy["']?[^>]*content=["']([^"']+)["'][^>]*>/gi;
+            let mm: RegExpExecArray | null;
+            while ((mm = metaRe.exec(html)) !== null) policies.push(mm[1]);
+
+            const allowsStartupbar = (policy: string): boolean => {
+              const dirs: Record<string, string[]> = {};
+              policy.split(";").forEach((raw) => {
+                const parts = raw.trim().split(/\s+/);
+                const name = (parts.shift() || "").toLowerCase();
+                if (name) dirs[name] = parts.map((p) => p.toLowerCase());
+              });
+              const sources = dirs["script-src-elem"] ?? dirs["script-src"] ?? dirs["default-src"];
+              if (!sources) return true;
+              return sources.some(
+                (s) =>
+                  s === "*" ||
+                  s === "https:" ||
+                  s === "http:" ||
+                  s === "startupbar.co" ||
+                  s === "*.startupbar.co" ||
+                  s === "https://startupbar.co" ||
+                  s === "https://*.startupbar.co" ||
+                  s === "http://startupbar.co",
+              );
+            };
+
+            if (policies.length > 0) {
+              cspBlocked = policies.some((p) => !allowsStartupbar(p));
+            }
+          }
+
+          return Response.json({ installed, suspicious, cspBlocked }, { headers: NO_STORE });
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : "Unreachable";
           return Response.json({ installed: false, error: `Could not reach site: ${message}` }, { headers: NO_STORE });

@@ -46,7 +46,7 @@ interface Startup {
 type EmbedState =
   | { state: "idle" }
   | { state: "checking" }
-  | { state: "installed"; suspicious: boolean }
+  | { state: "installed"; suspicious: boolean; cspBlocked: boolean }
   | { state: "missing" }
   | { state: "error" };
 
@@ -91,12 +91,12 @@ function AdminPage() {
       const r = await fetch(`/api/public/verify-install?url=${encodeURIComponent(website)}`);
       const j = await r.json();
       const next: EmbedState = j.installed
-        ? { state: "installed", suspicious: !!j.suspicious }
+        ? { state: "installed", suspicious: !!j.suspicious, cspBlocked: !!j.cspBlocked }
         : j.error
           ? { state: "error" }
           : { state: "missing" };
       setEmbed((p) => ({ ...p, [id]: next }));
-      if (next.state === "installed" && !next.suspicious) {
+      if (next.state === "installed" && !next.suspicious && !next.cspBlocked) {
         const s = startups.find((x) => x.id === id);
         if (s?.warn_expires_at) {
           await supabase.from("startups").update({ warned_at: null, warn_expires_at: null }).eq("id", id);
@@ -274,15 +274,15 @@ function AdminPage() {
                     const e: EmbedState = embed[s.id] ?? { state: "idle" };
                     const scriptInstalled = e.state === "installed";
                     const scriptSuspicious = e.state === "installed" && e.suspicious;
+                    const scriptCspBlocked = e.state === "installed" && e.cspBlocked;
                     const hbFresh = !!s.widget_last_heartbeat_at && (now - new Date(s.widget_last_heartbeat_at).getTime()) < 24 * 60 * 60_000;
-                    // Combined embed badge state.
-                    // Heartbeats are the most reliable signal — if a fresh visible heartbeat
-                    // exists, the widget IS running on the page, even if the static HTML check
-                    // misses it (SPAs / JS-injected scripts / login-walled homepages).
                     const hbVisible = hbFresh && s.widget_currently_visible === true;
                     const hbHidden = hbFresh && s.widget_currently_visible === false;
-                    const badge: "checking" | "live" | "hidden" | "installed-unseen" | "missing" | "error" | "idle" =
+                    // CSP block takes priority: even a stale "visible" heartbeat is
+                    // misleading if the browser now refuses to load loader.js.
+                    const badge: "checking" | "live" | "hidden" | "csp-blocked" | "installed-unseen" | "missing" | "error" | "idle" =
                       e.state === "checking" ? "checking"
+                      : scriptCspBlocked ? "csp-blocked"
                       : hbVisible && !scriptSuspicious ? "live"
                       : hbHidden || scriptSuspicious ? "hidden"
                       : scriptInstalled ? "installed-unseen"
@@ -330,6 +330,7 @@ function AdminPage() {
                           disabled={!s.website_url || badge === "checking"}
                           title={
                             badge === "live" ? "Script installed and widget visible to visitors"
+                            : badge === "csp-blocked" ? "Site's Content Security Policy blocks startupbar.co/widget/loader.js. Ask the founder to add https://startupbar.co to their script-src directive."
                             : badge === "hidden" ? (scriptSuspicious
                                 ? "Script is wrapped in a hidden element (display:none / visibility:hidden / height:0)"
                                 : "Script installed but widget reports as hidden on the page")
@@ -341,6 +342,8 @@ function AdminPage() {
                           className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors disabled:opacity-60 ${
                             badge === "live"
                               ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                              : badge === "csp-blocked"
+                              ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
                               : badge === "hidden"
                               ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
                               : badge === "installed-unseen"
@@ -356,6 +359,8 @@ function AdminPage() {
                             <><Loader2 className="h-3 w-3 animate-spin" /> Checking</>
                           ) : badge === "live" ? (
                             <><Radio className="h-3 w-3" /> Live</>
+                          ) : badge === "csp-blocked" ? (
+                            <><ShieldOff className="h-3 w-3" /> CSP blocked</>
                           ) : badge === "hidden" ? (
                             <><EyeOff className="h-3 w-3" /> {scriptSuspicious ? "Hidden (CSS)" : "Hidden"}</>
                           ) : badge === "installed-unseen" ? (
@@ -427,13 +432,15 @@ function AdminPage() {
                             const openModal = () => {
                               const defaultReason = isWidgetRemoval
                                 ? "widget_not_installed"
-                                : badge === "hidden"
-                                  ? "widget_hidden"
-                                  : badge === "missing"
-                                    ? "widget_not_installed"
-                                    : badge === "error"
-                                      ? "broken_site"
-                                      : "not_allowed_type";
+                                : badge === "csp-blocked"
+                                  ? "csp_blocked"
+                                  : badge === "hidden"
+                                    ? "widget_hidden"
+                                    : badge === "missing"
+                                      ? "widget_not_installed"
+                                      : badge === "error"
+                                        ? "broken_site"
+                                        : "not_allowed_type";
                               setRejectReason(defaultReason);
                               setRejectNote("");
                               setRejectTarget(s);
@@ -466,6 +473,7 @@ function AdminPage() {
         const REASONS: { value: string; label: string; hint: string }[] = [
           { value: "not_allowed_type", label: "Site type not allowed", hint: "Directory, affiliate, adult, gambling, scraper, link farm, etc." },
           { value: "widget_hidden", label: "Widget bar is hidden", hint: "Script is installed but bar is hidden via CSS or wrapped in a 0-height element." },
+          { value: "csp_blocked", label: "CSP blocks our widget", hint: "Site's Content Security Policy refuses to load startupbar.co/widget/loader.js." },
           { value: "widget_not_installed", label: "Widget not installed", hint: "Embed script is missing from the site's <head>." },
           { value: "low_quality", label: "Site not ready / low quality", hint: "Placeholder content, broken pages, coming-soon, no real product." },
           { value: "duplicate", label: "Duplicate submission", hint: "We already have this startup or domain on file." },

@@ -324,6 +324,17 @@ serve(async (req) => {
             ${p(`Remove the CSS that hides the iframe, then reapply at <a href="https://startupbar.co/apply" style="color:#0a0a0a;">startupbar.co/apply</a> and we'll take another look right away.`)}
           `,
         },
+        csp_blocked: {
+          subject: `Action needed: your CSP is blocking StartupBar on ${site}`,
+          heading: "Your site's CSP blocks our widget",
+          reasonLine: "Content Security Policy blocks startupbar.co/widget/loader.js",
+          body: `
+            ${p(`The StartupBar embed snippet is on ${strong(site)}, but your site's ${strong("Content Security Policy")} is refusing to let the browser load ${strong("https://startupbar.co/widget/loader.js")}. That means the bar never actually renders for your visitors, so we can't approve ${strong(name)} until it's fixed.`)}
+            ${p(`Add ${strong("https://startupbar.co")} to your ${strong("script-src")} (and ideally ${strong("frame-src")}) directive. Example:`)}
+            ${p(`<code style="display:block;background:#0a0a0a;color:#e4e4e7;padding:12px 14px;border-radius:8px;font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:1.55;overflow-x:auto;">Content-Security-Policy: script-src 'self' https://startupbar.co; frame-src https://startupbar.co;</code>`)}
+            ${p(`Once the policy is updated, reapply at <a href="https://startupbar.co/apply" style="color:#0a0a0a;">startupbar.co/apply</a> and we'll re-check within a few hours.`)}
+          `,
+        },
         widget_not_installed: {
           subject: `${name} — StartupBar widget not installed`,
           heading: "Widget snippet not found",
