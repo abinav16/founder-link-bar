@@ -117,6 +117,7 @@ interface Startup {
   website_url: string;
   description: string;
   status: "pending" | "approved" | "rejected";
+  rejection_reason?: string | null;
 }
 
 function StatusPill({ status }: { status: Startup["status"] }) {
