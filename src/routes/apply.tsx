@@ -184,6 +184,8 @@ function Apply() {
       setDesc(data.description);
       setStartupId(data.id);
       setStep(2);
+      // Script was already installed for this ID — verify automatically.
+      setTimeout(() => { checkInstallation(); }, 0);
     })();
   }, [authed, resubmitId]);
 
@@ -501,7 +503,7 @@ function Apply() {
 
           <div className="mt-8 space-y-3">
             {(() => {
-              const needsPayment = existingCount >= 1 && !hasPrepaid;
+              const needsPayment = !resubmitId && existingCount >= 1 && !hasPrepaid;
               const verified = verifyStatus === "found";
               const busy = loading || paymentLoading || verifyingPayment;
               const disabled = !verified || busy;
