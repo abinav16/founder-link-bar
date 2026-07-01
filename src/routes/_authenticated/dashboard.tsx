@@ -427,6 +427,32 @@ function DashboardPage() {
               </div>
             )}
 
+            {startup.status === "rejected" && (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-800">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-red-900">Not approved</p>
+                    {startup.rejection_reason ? (
+                      <p className="mt-1 text-red-800/90">
+                        <span className="font-medium">Reason:</span> {startup.rejection_reason}
+                      </p>
+                    ) : (
+                      <p className="mt-1 text-red-800/80">
+                        Fix the issue and resubmit — no need to pay again.
+                      </p>
+                    )}
+                  </div>
+                  <Link
+                    to="/apply"
+                    search={{ resubmit: startup.id } as never}
+                    className="shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-red-900 px-3.5 py-2 text-xs font-medium text-white hover:bg-red-800 transition-colors"
+                  >
+                    Fix & resubmit →
+                  </Link>
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
               <StatCard icon={BarChart2} label="Impressions" value={stats.impressions.toLocaleString()} sub="Times shown on the network" />
               <StatCard icon={MousePointerClick} label="Clicks" value={stats.clicks.toLocaleString()} sub="Visits driven to your site" />
