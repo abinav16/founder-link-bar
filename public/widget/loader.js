@@ -218,7 +218,7 @@
           html.style.scrollPaddingTop = '36px';
         }
         startObserver();
-        setTimeout(sendHeartbeat, 1500);
+        scheduleHeartbeats();
         return;
       }
 
@@ -259,7 +259,7 @@
         window.addEventListener('startupbar:locationchange', resweep);
         window.addEventListener('load', resweep);
       } catch (e) {}
-      setTimeout(sendHeartbeat, 1500);
+      scheduleHeartbeats();
     }
 
     if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', inject); } else { inject(); }
