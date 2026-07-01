@@ -158,7 +158,7 @@
       }
       startObserver();
       sweepFixedElements();
-      startFixedObserver();
+      // no MutationObserver-based re-shifting: causes iOS Safari jump on DOM churn
       setTimeout(sendHeartbeat, 1500);
     }
 
