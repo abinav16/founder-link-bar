@@ -184,8 +184,8 @@ function Apply() {
       setDesc(data.description);
       setStartupId(data.id);
       setStep(2);
-      // Script was already installed for this ID — verify automatically.
-      setTimeout(() => { checkInstallation(); }, 0);
+      // Script was already installed for this ID — verify automatically with the fetched URL.
+      checkInstallation(data.website_url);
     })();
   }, [authed, resubmitId]);
 
@@ -278,11 +278,13 @@ function Apply() {
   }
 
 
-  async function checkInstallation() {
+  async function checkInstallation(targetUrl?: string) {
+    const checkUrl = (targetUrl ?? url).trim();
+    if (!checkUrl) return;
     setVerifyStatus("checking");
     setVerifyMsg("");
     try {
-      const res = await fetch(`/api/public/verify-install?url=${encodeURIComponent(url)}`);
+      const res = await fetch(`/api/public/verify-install?url=${encodeURIComponent(checkUrl)}`);
       const json = await res.json();
       if (json.installed) {
         setVerifyStatus("found");

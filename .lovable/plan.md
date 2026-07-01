@@ -1,30 +1,36 @@
-## Flow audit — rejected startup "Fix & resubmit"
+## Second-pass audit — two issues found
 
-I traced `src/routes/apply.tsx` (resubmit URL → prefill → step 2 → submit) and `src/routes/_authenticated/dashboard.tsx` (rejection banner → link). Two issues remain.
+### Issue 1 — `checkInstallation()` on resubmit uses stale URL (real bug from last turn)
 
-### Issue 1 — Payment gate wrongly triggers on resubmit (real bug)
+In `src/routes/apply.tsx` the resubmit prefill does:
 
-`refreshGateData()` counts non-rejected startups. If a founder already has one approved startup **and** a separate rejected one they're fixing, `existingCount = 1` and the Step 2 CTA becomes **"Pay $9.99 & submit →"**. But `onSubmit()`'s resubmit branch only does an `update` back to `pending` — no new row, no slot consumed. Charging here is wrong.
+```
+setUrl(data.website_url);
+...
+setTimeout(() => { checkInstallation(); }, 0);
+```
 
-Fix: when `resubmitId` is set, force `needsPayment = false` in the Step 2 CTA logic so the button reads **"Submit application"** and calls `onSubmit()` directly. `onSubmit()` already handles the resubmit branch correctly.
+`checkInstallation()` reads `url` from the effect's closure, which is the value at the render when the effect ran — before `setUrl` flushed. On the first resubmit load `url` is `""`, so `/api/public/verify-install?url=` hits an empty URL and returns not-found. The founder still has to click "Check now" manually — defeating the fix from last turn.
 
-### Issue 2 — Resubmit forces a redundant "Check now" click (small UX)
+Fix: change `checkInstallation` to accept an optional override URL (`checkInstallation(targetUrl?: string)`), fall back to state when omitted, and pass `data.website_url` explicitly from the resubmit effect.
 
-On resubmit the same `startupId` is reused, so the script that was already installed on the founder's site is still valid. Today they land on Step 2 with `verifyStatus === "idle"` and must click **Check now** before the submit button enables.
+### Issue 2 — Realtime channel error on dashboard (runtime error you're seeing)
 
-Fix: when the resubmit prefill effect populates the form, kick off `checkInstallation()` once so verification runs automatically. If it comes back `found`, submit unlocks; otherwise the existing amber "Not found yet" message guides them, unchanged.
+Runtime error: `cannot add postgres_changes callbacks for realtime:dashboard-startup after subscribe()`.
 
-### Everything else checks out
+`src/routes/_authenticated/dashboard.tsx` opens `supabase.channel("dashboard-startup")` with a hard-coded topic. React StrictMode (and any remount) runs the effect twice; Supabase's realtime client reuses the existing channel by topic, so the second `.on("postgres_changes", …)` fires after the first `.subscribe()` and throws. This is harmless today because the try still returns cleanup, but it spams runtime errors and can leave the second listener silently detached.
 
-- `refreshGateData` correctly excludes rejected rows, so a founder whose only submission was rejected still gets the free first-listing path.
-- Resubmit path in `onSubmit` updates in place with `status: 'pending'`, clears `rejection_reason`, and scopes by `user_id` — RLS-safe.
-- `prevent_user_status_change` trigger allows the owner to reset to `pending`.
-- Dashboard rejection banner reads `rejection_reason` and links with `search={{ resubmit: startup.id }}` — matches `readInitialFromUrl()`'s `p.get("resubmit")`.
-- Ownership + status checks in the resubmit prefill effect prevent hijacking another user's row or resubmitting a non-rejected one.
-- Draft persistence (`DRAFT_KEY`) is cleared on successful submit.
+Fix: give the channel a unique topic per mount, e.g. `` `dashboard-startup:${userId}:${crypto.randomUUID()}` `` (still scoped to the user via the `filter`). Keep the existing `removeChannel` cleanup.
+
+### Everything else re-checked and clean
+
+- Resubmit `needsPayment` override is in place — no charge on resubmit even with another approved startup.
+- Resubmit `onSubmit` branch updates in place, clears `rejection_reason`, scoped by `user_id`.
+- `refreshGateData` excludes rejected rows → first-listing-free path preserved after rejection.
+- Payment return path (`?paid=true&payment_id=…`) verifies server-side, refreshes gate, auto-submits — untouched.
+- Dashboard rejection banner links with `search={{ resubmit: id }}` — matches `readInitialFromUrl`.
 
 ### Files touched
 
-- `src/routes/apply.tsx` — gate override for `resubmitId`, auto-run `checkInstallation()` after prefill.
-
-No DB, edge-function, or dashboard changes needed.
+- `src/routes/apply.tsx` — `checkInstallation(targetUrl?)` + pass `data.website_url` from resubmit effect.
+- `src/routes/_authenticated/dashboard.tsx` — unique channel topic per mount.
