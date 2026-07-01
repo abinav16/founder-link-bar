@@ -330,6 +330,7 @@ function AdminPage() {
                           disabled={!s.website_url || badge === "checking"}
                           title={
                             badge === "live" ? "Script installed and widget visible to visitors"
+                            : badge === "csp-blocked" ? "Site's Content Security Policy blocks startupbar.co/widget/loader.js. Ask the founder to add https://startupbar.co to their script-src directive."
                             : badge === "hidden" ? (scriptSuspicious
                                 ? "Script is wrapped in a hidden element (display:none / visibility:hidden / height:0)"
                                 : "Script installed but widget reports as hidden on the page")
@@ -341,6 +342,8 @@ function AdminPage() {
                           className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors disabled:opacity-60 ${
                             badge === "live"
                               ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                              : badge === "csp-blocked"
+                              ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
                               : badge === "hidden"
                               ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
                               : badge === "installed-unseen"
@@ -356,6 +359,8 @@ function AdminPage() {
                             <><Loader2 className="h-3 w-3 animate-spin" /> Checking</>
                           ) : badge === "live" ? (
                             <><Radio className="h-3 w-3" /> Live</>
+                          ) : badge === "csp-blocked" ? (
+                            <><ShieldOff className="h-3 w-3" /> CSP blocked</>
                           ) : badge === "hidden" ? (
                             <><EyeOff className="h-3 w-3" /> {scriptSuspicious ? "Hidden (CSS)" : "Hidden"}</>
                           ) : badge === "installed-unseen" ? (
