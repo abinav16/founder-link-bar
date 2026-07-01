@@ -290,20 +290,24 @@ function Apply() {
     try {
       const res = await fetch(`/api/public/verify-install?url=${encodeURIComponent(checkUrl)}`);
       const json = await res.json();
-      if (json.installed) {
-        setVerifyStatus("found");
-        setVerifyMsg("Script detected on your site!");
+      if (json.installed && json.cspBlocked) {
+        setVerifyStatus("csp");
+        setVerifyMsg("Your site's Content-Security-Policy is blocking startupbar.co. Add the directives below and re-check.");
+      } else if (json.installed) {
+        setVerifyStatus("live");
+        setVerifyMsg("Script detected and running on your site.");
       } else if (json.error) {
         setVerifyStatus("error");
         setVerifyMsg(json.error);
       } else {
         setVerifyStatus("not-found");
-        setVerifyMsg("Not found yet — paste it in your <head> and try again.");
+        setVerifyMsg("Not found yet — paste the snippet in your <head> and try again.");
       }
     } catch {
       setVerifyStatus("error");
       setVerifyMsg("Could not reach verification service.");
     }
+
   }
 
   async function onSubmit() {
