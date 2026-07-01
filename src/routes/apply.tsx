@@ -6,8 +6,9 @@ import { toast } from "sonner";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import {
   ArrowRight, ArrowLeft, ExternalLink,
-  Copy, Check, CheckCircle2, XCircle, Loader2,
+  Copy, Check, CheckCircle2, XCircle, Loader2, ShieldAlert, ChevronDown,
 } from "lucide-react";
+
 
 export const Route = createFileRoute("/apply")({
   head: () => ({
