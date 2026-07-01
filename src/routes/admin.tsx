@@ -541,6 +541,7 @@ function BroadcastPanel() {
   const [loadingCount, setLoadingCount] = useState(false);
   const [previewHtml, setPreviewHtml] = useState<string>("");
   const [sending, setSending] = useState(false);
+  const [lastErrors, setLastErrors] = useState<{ email: string; error: string }[]>([]);
 
   async function refreshCount(seg: string) {
     setLoadingCount(true);
@@ -578,6 +579,7 @@ function BroadcastPanel() {
     }
     setSending(true);
     const toastId = toast.loading(testOnly ? "Sending test…" : `Sending to ${count} recipients…`);
+    setLastErrors([]);
     try {
       const { data, error } = await supabase.functions.invoke("send-email", {
         body: { type: "admin-broadcast", data: { segment, subject, headline, bodyMarkdown: body, testOnly } },
@@ -585,7 +587,10 @@ function BroadcastPanel() {
       if (error) throw error;
       const r = data as { sent: number; failed: number; total: number; errors: { email: string; error: string }[] };
       toast.success(`Sent ${r.sent}/${r.total}${r.failed ? ` · ${r.failed} failed` : ""}`, { id: toastId });
-      if (r.failed && r.errors?.length) console.warn("Broadcast errors:", r.errors);
+      if (r.failed && r.errors?.length) {
+        setLastErrors(r.errors);
+        console.warn("Broadcast errors:", r.errors);
+      }
     } catch (e) {
       toast.error(`Send failed: ${String(e).slice(0, 200)}`, { id: toastId });
     } finally {
@@ -666,6 +671,19 @@ function BroadcastPanel() {
               Send to {count ?? "…"} recipient{count === 1 ? "" : "s"}
             </button>
           </div>
+
+          {lastErrors.length > 0 && (
+            <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3">
+              <div className="mb-1.5 text-xs font-semibold text-red-800">
+                {lastErrors.length} send{lastErrors.length === 1 ? "" : "s"} failed
+              </div>
+              <ul className="max-h-40 space-y-1 overflow-auto text-[11px] text-red-900/80 font-mono">
+                {lastErrors.map((e, i) => (
+                  <li key={i}><span className="font-semibold">{e.email}</span> — {e.error}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         <div>
