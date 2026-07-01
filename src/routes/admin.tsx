@@ -274,15 +274,15 @@ function AdminPage() {
                     const e: EmbedState = embed[s.id] ?? { state: "idle" };
                     const scriptInstalled = e.state === "installed";
                     const scriptSuspicious = e.state === "installed" && e.suspicious;
+                    const scriptCspBlocked = e.state === "installed" && e.cspBlocked;
                     const hbFresh = !!s.widget_last_heartbeat_at && (now - new Date(s.widget_last_heartbeat_at).getTime()) < 24 * 60 * 60_000;
-                    // Combined embed badge state.
-                    // Heartbeats are the most reliable signal — if a fresh visible heartbeat
-                    // exists, the widget IS running on the page, even if the static HTML check
-                    // misses it (SPAs / JS-injected scripts / login-walled homepages).
                     const hbVisible = hbFresh && s.widget_currently_visible === true;
                     const hbHidden = hbFresh && s.widget_currently_visible === false;
-                    const badge: "checking" | "live" | "hidden" | "installed-unseen" | "missing" | "error" | "idle" =
+                    // CSP block takes priority: even a stale "visible" heartbeat is
+                    // misleading if the browser now refuses to load loader.js.
+                    const badge: "checking" | "live" | "hidden" | "csp-blocked" | "installed-unseen" | "missing" | "error" | "idle" =
                       e.state === "checking" ? "checking"
+                      : scriptCspBlocked ? "csp-blocked"
                       : hbVisible && !scriptSuspicious ? "live"
                       : hbHidden || scriptSuspicious ? "hidden"
                       : scriptInstalled ? "installed-unseen"
