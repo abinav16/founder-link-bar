@@ -257,8 +257,9 @@ function AuthPage() {
           <div className="mt-6 text-center text-sm text-black/40">
             {mode === "signin" ? (<>New to StartupBar?{" "}<button onClick={() => setMode("signup")} className="font-medium text-black hover:underline underline-offset-2">Create an account</button></>) : (<>Already have an account?{" "}<button onClick={() => setMode("signin")} className="font-medium text-black hover:underline underline-offset-2">Sign in</button></>)}
           </div>
-        </div>
+        </main>
         <div className="mt-auto text-center"><Link to="/" className="text-xs text-black/30 hover:text-black/60 transition-colors">← Back to StartupBar.co</Link></div>
+
       </div>
     </div>
   );
