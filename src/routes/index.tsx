@@ -660,7 +660,9 @@ function Landing() {
         </div>
       </header>
 
+      <main>
       {/* HERO */}
+
       <section className="relative overflow-hidden bg-white">
         <HeroCanvas />
         <div className="relative z-10 mx-auto max-w-5xl px-4 pt-10 pb-12 text-center sb-fade-up sm:px-6 sm:pt-20 sm:pb-28">
