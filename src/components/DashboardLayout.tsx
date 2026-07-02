@@ -107,13 +107,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 <Link
                   to="/account"
                   aria-label="Account settings"
-                  className={`rounded-md p-2 transition-colors ${path === "/account" ? "text-black" : "text-black/40 hover:text-black"}`}
+                  className={`inline-flex min-h-11 min-w-11 items-center justify-center rounded-md p-2 transition-colors ${path === "/account" ? "text-black" : "text-black/40 hover:text-black"}`}
                 >
                   <Settings className="h-4 w-4" />
                 </Link>
                 <button
                   onClick={signOut}
-                  className="flex items-center gap-1.5 rounded-md border border-black/12 bg-white px-2 py-1.5 text-sm text-black/60 hover:border-black/25 hover:text-black transition-all sm:px-3"
+                  aria-label="Sign out"
+                  className="flex min-h-11 items-center gap-1.5 rounded-md border border-black/12 bg-white px-2 py-1.5 text-sm text-black/60 hover:border-black/25 hover:text-black transition-all sm:px-3"
                 >
                   <LogOut className="h-3.5 w-3.5" />
                   <span className="hidden sm:inline">Sign out</span>
@@ -122,11 +123,13 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             ) : (
               <Link
                 to="/auth"
-                className="flex items-center gap-1.5 rounded-md border border-black/12 bg-white px-2 py-1.5 text-sm text-black/60 hover:border-black/25 hover:text-black transition-all sm:px-3"
+                aria-label="Sign in"
+                className="flex min-h-11 items-center gap-1.5 rounded-md border border-black/12 bg-white px-2 py-1.5 text-sm text-black/60 hover:border-black/25 hover:text-black transition-all sm:px-3"
               >
                 <LogIn className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Sign in</span>
               </Link>
+
             )}
           </div>
         </div>
