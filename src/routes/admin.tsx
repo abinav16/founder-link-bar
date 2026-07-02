@@ -707,7 +707,8 @@ function BroadcastPanel() {
             )}
           </div>
         </div>
-      </div>
+      </main>
+
     </div>
   );
 }
