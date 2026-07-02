@@ -6,7 +6,13 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { Save, User, Globe, Trash2, Plus, ChevronDown, ChevronUp, ExternalLink, Info, Upload, X } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/account")({
-  head: () => ({ meta: [{ title: "Account — StartupBar" }] }),
+  head: () => ({
+    meta: [
+      { title: "Account — StartupBar" },
+      { name: "description", content: "Manage your StartupBar profile, startups, and account settings." },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: AccountPage,
 });
 

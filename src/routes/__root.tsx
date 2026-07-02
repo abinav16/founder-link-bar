@@ -61,6 +61,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      // Preload the display font used in every H1 so hero text paints without
+      // the fallback→swap reflow that shows up as a "height jump".
+      {
+        rel: "preload",
+        as: "font",
+        type: "font/woff2",
+        crossOrigin: "anonymous",
+        href: "https://fonts.gstatic.com/s/instrumentserif/v4/jizDREVItHgc8qDIbSTKq4XIWpJP-6O_YkoUFbrIROe0.woff2",
+      },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" },
     ],
   }),
