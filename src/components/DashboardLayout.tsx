@@ -84,11 +84,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 <Link
                   key={to}
                   to={to}
-                  className={`relative flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm font-medium transition-colors sm:px-3 ${
+                  aria-label={label}
+                  className={`relative flex min-h-11 items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                     active ? "text-black" : "text-black/45 hover:text-black/80"
                   }`}
                 >
-                  <Icon className="h-4 w-4 sm:hidden" />
+                  <Icon className="h-4 w-4 sm:hidden" aria-hidden="true" />
                   <span className="hidden sm:inline">{label}</span>
                   {active && (
                     <span className="absolute inset-x-2 -bottom-[calc(0.875rem+1px)] h-px bg-black sm:inset-x-3" />
@@ -98,13 +99,15 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             })}
           </nav>
 
-          <div className="ml-auto flex items-center gap-1 sm:gap-2">
-            {authed ? (
+          <div className="ml-auto flex min-h-9 items-center gap-1 sm:gap-2">
+            {authed === null ? (
+              <div aria-hidden className="h-9 w-[92px] sm:w-[128px]" />
+            ) : authed ? (
               <>
                 <Link
                   to="/account"
+                  aria-label="Account settings"
                   className={`rounded-md p-2 transition-colors ${path === "/account" ? "text-black" : "text-black/40 hover:text-black"}`}
-                  title="Account settings"
                 >
                   <Settings className="h-4 w-4" />
                 </Link>
