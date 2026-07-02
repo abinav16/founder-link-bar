@@ -30,6 +30,25 @@ export const Route = createFileRoute("/")({
       { name: "twitter:description", content: "Add one line of code to your site. A 36px bar shows another founder's startup, and yours appears on theirs. Free traffic exchange." },
     ],
     links: [{ rel: "canonical", href: "/" }],
+    scripts: [{
+      type: "application/ld+json",
+      children: JSON.stringify({
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "name": "StartupBar",
+            "url": "https://startupbar.co",
+          },
+          {
+            "@type": "Organization",
+            "name": "StartupBar",
+            "url": "https://startupbar.co",
+            "logo": "https://startupbar.co/favicon.ico",
+          },
+        ],
+      }),
+    }],
   }),
   component: Landing,
 });
