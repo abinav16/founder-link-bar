@@ -698,7 +698,7 @@ function Landing() {
                 <div className="ml-3 text-[11px] text-black/30">yourstartup.com</div>
               </div>
               {!mockDismissed && (
-                <div className="border-b border-black/8">
+                <div className="relative border-b border-black/8">
                   <div className="relative flex h-9 items-center gap-0 bg-white px-2 text-[13px]" style={{ color: "#0f172a" }}>
                     <button
                       onClick={() => setMockInfoOpen(v => !v)}
@@ -709,7 +709,7 @@ function Landing() {
                     </button>
                     <div className="flex min-w-0 flex-1 items-center gap-2 px-1">
                       <span className="shrink-0 rounded-sm bg-black px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-white">STARTUPBAR</span>
-                      <span className="shrink-0 font-medium">{liveStartup?.name ?? "Acme AI"}</span>
+                      <span className="inline-block w-[110px] shrink-0 truncate font-medium">{liveStartup?.name ?? "Acme AI"}</span>
                       <span className="hidden min-w-0 flex-1 truncate text-black/40 sm:block">
                         {liveStartup ? `— ${liveStartup.description}` : "— turn meeting notes into action items, automatically"}
                       </span>
@@ -724,7 +724,7 @@ function Landing() {
                     </button>
                   </div>
                   {mockInfoOpen && (
-                    <div className="border-t border-black/6 bg-black/[0.015] px-4 py-3">
+                    <div className="absolute left-0 right-0 top-full z-20 border-t border-black/6 bg-white/95 backdrop-blur px-4 py-3 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.15)]">
                       <p className="text-[11px] font-semibold text-black/70">Founder-to-founder growth</p>
                       <p className="mt-1 text-[11px] leading-relaxed text-black/45">
                         This bar shows startups from the <strong className="text-black/60">StartupBar</strong> network — founders who display each other's startups for free, mutual traffic. Zero cost, no ads.
@@ -734,6 +734,8 @@ function Landing() {
                       </span>
                     </div>
                   )}
+                </div>
+              )}
                 </div>
               )}
               <div className="grid place-items-center bg-black/[0.02] px-6 py-10 text-xs text-black/20 sm:py-24">
