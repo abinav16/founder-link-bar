@@ -377,7 +377,7 @@ function HowItWorks() {
       <div className="mx-auto max-w-5xl">
         <p className="mb-12 text-xs font-semibold uppercase tracking-[0.18em] text-black/35">How it works</p>
         <div
-          className="grid items-center gap-12 transition-all duration-300 md:grid-cols-2 md:gap-20"
+          className="grid items-center gap-12 transition-all duration-300 md:grid-cols-2 md:gap-20 min-h-[640px] sm:min-h-[580px] md:min-h-0"
           style={{ opacity: animating ? 0 : 1, transform: animating ? "translateY(8px)" : "none" }}
         >
           <div>
