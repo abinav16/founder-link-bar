@@ -1,0 +1,18 @@
+# StartupBar
+
+> A free traffic-exchange network for software founders. Add one line of code to your site and a 36px bar promotes another verified startup — yours gets featured back on theirs.
+
+StartupBar lets software founders grow together by embedding a lightweight widget on their site. The widget shows a rotating startup from the network, and in return your startup appears on other members' sites. All impressions and clicks are tracked, and founders get a dashboard with analytics, network rank, and click-through stats.
+
+## Pages
+
+- [Home](/): Overview of the traffic-exchange network, how the widget works, and how to join.
+- [Apply](/apply): Submit your startup to join the network. Provide your startup name, website URL, and a one-liner description.
+- [Leaderboard](/leaderboard): Live ranking of all startups in the network by total impressions and clicks, with real-time stats.
+- [Network](/network): Explore the full network of startups, browse by category, and see recent activity across the exchange.
+- [Privacy Policy](/privacy): How StartupBar collects, uses, and protects founder and visitor data.
+- [Terms of Service](/terms): Rules for participating in the traffic exchange, application requirements, and acceptable use.
+
+## Optional
+
+- [Widget Bar](/widget/bar): The embeddable widget itself. Rendered inside an iframe on members' sites to display rotating startup promotions.
