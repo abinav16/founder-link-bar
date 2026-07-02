@@ -58,11 +58,11 @@ async function loadDashboardData(startupId: string) {
   since.setDate(since.getDate() - 6);
   since.setHours(0, 0, 0, 0);
 
-  const [impsR, clksR, dailyR, allImpsR, current] = await Promise.all([
+  const [impsR, clksR, dailyR, rankR, current] = await Promise.all([
     supabase.from("impressions").select("*", { count: "exact", head: true }).eq("shown_startup_id", startupId),
     supabase.from("clicks").select("*", { count: "exact", head: true }).eq("shown_startup_id", startupId),
     supabase.from("impressions").select("created_at").eq("shown_startup_id", startupId).gte("created_at", since.toISOString()),
-    supabase.from("impressions").select("shown_startup_id"),
+    supabase.rpc("get_startup_rank", { _startup_id: startupId }),
     fetch(`/api/public/widget/pick?host=${startupId}&preview=true`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
   ]);
 
@@ -74,12 +74,7 @@ async function loadDashboardData(startupId: string) {
     if (diff >= 0 && diff <= 6) chartData[6 - diff]++;
   });
 
-  const countMap = new Map<string, number>();
-  (allImpsR.data ?? []).forEach((r: { shown_startup_id: string }) => {
-    countMap.set(r.shown_startup_id, (countMap.get(r.shown_startup_id) ?? 0) + 1);
-  });
-  const myCount = countMap.get(startupId) ?? 0;
-  const rank = [...countMap.values()].filter((c) => c > myCount).length + 1;
+  const rank = typeof rankR.data === "number" ? rankR.data : 1;
 
   return {
     stats: { impressions: impsR.count ?? 0, clicks: clksR.count ?? 0 },

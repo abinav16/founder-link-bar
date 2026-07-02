@@ -299,6 +299,7 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_startup_rank: { Args: { _startup_id: string }; Returns: number }
       move_to_dlq: {
         Args: {
           dlq_name: string
