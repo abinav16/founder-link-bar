@@ -407,7 +407,7 @@ function Apply() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-black">
+    <div className="min-h-dvh bg-white text-black">
       <header className="border-b border-black/8">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Link to="/" className="flex items-center gap-2">
