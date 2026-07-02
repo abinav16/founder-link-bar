@@ -95,24 +95,40 @@ function LeaderboardPage() {
   const rowsByReceived = leaderboard.rowsByReceived;
   const rowsByGiven = leaderboard.rowsByGiven;
   const [tab, setTab] = useState<"received" | "given">("received");
-  const [myId, setMyId] = useState<string | null>(null);
+  // Hydrate myId from sessionStorage so repeat visits highlight "You"
+  // without the post-render fetch flicker.
+  const [myId, setMyId] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return window.sessionStorage.getItem("sb_my_startup_id");
+  });
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const { data } = await supabase.auth.getUser();
+      // getSession() reads localStorage first — no server round-trip.
+      const { data: sess } = await supabase.auth.getSession();
       if (cancelled) return;
-      if (data.user) {
-        const { data: mine } = await supabase
-          .from("startups")
-          .select("id")
-          .eq("user_id", data.user.id)
-          .maybeSingle();
-        if (!cancelled) setMyId(mine?.id ?? null);
+      if (!sess.session?.user) {
+        setMyId(null);
+        window.sessionStorage.removeItem("sb_my_startup_id");
+        return;
       }
+      const { data: mine } = await supabase
+        .from("startups")
+        .select("id")
+        .eq("user_id", sess.session.user.id)
+        .maybeSingle();
+      if (cancelled) return;
+      const id = mine?.id ?? null;
+      setMyId(id);
+      if (id) window.sessionStorage.setItem("sb_my_startup_id", id);
+      else window.sessionStorage.removeItem("sb_my_startup_id");
     })();
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
-      if (!session?.user) setMyId(null);
+      if (!session?.user) {
+        setMyId(null);
+        window.sessionStorage.removeItem("sb_my_startup_id");
+      }
     });
     return () => {
       cancelled = true;
