@@ -67,8 +67,11 @@ export const Route = createFileRoute("/api/public/verify-install")({
             }
           }
 
-          // Detect Content-Security-Policy that blocks startupbar.co/widget/loader.js.
+          // Detect Content-Security-Policy that blocks the widget script,
+          // its iframe, or the favicons we render inside it.
           let cspBlocked = false;
+          let cspFrameBlocked = false;
+          let cspImgBlocked = false;
           if (installed) {
             const policies: string[] = [];
             const headerCsp = res.headers.get("content-security-policy");
@@ -77,34 +80,72 @@ export const Route = createFileRoute("/api/public/verify-install")({
             let mm: RegExpExecArray | null;
             while ((mm = metaRe.exec(html)) !== null) policies.push(mm[1]);
 
-            const allowsStartupbar = (policy: string): boolean => {
+            const parseDirs = (policy: string): Record<string, string[]> => {
               const dirs: Record<string, string[]> = {};
               policy.split(";").forEach((raw) => {
                 const parts = raw.trim().split(/\s+/);
                 const name = (parts.shift() || "").toLowerCase();
                 if (name) dirs[name] = parts.map((p) => p.toLowerCase());
               });
+              return dirs;
+            };
+
+            const matchesStartupbar = (s: string) =>
+              s === "*" ||
+              s === "https:" ||
+              s === "http:" ||
+              s === "startupbar.co" ||
+              s === "*.startupbar.co" ||
+              s === "https://startupbar.co" ||
+              s === "https://*.startupbar.co" ||
+              s === "http://startupbar.co";
+
+            const allowsStartupbarScript = (policy: string): boolean => {
+              const dirs = parseDirs(policy);
               const sources = dirs["script-src-elem"] ?? dirs["script-src"] ?? dirs["default-src"];
               if (!sources) return true;
+              return sources.some(matchesStartupbar);
+            };
+
+            const allowsStartupbarFrame = (policy: string): boolean => {
+              const dirs = parseDirs(policy);
+              const sources = dirs["frame-src"] ?? dirs["child-src"] ?? dirs["default-src"];
+              if (!sources) return true;
+              return sources.some(matchesStartupbar);
+            };
+
+            const allowsStartupbarImg = (policy: string): boolean => {
+              const dirs = parseDirs(policy);
+              const sources = dirs["img-src"] ?? dirs["default-src"];
+              if (!sources) return true;
+              // Favicon hosts used by the bar: Google s2, googleusercontent,
+              // Supabase Storage (uploaded logos), and startupbar.co itself.
               return sources.some(
                 (s) =>
                   s === "*" ||
                   s === "https:" ||
                   s === "http:" ||
-                  s === "startupbar.co" ||
-                  s === "*.startupbar.co" ||
-                  s === "https://startupbar.co" ||
-                  s === "https://*.startupbar.co" ||
-                  s === "http://startupbar.co",
+                  s === "www.google.com" ||
+                  s === "https://www.google.com" ||
+                  s === "*.googleusercontent.com" ||
+                  s === "https://*.googleusercontent.com" ||
+                  s === "*.supabase.co" ||
+                  s === "https://*.supabase.co" ||
+                  matchesStartupbar(s),
               );
             };
 
             if (policies.length > 0) {
-              cspBlocked = policies.some((p) => !allowsStartupbar(p));
+              cspBlocked = policies.some((p) => !allowsStartupbarScript(p));
+              cspFrameBlocked = policies.some((p) => !allowsStartupbarFrame(p));
+              cspImgBlocked = policies.some((p) => !allowsStartupbarImg(p));
             }
           }
 
-          return Response.json({ installed, suspicious, cspBlocked }, { headers: NO_STORE });
+          return Response.json(
+            { installed, suspicious, cspBlocked, cspFrameBlocked, cspImgBlocked },
+            { headers: NO_STORE },
+          );
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : "Unreachable";
           return Response.json({ installed: false, error: `Could not reach site: ${message}` }, { headers: NO_STORE });
