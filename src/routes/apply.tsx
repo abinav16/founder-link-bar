@@ -711,7 +711,7 @@ function Apply() {
           <div className="mt-8 space-y-3">
             {(() => {
               const needsPayment = !resubmitId && existingCount >= 1 && !hasPrepaid;
-              const verified = verifyStatus === "live";
+              const verified = verifyStatus === "live" || verifyStatus === "csp-img";
               const busy = loading || paymentLoading || verifyingPayment;
               const disabled = !verified || busy;
               const onClick = needsPayment ? handlePayment : onSubmit;
