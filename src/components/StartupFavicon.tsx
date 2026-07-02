@@ -19,7 +19,7 @@ function extractDomain(url: string): string {
   }
 }
 
-export function StartupFavicon({ url, name, size = 32, className = "", alt = "", logoUrl }: Props) {
+export function StartupFavicon({ url, name, size = 32, className = "", alt, logoUrl }: Props) {
   const domain = extractDomain(url);
   const sources = useMemo(() => {
     const list: string[] = [];
@@ -31,13 +31,16 @@ export function StartupFavicon({ url, name, size = 32, className = "", alt = "",
   const [idx, setIdx] = useState(0);
   useEffect(() => setIdx(0), [url, size, logoUrl]);
 
+  // Default alt to a meaningful label so screen readers announce the logo.
+  const resolvedAlt = alt ?? (name ? `${name} logo` : domain ? `${domain} logo` : "");
+
   if (idx >= sources.length || sources.length === 0) {
     const letter = (name || domain || "?").trim().charAt(0).toUpperCase();
     return (
       <div
         className={`inline-flex items-center justify-center bg-black/[0.06] text-black/50 font-semibold ${className}`}
         style={{ width: size, height: size, fontSize: size * 0.5 }}
-        aria-label={alt || name}
+        aria-label={resolvedAlt || name}
       >
         {letter}
       </div>
@@ -47,11 +50,12 @@ export function StartupFavicon({ url, name, size = 32, className = "", alt = "",
   return (
     <img
       src={sources[idx]}
-      alt={alt}
+      alt={resolvedAlt}
       width={size}
       height={size}
       className={className}
-      style={{ width: size, height: size, objectFit: "contain" }}
+      // Neutral background kills the white-flash before the favicon paints.
+      style={{ width: size, height: size, objectFit: "contain", backgroundColor: "rgba(0,0,0,0.04)" }}
       onError={() => setIdx((i) => i + 1)}
       loading="lazy"
     />
