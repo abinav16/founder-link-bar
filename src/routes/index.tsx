@@ -591,7 +591,7 @@ function Landing() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-black">
+    <div className="min-h-dvh bg-white text-black">
       {/* HEADER */}
       <header className="relative z-20 border-b border-black/8 bg-white">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
