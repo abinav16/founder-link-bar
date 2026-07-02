@@ -54,7 +54,16 @@ function NetworkPending() {
 }
 
 export const Route = createFileRoute("/network")({
-  head: () => ({ meta: [{ title: "Network — StartupBar" }] }),
+  head: () => ({
+    meta: [
+      { title: "Network — StartupBar" },
+      { name: "description", content: "Explore the founder startups currently exchanging traffic on the StartupBar network." },
+      { property: "og:title", content: "Network — StartupBar" },
+      { property: "og:description", content: "Explore founder startups exchanging traffic on StartupBar." },
+      { property: "og:url", content: "https://startupbar.co/network" },
+    ],
+    links: [{ rel: "canonical", href: "https://startupbar.co/network" }],
+  }),
   loader: () => getNetworkDashboard({}),
 
   component: NetworkDashboardPage,

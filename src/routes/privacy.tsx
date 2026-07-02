@@ -7,6 +7,7 @@ export const Route = createFileRoute("/privacy")({
       { name: "description", content: "How StartupBar collects, uses, and protects data from founders and visitors who interact with the traffic exchange widget." },
       { property: "og:title", content: "Privacy Policy — StartupBar" },
       { property: "og:description", content: "How StartupBar collects, uses, and protects founder and visitor data." },
+      { property: "og:url", content: "https://startupbar.co/privacy" },
     ],
     links: [{ rel: "canonical", href: "/privacy" }],
   }),

@@ -60,7 +60,16 @@ function LeaderboardPending() {
 }
 
 export const Route = createFileRoute("/leaderboard")({
-  head: () => ({ meta: [{ title: "Leaderboard — StartupBar" }] }),
+  head: () => ({
+    meta: [
+      { title: "Leaderboard — StartupBar" },
+      { name: "description", content: "See which founder startups are driving the most impressions and clicks across the StartupBar network." },
+      { property: "og:title", content: "Leaderboard — StartupBar" },
+      { property: "og:description", content: "Top-performing founder startups on the StartupBar traffic exchange." },
+      { property: "og:url", content: "https://startupbar.co/leaderboard" },
+    ],
+    links: [{ rel: "canonical", href: "https://startupbar.co/leaderboard" }],
+  }),
   loader: async () => {
     const [leaderboard, activity] = await Promise.all([getLeaderboard(), getNetworkActivity()]);
     return { leaderboard, activity };

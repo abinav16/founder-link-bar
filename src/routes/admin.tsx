@@ -11,6 +11,9 @@ export const Route = createFileRoute("/admin")({
     meta: [
       { title: "Admin — StartupBar" },
       { name: "description", content: "Internal admin console for reviewing and approving startup applications on StartupBar." },
+      { property: "og:title", content: "Admin — StartupBar" },
+      { property: "og:description", content: "Internal admin console for reviewing and approving startup applications." },
+      { property: "og:url", content: "https://startupbar.co/admin" },
       { name: "robots", content: "noindex" },
     ],
     links: [{ rel: "canonical", href: "/admin" }],

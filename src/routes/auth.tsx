@@ -10,6 +10,9 @@ export const Route = createFileRoute("/auth")({
     meta: [
       { title: "Sign in — StartupBar" },
       { name: "description", content: "Sign in or create your StartupBar account to manage your startup, track impressions, and join the founder traffic exchange." },
+      { property: "og:title", content: "Sign in — StartupBar" },
+      { property: "og:description", content: "Sign in or create your StartupBar account to join the founder traffic exchange." },
+      { property: "og:url", content: "https://startupbar.co/auth" },
       { name: "robots", content: "noindex" },
     ],
     links: [{ rel: "canonical", href: "/auth" }],
