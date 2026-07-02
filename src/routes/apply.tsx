@@ -166,7 +166,7 @@ function Apply() {
   const [resubmitId, setResubmitId] = useState<string>(initial.resubmitId);
   const [startupId, setStartupId] = useState<string>(() => initial.resubmitId || crypto.randomUUID());
   const [copied, setCopied] = useState(false);
-  const [verifyStatus, setVerifyStatus] = useState<"idle" | "checking" | "live" | "csp" | "not-found" | "error">("idle");
+  const [verifyStatus, setVerifyStatus] = useState<"idle" | "checking" | "live" | "csp" | "csp-frame" | "csp-img" | "not-found" | "error">("idle");
   const [verifyMsg, setVerifyMsg] = useState("");
 
   const [loading, setLoading] = useState(false);
