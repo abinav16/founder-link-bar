@@ -594,6 +594,45 @@ function Apply() {
                 </div>
               )}
 
+              {verifyStatus === "csp-frame" && (
+                <div className="mt-4 space-y-3 rounded-lg bg-red-50 px-4 py-3.5 text-sm text-red-800">
+                  <div className="flex items-start gap-2.5">
+                    <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" />
+                    <div>
+                      <p className="font-medium">Your CSP is blocking the widget iframe</p>
+                      <p className="mt-0.5 text-[13px] text-red-800/80">
+                        Your script loads fine, but your Content-Security-Policy has no <code className="rounded bg-red-100 px-1 py-0.5 font-mono text-[11px]">frame-src</code> directive — so the browser falls back to <code className="rounded bg-red-100 px-1 py-0.5 font-mono text-[11px]">default-src 'self'</code> and blocks the StartupBar iframe. Your visitors currently see a <strong>broken frame icon</strong> where the bar should be. Merge these directives into your existing CSP, then re-check:
+                      </p>
+                    </div>
+                  </div>
+                  <CopyableCode
+                    tone="red"
+                    label="CSP"
+                    code={`script-src 'self' https://startupbar.co;\nframe-src  https://startupbar.co;\nimg-src    'self' data: https://www.google.com https://*.googleusercontent.com;`}
+                  />
+                </div>
+              )}
+
+              {verifyStatus === "csp-img" && (
+                <div className="mt-4 space-y-3 rounded-lg bg-amber-50 px-4 py-3.5 text-sm text-amber-900">
+                  <div className="flex items-start gap-2.5">
+                    <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
+                    <div>
+                      <p className="font-medium">Widget is live — but favicons may not render</p>
+                      <p className="mt-0.5 text-[13px] text-amber-900/80">
+                        Your CSP's <code className="rounded bg-amber-100 px-1 py-0.5 font-mono text-[11px]">img-src</code> blocks external images. The bar itself renders, but the featured startup's favicon will show as a broken image. You can submit as-is, or fix it by adding these hosts to <code className="rounded bg-amber-100 px-1 py-0.5 font-mono text-[11px]">img-src</code>:
+                      </p>
+                    </div>
+                  </div>
+                  <CopyableCode
+                    tone="red"
+                    label="CSP"
+                    code={`img-src 'self' data: https://www.google.com https://*.googleusercontent.com;`}
+                  />
+                </div>
+              )}
+
+
               {verifyStatus === "not-found" && (
                 <div className="mt-4 rounded-lg bg-amber-50 px-4 py-3.5 text-sm text-amber-800">
                   <div className="flex items-start gap-2.5">
