@@ -49,7 +49,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [authed, setAuthed] = useState<boolean | null>(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setAuthed(!!data.user));
+    // getSession() reads localStorage first — resolves before paint on refresh.
+    supabase.auth.getSession().then(({ data }) => setAuthed(!!data.session));
     const { data: sub } = supabase.auth.onAuthStateChange((_, session) => setAuthed(!!session));
     return () => sub.subscription.unsubscribe();
   }, []);
@@ -62,7 +63,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const visibleNav = authed ? NAV : NAV.filter(({ to }) => to !== "/dashboard");
 
   return (
-    <div className="min-h-screen bg-[#f7f7f6] flex flex-col">
+    <div className="min-h-dvh bg-[#f7f7f6] flex flex-col">
       {isNavigating && (
         <div className="fixed top-0 left-0 right-0 z-50 h-[2px] bg-black/[0.06]">
           <div className="progress-bar h-full bg-black w-full" />
