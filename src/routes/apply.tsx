@@ -17,6 +17,7 @@ export const Route = createFileRoute("/apply")({
       { name: "description", content: "Submit your startup to join the StartupBar network. Get featured on other founders' sites and grow together through free traffic exchange." },
       { property: "og:title", content: "Apply — StartupBar" },
       { property: "og:description", content: "Submit your startup to join the StartupBar network and get featured on other founders' sites." },
+      { property: "og:url", content: "https://startupbar.co/apply" },
     ],
     links: [{ rel: "canonical", href: "/apply" }],
   }),
