@@ -1,65 +1,79 @@
-# Detect + surface CSP iframe/img blocking on the apply page
+# StartupBar — UI / Loading / A11y Audit
 
-## Why
+I audited every route, the shared layout, root shell, and data-loading patterns. Below is what's actually hurting the site today, ranked by user impact. The single most critical theme: **the site has layout shift (CLS) baked into every page load**, and the hero page has it baked in *every 3 seconds forever*. That is the "height jumping" you keep seeing.
 
-The apply page's "Verify installation" step today only detects one CSP case: `cspBlocked` (script blocked). If the site is like Promptly — script allowed but iframe blocked by `frame-src` fallback — verify reports "installed ✓" green, the founder submits, and gets rejected later. That gap is the whole reason we added the new admin rejection reason.
+---
 
-Fix it at the source so founders self-serve before applying.
+## 🔴 The critical issue (fix first)
 
-## Changes
+**The hero on `/` shifts vertically on load AND every 3 seconds while the page is open.**
 
-### 1. `src/routes/api/public/verify-install.ts` — detect two more CSP cases
+Three compounding sources in `src/routes/index.tsx`:
 
-The endpoint already parses CSP for scripts. Extend the same parser:
+1. **Line 558–562** — `liveIndex` rotates every 3s. The startup name inside the mock browser bar has no fixed width, so text of varying length reflows the bar → shifts everything below it.
+2. **Line 695 / 721** — the mock bar is conditionally rendered (`!mockDismissed`) and the "info" panel expands *inline* pushing content down instead of overlaying.
+3. **Line 539–654** — landing header renders `null` while `authReady === false`, then expands to full nav ~200 ms later. Guaranteed header shift on every visit.
 
-- Add `allowsStartupbarFrame(policy)` — reads `frame-src` → falls back to `child-src` → falls back to `default-src`. Same source-token matching (`*`, `https:`, `startupbar.co`, `*.startupbar.co`, `https://startupbar.co`, `https://*.startupbar.co`).
-- Add `allowsStartupbarImg(policy)` — reads `img-src` → falls back to `default-src`. Matches `*`, `https:`, `data:`, `https://www.google.com`, `https://*.googleusercontent.com`, `https://*.supabase.co`, `https://startupbar.co` (favicon hosts we actually use).
+This is the root cause of the complaints you've been sending for days.
 
-Extend the response JSON:
+---
 
-```ts
-{ installed, suspicious,
-  cspBlocked,        // existing — script blocked
-  cspFrameBlocked,   // NEW — iframe blocked (visible: broken frame icon)
-  cspImgBlocked }    // NEW — favicon may not render
-```
+## Top 10 issues, ranked
 
-Keep `cspBlocked` name/shape for backwards compatibility.
+| # | Severity | Issue | Where |
+|---|---|---|---|
+| 1 | 🔴 Critical | Mock-bar text reflow every 3s + info panel expands inline | `src/routes/index.tsx:558, 695, 721` |
+| 2 | 🔴 Critical | Landing header collapses to 0 width until auth resolves | `src/routes/index.tsx:539–654` |
+| 3 | 🔴 Critical | Same auth race in DashboardLayout (app-wide header shift) | `src/components/DashboardLayout.tsx:49–126` |
+| 4 | 🔴 High | Google Fonts has no `preload` → FOUT reflows every H1 | `src/routes/__root.tsx:64` |
+| 5 | 🔴 High | Dashboard loader fetches **all impressions** to compute rank client-side | `src/routes/_authenticated/dashboard.tsx:65, 82` |
+| 6 | 🟠 High | Leaderboard "You" highlight fetched in useEffect after render → flicker | `src/routes/leaderboard.tsx:98–121` |
+| 7 | 🟠 High | Mobile nav is icon-only with no `aria-label`; tap targets ~36×32 (need 44×44) | `src/components/DashboardLayout.tsx:80–108` |
+| 8 | 🟠 Medium | StartupFavicon shows blank flash on load; `alt=""` on meaningful logos | `src/components/StartupFavicon.tsx` |
+| 9 | 🟠 Medium | `/account` has no `head()` → wrong browser tab title, no SEO | `src/routes/_authenticated/account.tsx` |
+| 10 | 🟡 Medium | `min-h-screen` used instead of `min-h-dvh` → iOS Safari URL-bar jump | `index.tsx:594`, `DashboardLayout.tsx:65` |
 
-### 2. `src/routes/apply.tsx` — new verify states + tailored guidance
+---
 
-- Extend `verifyStatus` union: add `"csp-frame"` and `"csp-img"` alongside existing `"csp"`.
-- Update the priority order inside `checkInstallation`:
-  1. `installed && cspFrameBlocked` → `"csp-frame"` (most severe — bar visibly broken).
-  2. `installed && cspBlocked` → `"csp"` (existing, script blocked).
-  3. `installed && cspImgBlocked` → `"csp-img"` (soft warning — installed, favicons may not show).
-  4. `installed` → `"live"`.
-  5. otherwise → `"not-found"` / `"error"` as today.
-- Add a new red panel for `csp-frame` right below the existing script CSP block, styled identically (same `ShieldAlert`, same `CopyableCode`, same red-50 background). Copy:
-  - Title: **"Your CSP is blocking the widget iframe"**
-  - Body: "Your script loads fine, but your Content-Security-Policy has no `frame-src` directive — so the browser falls back to `default-src 'self'` and blocks the StartupBar iframe. Your visitors see a broken frame icon where the bar should be. Merge these directives into your existing CSP:"
-  - CopyableCode content:
-    ```
-    script-src 'self' https://startupbar.co;
-    frame-src  https://startupbar.co;
-    img-src    'self' data: https://www.google.com https://*.googleusercontent.com;
-    ```
-  - Border-left color `red-500` (same treatment).
-- Add a softer amber panel for `csp-img` (installed but images restricted) using `ShieldAlert` amber-50:
-  - Title: **"Widget is live — but favicons may not render"**
-  - Body: "Your CSP's `img-src` blocks external images. The bar itself renders, but the featured startup's favicon will show as a broken image. To fix, add these hosts to `img-src`:"
-  - CopyableCode: `img-src 'self' data: https://www.google.com https://*.googleusercontent.com;`
-  - Border-left color `amber-500`.
-  - Non-blocking: the "Submit application" flow can still proceed on this state (unlike frame-blocked, where we should treat it like `csp` and block submission — matches how `csp` is already handled).
+## Proposed fix plan (implement in this order)
 
-Where the current code gates submission on `verifyStatus === "live"`, treat `"csp-img"` as also acceptable (soft warning only). `"csp-frame"` remains blocking, same as `"csp"`.
+### Phase 1 — Stop the layout jumps (do this first, biggest user-visible win)
 
-## Out of scope
+1. **Hero mock bar (`index.tsx`)**
+   - Wrap the rotating startup-name span with `w-[140px] truncate inline-block` so name length can't reflow the bar.
+   - Give the mock bar a fixed `min-h-[36px]` and move the info-panel from inline expansion to `absolute` overlay above the bar (so it doesn't push page content).
+   - Reserve the browser-mock container's height with an explicit `aspect-[16/10]` (or fixed min-height) so it doesn't grow when `liveStartup` populates.
 
-- No changes to `loader.js`, `widget/bar`, admin flow (already done last turn), or DB.
-- Not going to auto-recheck — the existing "Check now" button is fine.
+2. **Auth race in headers**
+   - Landing header: replace `!authReady ? null : …` with a fixed-width placeholder matching the widest nav state so nothing collapses.
+   - `DashboardLayout`: same treatment for the right-side auth cluster and nav list.
+   - Longer-term: initialize `authed` from `supabase.auth.getSession()` synchronously (returns cached session immediately) instead of `null`, cutting the flash entirely.
 
-## Files touched
+3. **`min-h-screen` → `min-h-dvh`** in `index.tsx` and `DashboardLayout.tsx`.
 
-- `src/routes/api/public/verify-install.ts` — add two CSP checks, extend response.
-- `src/routes/apply.tsx` — extend `verifyStatus` union, priority order in `checkInstallation`, two new result panels, allow submission on `csp-img`.
+### Phase 2 — Loading performance
+
+4. **Font preload** in `__root.tsx`: add `<link rel="preload" as="font" type="font/woff2" crossorigin>` for the Instrument Serif regular + italic .woff2 URLs (extracted from Google's CSS).
+5. **Dashboard rank calc**: replace the "select all impressions" scan (line 65) with a Postgres RPC that returns the caller's rank in a single query. Removes the biggest loader delay.
+6. **Leaderboard `myId`**: move the two `supabase.auth.getUser()` + startup lookup calls into the route loader so the "You" badge renders on first paint (no flicker).
+
+### Phase 3 — Accessibility & SEO polish
+
+7. `DashboardLayout` nav: add `aria-label={label}` on each mobile icon Link; bump padding to `px-3 py-2` for 44×44 tap targets; add `aria-label="Account settings"` on the Settings icon.
+8. `StartupFavicon`: default `alt` to `name || domain`; add neutral background on the wrapper to kill the white flash.
+9. Add `head()` with a real title/description to `_authenticated/account.tsx`.
+
+### Out of scope (not touching)
+- Business logic, DB schema, RLS, edge functions, widget loader.
+- CSP-detection work from previous turns (already shipped).
+- Design/color system.
+
+---
+
+## Technical notes
+
+- All changes are frontend/presentation only except item **#5** (dashboard rank), which needs one new SQL RPC — I'll write it as a `CREATE OR REPLACE FUNCTION` migration with proper `SECURITY DEFINER` + grants.
+- Font preload URLs need to be fetched from Google's stylesheet once and hardcoded (they're stable per version).
+- Auth session bootstrap: `supabase.auth.getSession()` is synchronous on cached sessions, unlike `getUser()` which is always async — this is the key to eliminating the header flash entirely.
+
+Approve and I'll ship Phase 1 first (the layout-jump fixes) so you can verify the hero stops moving before I move on to the perf and a11y phases.
