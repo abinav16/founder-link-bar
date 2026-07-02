@@ -28,8 +28,11 @@ export const Route = createFileRoute("/")({
       { property: "og:description", content: "Add one line of code to your site. A 36px bar shows another founder's startup, and yours appears on theirs. Free traffic exchange." },
       { name: "twitter:title", content: "StartupBar — Free traffic exchange for founders" },
       { name: "twitter:description", content: "Add one line of code to your site. A 36px bar shows another founder's startup, and yours appears on theirs. Free traffic exchange." },
+      { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:image", content: "https://startupbar.co/__l5e/assets-v1/6ee40991-2265-40aa-8073-c327d29be787/og-social-card.png" },
+      { name: "twitter:image", content: "https://startupbar.co/__l5e/assets-v1/6ee40991-2265-40aa-8073-c327d29be787/og-social-card.png" },
     ],
-    links: [{ rel: "canonical", href: "/" }],
+    links: [{ rel: "canonical", href: "https://startupbar.co/" }],
     scripts: [{
       type: "application/ld+json",
       children: JSON.stringify({
