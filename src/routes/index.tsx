@@ -33,7 +33,16 @@ export const Route = createFileRoute("/")({
       { property: "og:image", content: "https://startupbar.co/__l5e/assets-v1/6ee40991-2265-40aa-8073-c327d29be787/og-social-card.png" },
       { name: "twitter:image", content: "https://startupbar.co/__l5e/assets-v1/6ee40991-2265-40aa-8073-c327d29be787/og-social-card.png" },
     ],
-    links: [{ rel: "canonical", href: "https://startupbar.co/" }],
+    links: [
+      { rel: "canonical", href: "https://startupbar.co/" },
+      {
+        rel: "preload",
+        as: "font",
+        type: "font/woff2",
+        crossOrigin: "anonymous",
+        href: "https://fonts.gstatic.com/s/instrumentserif/v4/jizDREVItHgc8qDIbSTKq4XIWpJP-6O_YkoUFbrIROe0.woff2",
+      },
+    ],
     scripts: [{
       type: "application/ld+json",
       children: JSON.stringify({
