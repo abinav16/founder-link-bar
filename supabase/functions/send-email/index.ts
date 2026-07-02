@@ -326,13 +326,29 @@ serve(async (req) => {
         },
         csp_blocked: {
           subject: `Action needed: your CSP is blocking StartupBar on ${site}`,
-          heading: "Your site's CSP blocks our widget",
+          heading: "Your CSP is blocking our widget script",
           reasonLine: "Content Security Policy blocks startupbar.co/widget/loader.js",
           body: `
             ${p(`The StartupBar embed snippet is on ${strong(site)}, but your site's ${strong("Content Security Policy")} is refusing to let the browser load ${strong("https://startupbar.co/widget/loader.js")}. That means the bar never actually renders for your visitors, so we can't approve ${strong(name)} until it's fixed.`)}
             ${p(`Add ${strong("https://startupbar.co")} to your ${strong("script-src")} (and ideally ${strong("frame-src")}) directive. Example:`)}
             ${p(`<code style="display:block;background:#0a0a0a;color:#e4e4e7;padding:12px 14px;border-radius:8px;font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:1.55;overflow-x:auto;">Content-Security-Policy: script-src 'self' https://startupbar.co; frame-src https://startupbar.co;</code>`)}
             ${p(`Once the policy is updated, reapply at <a href="https://startupbar.co/apply" style="color:#0a0a0a;">startupbar.co/apply</a> and we'll re-check within a few hours.`)}
+          `,
+        },
+        csp_frame_blocked: {
+          subject: `Action needed: your CSP is blocking the StartupBar bar on ${site}`,
+          heading: "Your CSP is blocking the widget iframe",
+          reasonLine: "Content Security Policy blocks the startupbar.co widget iframe",
+          body: `
+            ${p(`Good news first — our script ${strong("loads fine")} on ${strong(site)}. The problem is one step later: your ${strong("Content Security Policy")} is refusing to let the browser render the actual bar, so your visitors see a ${strong("broken frame icon")} at the top of the page where the StartupBar should be. We can't approve ${strong(name)} while the bar is broken for real users.`)}
+            ${p(`The exact cause: your CSP has ${strong("no frame-src directive")}, so it falls back to ${strong("default-src 'self'")} — and that blocks the iframe we load from ${strong("https://startupbar.co")}.`)}
+            ${p(`Add ${strong("frame-src")} for startupbar.co (and, if your CSP restricts images, allow favicon hosts too so the shown startup's logo can render). Full working policy:`)}
+            ${p(`<code style="display:block;background:#0a0a0a;color:#e4e4e7;padding:12px 14px;border-radius:8px;font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:1.6;overflow-x:auto;white-space:pre;">Content-Security-Policy:
+  script-src 'self' https://startupbar.co;
+  frame-src  https://startupbar.co;
+  img-src    'self' data: https://www.google.com https://*.googleusercontent.com;</code>`)}
+            ${p(`Just merge those three lines into your existing CSP (don't replace it wholesale — keep whatever else you already allow). If you're on Vercel/Next.js this usually lives in ${strong("next.config.js")} headers or ${strong("middleware.ts")}; on Cloudflare it's a Transform Rule; on most Node/Express apps it's in ${strong("helmet")} config.`)}
+            ${p(`Once your CSP is updated and deployed, please ${strong("reapply")} at <a href="https://startupbar.co/apply" style="color:#0a0a0a;">startupbar.co/apply</a> — we'll re-check within a few hours and approve you as soon as the bar renders properly.`)}
           `,
         },
         widget_not_installed: {
