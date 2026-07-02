@@ -736,8 +736,6 @@ function Landing() {
                   )}
                 </div>
               )}
-                </div>
-              )}
               <div className="grid place-items-center bg-black/[0.02] px-6 py-10 text-xs text-black/20 sm:py-24">
                 your website continues here as normal
               </div>
