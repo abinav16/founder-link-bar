@@ -562,11 +562,13 @@ function Landing() {
   }, [liveStartups.length]);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user) {
+    // getSession() reads from localStorage first, so it resolves synchronously
+    // when a cached session exists — avoids the header-flash on refresh.
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session?.user) {
         setUser({
-          email: data.user.email,
-          name: data.user.user_metadata?.full_name?.split(" ")[0] ?? "",
+          email: data.session.user.email,
+          name: data.session.user.user_metadata?.full_name?.split(" ")[0] ?? "",
         });
       }
       setAuthReady(true);
