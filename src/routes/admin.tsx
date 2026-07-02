@@ -467,7 +467,8 @@ function AdminPage() {
             </div>
           </div>
         )}
-      </div>
+      </main>
+
 
       {rejectTarget && (() => {
         const REASONS: { value: string; label: string; hint: string }[] = [
