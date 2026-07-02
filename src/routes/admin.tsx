@@ -183,7 +183,7 @@ function AdminPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f7f7f6]">
+    <div className="min-h-dvh bg-[#f7f7f6]">
       <header className="sticky top-0 z-30 border-b border-black/8 bg-white">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
