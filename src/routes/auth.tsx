@@ -198,11 +198,12 @@ function AuthPage() {
   }
 
   return (
-    <div className="grid min-h-screen md:grid-cols-2">
+    <div className="grid min-h-dvh md:grid-cols-2">
       <ConstellationPanel />
       <div className="flex flex-col bg-white px-8 py-10 md:px-14">
         <Link to="/" className="flex items-center gap-2"><div className="h-2 w-6 rounded-sm bg-black" /><span className="text-base font-semibold tracking-tight text-black">StartupBar</span></Link>
-        <div className="mx-auto mt-auto w-full max-w-sm py-16">
+        <main className="mx-auto mt-auto w-full max-w-sm py-16">
+
           <h1 className="text-3xl font-medium tracking-tight text-black" style={{ fontFamily: "var(--font-display)" }}>{mode === "signin" ? "Welcome back." : "Join the network."}</h1>
           <p className="mt-2 text-sm text-black/40">{mode === "signin" ? "Sign in to your StartupBar dashboard." : "Create your account and apply your startup."}</p>
 
