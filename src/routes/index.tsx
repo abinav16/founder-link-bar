@@ -596,8 +596,11 @@ function Landing() {
       <header className="relative z-20 border-b border-black/8 bg-white">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <Logo />
-          <nav className="flex items-center gap-1 text-sm">
-            {!authReady ? null : user ? (
+          <nav className="flex min-h-9 items-center gap-1 text-sm">
+            {!authReady ? (
+              // Reserve space so header doesn't collapse before auth resolves
+              <div aria-hidden className="h-9 w-[220px] sm:w-[360px]" />
+            ) : user ? (
               <>
                 <Link
                   to="/network"
@@ -621,8 +624,8 @@ function Landing() {
                 </Link>
                 <Link
                   to="/account"
+                  aria-label="Account settings"
                   className="rounded-md p-2 text-black/40 hover:text-black transition-colors"
-                  title="Account settings"
                 >
                   <Settings className="h-4 w-4" />
                 </Link>
