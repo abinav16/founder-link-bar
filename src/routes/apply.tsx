@@ -735,7 +735,7 @@ function Apply() {
               );
             })()}
             <p className="text-center text-xs text-black/30">
-              {verifyStatus !== "live"
+              {verifyStatus !== "live" && verifyStatus !== "csp-img"
                 ? "Install the script and verify it's live to continue."
                 : !resubmitId && existingCount >= 1 && !hasPrepaid
                 ? "Script verified ✓ — one-time $9.99 for additional listings."
