@@ -70,7 +70,7 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
   );
 }
 
-const inputCls = "w-full rounded-lg border border-black/12 bg-white px-4 py-3 text-sm text-black placeholder:text-black/25 outline-none ring-0 transition focus:border-black/30 focus:ring-2 focus:ring-black/8";
+const inputCls = "w-full rounded-lg border border-black/12 bg-white px-4 py-3 text-sm text-black placeholder:text-black/45 outline-none ring-0 transition focus:border-black/30 focus:ring-2 focus:ring-black/8";
 
 function CopyableCode({ code, label = "HTML", tone = "neutral" }: { code: string; label?: string; tone?: "neutral" | "red" }) {
   const [copied, setCopied] = useState(false);

@@ -238,16 +238,16 @@ function AuthPage() {
             {mode === "signup" && (
               <div className="relative">
                 <User className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-black/25" />
-                <input type="text" required placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-lg border border-black/12 bg-white py-3 pl-10 pr-4 text-sm text-black placeholder:text-black/25 outline-none transition focus:border-black/30 focus:ring-2 focus:ring-black/8" />
+                <input type="text" required placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-lg border border-black/12 bg-white py-3 pl-10 pr-4 text-sm text-black placeholder:text-black/45 outline-none transition focus:border-black/30 focus:ring-2 focus:ring-black/8" />
               </div>
             )}
             <div className="relative">
               <Mail className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-black/25" />
-              <input type="email" required placeholder="you@startup.com" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded-lg border border-black/12 bg-white py-3 pl-10 pr-4 text-sm text-black placeholder:text-black/25 outline-none transition focus:border-black/30 focus:ring-2 focus:ring-black/8" />
+              <input type="email" required placeholder="you@startup.com" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded-lg border border-black/12 bg-white py-3 pl-10 pr-4 text-sm text-black placeholder:text-black/45 outline-none transition focus:border-black/30 focus:ring-2 focus:ring-black/8" />
             </div>
             <div className="relative">
               <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-black/25" />
-              <input type="password" required minLength={6} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full rounded-lg border border-black/12 bg-white py-3 pl-10 pr-4 text-sm text-black placeholder:text-black/25 outline-none transition focus:border-black/30 focus:ring-2 focus:ring-black/8" />
+              <input type="password" required minLength={6} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full rounded-lg border border-black/12 bg-white py-3 pl-10 pr-4 text-sm text-black placeholder:text-black/45 outline-none transition focus:border-black/30 focus:ring-2 focus:ring-black/8" />
             </div>
             <button type="submit" disabled={loading} className="group flex w-full items-center justify-center gap-2 rounded-lg bg-black py-3.5 text-sm font-medium text-white transition-all hover:bg-black/80 disabled:opacity-50">
               {loading ? "Please wait…" : (<>{mode === "signin" ? "Sign in" : "Create account"}<ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" /></>)}
