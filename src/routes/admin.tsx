@@ -183,7 +183,7 @@ function AdminPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f7f7f6]">
+    <div className="min-h-dvh bg-[#f7f7f6]">
       <header className="sticky top-0 z-30 border-b border-black/8 bg-white">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
@@ -208,7 +208,7 @@ function AdminPage() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
         <BroadcastPanel />
 
         <div className="flex items-center justify-between">
@@ -467,7 +467,8 @@ function AdminPage() {
             </div>
           </div>
         )}
-      </div>
+      </main>
+
 
       {rejectTarget && (() => {
         const REASONS: { value: string; label: string; hint: string }[] = [
@@ -513,7 +514,7 @@ function AdminPage() {
                 <div className="mt-4">
                   <label className="text-[11px] uppercase tracking-[0.15em] text-black/40 font-semibold">Optional note to founder</label>
                   <textarea value={rejectNote} onChange={(e) => setRejectNote(e.target.value)} rows={3} placeholder="Add specifics they should know (appended to the email)…"
-                    className="mt-1.5 w-full rounded-lg border border-black/12 bg-white px-3 py-2 text-sm text-black placeholder:text-black/30 focus:border-black focus:outline-none resize-none" />
+                    className="mt-1.5 w-full rounded-lg border border-black/12 bg-white px-3 py-2 text-sm text-black placeholder:text-black/45 focus:border-black focus:outline-none resize-none" />
                 </div>
               </div>
               <div className="px-5 py-3 border-t border-black/8 bg-black/[0.02] flex items-center justify-end gap-2">
@@ -649,20 +650,20 @@ function BroadcastPanel() {
           <div>
             <label className="text-[11px] uppercase tracking-[0.15em] text-black/40 font-semibold">Subject</label>
             <input value={subject} onChange={(e) => setSubject(e.target.value)} maxLength={140} placeholder="e.g. Your StartupBar spot is waiting"
-              className="mt-1.5 w-full rounded-lg border border-black/12 bg-white px-3 py-2 text-sm text-black placeholder:text-black/30 focus:border-black focus:outline-none" />
+              className="mt-1.5 w-full rounded-lg border border-black/12 bg-white px-3 py-2 text-sm text-black placeholder:text-black/45 focus:border-black focus:outline-none" />
           </div>
 
           <div>
             <label className="text-[11px] uppercase tracking-[0.15em] text-black/40 font-semibold">Headline (optional)</label>
             <input value={headline} onChange={(e) => setHeadline(e.target.value)} maxLength={140} placeholder="Defaults to subject"
-              className="mt-1.5 w-full rounded-lg border border-black/12 bg-white px-3 py-2 text-sm text-black placeholder:text-black/30 focus:border-black focus:outline-none" />
+              className="mt-1.5 w-full rounded-lg border border-black/12 bg-white px-3 py-2 text-sm text-black placeholder:text-black/45 focus:border-black focus:outline-none" />
           </div>
 
           <div>
             <label className="text-[11px] uppercase tracking-[0.15em] text-black/40 font-semibold">Body</label>
             <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={10}
               placeholder={"Hi {{name}},\n\nQuick note — you signed up but haven't listed a startup yet.\n\n- Free listing\n- 60-sec install\n- Live in the network within 24h\n\nGet started: [startupbar.co/apply](https://startupbar.co/apply)"}
-              className="mt-1.5 w-full rounded-lg border border-black/12 bg-white px-3 py-2 font-mono text-[13px] text-black placeholder:text-black/30 focus:border-black focus:outline-none resize-y" />
+              className="mt-1.5 w-full rounded-lg border border-black/12 bg-white px-3 py-2 font-mono text-[13px] text-black placeholder:text-black/45 focus:border-black focus:outline-none resize-y" />
             <div className="mt-1.5 text-[11px] text-black/40">
               Supports <code className="text-black/60">**bold**</code>, <code className="text-black/60">[link](https://…)</code>, <code className="text-black/60">- bullets</code>, blank line for paragraphs. Use <code className="text-black/60">{"{{name}}"}</code> for first name.
             </div>
@@ -708,6 +709,7 @@ function BroadcastPanel() {
           </div>
         </div>
       </div>
+
     </div>
   );
 }
