@@ -550,6 +550,8 @@ function Apply() {
             <div className={`border-b border-black/8 p-5 sm:p-6 border-l-2 ${
               verifyStatus === "live" ? "border-l-emerald-500" :
               verifyStatus === "csp" ? "border-l-red-500" :
+              verifyStatus === "csp-frame" ? "border-l-red-500" :
+              verifyStatus === "csp-img" ? "border-l-amber-500" :
               verifyStatus === "not-found" ? "border-l-amber-500" :
               verifyStatus === "error" ? "border-l-black/20" :
               "border-l-transparent"
