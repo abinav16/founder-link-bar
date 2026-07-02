@@ -518,7 +518,7 @@ function Apply() {
             {[
               { n: 1, label: "Paste", active: true },
               { n: 2, label: "Verify", active: verifyStatus !== "idle" },
-              { n: 3, label: "Submit", active: verifyStatus === "live" },
+              { n: 3, label: "Submit", active: verifyStatus === "live" || verifyStatus === "csp-img" },
             ].map((s, i) => (
               <div key={s.n} className="flex items-center gap-2">
                 <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-semibold ${s.active ? "bg-black text-white" : "bg-black/8 text-black/40"}`}>{s.n}</span>
