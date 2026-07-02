@@ -430,7 +430,9 @@ function Apply() {
         </div>
       </header>
 
+      <main>
       {step === 1 && (
+
         <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 md:py-14">
           <div className="grid gap-10 md:grid-cols-2 md:gap-24">
             <div>
