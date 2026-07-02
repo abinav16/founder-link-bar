@@ -166,7 +166,7 @@ function Apply() {
   const [resubmitId, setResubmitId] = useState<string>(initial.resubmitId);
   const [startupId, setStartupId] = useState<string>(() => initial.resubmitId || crypto.randomUUID());
   const [copied, setCopied] = useState(false);
-  const [verifyStatus, setVerifyStatus] = useState<"idle" | "checking" | "live" | "csp" | "not-found" | "error">("idle");
+  const [verifyStatus, setVerifyStatus] = useState<"idle" | "checking" | "live" | "csp" | "csp-frame" | "csp-img" | "not-found" | "error">("idle");
   const [verifyMsg, setVerifyMsg] = useState("");
 
   const [loading, setLoading] = useState(false);
@@ -334,9 +334,15 @@ function Apply() {
     try {
       const res = await fetch(`/api/public/verify-install?url=${encodeURIComponent(checkUrl)}`);
       const json = await res.json();
-      if (json.installed && json.cspBlocked) {
+      if (json.installed && json.cspFrameBlocked) {
+        setVerifyStatus("csp-frame");
+        setVerifyMsg("Your script loads, but your CSP is blocking the StartupBar iframe. Visitors see a broken frame where the bar should be.");
+      } else if (json.installed && json.cspBlocked) {
         setVerifyStatus("csp");
         setVerifyMsg("Your site's Content-Security-Policy is blocking startupbar.co. Add the directives below and re-check.");
+      } else if (json.installed && json.cspImgBlocked) {
+        setVerifyStatus("csp-img");
+        setVerifyMsg("Widget is live, but your CSP restricts external images — the featured startup's favicon may not render.");
       } else if (json.installed) {
         setVerifyStatus("live");
         setVerifyMsg("Script detected and running on your site.");
@@ -512,7 +518,7 @@ function Apply() {
             {[
               { n: 1, label: "Paste", active: true },
               { n: 2, label: "Verify", active: verifyStatus !== "idle" },
-              { n: 3, label: "Submit", active: verifyStatus === "live" },
+              { n: 3, label: "Submit", active: verifyStatus === "live" || verifyStatus === "csp-img" },
             ].map((s, i) => (
               <div key={s.n} className="flex items-center gap-2">
                 <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-semibold ${s.active ? "bg-black text-white" : "bg-black/8 text-black/40"}`}>{s.n}</span>
@@ -544,6 +550,8 @@ function Apply() {
             <div className={`border-b border-black/8 p-5 sm:p-6 border-l-2 ${
               verifyStatus === "live" ? "border-l-emerald-500" :
               verifyStatus === "csp" ? "border-l-red-500" :
+              verifyStatus === "csp-frame" ? "border-l-red-500" :
+              verifyStatus === "csp-img" ? "border-l-amber-500" :
               verifyStatus === "not-found" ? "border-l-amber-500" :
               verifyStatus === "error" ? "border-l-black/20" :
               "border-l-transparent"
@@ -585,6 +593,45 @@ function Apply() {
                   />
                 </div>
               )}
+
+              {verifyStatus === "csp-frame" && (
+                <div className="mt-4 space-y-3 rounded-lg bg-red-50 px-4 py-3.5 text-sm text-red-800">
+                  <div className="flex items-start gap-2.5">
+                    <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" />
+                    <div>
+                      <p className="font-medium">Your CSP is blocking the widget iframe</p>
+                      <p className="mt-0.5 text-[13px] text-red-800/80">
+                        Your script loads fine, but your Content-Security-Policy has no <code className="rounded bg-red-100 px-1 py-0.5 font-mono text-[11px]">frame-src</code> directive — so the browser falls back to <code className="rounded bg-red-100 px-1 py-0.5 font-mono text-[11px]">default-src 'self'</code> and blocks the StartupBar iframe. Your visitors currently see a <strong>broken frame icon</strong> where the bar should be. Merge these directives into your existing CSP, then re-check:
+                      </p>
+                    </div>
+                  </div>
+                  <CopyableCode
+                    tone="red"
+                    label="CSP"
+                    code={`script-src 'self' https://startupbar.co;\nframe-src  https://startupbar.co;\nimg-src    'self' data: https://www.google.com https://*.googleusercontent.com;`}
+                  />
+                </div>
+              )}
+
+              {verifyStatus === "csp-img" && (
+                <div className="mt-4 space-y-3 rounded-lg bg-amber-50 px-4 py-3.5 text-sm text-amber-900">
+                  <div className="flex items-start gap-2.5">
+                    <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
+                    <div>
+                      <p className="font-medium">Widget is live — but favicons may not render</p>
+                      <p className="mt-0.5 text-[13px] text-amber-900/80">
+                        Your CSP's <code className="rounded bg-amber-100 px-1 py-0.5 font-mono text-[11px]">img-src</code> blocks external images. The bar itself renders, but the featured startup's favicon will show as a broken image. You can submit as-is, or fix it by adding these hosts to <code className="rounded bg-amber-100 px-1 py-0.5 font-mono text-[11px]">img-src</code>:
+                      </p>
+                    </div>
+                  </div>
+                  <CopyableCode
+                    tone="red"
+                    label="CSP"
+                    code={`img-src 'self' data: https://www.google.com https://*.googleusercontent.com;`}
+                  />
+                </div>
+              )}
+
 
               {verifyStatus === "not-found" && (
                 <div className="mt-4 rounded-lg bg-amber-50 px-4 py-3.5 text-sm text-amber-800">
@@ -664,7 +711,7 @@ function Apply() {
           <div className="mt-8 space-y-3">
             {(() => {
               const needsPayment = !resubmitId && existingCount >= 1 && !hasPrepaid;
-              const verified = verifyStatus === "live";
+              const verified = verifyStatus === "live" || verifyStatus === "csp-img";
               const busy = loading || paymentLoading || verifyingPayment;
               const disabled = !verified || busy;
               const onClick = needsPayment ? handlePayment : onSubmit;
@@ -688,7 +735,7 @@ function Apply() {
               );
             })()}
             <p className="text-center text-xs text-black/30">
-              {verifyStatus !== "live"
+              {verifyStatus !== "live" && verifyStatus !== "csp-img"
                 ? "Install the script and verify it's live to continue."
                 : !resubmitId && existingCount >= 1 && !hasPrepaid
                 ? "Script verified ✓ — one-time $9.99 for additional listings."
