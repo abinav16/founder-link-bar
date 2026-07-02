@@ -7,8 +7,9 @@ export const Route = createFileRoute("/terms")({
       { name: "description", content: "The rules for participating in the StartupBar traffic exchange — account responsibilities, content guidelines, and acceptable use." },
       { property: "og:title", content: "Terms of Service — StartupBar" },
       { property: "og:description", content: "The rules for participating in the StartupBar traffic exchange." },
+      { property: "og:url", content: "https://startupbar.co/terms" },
     ],
-    links: [{ rel: "canonical", href: "/terms" }],
+    links: [{ rel: "canonical", href: "https://startupbar.co/terms" }],
   }),
   component: TermsPage,
 });
