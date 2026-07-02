@@ -334,9 +334,15 @@ function Apply() {
     try {
       const res = await fetch(`/api/public/verify-install?url=${encodeURIComponent(checkUrl)}`);
       const json = await res.json();
-      if (json.installed && json.cspBlocked) {
+      if (json.installed && json.cspFrameBlocked) {
+        setVerifyStatus("csp-frame");
+        setVerifyMsg("Your script loads, but your CSP is blocking the StartupBar iframe. Visitors see a broken frame where the bar should be.");
+      } else if (json.installed && json.cspBlocked) {
         setVerifyStatus("csp");
         setVerifyMsg("Your site's Content-Security-Policy is blocking startupbar.co. Add the directives below and re-check.");
+      } else if (json.installed && json.cspImgBlocked) {
+        setVerifyStatus("csp-img");
+        setVerifyMsg("Widget is live, but your CSP restricts external images — the featured startup's favicon may not render.");
       } else if (json.installed) {
         setVerifyStatus("live");
         setVerifyMsg("Script detected and running on your site.");
