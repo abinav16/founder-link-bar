@@ -139,21 +139,30 @@ export type Database = {
       }
       impressions: {
         Row: {
+          country: string | null
           created_at: string
+          device: string | null
           host_startup_id: string | null
           id: string
+          referrer: string | null
           shown_startup_id: string
         }
         Insert: {
+          country?: string | null
           created_at?: string
+          device?: string | null
           host_startup_id?: string | null
           id?: string
+          referrer?: string | null
           shown_startup_id: string
         }
         Update: {
+          country?: string | null
           created_at?: string
+          device?: string | null
           host_startup_id?: string | null
           id?: string
+          referrer?: string | null
           shown_startup_id?: string
         }
         Relationships: [
