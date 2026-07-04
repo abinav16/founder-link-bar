@@ -632,7 +632,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
 
   useEffect(() => {
     const channelName = `live-map:${scopeStartupId ?? "network"}:${crypto.randomUUID()}`;
-    const filter = scopeStartupId ? `shown_startup_id=eq.${scopeStartupId}` : undefined;
+    const filter = scopeStartupId ? `host_startup_id=eq.${scopeStartupId}` : undefined;
 
     const config = filter
       ? { event: "INSERT" as const, schema: "public", table: "impressions", filter }
