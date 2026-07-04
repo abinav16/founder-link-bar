@@ -306,8 +306,10 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
     os: string,
     browser: string,
     path: string | null,
-    rawReferrer?: string | null
+    rawReferrer?: string | null,
+    createdAtMs?: number
   ) {
+
     const centroid = COUNTRY_CENTROIDS[country];
     if (!centroid || !mapRef.current) return;
 
