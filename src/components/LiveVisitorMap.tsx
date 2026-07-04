@@ -575,7 +575,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
 
       const refCounts = new Map<string, number>();
       for (const row of data) {
-        const name = resolveReferrerSync(row.host_startup_id, row.referrer);
+        const name = resolveReferrerSync(effectiveHost(row.host_startup_id), row.referrer);
         refCounts.set(name, (refCounts.get(name) ?? 0) + 1);
       }
 
