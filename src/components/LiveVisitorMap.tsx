@@ -938,7 +938,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
                       <PillRow
                         label={networkMode ? "Referrers from StartupBar Widget" : "Referrers"}
                         entries={[...xRefCounts.entries()]
-                          .filter(([k]) => networkMode ? k !== "Direct" && !["Google","Bing","Yahoo","DuckDuckGo","Twitter / X","LinkedIn","Facebook","Instagram","Reddit","GitHub","Hacker News","Product Hunt","Medium","Substack","TikTok","YouTube","Discord","Slack","Notion","Dev.to"].includes(k) : true)
+                          .filter(([k]) => true)
                           .sort((a, b) => b[1] - a[1])
                           .map(([k, v]) => {
                             const display = networkMode && k.startsWith("StartupBar (") ? k.slice(12, -1) : k;
