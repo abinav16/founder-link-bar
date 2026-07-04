@@ -430,7 +430,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
 
     map.on("load", () => {
       applyFog();
-      setMapReady(true);
+      setTimeout(() => setMapReady(true), 5000);
     });
 
     // Stop auto-rotate when the user interacts with the map
