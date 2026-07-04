@@ -658,10 +658,13 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
         if (!code) return;
 
         const device = row.device ?? "unknown";
+        // Same normalization as refreshData: on a host-scoped dashboard, our own
+        // startup id is not a referrer — fall through to the URL referrer.
+        const effHost = scopeStartupId && row.host_startup_id === scopeStartupId ? null : row.host_startup_id;
         setRecentCount((c) => c + 1);
-        addPin(row.id, code, device, row.host_startup_id, row.os ?? "unknown", row.browser ?? "unknown", row.path, row.referrer);
+        addPin(row.id, code, device, effHost, row.os ?? "unknown", row.browser ?? "unknown", row.path, row.referrer);
 
-        resolveReferrer(row.host_startup_id, row.referrer).then(({ name: referrerName }) => {
+        resolveReferrer(effHost, row.referrer).then(({ name: referrerName }) => {
           setFeed((prev) => [
             { id: row.id, name: funName(row.id), flag: flagEmoji(code), country: code, path: row.path ?? "/", device, referrerName, ts: Date.now() },
             ...prev,
