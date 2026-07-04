@@ -754,12 +754,10 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
           {/* ── Map ── */}
           <div className="relative" style={{ aspectRatio: isMobile ? "4/3" : "800 / 380" }}>
             <div ref={containerRef} className="absolute inset-0 h-full w-full" />
-            {!mapReady && (
-              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-neutral-950">
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/10 border-t-emerald-400" />
-                <p className="mt-3 text-xs text-white/40">Loading globe…</p>
-              </div>
-            )}
+            <div className={`absolute inset-0 z-20 flex flex-col items-center justify-center bg-neutral-950 transition-opacity duration-300 ${mapReady ? "pointer-events-none opacity-0" : "opacity-100"}`}>
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/10 border-t-emerald-400" />
+              <p className="mt-3 text-xs text-white/40">Loading globe…</p>
+            </div>
 
             {/* ── Startup logo + name overlay ── */}
             {startupName && (
