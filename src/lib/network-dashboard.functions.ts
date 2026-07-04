@@ -40,9 +40,6 @@ export const getNetworkDashboard = createServerFn({ method: "GET" }).handler(
     const supabase = getClient();
 
     const now = new Date();
-    const todayStart = new Date(now);
-    todayStart.setUTCHours(0, 0, 0, 0);
-    const sinceToday = todayStart.toISOString();
     const since7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
     const { data: startups } = await supabase
@@ -54,39 +51,25 @@ export const getNetworkDashboard = createServerFn({ method: "GET" }).handler(
 
     const approvedIds = (startups ?? []).map((s) => s.id);
 
-    const [
-      { count: totalImpressions },
-      { count: totalClicks },
-      { data: imps24h },
-      { data: clicks24h },
-    ] = await Promise.all([
-      supabase
-        .from("impressions")
-        .select("*", { count: "exact", head: true })
-        .in("shown_startup_id", approvedIds),
-      supabase
-        .from("clicks")
-        .select("*", { count: "exact", head: true })
-        .in("shown_startup_id", approvedIds),
-      supabase
-        .from("impressions")
-        .select("shown_startup_id")
-        .in("shown_startup_id", approvedIds)
-        .gte("created_at", sinceToday),
-      supabase
-        .from("clicks")
-        .select("shown_startup_id")
-        .in("shown_startup_id", approvedIds)
-        .gte("created_at", sinceToday),
+    const [totalsRes, per24hRes] = await Promise.all([
+      supabase.rpc("public_network_totals" as any, { _ids: approvedIds }),
+      supabase.rpc("public_startup_24h" as any, { _ids: approvedIds }),
     ]);
 
+    const totalsRow = (totalsRes.data as any)?.[0] ?? {};
+    const totalImpressions = Number(totalsRow.total_impressions ?? 0);
+    const totalClicks = Number(totalsRow.total_clicks ?? 0);
+
+    const per24h = (per24hRes.data ?? []) as Array<{
+      startup_id: string;
+      impressions_24h: number;
+      clicks_24h: number;
+    }>;
     const imp24hMap: Record<string, number> = {};
-    for (const r of imps24h ?? []) {
-      imp24hMap[r.shown_startup_id] = (imp24hMap[r.shown_startup_id] ?? 0) + 1;
-    }
     const click24hMap: Record<string, number> = {};
-    for (const r of clicks24h ?? []) {
-      click24hMap[r.shown_startup_id] = (click24hMap[r.shown_startup_id] ?? 0) + 1;
+    for (const r of per24h) {
+      imp24hMap[r.startup_id] = Number(r.impressions_24h) || 0;
+      click24hMap[r.startup_id] = Number(r.clicks_24h) || 0;
     }
 
     const cards: StartupCard[] = (startups ?? []).map((s: any) => ({
@@ -100,15 +83,12 @@ export const getNetworkDashboard = createServerFn({ method: "GET" }).handler(
       clicks_24h: click24hMap[s.id] ?? 0,
     }));
 
-    const ti = totalImpressions ?? 0;
-    const tc = totalClicks ?? 0;
-
     return {
       stats: {
         totalStartups: cards.length,
-        totalImpressions: ti,
-        totalClicks: tc,
-        ctr: ti > 0 ? Math.round((tc / ti) * 1000) / 10 : 0,
+        totalImpressions,
+        totalClicks,
+        ctr: totalImpressions > 0 ? Math.round((totalClicks / totalImpressions) * 1000) / 10 : 0,
       },
       recentStartups: cards,
       newThisWeek: cards.filter((c) => c.created_at >= since7d),

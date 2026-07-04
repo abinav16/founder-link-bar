@@ -327,6 +327,48 @@ export type Database = {
         }
         Returns: number
       }
+      public_network_activity: {
+        Args: never
+        Returns: {
+          today_clicks: number
+          today_impressions: number
+          yesterday_clicks: number
+          yesterday_impressions: number
+        }[]
+      }
+      public_network_totals: {
+        Args: { _ids: string[] }
+        Returns: {
+          total_clicks: number
+          total_impressions: number
+        }[]
+      }
+      public_startup_24h: {
+        Args: { _ids: string[] }
+        Returns: {
+          clicks_24h: number
+          impressions_24h: number
+          startup_id: string
+        }[]
+      }
+      public_startup_daily: {
+        Args: { _ids: string[] }
+        Returns: {
+          day_offset: number
+          given: number
+          received: number
+          startup_id: string
+        }[]
+      }
+      public_startup_totals: {
+        Args: { _ids: string[] }
+        Returns: {
+          clicks: number
+          impressions: number
+          impressions_given: number
+          startup_id: string
+        }[]
+      }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
