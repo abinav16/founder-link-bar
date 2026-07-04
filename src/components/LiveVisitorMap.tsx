@@ -1122,7 +1122,11 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
             const xDevCounts: Map<string, number> = activeFilter?.type === "device" ? deviceCounts : (() => { const m = new Map<string, number>(); for (const f of filteredSlice ?? feed) m.set(f.device, (m.get(f.device) ?? 0) + 1); return m; })();
             const filteredFeed = feed.filter((f) => matchesFilter(f, activeFilter));
             const ACTIVE_WINDOW_MS = 5 * 60 * 1000;
-            const activeCount = filteredFeed.filter((f) => nowTick - f.ts < ACTIVE_WINDOW_MS).length;
+            const livePinIdSet = new Set(livePinIds);
+            const activeCount = Math.max(
+              filteredFeed.filter((f) => livePinIdSet.has(f.id)).length,
+              filteredFeed.filter((f) => nowTick - f.ts < ACTIVE_WINDOW_MS).length,
+            );
             return (
               <div className="flex gap-2 p-2 items-start border-t border-white/[0.06]" style={{ background: "rgba(0,0,0,0.85)" }}>
                 {/* Left: X Visitors (stats) */}
