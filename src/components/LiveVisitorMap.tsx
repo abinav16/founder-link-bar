@@ -1082,10 +1082,13 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
               const ACTIVE_WINDOW_MS = 5 * 60 * 1000;
               const filteredFeed = feed.filter((f) => matchesFilter(f, activeFilter));
               const livePinIdSet = new Set(livePinIds);
+              // Count = pins currently on the globe, so the header always matches
+              // what the user actually sees. Feed entries without a pin (missing
+              // country / not yet placed) are excluded.
               const activeFromPins = filteredFeed.filter((f) => livePinIdSet.has(f.id));
-              const activeFromRecent = filteredFeed.filter((f) => nowTick - f.ts < ACTIVE_WINDOW_MS);
-              const activeCount = Math.max(activeFromPins.length, activeFromRecent.length);
-              const activeAvatars = (activeFromPins.length >= activeFromRecent.length ? activeFromPins : activeFromRecent).slice(0, 4);
+              const activeCount = activeFromPins.length;
+              const activeAvatars = activeFromPins.slice(0, 4);
+
               return (
                 <div ref={feedCardRef} className={`absolute bottom-3 left-3 z-10 overflow-hidden rounded-xl border border-white/10 bg-black/75 backdrop-blur-md ${isMobile ? "w-[200px]" : "w-[300px]"}`}>
                   {/* Header — active now count */}
@@ -1188,12 +1191,9 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
             const xCtryCounts: Map<string, { flag: string; count: number }> = activeFilter?.type === "country" ? countryCounts : (() => { const m = new Map<string, { flag: string; count: number }>(); for (const f of filteredSlice ?? feed) { const prev = m.get(f.country); m.set(f.country, { flag: f.flag, count: (prev?.count ?? 0) + 1 }); } return m; })();
             const xDevCounts: Map<string, number> = activeFilter?.type === "device" ? deviceCounts : (() => { const m = new Map<string, number>(); for (const f of filteredSlice ?? feed) m.set(f.device, (m.get(f.device) ?? 0) + 1); return m; })();
             const filteredFeed = feed.filter((f) => matchesFilter(f, activeFilter));
-            const ACTIVE_WINDOW_MS = 5 * 60 * 1000;
             const livePinIdSet = new Set(livePinIds);
-            const activeCount = Math.max(
-              filteredFeed.filter((f) => livePinIdSet.has(f.id)).length,
-              filteredFeed.filter((f) => nowTick - f.ts < ACTIVE_WINDOW_MS).length,
-            );
+            const activeCount = filteredFeed.filter((f) => livePinIdSet.has(f.id)).length;
+
             return (
               <div className="flex gap-2 p-2 items-start border-t border-white/[0.06]" style={{ background: "rgba(0,0,0,0.85)" }}>
                 {/* Left: X Visitors (stats) */}
