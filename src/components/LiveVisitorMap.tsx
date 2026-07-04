@@ -409,9 +409,16 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
     if (!MAPBOX_TOKEN || !containerRef.current) return;
 
     mapboxgl.accessToken = MAPBOX_TOKEN;
-    // DISABLED for test: const map = new mapboxgl.Map({...});
-    // mapRef.current = map;
-    return;
+    const map = new mapboxgl.Map({
+      container: containerRef.current,
+      style: "mapbox://styles/mapbox/dark-v11",
+      center: [10, 25],
+      zoom: 1.6,
+      projection: "mercator",
+      attributionControl: false,
+      interactive: true,
+    });
+    mapRef.current = map;
 
     const applyFog = () => map.setFog({
       color: "rgb(9,9,11)",
@@ -423,7 +430,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
 
     map.on("load", () => {
       applyFog();
-      setTimeout(() => setMapReady(true), 5000);
+      setMapReady(true);
     });
 
     // Stop auto-rotate when the user interacts with the map
