@@ -1003,7 +1003,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
             )}
 
             {/* ── Feed panel (absolute overlay, bottom-left) — desktop only ── */}
-            {!isMobile && feed.filter((f) => matchesFilter(f, activeFilter)).length > 0 && (() => {
+            {!isMobile && (() => {
               const ACTIVE_WINDOW_MS = 5 * 60 * 1000;
               const filteredFeed = feed.filter((f) => matchesFilter(f, activeFilter));
               const activeCount = filteredFeed.filter((f) => nowTick - f.ts < ACTIVE_WINDOW_MS).length;
