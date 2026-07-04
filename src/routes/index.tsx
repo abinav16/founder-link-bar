@@ -587,6 +587,7 @@ function Logo() {
 }
 
 function Landing() {
+  useTrackSiteVisit();
   const navigate = useNavigate();
   const [user, setUser] = useState<{ email?: string; name?: string } | null>(null);
   const [authReady, setAuthReady] = useState(false);
