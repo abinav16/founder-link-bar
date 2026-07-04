@@ -532,6 +532,12 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
       const ctryCounts = new Map<string, { flag: string; count: number }>();
       const devCounts = new Map<string, number>();
 
+      // When scoped to a host startup (dashboard), host_startup_id == scopeStartupId
+      // for every row and is not a meaningful "referrer" — treat it as null so
+      // the resolver falls through to the actual referrer URL.
+      const effectiveHost = (hostId: string | null): string | null =>
+        scopeStartupId && hostId === scopeStartupId ? null : hostId;
+
       for (const row of data) {
         seenRef.current.add(row.id);
         const country = row.country?.toUpperCase();
@@ -541,7 +547,8 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
         }
         const device = row.device ?? "unknown";
         devCounts.set(device, (devCounts.get(device) ?? 0) + 1);
-        if (row.host_startup_id) hostIds.add(row.host_startup_id);
+        const eh = effectiveHost(row.host_startup_id);
+        if (eh) hostIds.add(eh);
       }
 
       const nameById = new Map<string, string>();
