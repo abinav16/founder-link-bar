@@ -409,16 +409,9 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
     if (!MAPBOX_TOKEN || !containerRef.current) return;
 
     mapboxgl.accessToken = MAPBOX_TOKEN;
-    const map = new mapboxgl.Map({
-      container: containerRef.current,
-      style: "mapbox://styles/mapbox/dark-v11",
-      center: [10, 25],
-      zoom: 1.6,
-      projection: "mercator",
-      attributionControl: false,
-      interactive: true,
-    });
-    mapRef.current = map;
+    // DISABLED for test: const map = new mapboxgl.Map({...});
+    // mapRef.current = map;
+    return;
 
     const applyFog = () => map.setFog({
       color: "rgb(9,9,11)",
