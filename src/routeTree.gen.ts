@@ -27,6 +27,7 @@ import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/e
 import { Route as ApiPublicWidgetPickRouteImport } from './routes/api/public/widget.pick'
 import { Route as ApiPublicWidgetHeartbeatRouteImport } from './routes/api/public/widget.heartbeat'
 import { Route as ApiPublicWidgetClickRouteImport } from './routes/api/public/widget.click'
+import { Route as ApiPublicTrackSiteVisitRouteImport } from './routes/api/public/track.site-visit'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -119,6 +120,11 @@ const ApiPublicWidgetClickRoute = ApiPublicWidgetClickRouteImport.update({
   path: '/api/public/widget/click',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicTrackSiteVisitRoute = ApiPublicTrackSiteVisitRouteImport.update({
+  id: '/api/public/track/site-visit',
+  path: '/api/public/track/site-visit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -134,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/widget/bar': typeof WidgetBarRoute
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
+  '/api/public/track/site-visit': typeof ApiPublicTrackSiteVisitRoute
   '/api/public/widget/click': typeof ApiPublicWidgetClickRoute
   '/api/public/widget/heartbeat': typeof ApiPublicWidgetHeartbeatRoute
   '/api/public/widget/pick': typeof ApiPublicWidgetPickRoute
@@ -153,6 +160,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/widget/bar': typeof WidgetBarRoute
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
+  '/api/public/track/site-visit': typeof ApiPublicTrackSiteVisitRoute
   '/api/public/widget/click': typeof ApiPublicWidgetClickRoute
   '/api/public/widget/heartbeat': typeof ApiPublicWidgetHeartbeatRoute
   '/api/public/widget/pick': typeof ApiPublicWidgetPickRoute
@@ -174,6 +182,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/widget/bar': typeof WidgetBarRoute
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
+  '/api/public/track/site-visit': typeof ApiPublicTrackSiteVisitRoute
   '/api/public/widget/click': typeof ApiPublicWidgetClickRoute
   '/api/public/widget/heartbeat': typeof ApiPublicWidgetHeartbeatRoute
   '/api/public/widget/pick': typeof ApiPublicWidgetPickRoute
@@ -195,6 +204,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/widget/bar'
     | '/api/public/verify-install'
+    | '/api/public/track/site-visit'
     | '/api/public/widget/click'
     | '/api/public/widget/heartbeat'
     | '/api/public/widget/pick'
@@ -214,6 +224,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/widget/bar'
     | '/api/public/verify-install'
+    | '/api/public/track/site-visit'
     | '/api/public/widget/click'
     | '/api/public/widget/heartbeat'
     | '/api/public/widget/pick'
@@ -234,6 +245,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/widget/bar'
     | '/api/public/verify-install'
+    | '/api/public/track/site-visit'
     | '/api/public/widget/click'
     | '/api/public/widget/heartbeat'
     | '/api/public/widget/pick'
@@ -253,6 +265,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   WidgetBarRoute: typeof WidgetBarRoute
   ApiPublicVerifyInstallRoute: typeof ApiPublicVerifyInstallRoute
+  ApiPublicTrackSiteVisitRoute: typeof ApiPublicTrackSiteVisitRoute
   ApiPublicWidgetClickRoute: typeof ApiPublicWidgetClickRoute
   ApiPublicWidgetHeartbeatRoute: typeof ApiPublicWidgetHeartbeatRoute
   ApiPublicWidgetPickRoute: typeof ApiPublicWidgetPickRoute
@@ -387,6 +400,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWidgetClickRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/track/site-visit': {
+      id: '/api/public/track/site-visit'
+      path: '/api/public/track/site-visit'
+      fullPath: '/api/public/track/site-visit'
+      preLoaderRoute: typeof ApiPublicTrackSiteVisitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -416,6 +436,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   WidgetBarRoute: WidgetBarRoute,
   ApiPublicVerifyInstallRoute: ApiPublicVerifyInstallRoute,
+  ApiPublicTrackSiteVisitRoute: ApiPublicTrackSiteVisitRoute,
   ApiPublicWidgetClickRoute: ApiPublicWidgetClickRoute,
   ApiPublicWidgetHeartbeatRoute: ApiPublicWidgetHeartbeatRoute,
   ApiPublicWidgetPickRoute: ApiPublicWidgetPickRoute,
