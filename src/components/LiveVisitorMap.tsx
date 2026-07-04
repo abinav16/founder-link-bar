@@ -1137,7 +1137,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
                   </div>
                 )}
                 {/* Right: Recent visitors (feed) */}
-                {filteredFeed.length > 0 && (
+                {(
                   <div ref={feedCardRef} className="flex-1 min-w-0 overflow-hidden rounded-xl border border-white/10 bg-black/75">
                     <div className="flex items-center justify-between border-b border-white/[0.06] px-3 py-2">
                       <div className="flex items-center gap-1.5">
