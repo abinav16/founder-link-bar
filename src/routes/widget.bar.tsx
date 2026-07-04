@@ -182,10 +182,16 @@ function WidgetBar() {
       {isMobile && (
         <style>{`
           @keyframes sb-marquee {
-            0%   { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
           }
-          .sb-marquee-track { animation: sb-marquee 14s linear infinite; }
+          .sb-marquee-track {
+            display: inline-flex;
+            align-items: center;
+            animation: sb-marquee 18s linear infinite;
+            will-change: transform;
+          }
+          .sb-marquee-item { padding-right: 2.5rem; white-space: nowrap; }
         `}</style>
       )}
       <div style={barStyle}>
@@ -212,14 +218,13 @@ function WidgetBar() {
 
             {/* Description: marquee on mobile, truncated on desktop */}
             {isMobile ? (
-              <span style={{ flex: 1, overflow: "hidden", position: "relative" }}>
-                <span
-                  className="sb-marquee-track"
-                  style={{ display: "inline-block", whiteSpace: "nowrap", color: tokens.textMuted }}
-                >
-                  — {startup.description}
+              <span style={{ flex: 1, overflow: "hidden", position: "relative", minWidth: 0 }}>
+                <span className="sb-marquee-track" style={{ color: tokens.textMuted }}>
+                  <span className="sb-marquee-item">— {startup.description}</span>
+                  <span className="sb-marquee-item" aria-hidden="true">— {startup.description}</span>
                 </span>
               </span>
+
             ) : (
               <span style={{ color: tokens.textMuted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
                 &nbsp;— {startup.description}
