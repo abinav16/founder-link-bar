@@ -1014,8 +1014,11 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
             {!isMobile && (() => {
               const ACTIVE_WINDOW_MS = 5 * 60 * 1000;
               const filteredFeed = feed.filter((f) => matchesFilter(f, activeFilter));
-              const activeCount = filteredFeed.filter((f) => nowTick - f.ts < ACTIVE_WINDOW_MS).length;
-              const activeAvatars = filteredFeed.filter((f) => nowTick - f.ts < ACTIVE_WINDOW_MS).slice(0, 4);
+              const livePinIdSet = new Set(livePinIds);
+              const activeFromPins = filteredFeed.filter((f) => livePinIdSet.has(f.id));
+              const activeFromRecent = filteredFeed.filter((f) => nowTick - f.ts < ACTIVE_WINDOW_MS);
+              const activeCount = Math.max(activeFromPins.length, activeFromRecent.length);
+              const activeAvatars = (activeFromPins.length >= activeFromRecent.length ? activeFromPins : activeFromRecent).slice(0, 4);
               return (
                 <div ref={feedCardRef} className={`absolute bottom-3 left-3 z-10 overflow-hidden rounded-xl border border-white/10 bg-black/75 backdrop-blur-md ${isMobile ? "w-[200px]" : "w-[300px]"}`}>
                   {/* Header — active now count */}
