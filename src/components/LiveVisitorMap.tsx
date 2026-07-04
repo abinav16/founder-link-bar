@@ -74,6 +74,10 @@ function timeAgo(ts: number, now: number): string {
   return `${h}h ago`;
 }
 
+function cleanPath(path: string): string {
+  return path.split("?")[0];
+}
+
 interface LiveVisitorMapProps {
   scopeStartupId?: string;
   title?: string;
@@ -1088,7 +1092,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
                                         {f.referrerName.startsWith("StartupBar (") ? f.referrerName.slice(12, -1) : f.referrerName}
                                       </span>
                                       <span className="shrink-0 text-white/20">·</span>
-                                      <span className="truncate text-white/30">{f.path}</span>
+                                      <span className="truncate text-white/30">{cleanPath(f.path)}</span>
                                     </div>
                                   </>
                                 ) : (
@@ -1097,7 +1101,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
                                       <span className="truncate text-[11px] font-semibold capitalize text-white">{f.name}</span>
                                       <span className="shrink-0 text-[10px] text-white/35">{f.flag} {COUNTRY_NAMES[f.country] ?? f.country}</span>
                                     </div>
-                                    <div className="mt-0.5 truncate text-[10px] text-white/30">{f.path}</div>
+                                    <div className="mt-0.5 truncate text-[10px] text-white/30">{cleanPath(f.path)}</div>
                                   </>
                                 )}
                               </div>
@@ -1192,7 +1196,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
                                   <span className="truncate text-[10px] font-semibold capitalize text-white">{f.name}</span>
                                   <span className="shrink-0 text-[9px] text-white/35">{f.flag}</span>
                                 </div>
-                                <div className="truncate text-[9px] text-white/30">{f.path}</div>
+                                <div className="truncate text-[9px] text-white/30">{cleanPath(f.path)}</div>
                               </div>
                               <span className="shrink-0 text-[8px] tabular-nums text-white/20">{timeAgo(f.ts, nowTick)}</span>
                             </div>
