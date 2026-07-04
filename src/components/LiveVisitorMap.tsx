@@ -1193,10 +1193,8 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
             const filteredFeed = feed.filter((f) => matchesFilter(f, activeFilter));
             const ACTIVE_WINDOW_MS = 5 * 60 * 1000;
             const livePinIdSet = new Set(livePinIds);
-            const activeCount = Math.max(
-              filteredFeed.filter((f) => livePinIdSet.has(f.id)).length,
-              filteredFeed.filter((f) => nowTick - f.ts < ACTIVE_WINDOW_MS).length,
-            );
+            const activeCount = filteredFeed.filter((f) => livePinIdSet.has(f.id)).length;
+
             return (
               <div className="flex gap-2 p-2 items-start border-t border-white/[0.06]" style={{ background: "rgba(0,0,0,0.85)" }}>
                 {/* Left: X Visitors (stats) */}
