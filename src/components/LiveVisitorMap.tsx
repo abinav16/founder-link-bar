@@ -703,11 +703,15 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
   useEffect(() => {
     const t = setInterval(() => {
       const now = Date.now();
+      const before = pinsRef.current.length;
       pinsRef.current = pinsRef.current.filter((p) => {
         const expired = now - p.createdAt >= PIN_LIFETIME_MS;
         if (expired) { p.marker.remove(); p.popup?.remove(); }
         return !expired;
       });
+      if (pinsRef.current.length !== before) {
+        setLivePinIds(pinsRef.current.map((p) => p.id));
+      }
     }, 1000);
     return () => clearInterval(t);
   }, []);
