@@ -372,7 +372,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
       </div>
     `;
 
-    const pinRecord: LivePin = { id, country, device, referrerName, lng, lat, marker: null as unknown as mapboxgl.Marker, popup: null, createdAt: Date.now() };
+    const pinRecord: LivePin = { id, country, device, referrerName, lng, lat, marker: null as unknown as mapboxgl.Marker, popup: null, createdAt: createdAtMs ?? Date.now() };
 
     el.addEventListener("click", (e) => {
       // Without this, the click bubbles to the map container where Mapbox's
