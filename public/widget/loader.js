@@ -41,17 +41,20 @@
     var currentTheme = theme;
     var bg = theme === 'dark' ? '#18181b' : '#ffffff';
 
-    // iPhone/iPod Safari has a collapsing address bar that recalculates the
-    // visual viewport on scroll. A fixed iframe at top:0 combined with body
-    // padding-top triggers a WebKit bug (bug 297779 / iOS 26 regression) where
-    // fixed/sticky elements shift vertically every few seconds. On that subset
-    // only, we render the bar as an in-flow block at the top of <body> instead
-    // of a fixed overlay, and skip mutating host padding/headers.
     var ua = navigator.userAgent || '';
     var isIphoneSafari = /iPhone|iPod/.test(ua) && /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|GSA/.test(ua);
+    var isMobile = (window.innerWidth || screen.width || 0) < 640;
 
     var iframe = document.createElement('iframe');
-    iframe.src = origin + '/widget/bar?host=' + encodeURIComponent(id) + '&theme=' + theme + '&domain=' + encodeURIComponent(window.location.hostname);
+    var iframeSrc = origin + '/widget/bar?host=' + encodeURIComponent(id) + '&theme=' + theme + '&domain=' + encodeURIComponent(window.location.hostname) + '&path=' + encodeURIComponent(window.location.pathname) + (isMobile ? '&mobile=1' : '');
+    try {
+      var lp = new URLSearchParams(window.location.search);
+      if (lp.get('utm_source') === 'startupbar') {
+        var sbvia = lp.get('_sbvia');
+        iframeSrc += '&sbref=' + encodeURIComponent('startupbar' + (sbvia ? ':' + sbvia : ''));
+      }
+    } catch (e) {}
+    iframe.src = iframeSrc;
     iframe.setAttribute('title', 'StartupBar');
     iframe.setAttribute('scrolling', 'no');
     if (isIphoneSafari) {
@@ -82,7 +85,6 @@
         if (!/px$/.test(topRaw)) return;
         var originalPx = parseFloat(topRaw);
         if (isNaN(originalPx)) return;
-        // Only shift elements truly anchored to the very top; leave banners/toasts alone.
         if (originalPx !== 0) return;
         el.dataset.startupbarOriginalTop = el.style.top || '';
         el.style.top = '36px';
@@ -96,7 +98,6 @@
         for (var i = 0; i < nodes.length; i++) shiftFixedElement(nodes[i]);
       } catch (e) {}
     }
-
 
     function startObserver() {
       var observer = new MutationObserver(function() {
@@ -127,14 +128,8 @@
         while (parent) {
           var ps = getComputedStyle(parent);
           if (ps.display === 'none' || ps.visibility === 'hidden' || parseFloat(ps.opacity) === 0) return false;
-          // Intentionally do NOT bail on overflow:hidden parents with
-          // non-zero size — that produced many false positives on normal
-          // page wrappers.
           parent = parent.parentElement;
         }
-        // Point-hit test: only treat as hidden if a solid, interactive
-        // element is truly covering the bar. Ignore transparent / decorative
-        // overlays (splash screens, cookie banners fading out, aria-hidden).
         var cx = rect.left + rect.width / 2;
         var cy = rect.top + rect.height / 2;
         if (cx >= 0 && cy >= 0) {
@@ -159,10 +154,6 @@
       }
     }
 
-    // Two-sample confirmation: only report visible=false when two
-    // consecutive local samples agree the widget is hidden. Kills
-    // single-snapshot false positives from splash screens, hydration,
-    // and transient overlays.
     var lastSample = null;
     function sendHeartbeat() {
       try {
@@ -188,9 +179,6 @@
       var start = function () {
         if (started) return;
         started = true;
-        // First sample after page + widget have settled (splash screens,
-        // hydration, cookie banners). 8s, confirmation at 30s, then every
-        // 5 minutes while the tab is visible.
         setTimeout(sendHeartbeat, 8000);
         setTimeout(sendHeartbeat, 30000);
         setInterval(sendHeartbeat, 5 * 60 * 1000);
@@ -203,9 +191,6 @@
       if (document.documentElement && document.documentElement.getAttribute('data-startupbar-injected') === '1') return;
       var html = document.documentElement;
       if (isIphoneSafari) {
-        // In-flow: prepend as first child of <body> so page content flows below.
-        // No body padding, no host header shifting — avoids the iOS Safari
-        // scroll-jump caused by fixed+padding recalculations.
         if (document.body) {
           if (document.body.firstChild) {
             document.body.insertBefore(iframe, document.body.firstChild);
@@ -233,10 +218,6 @@
       }
       startObserver();
       sweepFixedElements();
-      // no MutationObserver-based re-shifting: causes iOS Safari jump on DOM churn.
-      // Instead, re-sweep only on discrete navigation events (SPA route changes,
-      // back/forward, hash changes, full load) so newly mounted fixed headers
-      // get shifted below the bar without polling the DOM.
       try {
         var resweep = function () {
           sweepFixedElements();

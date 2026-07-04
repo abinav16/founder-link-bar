@@ -8,6 +8,9 @@ const search = z.object({
   host: z.string().uuid().optional(),
   theme: z.enum(["light", "dark"]).optional(),
   domain: z.string().optional(),
+  path: z.string().optional(),
+  sbref: z.string().optional(),
+  mobile: z.coerce.number().optional(),
 });
 
 export const Route = createFileRoute("/widget/bar")({
@@ -54,13 +57,14 @@ const darkTokens: typeof lightTokens = {
 };
 
 function WidgetBar() {
-  const { host, theme: urlTheme, domain } = useSearch({ from: "/widget/bar" });
+  const { host, theme: urlTheme, domain, path, sbref, mobile } = useSearch({ from: "/widget/bar" });
   const [activeTheme, setActiveTheme] = useState<"light" | "dark">(urlTheme ?? "light");
   const tokens = activeTheme === "dark" ? darkTokens : lightTokens;
   const [startup, setStartup] = useState<Startup | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const isMobile = mobile === 1;
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -81,6 +85,8 @@ function WidgetBar() {
         const params = new URLSearchParams();
         if (host) params.set("host", host);
         if (domain) params.set("domain", domain);
+        if (path) params.set("path", path);
+        if (sbref) params.set("sbref", sbref);
         const res = await fetch(`/api/public/widget/pick?${params.toString()}`);
         if (res.ok) {
           const data = (await res.json()) as Startup | null;
@@ -165,15 +171,34 @@ function WidgetBar() {
     flexShrink: 0,
   };
 
+  const arrowLinkBase: React.CSSProperties = {
+    flexShrink: 0,
+    color: tokens.text,
+    textDecoration: "none",
+  };
+
   return (
     <div ref={wrapperRef} style={{ position: "relative", width: "100%" }}>
+      {isMobile && (
+        <style>{`
+          @keyframes sb-marquee {
+            0%   { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+          }
+          .sb-marquee-track { animation: sb-marquee 14s linear infinite; }
+        `}</style>
+      )}
       <div style={barStyle}>
+        {/* Info button — always visible */}
         <button onClick={() => setShowInfo(v => !v)} aria-label="About StartupBar" style={iconBtnStyle}>
           <Info size={12} />
         </button>
+
+        {/* STARTUPBAR badge — always visible */}
         <a href="https://startupbar.co" target="_blank" rel="noopener noreferrer" style={labelStyle}>
           STARTUPBAR
         </a>
+
         {loaded && startup ? (
           <>
             <StartupFavicon
@@ -184,15 +209,29 @@ function WidgetBar() {
               className="rounded-sm shrink-0"
             />
             <span style={{ fontWeight: 600, color: tokens.text, flexShrink: 0 }}>{startup.name}</span>
-            <span style={{ color: tokens.textMuted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
-              &nbsp;— {startup.description}
-            </span>
+
+            {/* Description: marquee on mobile, truncated on desktop */}
+            {isMobile ? (
+              <span style={{ flex: 1, overflow: "hidden", position: "relative" }}>
+                <span
+                  className="sb-marquee-track"
+                  style={{ display: "inline-block", whiteSpace: "nowrap", color: tokens.textMuted }}
+                >
+                  — {startup.description}
+                </span>
+              </span>
+            ) : (
+              <span style={{ color: tokens.textMuted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+                &nbsp;— {startup.description}
+              </span>
+            )}
+
             <a
-              href={`/api/public/widget/click?id=${startup.id}${host ? `&host=${host}` : ""}`}
+              href={`/api/public/widget/click?id=${startup.id}${host ? `&host=${host}` : ""}${domain ? `&via=${encodeURIComponent(domain)}` : ""}`}
               target="_top"
-              style={{ flexShrink: 0, fontWeight: 500, color: tokens.text, textDecoration: "none", fontSize: 12 }}
+              style={{ ...arrowLinkBase, fontWeight: isMobile ? 800 : 500, fontSize: isMobile ? 16 : 12 }}
             >
-              Visit →
+              {isMobile ? "→" : "Visit →"}
             </a>
           </>
         ) : (
@@ -210,12 +249,16 @@ function WidgetBar() {
             </a>
           </>
         )}
-        <button onClick={() => {
-          window.parent.postMessage({ type: "startupbar:resize", height: 0 }, "*");
-          setDismissed(true);
-        }} aria-label="Dismiss" style={iconBtnStyle}>
-          <X size={11} />
-        </button>
+
+        {/* X button — desktop only */}
+        {!isMobile && (
+          <button onClick={() => {
+            window.parent.postMessage({ type: "startupbar:resize", height: 0 }, "*");
+            setDismissed(true);
+          }} aria-label="Dismiss" style={iconBtnStyle}>
+            <X size={11} />
+          </button>
+        )}
       </div>
       {showInfo && <InfoPanel tokens={tokens} />}
     </div>
