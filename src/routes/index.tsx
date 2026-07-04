@@ -20,6 +20,25 @@ function useInView(threshold = 0.12) {
   return { ref, visible };
 }
 
+function useTrackSiteVisit() {
+  useEffect(() => {
+    try {
+      const key = "sb_site_visit_tracked";
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, "1");
+      fetch("/api/public/track/site-visit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          path: window.location.pathname + window.location.search,
+          referrer: document.referrer || null,
+        }),
+        keepalive: true,
+      }).catch(() => {});
+    } catch {}
+  }, []);
+}
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
