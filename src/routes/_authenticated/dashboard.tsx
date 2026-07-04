@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Copy, Check, Code2, ArrowRight, BarChart2, MousePointerClick, Layers, Percent, ChevronDown } from "lucide-react";
+import { Copy, Check, Code2, ArrowRight, BarChart2, MousePointerClick, Layers, Percent, ChevronDown, Globe2, Smartphone, Monitor, Tablet } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { StartupFavicon } from "@/components/StartupFavicon";
+import { LiveVisitorMap } from "@/components/LiveVisitorMap";
 
 function DashboardPending() {
   return (
@@ -53,17 +54,93 @@ function DashboardPending() {
   );
 }
 
+interface TrafficBreakdown {
+  countries: { country: string; count: number }[];
+  devices: { device: string; count: number }[];
+  topReferrers: { id: string; name: string; website_url: string; impressions: number; clicks: number }[];
+}
+
+async function loadTrafficBreakdown(startupId: string): Promise<TrafficBreakdown> {
+  const [impsR, clksR] = await Promise.all([
+    supabase
+      .from("impressions")
+      .select("country, device, host_startup_id")
+      .eq("shown_startup_id", startupId)
+      .limit(2000),
+    supabase
+      .from("clicks")
+      .select("host_startup_id")
+      .eq("shown_startup_id", startupId)
+      .not("host_startup_id", "is", null)
+      .limit(2000),
+  ]);
+
+  const impRows = impsR.data ?? [];
+  const clkRows = clksR.data ?? [];
+
+  const countryCounts = new Map<string, number>();
+  const deviceCounts = new Map<string, number>();
+  const referrerImpressions = new Map<string, number>();
+  const referrerClicks = new Map<string, number>();
+
+  for (const row of impRows) {
+    const country = row.country ?? "Unknown";
+    countryCounts.set(country, (countryCounts.get(country) ?? 0) + 1);
+
+    const device = row.device ?? "unknown";
+    deviceCounts.set(device, (deviceCounts.get(device) ?? 0) + 1);
+
+    if (row.host_startup_id) {
+      referrerImpressions.set(row.host_startup_id, (referrerImpressions.get(row.host_startup_id) ?? 0) + 1);
+    }
+  }
+
+  for (const row of clkRows) {
+    if (row.host_startup_id) {
+      referrerClicks.set(row.host_startup_id, (referrerClicks.get(row.host_startup_id) ?? 0) + 1);
+    }
+  }
+
+  const topReferrerIds = [...referrerImpressions.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([id]) => id);
+
+  let topReferrers: TrafficBreakdown["topReferrers"] = [];
+  if (topReferrerIds.length > 0) {
+    const { data: startups } = await supabase
+      .from("startups")
+      .select("id, name, website_url")
+      .in("id", topReferrerIds);
+    topReferrers = topReferrerIds
+      .map((id) => {
+        const s = (startups ?? []).find((x) => x.id === id);
+        return s
+          ? { id, name: s.name, website_url: s.website_url, impressions: referrerImpressions.get(id) ?? 0, clicks: referrerClicks.get(id) ?? 0 }
+          : null;
+      })
+      .filter((x): x is TrafficBreakdown["topReferrers"][number] => x !== null);
+  }
+
+  return {
+    countries: [...countryCounts.entries()].map(([country, count]) => ({ country, count })).sort((a, b) => b.count - a.count).slice(0, 5),
+    devices: [...deviceCounts.entries()].map(([device, count]) => ({ device, count })).sort((a, b) => b.count - a.count),
+    topReferrers,
+  };
+}
+
 async function loadDashboardData(startupId: string) {
   const since = new Date();
   since.setDate(since.getDate() - 6);
   since.setHours(0, 0, 0, 0);
 
-  const [impsR, clksR, dailyR, rankR, current] = await Promise.all([
+  const [impsR, clksR, dailyR, rankR, current, breakdown] = await Promise.all([
     supabase.from("impressions").select("*", { count: "exact", head: true }).eq("shown_startup_id", startupId),
     supabase.from("clicks").select("*", { count: "exact", head: true }).eq("shown_startup_id", startupId),
     supabase.from("impressions").select("created_at").eq("shown_startup_id", startupId).gte("created_at", since.toISOString()),
     supabase.rpc("get_startup_rank", { _startup_id: startupId }),
     fetch(`/api/public/widget/pick?host=${startupId}&preview=true`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+    loadTrafficBreakdown(startupId),
   ]);
 
   const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -81,6 +158,7 @@ async function loadDashboardData(startupId: string) {
     chartData,
     rank,
     current: current as Startup | null,
+    breakdown,
   };
 }
 
@@ -96,7 +174,14 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
     const startup = allStartups[0] ?? null;
 
     if (!startup) {
-      return { userName, allStartups, startup: null, stats: { impressions: 0, clicks: 0 }, chartData: [0, 0, 0, 0, 0, 0, 0], rank: null as number | null, current: null as Startup | null };
+      return {
+        userName, allStartups, startup: null,
+        stats: { impressions: 0, clicks: 0 },
+        chartData: [0, 0, 0, 0, 0, 0, 0],
+        rank: null as number | null,
+        current: null as Startup | null,
+        breakdown: { countries: [], devices: [], topReferrers: [] } as TrafficBreakdown,
+      };
     }
 
     const extra = await loadDashboardData(startup.id);
@@ -113,6 +198,7 @@ interface Startup {
   description: string;
   status: "pending" | "approved" | "rejected";
   rejection_reason?: string | null;
+  logo_url?: string | null;
 }
 
 function StatusPill({ status }: { status: Startup["status"] }) {
@@ -222,6 +308,9 @@ function DashboardPage() {
   const [installStatus, setInstallStatus] = useState<"checking" | "live" | "disconnected" | "unknown">("unknown");
   const [chartData, setChartData] = useState<number[]>(loaderData.chartData);
   const [rank, setRank] = useState<number | null>(loaderData.rank);
+  const [breakdown, setBreakdown] = useState<TrafficBreakdown>(loaderData.breakdown);
+  const [liveTicker, setLiveTicker] = useState<{ country: string; device: string; ts: number } | null>(null);
+  const [isLive, setIsLive] = useState(false);
 
   useEffect(() => {
     if (startup) checkInstall(startup.website_url);
@@ -265,6 +354,60 @@ function DashboardPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!startup) {
+      setIsLive(false);
+      return;
+    }
+
+    const channel = supabase
+      .channel(`dashboard-live:${startup.id}:${crypto.randomUUID()}`)
+      .on("postgres_changes", {
+        event: "INSERT",
+        schema: "public",
+        table: "impressions",
+        filter: `shown_startup_id=eq.${startup.id}`,
+      }, (payload) => {
+        const row = payload.new as { country: string | null; device: string | null; host_startup_id: string | null };
+        const country = row.country ?? "Unknown";
+        const device = row.device ?? "unknown";
+
+        setLiveTicker({ country, device, ts: Date.now() });
+
+        setBreakdown((prev) => {
+          const countries = new Map(prev.countries.map((c) => [c.country, c.count]));
+          countries.set(country, (countries.get(country) ?? 0) + 1);
+
+          const devices = new Map(prev.devices.map((d) => [d.device, d.count]));
+          devices.set(device, (devices.get(device) ?? 0) + 1);
+
+          const topReferrers = row.host_startup_id
+            ? prev.topReferrers.map((r) => r.id === row.host_startup_id ? { ...r, impressions: r.impressions + 1 } : r)
+            : prev.topReferrers;
+
+          return {
+            countries: [...countries.entries()].map(([c, count]) => ({ country: c, count })).sort((a, b) => b.count - a.count).slice(0, 5),
+            devices: [...devices.entries()].map(([d, count]) => ({ device: d, count })).sort((a, b) => b.count - a.count),
+            topReferrers,
+          };
+        });
+
+        setStats((prev) => ({ ...prev, impressions: prev.impressions + 1 }));
+      })
+      .subscribe((status) => setIsLive(status === "SUBSCRIBED"));
+
+    return () => {
+      supabase.removeChannel(channel);
+      setIsLive(false);
+    };
+  }, [startup?.id]);
+
+  useEffect(() => {
+    if (!liveTicker) return;
+    const t = setTimeout(() => setLiveTicker(null), 4000);
+    return () => clearTimeout(t);
+  }, [liveTicker]);
+
   async function checkInstall(siteUrl: string) {
     setInstallStatus("checking");
     try {
@@ -282,12 +425,14 @@ function DashboardPage() {
     setStats({ impressions: 0, clicks: 0 });
     setCurrent(null);
     setChartData([0, 0, 0, 0, 0, 0, 0]);
+    setBreakdown({ countries: [], devices: [], topReferrers: [] });
     checkInstall(s.website_url);
     const extra = await loadDashboardData(s.id);
     setStats(extra.stats);
     setChartData(extra.chartData);
     setRank(extra.rank);
     setCurrent(extra.current);
+    setBreakdown(extra.breakdown);
   }
 
   const snippet = startup
@@ -465,6 +610,54 @@ function DashboardPage() {
                 <Sparkline data={chartData} labels={rollingLabels()} />
               </div>
             </div>
+
+            <LiveVisitorMap scopeStartupId={startup.id} title="Live visitors on your startup" devSimulate startupName={startup.name} startupLogoUrl={startup.logo_url ?? undefined} />
+
+            {(breakdown.countries.length > 0 || breakdown.topReferrers.length > 0) && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {isLive && (
+                      <span className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-600">
+                        <span className="relative flex h-1.5 w-1.5">
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                        </span>
+                        Live
+                      </span>
+                    )}
+                  </div>
+                  {liveTicker && (
+                    <span key={liveTicker.ts} className="text-[11px] text-black/40 animate-in fade-in slide-in-from-right-2 duration-300">
+                      New visitor from {liveTicker.country} · {liveTicker.device}
+                    </span>
+                  )}
+                </div>
+
+              <div className="grid gap-4 min-w-0">
+                <div className="rounded-xl border border-black/8 bg-white p-6 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <Layers className="h-4 w-4 text-black/30" />
+                    <p className="text-sm font-semibold text-black">Top referring sites</p>
+                  </div>
+                  <div className="mt-4 space-y-2.5">
+                    {breakdown.topReferrers.length === 0 ? (
+                      <p className="text-xs text-black/30">Not enough data yet.</p>
+                    ) : breakdown.topReferrers.map((r) => (
+                      <div key={r.id} className="flex items-center gap-2 text-sm min-w-0">
+                        <StartupFavicon url={r.website_url} name={r.name} size={16} className="rounded-sm shrink-0" />
+                        <span className="truncate text-black/60">{r.name}</span>
+                        <span className="ml-auto shrink-0 flex items-center gap-2 text-xs">
+                          <span className="text-black/35">{r.impressions} impr</span>
+                          <span className="font-medium text-black">{r.clicks} clicks</span>
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              </div>
+            )}
 
             <div className="grid gap-4 lg:grid-cols-2 min-w-0">
               <div className="rounded-xl border border-black/8 bg-white p-6 min-w-0 overflow-hidden">
