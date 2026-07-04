@@ -822,7 +822,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
             )}
 
             {/* ── Stats card (absolute overlay, top-left) — desktop only ── */}
-            {!isMobile && recentCount > 0 && (
+            {!isMobile && (
               <div
                 className="absolute top-3 left-3 z-10 rounded-xl border border-white/10 bg-black/80 backdrop-blur-sm flex flex-col"
                 style={{
@@ -1154,7 +1154,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
             return (
               <div className="flex gap-2 p-2 items-start border-t border-white/[0.06]" style={{ background: "rgba(0,0,0,0.85)" }}>
                 {/* Left: X Visitors (stats) */}
-                {recentCount > 0 && (
+                {(
                   <div ref={statsCardRef} className="flex-1 min-w-0 overflow-hidden rounded-xl border border-white/10 bg-black/80" style={{ alignSelf: "flex-start", height: "fit-content" }}>
                     <div className="px-3 pt-2.5 pb-1 border-b border-white/[0.06] flex items-center justify-between">
                       <div className="flex items-center gap-1.5 min-w-0">
