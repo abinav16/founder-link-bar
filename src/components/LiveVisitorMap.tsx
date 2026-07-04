@@ -521,7 +521,9 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
         .gte("created_at", startOfDay.toISOString())
         .order("created_at", { ascending: false })
         .limit(5000);
-      if (scopeStartupId) query = query.eq("shown_startup_id", scopeStartupId);
+      // Dashboard scope: show all visits that happened ON this startup's site
+      // (widget snippet fires a row per pageview with host_startup_id = this startup).
+      if (scopeStartupId) query = query.eq("host_startup_id", scopeStartupId);
 
       const { data } = await query;
       if (!data || data.length === 0) return;
@@ -529,6 +531,12 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
       const hostIds = new Set<string>();
       const ctryCounts = new Map<string, { flag: string; count: number }>();
       const devCounts = new Map<string, number>();
+
+      // When scoped to a host startup (dashboard), host_startup_id == scopeStartupId
+      // for every row and is not a meaningful "referrer" — treat it as null so
+      // the resolver falls through to the actual referrer URL.
+      const effectiveHost = (hostId: string | null): string | null =>
+        scopeStartupId && hostId === scopeStartupId ? null : hostId;
 
       for (const row of data) {
         seenRef.current.add(row.id);
@@ -539,7 +547,8 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
         }
         const device = row.device ?? "unknown";
         devCounts.set(device, (devCounts.get(device) ?? 0) + 1);
-        if (row.host_startup_id) hostIds.add(row.host_startup_id);
+        const eh = effectiveHost(row.host_startup_id);
+        if (eh) hostIds.add(eh);
       }
 
       const nameById = new Map<string, string>();
@@ -566,14 +575,14 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
 
       const refCounts = new Map<string, number>();
       for (const row of data) {
-        const name = resolveReferrerSync(row.host_startup_id, row.referrer);
+        const name = resolveReferrerSync(effectiveHost(row.host_startup_id), row.referrer);
         refCounts.set(name, (refCounts.get(name) ?? 0) + 1);
       }
 
       // Seed feed from the 30 most recent records (already sorted newest-first)
       const seedFeed: FeedEvent[] = data.slice(0, 30).map((row) => {
         const code = row.country?.toUpperCase() ?? "US";
-        const referrerName = resolveReferrerSync(row.host_startup_id, row.referrer);
+        const referrerName = resolveReferrerSync(effectiveHost(row.host_startup_id), row.referrer);
         return {
           id: row.id,
           name: funName(row.id),
@@ -603,7 +612,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
             row.id,
             code,
             row.device ?? "unknown",
-            row.host_startup_id,
+            effectiveHost(row.host_startup_id),
             (row as { os?: string | null }).os ?? "unknown",
             (row as { browser?: string | null }).browser ?? "unknown",
             (row as { path?: string | null }).path ?? "/",
@@ -623,7 +632,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
 
   useEffect(() => {
     const channelName = `live-map:${scopeStartupId ?? "network"}:${crypto.randomUUID()}`;
-    const filter = scopeStartupId ? `shown_startup_id=eq.${scopeStartupId}` : undefined;
+    const filter = scopeStartupId ? `host_startup_id=eq.${scopeStartupId}` : undefined;
 
     const config = filter
       ? { event: "INSERT" as const, schema: "public", table: "impressions", filter }
@@ -649,10 +658,13 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
         if (!code) return;
 
         const device = row.device ?? "unknown";
+        // Same normalization as refreshData: on a host-scoped dashboard, our own
+        // startup id is not a referrer — fall through to the URL referrer.
+        const effHost = scopeStartupId && row.host_startup_id === scopeStartupId ? null : row.host_startup_id;
         setRecentCount((c) => c + 1);
-        addPin(row.id, code, device, row.host_startup_id, row.os ?? "unknown", row.browser ?? "unknown", row.path, row.referrer);
+        addPin(row.id, code, device, effHost, row.os ?? "unknown", row.browser ?? "unknown", row.path, row.referrer);
 
-        resolveReferrer(row.host_startup_id, row.referrer).then(({ name: referrerName }) => {
+        resolveReferrer(effHost, row.referrer).then(({ name: referrerName }) => {
           setFeed((prev) => [
             { id: row.id, name: funName(row.id), flag: flagEmoji(code), country: code, path: row.path ?? "/", device, referrerName, ts: Date.now() },
             ...prev,
