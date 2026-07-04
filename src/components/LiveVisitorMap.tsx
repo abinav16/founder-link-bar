@@ -1003,7 +1003,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
             )}
 
             {/* ── Feed panel (absolute overlay, bottom-left) — desktop only ── */}
-            {!isMobile && feed.filter((f) => matchesFilter(f, activeFilter)).length > 0 && (() => {
+            {!isMobile && (() => {
               const ACTIVE_WINDOW_MS = 5 * 60 * 1000;
               const filteredFeed = feed.filter((f) => matchesFilter(f, activeFilter));
               const activeCount = filteredFeed.filter((f) => nowTick - f.ts < ACTIVE_WINDOW_MS).length;
@@ -1046,47 +1046,56 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
                     <div className="pointer-events-none absolute top-0 left-0 right-0 z-10 h-6 bg-gradient-to-b from-black/60 to-transparent" />
                     <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 h-8 bg-gradient-to-t from-black/80 to-transparent" />
                     <div className="max-h-[104px] overflow-y-auto px-2 py-1.5" style={{ scrollbarWidth: "none" }}>
-                      {filteredFeed.map((f, i) => (
-                        <div key={f.id} className="group flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-white/[0.05]">
-                          <div className="relative shrink-0">
-                            <img
-                              src={avatarUrl(f.id)}
-                              width={26}
-                              height={26}
-                              className="rounded-full bg-zinc-900"
-                              style={{ border: `1.5px solid ${DEVICE_COLORS[f.device] ?? DEVICE_COLORS.unknown}` }}
-                            />
-                            {nowTick - f.ts < ACTIVE_WINDOW_MS && <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full border border-black bg-emerald-400" />}
-                          </div>
-                          <div className="min-w-0 flex-1 overflow-hidden">
-                            {networkMode ? (
-                              <>
-                                <div className="flex items-baseline gap-1 leading-none overflow-hidden">
-                                  <span className="truncate text-[11px] font-semibold capitalize text-white">{f.name}</span>
-                                  <span className="shrink-0 text-[10px] text-white/35">{f.flag} {COUNTRY_NAMES[f.country] ?? f.country}</span>
-                                </div>
-                                <div className="mt-0.5 flex items-center gap-1 overflow-hidden text-[10px] text-white/40">
-                                  <span className="truncate font-medium text-white/50">
-                                    {f.referrerName.startsWith("StartupBar (") ? f.referrerName.slice(12, -1) : f.referrerName}
-                                  </span>
-                                  <span className="shrink-0 text-white/20">·</span>
-                                  <span className="truncate text-white/30">{f.path}</span>
-                                </div>
-                              </>
-                            ) : (
-                              <>
-                                <div className="flex items-baseline gap-1 leading-none overflow-hidden">
-                                  <span className="truncate text-[11px] font-semibold capitalize text-white">{f.name}</span>
-                                  <span className="shrink-0 text-[10px] text-white/35">{f.flag} {COUNTRY_NAMES[f.country] ?? f.country}</span>
-                                </div>
-                                <div className="mt-0.5 truncate text-[10px] text-white/30">{f.path}</div>
-                              </>
-                            )}
-                          </div>
-                          <span className="shrink-0 text-[9px] tabular-nums text-white/20">{timeAgo(f.ts, nowTick)}</span>
+                      {filteredFeed.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-5 text-white/25">
+                          <Eye className="h-4 w-4 mb-1 opacity-40" />
+                          <span className="text-[10px]">No visitors yet</span>
                         </div>
-                      ))}
-                      <div className="h-3" />
+                      ) : (
+                        <>
+                          {filteredFeed.map((f, i) => (
+                            <div key={f.id} className="group flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-white/[0.05]">
+                              <div className="relative shrink-0">
+                                <img
+                                  src={avatarUrl(f.id)}
+                                  width={26}
+                                  height={26}
+                                  className="rounded-full bg-zinc-900"
+                                  style={{ border: `1.5px solid ${DEVICE_COLORS[f.device] ?? DEVICE_COLORS.unknown}` }}
+                                />
+                                {nowTick - f.ts < ACTIVE_WINDOW_MS && <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full border border-black bg-emerald-400" />}
+                              </div>
+                              <div className="min-w-0 flex-1 overflow-hidden">
+                                {networkMode ? (
+                                  <>
+                                    <div className="flex items-baseline gap-1 leading-none overflow-hidden">
+                                      <span className="truncate text-[11px] font-semibold capitalize text-white">{f.name}</span>
+                                      <span className="shrink-0 text-[10px] text-white/35">{f.flag} {COUNTRY_NAMES[f.country] ?? f.country}</span>
+                                    </div>
+                                    <div className="mt-0.5 flex items-center gap-1 overflow-hidden text-[10px] text-white/40">
+                                      <span className="truncate font-medium text-white/50">
+                                        {f.referrerName.startsWith("StartupBar (") ? f.referrerName.slice(12, -1) : f.referrerName}
+                                      </span>
+                                      <span className="shrink-0 text-white/20">·</span>
+                                      <span className="truncate text-white/30">{f.path}</span>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div className="flex items-baseline gap-1 leading-none overflow-hidden">
+                                      <span className="truncate text-[11px] font-semibold capitalize text-white">{f.name}</span>
+                                      <span className="shrink-0 text-[10px] text-white/35">{f.flag} {COUNTRY_NAMES[f.country] ?? f.country}</span>
+                                    </div>
+                                    <div className="mt-0.5 truncate text-[10px] text-white/30">{f.path}</div>
+                                  </>
+                                )}
+                              </div>
+                              <span className="shrink-0 text-[9px] tabular-nums text-white/20">{timeAgo(f.ts, nowTick)}</span>
+                            </div>
+                          ))}
+                          <div className="h-3" />
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1137,7 +1146,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
                   </div>
                 )}
                 {/* Right: Recent visitors (feed) */}
-                {filteredFeed.length > 0 && (
+                {(
                   <div ref={feedCardRef} className="flex-1 min-w-0 overflow-hidden rounded-xl border border-white/10 bg-black/75">
                     <div className="flex items-center justify-between border-b border-white/[0.06] px-3 py-2">
                       <div className="flex items-center gap-1.5">
@@ -1150,22 +1159,31 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
                       <span className="text-[9px] tabular-nums text-white/20">{filteredFeed.length} today</span>
                     </div>
                     <div className="overflow-y-auto px-1.5 py-1" style={{ maxHeight: 220, scrollbarWidth: "none" }}>
-                      {filteredFeed.map((f, i) => (
-                        <div key={f.id} className="flex items-center gap-2 rounded-lg px-1.5 py-1.5 hover:bg-white/[0.05]">
-                          <div className="relative shrink-0">
-                            <img src={avatarUrl(f.id)} width={22} height={22} className="rounded-full bg-zinc-900" style={{ border: `1.5px solid ${DEVICE_COLORS[f.device] ?? DEVICE_COLORS.unknown}` }} />
-                            {i === 0 && <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full border border-black bg-emerald-400" />}
-                          </div>
-                          <div className="min-w-0 flex-1 overflow-hidden">
-                            <div className="flex items-baseline gap-1 overflow-hidden leading-none">
-                              <span className="truncate text-[10px] font-semibold capitalize text-white">{f.name}</span>
-                              <span className="shrink-0 text-[9px] text-white/35">{f.flag}</span>
-                            </div>
-                            <div className="truncate text-[9px] text-white/30">{f.path}</div>
-                          </div>
-                          <span className="shrink-0 text-[8px] tabular-nums text-white/20">{timeAgo(f.ts, nowTick)}</span>
+                      {filteredFeed.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-5 text-white/25">
+                          <Eye className="h-4 w-4 mb-1 opacity-40" />
+                          <span className="text-[10px]">No visitors yet</span>
                         </div>
-                      ))}
+                      ) : (
+                        <>
+                          {filteredFeed.map((f, i) => (
+                            <div key={f.id} className="flex items-center gap-2 rounded-lg px-1.5 py-1.5 hover:bg-white/[0.05]">
+                              <div className="relative shrink-0">
+                                <img src={avatarUrl(f.id)} width={22} height={22} className="rounded-full bg-zinc-900" style={{ border: `1.5px solid ${DEVICE_COLORS[f.device] ?? DEVICE_COLORS.unknown}` }} />
+                                {i === 0 && <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full border border-black bg-emerald-400" />}
+                              </div>
+                              <div className="min-w-0 flex-1 overflow-hidden">
+                                <div className="flex items-baseline gap-1 overflow-hidden leading-none">
+                                  <span className="truncate text-[10px] font-semibold capitalize text-white">{f.name}</span>
+                                  <span className="shrink-0 text-[9px] text-white/35">{f.flag}</span>
+                                </div>
+                                <div className="truncate text-[9px] text-white/30">{f.path}</div>
+                              </div>
+                              <span className="shrink-0 text-[8px] tabular-nums text-white/20">{timeAgo(f.ts, nowTick)}</span>
+                            </div>
+                          ))}
+                        </>
+                      )}
                     </div>
                   </div>
                 )}
