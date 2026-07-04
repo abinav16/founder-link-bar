@@ -661,7 +661,12 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
   useEffect(() => {
     if (!mapReady) return;
     refreshData();
+    // Poll every 30s so the globe stays populated even if the realtime channel
+    // silently drops — mirrors what a manual page refresh would do.
+    const t = setInterval(() => { refreshData(); }, 30000);
+    return () => clearInterval(t);
   }, [refreshData, mapReady]);
+
 
   useEffect(() => {
     const channelName = `live-map:${scopeStartupId ?? "network"}:${crypto.randomUUID()}`;
