@@ -520,6 +520,21 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
   const refreshData = useCallback(async () => {
     setRefreshing(true);
     try {
+      // Reset all in-memory state so switching startups doesn't leak the
+      // previous startup's pins/counts/feed onto the new one.
+      for (const pin of pinsRef.current) {
+        pin.popup?.remove();
+        pin.marker.remove();
+      }
+      pinsRef.current = [];
+      setLivePinIds([]);
+      seenRef.current = new Set<string>();
+      setFeed([]);
+      setReferrerCounts(new Map());
+      setCountryCounts(new Map());
+      setDeviceCounts(new Map());
+      setRecentCount(0);
+
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
 
@@ -535,6 +550,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
 
       const { data } = await query;
       if (!data || data.length === 0) return;
+
 
       const hostIds = new Set<string>();
       const ctryCounts = new Map<string, { flag: string; count: number }>();
