@@ -1044,7 +1044,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
                               className="rounded-full bg-zinc-900"
                               style={{ border: `1.5px solid ${DEVICE_COLORS[f.device] ?? DEVICE_COLORS.unknown}` }}
                             />
-                            {i === 0 && <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full border border-black bg-emerald-400" />}
+                            {nowTick - f.ts < ACTIVE_WINDOW_MS && <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full border border-black bg-emerald-400" />}
                           </div>
                           <div className="min-w-0 flex-1 overflow-hidden">
                             {networkMode ? (
