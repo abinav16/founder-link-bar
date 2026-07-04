@@ -14,7 +14,7 @@ const MAP_THEMES = [
   { id: "outdoors-v12",         label: "Outdoors",  style: "mapbox://styles/mapbox/outdoors-v12",         dot: "#4a7c59" },
 ] as const;
 
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN as string | undefined;
+const MAPBOX_TOKEN = (import.meta.env.VITE_MAPBOX_TOKEN as string | undefined) ?? "pk.eyJ1IjoiZGFuaWVsYWJpbmF2MTYiLCJhIjoiY21tY2FlNG16MDNpcTJyc2ZoNjEzbzU2YyJ9.6DoJDeW5TxYvuEnOc2R47g";
 const PIN_LIFETIME_MS = 60000; // pins stay for 60 seconds
 const DEVICES = ["mobile", "desktop", "tablet"];
 const OSES = ["Windows", "macOS", "iOS", "Android", "Linux"];
