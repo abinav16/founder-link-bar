@@ -591,14 +591,35 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
       setCountryCounts(ctryCounts);
       setDeviceCounts(devCounts);
       setRecentCount(data.length);
+
+      // Drop pins on the map for the most recent visitors, so the globe
+      // isn't empty when opening a dashboard for a startup that already
+      // has historical activity today.
+      if (mapRef.current) {
+        for (const row of data.slice(0, 200).reverse()) {
+          const code = row.country?.toUpperCase();
+          if (!code) continue;
+          addPin(
+            row.id,
+            code,
+            row.device ?? "unknown",
+            row.host_startup_id,
+            (row as { os?: string | null }).os ?? "unknown",
+            (row as { browser?: string | null }).browser ?? "unknown",
+            (row as { path?: string | null }).path ?? "/",
+            row.referrer,
+          );
+        }
+      }
     } finally {
       setRefreshing(false);
     }
   }, [scopeStartupId]);
 
   useEffect(() => {
+    if (!mapReady) return;
     refreshData();
-  }, [refreshData]);
+  }, [refreshData, mapReady]);
 
   useEffect(() => {
     const channelName = `live-map:${scopeStartupId ?? "network"}:${crypto.randomUUID()}`;
