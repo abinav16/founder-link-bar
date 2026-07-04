@@ -74,6 +74,10 @@ function timeAgo(ts: number, now: number): string {
   return `${h}h ago`;
 }
 
+function cleanPath(path: string): string {
+  return path.split("?")[0];
+}
+
 interface LiveVisitorMapProps {
   scopeStartupId?: string;
   title?: string;
