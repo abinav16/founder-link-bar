@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { LiveVisitorMap } from "@/components/LiveVisitorMap";
 import { ArrowRight, Settings, LogOut, LayoutDashboard, Eye, MousePointerClick, Globe, BarChart2, Users, TrendingUp, Info, X, Trophy } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -574,7 +575,16 @@ function Landing() {
   const [liveIndex, setLiveIndex] = useState(0);
   const [mockInfoOpen, setMockInfoOpen] = useState(false);
   const [mockDismissed, setMockDismissed] = useState(false);
+  const [startupBarId, setStartupBarId] = useState<string | null>(null);
+  const [startupBarLogo, setStartupBarLogo] = useState<string | null>(null);
   const liveStartup = liveStartups[liveIndex] ?? null;
+
+  useEffect(() => {
+    supabase.from("startups").select("id, logo_url").ilike("website_url", "%startupbar.co%").maybeSingle().then(({ data }) => {
+      if (data?.id) setStartupBarId(data.id);
+      if (data?.logo_url) setStartupBarLogo(data.logo_url);
+    });
+  }, []);
 
   useEffect(() => {
     supabase.from("startups").select("name, description").eq("status", "approved").then(({ data }) => {
@@ -640,6 +650,7 @@ function Landing() {
                   to="/network"
                   className="flex items-center gap-1.5 px-2 py-2 text-black/50 hover:text-black transition-colors sm:px-3"
                 >
+                  <Globe className="h-4 w-4" />
                   <span className="hidden sm:inline">Network</span>
                 </Link>
                 <Link
@@ -675,6 +686,7 @@ function Landing() {
             ) : (
               <>
                 <Link to="/network" className="flex items-center gap-1.5 px-3 py-2 text-black/50 hover:text-black transition-colors text-[13px]">
+                  <Globe className="h-4 w-4" />
                   <span className="hidden sm:inline">Network</span>
                 </Link>
                 <Link to="/leaderboard" className="flex items-center gap-1.5 px-3 py-2 text-black/50 hover:text-black transition-colors text-[13px]">
@@ -779,6 +791,26 @@ function Landing() {
       </section>
 
       <HowItWorks />
+
+      {/* Live Network Map */}
+      <section className="border-t border-black/8 px-6 py-16 sm:py-24">
+        <div className="mx-auto max-w-6xl">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Live network</span>
+          <h2
+            className="mt-4 text-3xl font-medium leading-tight tracking-tight sm:text-4xl"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            Track where your visitors<br className="hidden sm:block" /> come from. In real time.
+          </h2>
+          <p className="mt-4 text-base text-black/45 max-w-xl">
+            Every founder in the network shares their traffic. Watch the world light up as visitors discover startups like yours.
+          </p>
+          <div className="mt-10">
+            <LiveVisitorMap networkMode title="Live network activity" startupName="StartupBar" startupLogoUrl={startupBarLogo ?? undefined} />
+          </div>
+        </div>
+      </section>
+
       <WhyItWorks />
       <CtaBanner />
       </main>
