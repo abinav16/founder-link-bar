@@ -95,7 +95,6 @@ function RootShell({ children }: { children: ReactNode }) {
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                if (typeof window === 'undefined') return;
                 var p = window.location.pathname;
                 var appRoutes = ['/network', '/leaderboard', '/dashboard', '/account', '/auth'];
                 var isApp = appRoutes.some(function(r) { return p === r || p.startsWith(r + '/'); });
