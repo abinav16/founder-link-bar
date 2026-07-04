@@ -511,9 +511,38 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
     }
   }, [activeFilter]);
 
+  // Whenever the set of live pins changes, make sure every active visitor is
+  // actually visible on screen. Without this, pins on the far side of the globe
+  // (or off-screen in mercator) look "missing" — the header says "4 active now"
+  // but the user only sees the 1 pin currently facing the camera. Pausing the
+  // ambient spin while there are live pins keeps them from rotating back out.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) return;
+    const visiblePins = pinsRef.current.filter((p) => matchesFilter(p, activeFilterRef.current));
+    if (visiblePins.length === 0) return;
+
+    // Stop ambient rotation so the freshly-framed pins don't spin away.
+    if (autoRotateRef.current) {
+      autoRotateRef.current = false;
+      setAutoRotate(false);
+    }
+
+    if (visiblePins.length === 1) {
+      const p = visiblePins[0];
+      map.easeTo({ center: [p.lng, p.lat], zoom: Math.max(map.getZoom(), 1.8), duration: 800 });
+      return;
+    }
+    const bounds = new mapboxgl.LngLatBounds();
+    for (const p of visiblePins) bounds.extend([p.lng, p.lat]);
+    map.fitBounds(bounds, { padding: { top: 60, bottom: 120, left: 340, right: 60 }, maxZoom: 3, duration: 800 });
+  }, [livePinIds, mapReady]);
+
   function toggleFilter(type: FilterType, value: string) {
     setActiveFilter((prev) => (prev?.type === type && prev.value === value ? null : { type, value }));
   }
+
+
 
 
   // Seed the summary card with today's real totals from the database, so it
