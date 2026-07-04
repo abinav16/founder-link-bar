@@ -862,7 +862,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
                         <>
                           {/* Invisible backdrop — click outside closes picker without eating the click */}
                           <div className="fixed inset-0 z-10" onMouseDown={() => setShowThemePicker(false)} />
-                          <div className="absolute left-0 top-full mt-1 z-20 min-w-[130px] rounded-lg border border-white/10 bg-black/90 p-1.5 backdrop-blur-sm shadow-xl">
+                          <div className="absolute right-0 top-full mt-1 z-20 min-w-[130px] rounded-lg border border-white/10 bg-black/90 p-1.5 backdrop-blur-sm shadow-xl">
                             {MAP_THEMES.map((t) => (
                               <button
                                 key={t.id}
