@@ -521,7 +521,9 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
         .gte("created_at", startOfDay.toISOString())
         .order("created_at", { ascending: false })
         .limit(5000);
-      if (scopeStartupId) query = query.eq("shown_startup_id", scopeStartupId);
+      // Dashboard scope: show all visits that happened ON this startup's site
+      // (widget snippet fires a row per pageview with host_startup_id = this startup).
+      if (scopeStartupId) query = query.eq("host_startup_id", scopeStartupId);
 
       const { data } = await query;
       if (!data || data.length === 0) return;
