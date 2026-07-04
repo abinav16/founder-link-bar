@@ -612,7 +612,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
             row.id,
             code,
             row.device ?? "unknown",
-            row.host_startup_id,
+            effectiveHost(row.host_startup_id),
             (row as { os?: string | null }).os ?? "unknown",
             (row as { browser?: string | null }).browser ?? "unknown",
             (row as { path?: string | null }).path ?? "/",
