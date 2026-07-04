@@ -100,6 +100,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
   const [countryCounts, setCountryCounts] = useState<Map<string, { flag: string; count: number }>>(new Map());
   const [deviceCounts, setDeviceCounts] = useState<Map<string, number>>(new Map());
   const [nowTick, setNowTick] = useState(() => Date.now());
+  const [livePinIds, setLivePinIds] = useState<string[]>([]);
   const [activeFilter, setActiveFilter] = useState<ActiveFilter | null>(null);
   const activeFilterRef = useRef<ActiveFilter | null>(null);
   // Defaults to 2D: Mapbox's globe projection renders an atmosphere layer that intercepts
