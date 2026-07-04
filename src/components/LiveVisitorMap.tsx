@@ -15,7 +15,7 @@ const MAP_THEMES = [
 ] as const;
 
 const MAPBOX_TOKEN = (import.meta.env.VITE_MAPBOX_TOKEN as string | undefined) ?? "pk.eyJ1IjoiZGFuaWVsYWJpbmF2MTYiLCJhIjoiY21tY2FlNG16MDNpcTJyc2ZoNjEzbzU2YyJ9.6DoJDeW5TxYvuEnOc2R47g";
-const PIN_LIFETIME_MS = 60000; // pins stay for 60 seconds
+const PIN_LIFETIME_MS = 5 * 60 * 1000; // pins stay on globe for 5 minutes (matches "active now" window)
 const DEVICES = ["mobile", "desktop", "tablet"];
 const OSES = ["Windows", "macOS", "iOS", "Android", "Linux"];
 const BROWSERS = ["Chrome", "Safari", "Firefox", "Edge"];
@@ -306,8 +306,10 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
     os: string,
     browser: string,
     path: string | null,
-    rawReferrer?: string | null
+    rawReferrer?: string | null,
+    createdAtMs?: number
   ) {
+
     const centroid = COUNTRY_CENTROIDS[country];
     if (!centroid || !mapRef.current) return;
 
@@ -370,7 +372,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
       </div>
     `;
 
-    const pinRecord: LivePin = { id, country, device, referrerName, lng, lat, marker: null as unknown as mapboxgl.Marker, popup: null, createdAt: Date.now() };
+    const pinRecord: LivePin = { id, country, device, referrerName, lng, lat, marker: null as unknown as mapboxgl.Marker, popup: null, createdAt: createdAtMs ?? Date.now() };
 
     el.addEventListener("click", (e) => {
       // Without this, the click bubbles to the map container where Mapbox's
@@ -629,9 +631,14 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
       // isn't empty when opening a dashboard for a startup that already
       // has historical activity today.
       if (mapRef.current) {
+        // Only pin visitors from the "active now" window (last 5 minutes) so the
+        // globe reflects who's actually live — not everyone from today.
+        const nowMs = Date.now();
         for (const row of data.slice(0, 200).reverse()) {
           const code = row.country?.toUpperCase();
           if (!code) continue;
+          const createdAtMs = new Date((row as { created_at?: string }).created_at ?? nowMs).getTime();
+          if (nowMs - createdAtMs >= PIN_LIFETIME_MS) continue;
           addPin(
             row.id,
             code,
@@ -641,9 +648,11 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
             (row as { browser?: string | null }).browser ?? "unknown",
             (row as { path?: string | null }).path ?? "/",
             row.referrer,
+            createdAtMs,
           );
         }
       }
+
     } finally {
       setRefreshing(false);
     }
@@ -652,7 +661,12 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
   useEffect(() => {
     if (!mapReady) return;
     refreshData();
+    // Poll every 30s so the globe stays populated even if the realtime channel
+    // silently drops — mirrors what a manual page refresh would do.
+    const t = setInterval(() => { refreshData(); }, 30000);
+    return () => clearInterval(t);
   }, [refreshData, mapReady]);
+
 
   useEffect(() => {
     const channelName = `live-map:${scopeStartupId ?? "network"}:${crypto.randomUUID()}`;
