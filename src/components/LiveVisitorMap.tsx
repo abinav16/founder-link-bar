@@ -100,6 +100,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
   const [countryCounts, setCountryCounts] = useState<Map<string, { flag: string; count: number }>>(new Map());
   const [deviceCounts, setDeviceCounts] = useState<Map<string, number>>(new Map());
   const [nowTick, setNowTick] = useState(() => Date.now());
+  const [livePinIds, setLivePinIds] = useState<string[]>([]);
   const [activeFilter, setActiveFilter] = useState<ActiveFilter | null>(null);
   const activeFilterRef = useRef<ActiveFilter | null>(null);
   // Defaults to 2D: Mapbox's globe projection renders an atmosphere layer that intercepts
@@ -397,6 +398,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
     }
     pinRecord.marker = marker;
     pinsRef.current.push(pinRecord);
+    setLivePinIds(pinsRef.current.map((p) => p.id));
   }
 
   useEffect(() => {
@@ -701,11 +703,15 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
   useEffect(() => {
     const t = setInterval(() => {
       const now = Date.now();
+      const before = pinsRef.current.length;
       pinsRef.current = pinsRef.current.filter((p) => {
         const expired = now - p.createdAt >= PIN_LIFETIME_MS;
         if (expired) { p.marker.remove(); p.popup?.remove(); }
         return !expired;
       });
+      if (pinsRef.current.length !== before) {
+        setLivePinIds(pinsRef.current.map((p) => p.id));
+      }
     }, 1000);
     return () => clearInterval(t);
   }, []);
@@ -1008,8 +1014,11 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
             {!isMobile && (() => {
               const ACTIVE_WINDOW_MS = 5 * 60 * 1000;
               const filteredFeed = feed.filter((f) => matchesFilter(f, activeFilter));
-              const activeCount = filteredFeed.filter((f) => nowTick - f.ts < ACTIVE_WINDOW_MS).length;
-              const activeAvatars = filteredFeed.filter((f) => nowTick - f.ts < ACTIVE_WINDOW_MS).slice(0, 4);
+              const livePinIdSet = new Set(livePinIds);
+              const activeFromPins = filteredFeed.filter((f) => livePinIdSet.has(f.id));
+              const activeFromRecent = filteredFeed.filter((f) => nowTick - f.ts < ACTIVE_WINDOW_MS);
+              const activeCount = Math.max(activeFromPins.length, activeFromRecent.length);
+              const activeAvatars = (activeFromPins.length >= activeFromRecent.length ? activeFromPins : activeFromRecent).slice(0, 4);
               return (
                 <div ref={feedCardRef} className={`absolute bottom-3 left-3 z-10 overflow-hidden rounded-xl border border-white/10 bg-black/75 backdrop-blur-md ${isMobile ? "w-[200px]" : "w-[300px]"}`}>
                   {/* Header — active now count */}
@@ -1113,7 +1122,11 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
             const xDevCounts: Map<string, number> = activeFilter?.type === "device" ? deviceCounts : (() => { const m = new Map<string, number>(); for (const f of filteredSlice ?? feed) m.set(f.device, (m.get(f.device) ?? 0) + 1); return m; })();
             const filteredFeed = feed.filter((f) => matchesFilter(f, activeFilter));
             const ACTIVE_WINDOW_MS = 5 * 60 * 1000;
-            const activeCount = filteredFeed.filter((f) => nowTick - f.ts < ACTIVE_WINDOW_MS).length;
+            const livePinIdSet = new Set(livePinIds);
+            const activeCount = Math.max(
+              filteredFeed.filter((f) => livePinIdSet.has(f.id)).length,
+              filteredFeed.filter((f) => nowTick - f.ts < ACTIVE_WINDOW_MS).length,
+            );
             return (
               <div className="flex gap-2 p-2 items-start border-t border-white/[0.06]" style={{ background: "rgba(0,0,0,0.85)" }}>
                 {/* Left: X Visitors (stats) */}
