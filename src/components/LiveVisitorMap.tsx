@@ -822,7 +822,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
             )}
 
             {/* ── Stats card (absolute overlay, top-left) — desktop only ── */}
-            {!isMobile && recentCount > 0 && (
+            {!isMobile && (
               <div
                 className="absolute top-3 left-3 z-10 rounded-xl border border-white/10 bg-black/80 backdrop-blur-sm flex flex-col"
                 style={{
