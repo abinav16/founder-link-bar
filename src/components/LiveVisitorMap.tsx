@@ -404,8 +404,8 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
     const map = new mapboxgl.Map({
       container: containerRef.current,
       style: "mapbox://styles/mapbox/dark-v11",
-      center: [10, 10],
-      zoom: 0.4,
+      center: [10, 25],
+      zoom: 1.6,
       projection: "mercator",
       attributionControl: false,
       interactive: true,
