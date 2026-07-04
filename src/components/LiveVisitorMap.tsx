@@ -398,6 +398,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
     }
     pinRecord.marker = marker;
     pinsRef.current.push(pinRecord);
+    setLivePinIds(pinsRef.current.map((p) => p.id));
   }
 
   useEffect(() => {
