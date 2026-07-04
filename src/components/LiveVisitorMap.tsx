@@ -15,7 +15,7 @@ const MAP_THEMES = [
 ] as const;
 
 const MAPBOX_TOKEN = (import.meta.env.VITE_MAPBOX_TOKEN as string | undefined) ?? "pk.eyJ1IjoiZGFuaWVsYWJpbmF2MTYiLCJhIjoiY21tY2FlNG16MDNpcTJyc2ZoNjEzbzU2YyJ9.6DoJDeW5TxYvuEnOc2R47g";
-const PIN_LIFETIME_MS = 60000; // pins stay for 60 seconds
+const PIN_LIFETIME_MS = 5 * 60 * 1000; // pins stay on globe for 5 minutes (matches "active now" window)
 const DEVICES = ["mobile", "desktop", "tablet"];
 const OSES = ["Windows", "macOS", "iOS", "Android", "Linux"];
 const BROWSERS = ["Chrome", "Safari", "Firefox", "Edge"];
