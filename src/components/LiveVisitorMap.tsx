@@ -16,6 +16,12 @@ const MAP_THEMES = [
 
 const MAPBOX_TOKEN = (import.meta.env.VITE_MAPBOX_TOKEN as string | undefined) ?? "pk.eyJ1IjoiZGFuaWVsYWJpbmF2MTYiLCJhIjoiY21tY2FlNG16MDNpcTJyc2ZoNjEzbzU2YyJ9.6DoJDeW5TxYvuEnOc2R47g";
 const PIN_LIFETIME_MS = 5 * 60 * 1000; // pins stay on globe for 5 minutes (matches "active now" window)
+// Marker row for the startupbar.co marketing site. Every real landing on
+// startupbar.co inserts an impressions row with shown_startup_id = this id
+// (see src/routes/api/public/track.site-visit.ts). The welcome-page globe
+// filters to these rows so it counts actual site visits, not widget-bar
+// impressions on partner startups.
+const STARTUPBAR_SITE_ID = "0d2db708-f4e9-4b77-bd83-c446826c76b1";
 const DEVICES = ["mobile", "desktop", "tablet"];
 const OSES = ["Windows", "macOS", "iOS", "Android", "Linux"];
 const BROWSERS = ["Chrome", "Safari", "Firefox", "Edge"];
