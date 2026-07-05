@@ -179,7 +179,7 @@
       var start = function () {
         if (started) return;
         started = true;
-        setTimeout(sendHeartbeat, 8000);
+        setTimeout(sendHeartbeat, 2500);
         setTimeout(sendHeartbeat, 30000);
         setInterval(sendHeartbeat, 5 * 60 * 1000);
       };
