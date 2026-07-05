@@ -22,6 +22,7 @@ export const Route = createFileRoute("/api/public/verify-install")({
       GET: async ({ request }) => {
         const url = new URL(request.url);
         const site = url.searchParams.get("url");
+        const expectedId = url.searchParams.get("id");
 
         if (!site) {
           return Response.json({ installed: false, error: "No URL provided" }, { status: 400, headers: NO_STORE });
@@ -45,6 +46,12 @@ export const Route = createFileRoute("/api/public/verify-install")({
             return Response.json({ installed: false, error: `Site returned ${res.status}` }, { headers: NO_STORE });
           }
 
+          // Extract the installed startup id (if any) so we can flag mismatches
+          // where the site embeds a loader for a different startup — that's why
+          // heartbeats never come in even though the script tag is present.
+          let installedId: string | null = null;
+          let idMismatch = false;
+
           const html = await res.text();
           const installed =
             html.includes("startupbar.co/widget") ||
@@ -64,6 +71,16 @@ export const Route = createFileRoute("/api/public/verify-install")({
                 /opacity\s*:\s*0(?!\.)/.test(window) ||
                 /height\s*:\s*0(?:px)?\b/.test(window) ||
                 /\bhidden\b\s*[>"']/.test(window);
+            }
+
+            // Pull the actual data-startup-id value from the script tag so we
+            // can flag "installed for the wrong startup" — a common cause of
+            // "script tag detected but no heartbeats ever land".
+            const idRe = /<script[^>]*data-startup-id=["']([^"']+)["'][^>]*>/i;
+            const idMatch = html.match(idRe);
+            if (idMatch) installedId = idMatch[1];
+            if (expectedId && installedId && installedId !== expectedId) {
+              idMismatch = true;
             }
           }
 
@@ -143,7 +160,7 @@ export const Route = createFileRoute("/api/public/verify-install")({
           }
 
           return Response.json(
-            { installed, suspicious, cspBlocked, cspFrameBlocked, cspImgBlocked },
+            { installed, suspicious, cspBlocked, cspFrameBlocked, cspImgBlocked, installedId, idMismatch },
             { headers: NO_STORE },
           );
         } catch (err: unknown) {

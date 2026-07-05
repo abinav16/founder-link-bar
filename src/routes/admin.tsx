@@ -49,7 +49,7 @@ interface Startup {
 type EmbedState =
   | { state: "idle" }
   | { state: "checking" }
-  | { state: "installed"; suspicious: boolean; cspBlocked: boolean }
+  | { state: "installed"; suspicious: boolean; cspBlocked: boolean; idMismatch: boolean; installedId: string | null }
   | { state: "missing" }
   | { state: "error" };
 
@@ -91,15 +91,15 @@ function AdminPage() {
   async function checkEmbed(id: string, website: string) {
     setEmbed((p) => ({ ...p, [id]: { state: "checking" } }));
     try {
-      const r = await fetch(`/api/public/verify-install?url=${encodeURIComponent(website)}`);
+      const r = await fetch(`/api/public/verify-install?url=${encodeURIComponent(website)}&id=${encodeURIComponent(id)}`);
       const j = await r.json();
       const next: EmbedState = j.installed
-        ? { state: "installed", suspicious: !!j.suspicious, cspBlocked: !!j.cspBlocked }
+        ? { state: "installed", suspicious: !!j.suspicious, cspBlocked: !!j.cspBlocked, idMismatch: !!j.idMismatch, installedId: j.installedId ?? null }
         : j.error
           ? { state: "error" }
           : { state: "missing" };
       setEmbed((p) => ({ ...p, [id]: next }));
-      if (next.state === "installed" && !next.suspicious && !next.cspBlocked) {
+      if (next.state === "installed" && !next.suspicious && !next.cspBlocked && !next.idMismatch) {
         const s = startups.find((x) => x.id === id);
         if (s?.warn_expires_at) {
           await supabase.from("startups").update({ warned_at: null, warn_expires_at: null }).eq("id", id);
@@ -278,13 +278,17 @@ function AdminPage() {
                     const scriptInstalled = e.state === "installed";
                     const scriptSuspicious = e.state === "installed" && e.suspicious;
                     const scriptCspBlocked = e.state === "installed" && e.cspBlocked;
+                    const scriptIdMismatch = e.state === "installed" && e.idMismatch;
+                    const installedIdValue = e.state === "installed" ? e.installedId : null;
                     const hbFresh = !!s.widget_last_heartbeat_at && (now - new Date(s.widget_last_heartbeat_at).getTime()) < 24 * 60 * 60_000;
                     const hbVisible = hbFresh && s.widget_currently_visible === true;
                     const hbHidden = hbFresh && s.widget_currently_visible === false;
-                    // CSP block takes priority: even a stale "visible" heartbeat is
-                    // misleading if the browser now refuses to load loader.js.
-                    const badge: "checking" | "live" | "hidden" | "csp-blocked" | "installed-unseen" | "missing" | "error" | "idle" =
+                    // Wrong-ID takes top priority: the loader is pinging a
+                    // different startup, so our heartbeats will never match
+                    // this row no matter what the site looks like.
+                    const badge: "checking" | "live" | "hidden" | "csp-blocked" | "wrong-id" | "installed-unseen" | "missing" | "error" | "idle" =
                       e.state === "checking" ? "checking"
+                      : scriptIdMismatch ? "wrong-id"
                       : scriptCspBlocked ? "csp-blocked"
                       : hbVisible && !scriptSuspicious ? "live"
                       : hbHidden || scriptSuspicious ? "hidden"
@@ -334,6 +338,7 @@ function AdminPage() {
                           title={
                             badge === "live" ? "Script installed and widget visible to visitors"
                             : badge === "csp-blocked" ? "Site's Content Security Policy blocks startupbar.co/widget/loader.js. Ask the founder to add https://startupbar.co to their script-src directive."
+                            : badge === "wrong-id" ? `Loader is installed with a different data-startup-id${installedIdValue ? ` (${installedIdValue})` : ""}. Heartbeats will never match this startup — ask the founder to re-copy their snippet.`
                             : badge === "hidden" ? (scriptSuspicious
                                 ? "Script is wrapped in a hidden element (display:none / visibility:hidden / height:0)"
                                 : "Script installed but widget reports as hidden on the page")
@@ -346,6 +351,8 @@ function AdminPage() {
                             badge === "live"
                               ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
                               : badge === "csp-blocked"
+                              ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
+                              : badge === "wrong-id"
                               ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
                               : badge === "hidden"
                               ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
@@ -364,6 +371,8 @@ function AdminPage() {
                             <><Radio className="h-3 w-3" /> Live</>
                           ) : badge === "csp-blocked" ? (
                             <><ShieldOff className="h-3 w-3" /> CSP blocked</>
+                          ) : badge === "wrong-id" ? (
+                            <><CircleSlash className="h-3 w-3" /> Wrong ID</>
                           ) : badge === "hidden" ? (
                             <><EyeOff className="h-3 w-3" /> {scriptSuspicious ? "Hidden (CSS)" : "Hidden"}</>
                           ) : badge === "installed-unseen" ? (
