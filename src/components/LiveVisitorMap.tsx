@@ -584,6 +584,9 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
       // Dashboard scope: show all visits that happened ON this startup's site
       // (widget snippet fires a row per pageview with host_startup_id = this startup).
       if (scopeStartupId) query = query.eq("host_startup_id", scopeStartupId);
+      // Network/welcome-page scope: only real landings on startupbar.co itself,
+      // not widget impressions on partner sites.
+      else if (networkMode) query = query.eq("shown_startup_id", STARTUPBAR_SITE_ID);
 
       const { data } = await query;
       if (!data || data.length === 0) return;
