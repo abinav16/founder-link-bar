@@ -1,37 +1,37 @@
-## Impact answer
+## Goal
 
-Yes — dropping the `Anyone can read clicks` / `Anyone can read impressions` policies WILL break UI if we don't also change how the app reads those tables. The following public pages currently rely on the anon SELECT policy (they use the publishable key server-side):
+The welcome-page globe currently mixes two very different things into one "today" number:
 
-- `/leaderboard` — click totals, impression totals, and 7-day buckets per approved startup
-- `/network` — total impressions/clicks, CTR, per-startup 24h impressions/clicks
+1. Widget-bar impressions shown on partner startups' sites (the bar loading on someone else's page)
+2. Actual visits that land on `startupbar.co` (direct, search, and clicks from widget bars)
 
-The signed-in founder dashboard is fine — it's covered by the existing owner-scoped policy.
+You only want #2 on the homepage globe: real landings on `startupbar.co`. Widget impressions belong on each startup's dashboard, not on the global welcome map.
 
-## Recommended fix (Option 1 — aggregate-only RPCs)
+## How landings are already tracked
 
-Move public aggregates behind `SECURITY DEFINER` DB functions that return only counts, not raw rows. Then remove the anon SELECT policies. Anon can no longer read `referrer`, `device`, `country`, or host relationships — only the aggregate numbers the UI already displays.
+Every pageview on `startupbar.co` fires `POST /api/public/track/site-visit`, which inserts an `impressions` row with:
 
-### Steps
+- `shown_startup_id = STARTUPBAR_SITE_ID` (the marker row for the marketing site)
+- `host_startup_id = null`
+- `referrer` = the actual HTTP referrer (Google, Twitter, `startupbar:<domain>` for widget-bar clicks, or empty for direct)
+- `path` = the URL path the visitor landed on (`/`, `/pricing`, `/leaderboard`, …)
 
-1. **Migration** — add public RPCs, revoke defaults, grant execute to `anon`:
-   - `get_public_leaderboard()` → returns per-approved-startup: `impressions`, `clicks`, `impressions_given`, plus 7-day arrays for received + given impressions.
-   - `get_public_network_dashboard()` → returns `stats` (totalStartups, totalImpressions, totalClicks, ctr) and per-startup `impressions_24h`, `clicks_24h`.
-   - All `SECURITY DEFINER`, `SET search_path = public`, `STABLE`, `REVOKE ALL FROM PUBLIC`, `GRANT EXECUTE TO anon, authenticated`.
-   - `DROP POLICY "Anyone can read clicks" ON public.clicks;`
-   - `DROP POLICY "Anyone can read impressions" ON public.impressions;`
+Widget-bar impressions on partner sites use different rows (`host_startup_id = <partner>`), so filtering on `shown_startup_id = STARTUPBAR_SITE_ID` cleanly isolates landings.
 
-2. **Code** — swap `.from("clicks")/.from("impressions")` aggregate reads in:
-   - `src/lib/leaderboard.functions.ts` → call `get_public_leaderboard` RPC.
-   - `src/lib/network-dashboard.functions.ts` → call `get_public_network_dashboard` RPC.
-   - `widget.click.ts` insert path is unchanged (still uses existing INSERT policy).
-   - `_authenticated/dashboard.tsx` unchanged (owner-scoped policy still applies).
+## Changes (frontend only)
 
-3. **Verify** — reload `/leaderboard` and `/network` in preview, confirm numbers still render and match pre-change.
+File: `src/components/LiveVisitorMap.tsx`
 
-## Out of scope
+1. In `refreshData()` (the initial + 30s poll query), when `networkMode` is true and no `scopeStartupId` is set, add `.eq("shown_startup_id", STARTUPBAR_SITE_ID)` to the `impressions` select.
+2. In the realtime subscription (the `postgres_changes` filter), when `networkMode` is true and no `scopeStartupId`, use `shown_startup_id=eq.<STARTUPBAR_SITE_ID>` instead of the unfiltered subscription so live pins only include real landings.
+3. Add the `STARTUPBAR_SITE_ID` constant at the top of the file (same value already used server-side in `track.site-visit.ts`).
 
-Other findings in the panel (send-email auth, checkout auth, heartbeat spoofing, verify-install SSRF, startups column exposure, security-definer linter warnings). Handle separately if you want.
+No change needed for the "Recent visitors" panel — it already renders `cleanPath(f.path)` under each visitor, so once the feed is scoped to `startupbar.co` rows every entry will naturally show which page they landed on (`/`, `/pricing`, `/leaderboard`, etc.).
 
-## Alternative
+Dashboard behavior stays exactly as it is (already scoped by `host_startup_id` per startup). Nothing changes for partner startups.
 
-If you'd rather ship faster and skip the RPC layer, we can switch just those two server functions to the admin client. It closes the anon exposure but concentrates trust in those functions — I'd only do it if you want a same-turn minimal fix.
+## Result
+
+- Welcome page globe count = only humans who actually opened a `startupbar.co` page today (direct + referral + widget clicks that landed here).
+- Recent visitors feed on the welcome page = a live list of those landings, each showing the exact path visited.
+- Widget impressions on partner sites no longer inflate the homepage number.
