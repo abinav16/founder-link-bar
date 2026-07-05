@@ -774,7 +774,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
       supabase.removeChannel(channel);
       setIsLive(false);
     };
-  }, [scopeStartupId]);
+  }, [scopeStartupId, networkMode]);
 
   useEffect(() => {
     const t = setInterval(() => {
