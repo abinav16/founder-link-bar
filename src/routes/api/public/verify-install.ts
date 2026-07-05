@@ -160,7 +160,7 @@ export const Route = createFileRoute("/api/public/verify-install")({
           }
 
           return Response.json(
-            { installed, suspicious, cspBlocked, cspFrameBlocked, cspImgBlocked },
+            { installed, suspicious, cspBlocked, cspFrameBlocked, cspImgBlocked, installedId, idMismatch },
             { headers: NO_STORE },
           );
         } catch (err: unknown) {
