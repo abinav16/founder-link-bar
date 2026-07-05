@@ -694,7 +694,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
     } finally {
       setRefreshing(false);
     }
-  }, [scopeStartupId]);
+  }, [scopeStartupId, networkMode]);
 
   useEffect(() => {
     if (!mapReady) return;
