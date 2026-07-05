@@ -707,8 +707,12 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
 
 
   useEffect(() => {
-    const channelName = `live-map:${scopeStartupId ?? "network"}:${crypto.randomUUID()}`;
-    const filter = scopeStartupId ? `host_startup_id=eq.${scopeStartupId}` : undefined;
+    const channelName = `live-map:${scopeStartupId ?? (networkMode ? "startupbar" : "network")}:${crypto.randomUUID()}`;
+    const filter = scopeStartupId
+      ? `host_startup_id=eq.${scopeStartupId}`
+      : networkMode
+        ? `shown_startup_id=eq.${STARTUPBAR_SITE_ID}`
+        : undefined;
 
     const config = filter
       ? { event: "INSERT" as const, schema: "public", table: "impressions", filter }
