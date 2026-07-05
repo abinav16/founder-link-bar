@@ -278,13 +278,17 @@ function AdminPage() {
                     const scriptInstalled = e.state === "installed";
                     const scriptSuspicious = e.state === "installed" && e.suspicious;
                     const scriptCspBlocked = e.state === "installed" && e.cspBlocked;
+                    const scriptIdMismatch = e.state === "installed" && e.idMismatch;
+                    const installedIdValue = e.state === "installed" ? e.installedId : null;
                     const hbFresh = !!s.widget_last_heartbeat_at && (now - new Date(s.widget_last_heartbeat_at).getTime()) < 24 * 60 * 60_000;
                     const hbVisible = hbFresh && s.widget_currently_visible === true;
                     const hbHidden = hbFresh && s.widget_currently_visible === false;
-                    // CSP block takes priority: even a stale "visible" heartbeat is
-                    // misleading if the browser now refuses to load loader.js.
-                    const badge: "checking" | "live" | "hidden" | "csp-blocked" | "installed-unseen" | "missing" | "error" | "idle" =
+                    // Wrong-ID takes top priority: the loader is pinging a
+                    // different startup, so our heartbeats will never match
+                    // this row no matter what the site looks like.
+                    const badge: "checking" | "live" | "hidden" | "csp-blocked" | "wrong-id" | "installed-unseen" | "missing" | "error" | "idle" =
                       e.state === "checking" ? "checking"
+                      : scriptIdMismatch ? "wrong-id"
                       : scriptCspBlocked ? "csp-blocked"
                       : hbVisible && !scriptSuspicious ? "live"
                       : hbHidden || scriptSuspicious ? "hidden"
