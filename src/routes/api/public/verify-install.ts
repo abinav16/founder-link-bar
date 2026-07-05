@@ -72,6 +72,16 @@ export const Route = createFileRoute("/api/public/verify-install")({
                 /height\s*:\s*0(?:px)?\b/.test(window) ||
                 /\bhidden\b\s*[>"']/.test(window);
             }
+
+            // Pull the actual data-startup-id value from the script tag so we
+            // can flag "installed for the wrong startup" — a common cause of
+            // "script tag detected but no heartbeats ever land".
+            const idRe = /<script[^>]*data-startup-id=["']([^"']+)["'][^>]*>/i;
+            const idMatch = html.match(idRe);
+            if (idMatch) installedId = idMatch[1];
+            if (expectedId && installedId && installedId !== expectedId) {
+              idMismatch = true;
+            }
           }
 
           // Detect Content-Security-Policy that blocks the widget script,
