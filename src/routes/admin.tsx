@@ -49,7 +49,7 @@ interface Startup {
 type EmbedState =
   | { state: "idle" }
   | { state: "checking" }
-  | { state: "installed"; suspicious: boolean; cspBlocked: boolean }
+  | { state: "installed"; suspicious: boolean; cspBlocked: boolean; idMismatch: boolean; installedId: string | null }
   | { state: "missing" }
   | { state: "error" };
 
