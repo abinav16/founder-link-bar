@@ -338,6 +338,7 @@ function AdminPage() {
                           title={
                             badge === "live" ? "Script installed and widget visible to visitors"
                             : badge === "csp-blocked" ? "Site's Content Security Policy blocks startupbar.co/widget/loader.js. Ask the founder to add https://startupbar.co to their script-src directive."
+                            : badge === "wrong-id" ? `Loader is installed with a different data-startup-id${installedIdValue ? ` (${installedIdValue})` : ""}. Heartbeats will never match this startup — ask the founder to re-copy their snippet.`
                             : badge === "hidden" ? (scriptSuspicious
                                 ? "Script is wrapped in a hidden element (display:none / visibility:hidden / height:0)"
                                 : "Script installed but widget reports as hidden on the page")
@@ -350,6 +351,8 @@ function AdminPage() {
                             badge === "live"
                               ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
                               : badge === "csp-blocked"
+                              ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
+                              : badge === "wrong-id"
                               ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
                               : badge === "hidden"
                               ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
@@ -368,6 +371,8 @@ function AdminPage() {
                             <><Radio className="h-3 w-3" /> Live</>
                           ) : badge === "csp-blocked" ? (
                             <><ShieldOff className="h-3 w-3" /> CSP blocked</>
+                          ) : badge === "wrong-id" ? (
+                            <><CircleSlash className="h-3 w-3" /> Wrong ID</>
                           ) : badge === "hidden" ? (
                             <><EyeOff className="h-3 w-3" /> {scriptSuspicious ? "Hidden (CSS)" : "Hidden"}</>
                           ) : badge === "installed-unseen" ? (
