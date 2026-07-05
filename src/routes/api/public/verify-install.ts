@@ -22,6 +22,7 @@ export const Route = createFileRoute("/api/public/verify-install")({
       GET: async ({ request }) => {
         const url = new URL(request.url);
         const site = url.searchParams.get("url");
+        const expectedId = url.searchParams.get("id");
 
         if (!site) {
           return Response.json({ installed: false, error: "No URL provided" }, { status: 400, headers: NO_STORE });
@@ -44,6 +45,12 @@ export const Route = createFileRoute("/api/public/verify-install")({
           if (!res.ok) {
             return Response.json({ installed: false, error: `Site returned ${res.status}` }, { headers: NO_STORE });
           }
+
+          // Extract the installed startup id (if any) so we can flag mismatches
+          // where the site embeds a loader for a different startup — that's why
+          // heartbeats never come in even though the script tag is present.
+          let installedId: string | null = null;
+          let idMismatch = false;
 
           const html = await res.text();
           const installed =
