@@ -280,7 +280,12 @@ function AdminPage() {
                     const scriptCspBlocked = e.state === "installed" && e.cspBlocked;
                     const scriptIdMismatch = e.state === "installed" && e.idMismatch;
                     const installedIdValue = e.state === "installed" ? e.installedId : null;
-                    const hbFresh = !!s.widget_last_heartbeat_at && (now - new Date(s.widget_last_heartbeat_at).getTime()) < 24 * 60 * 60_000;
+                    // Heartbeat freshness: loader.js pings every 5 min, so a
+                    // gap over ~20 min means the page hasn't been loaded
+                    // recently — not a live "visible" state.
+                    const hbAgeMs = s.widget_last_heartbeat_at ? now - new Date(s.widget_last_heartbeat_at).getTime() : null;
+                    const hbFresh = hbAgeMs !== null && hbAgeMs < 20 * 60_000;
+                    const hbStale = hbAgeMs !== null && !hbFresh;
                     const hbVisible = hbFresh && s.widget_currently_visible === true;
                     const hbHidden = hbFresh && s.widget_currently_visible === false;
                     // Wrong-ID takes top priority: the loader is pinging a
@@ -407,9 +412,19 @@ function AdminPage() {
                           </div>
                         ) : s.widget_last_heartbeat_at ? (
                           <div className="flex flex-col gap-1">
-                            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
-                              <Eye className="h-3 w-3" /> Visible
-                            </span>
+                            {hbStale ? (
+                              <span className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-black/[0.03] px-2.5 py-0.5 text-xs font-medium text-black/50">
+                                <Clock className="h-3 w-3" /> Stale
+                              </span>
+                            ) : s.widget_currently_visible === false ? (
+                              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700">
+                                <EyeOff className="h-3 w-3" /> Hidden
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
+                                <Eye className="h-3 w-3" /> Visible
+                              </span>
+                            )}
                             <span className="text-[10px] text-black/35">
                               last seen {new Date(s.widget_last_heartbeat_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
                             </span>
