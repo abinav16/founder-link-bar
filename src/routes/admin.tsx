@@ -280,12 +280,13 @@ function AdminPage() {
                     const scriptCspBlocked = e.state === "installed" && e.cspBlocked;
                     const scriptIdMismatch = e.state === "installed" && e.idMismatch;
                     const installedIdValue = e.state === "installed" ? e.installedId : null;
-                    // Heartbeat freshness: loader.js pings every 5 min, so a
-                    // gap over ~20 min means the page hasn't been loaded
-                    // recently — not a live "visible" state.
+                    // Heartbeat freshness: any ping in the last 24h counts as
+                    // "Live" (proves the widget rendered on a real visit).
+                    // A tighter 30-min window drives the "Stale" label so the
+                    // health column can show a recent-visit signal separately.
                     const hbAgeMs = s.widget_last_heartbeat_at ? now - new Date(s.widget_last_heartbeat_at).getTime() : null;
-                    const hbFresh = hbAgeMs !== null && hbAgeMs < 20 * 60_000;
-                    const hbStale = hbAgeMs !== null && !hbFresh;
+                    const hbFresh = hbAgeMs !== null && hbAgeMs < 24 * 60 * 60_000;
+                    const hbStale = hbAgeMs !== null && hbAgeMs >= 30 * 60_000;
                     const hbVisible = hbFresh && s.widget_currently_visible === true;
                     const hbHidden = hbFresh && s.widget_currently_visible === false;
                     // Wrong-ID takes top priority: the loader is pinging a
