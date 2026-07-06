@@ -312,6 +312,17 @@ export type Database = {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
       }
+      digest_impression_count_for: {
+        Args: { _since: string; _startup: string; _until: string }
+        Returns: number
+      }
+      digest_impression_counts: {
+        Args: { _since: string }
+        Returns: {
+          cnt: number
+          shown_startup_id: string
+        }[]
+      }
       email_queue_dispatch: { Args: never; Returns: undefined }
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
