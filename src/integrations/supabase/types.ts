@@ -343,6 +343,13 @@ export type Database = {
           total_impressions: number
         }[]
       }
+      public_network_totals_all: {
+        Args: never
+        Returns: {
+          total_clicks: number
+          total_impressions: number
+        }[]
+      }
       public_startup_24h: {
         Args: { _ids: string[] }
         Returns: {
