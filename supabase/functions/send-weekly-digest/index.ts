@@ -140,14 +140,17 @@ serve(async (req) => {
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString();
 
-    // Global impression counts per startup (last 7 days) for rank
-    const { data: allImps } = await admin
-      .from("impressions")
-      .select("shown_startup_id")
-      .gte("created_at", sevenDaysAgo);
+    // Global impression counts per startup (last 7 days) for rank.
+    // Uses an aggregating RPC — a plain .select() hits the Data API's
+    // 1000-row cap and silently undercounts once the network is busy.
+    const { data: allImps, error: impErr } = await admin.rpc(
+      "digest_impression_counts",
+      { _since: sevenDaysAgo },
+    );
+    if (impErr) throw impErr;
     const impCount = new Map<string, number>();
     (allImps ?? []).forEach((r: any) => {
-      impCount.set(r.shown_startup_id, (impCount.get(r.shown_startup_id) ?? 0) + 1);
+      impCount.set(r.shown_startup_id, Number(r.cnt) || 0);
     });
 
     // Group startups by founder
