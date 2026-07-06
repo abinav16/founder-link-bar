@@ -54,11 +54,8 @@ export const getNetworkDashboard = createServerFn({ method: "GET" }).handler(
     // Totals include ALL startups that ever participated in the network
     // (approved + rejected/removed) so removing a startup doesn't erase the
     // impressions/clicks it contributed to the network's totals.
-    const { data: allStartupIds } = await supabase.from("startups").select("id");
-    const totalsIds = (allStartupIds ?? []).map((s: any) => s.id);
-
     const [totalsRes, per24hRes] = await Promise.all([
-      supabase.rpc("public_network_totals" as any, { _ids: totalsIds }),
+      supabase.rpc("public_network_totals_all" as any),
       supabase.rpc("public_startup_24h" as any, { _ids: approvedIds }),
     ]);
 
