@@ -257,8 +257,14 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
     try {
       const href = url.startsWith("http") ? url : `https://${url}`;
       const hostname = new URL(href).hostname.replace(/^www\./, "");
-      // Hide internal Lovable preview/published project traffic
-      if (hostname.endsWith("lovableproject.com") || hostname.endsWith("lovable.app")) return null;
+      // Hide internal Lovable preview/published project traffic and treat
+      // lovable.dev as Direct (internal-ish referrer, not a real acquisition source)
+      if (
+        hostname.endsWith("lovableproject.com") ||
+        hostname.endsWith("lovable.app") ||
+        hostname === "lovable.dev" ||
+        hostname.endsWith(".lovable.dev")
+      ) return null;
       const name = KNOWN_REFERRERS[hostname] ?? hostname;
       return { name, websiteUrl: href };
     } catch {
