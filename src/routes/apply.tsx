@@ -333,7 +333,11 @@ function Apply() {
     setVerifyStatus("checking");
     setVerifyMsg("");
     try {
-      const res = await fetch(`/api/public/verify-install?url=${encodeURIComponent(checkUrl)}`);
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess.session?.access_token;
+      const res = await fetch(`/api/public/verify-install?url=${encodeURIComponent(checkUrl)}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       const json = await res.json();
       if (json.installed && json.cspFrameBlocked) {
         setVerifyStatus("csp-frame");
