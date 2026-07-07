@@ -20,6 +20,25 @@ export const Route = createFileRoute("/api/public/verify-install")({
   server: {
     handlers: {
       GET: async ({ request }) => {
+        // Require an authenticated caller — this endpoint makes server-side
+        // outbound HTTP requests to arbitrary URLs, so leaving it open would
+        // let anyone use our egress as a probing proxy. Founders (from apply
+        // and dashboard) and admins already send their session bearer token.
+        const authHeader = request.headers.get("authorization") ?? "";
+        const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+        if (!token) {
+          return Response.json({ installed: false, error: "Unauthorized" }, { status: 401, headers: NO_STORE });
+        }
+        try {
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          const { data: authData, error: authErr } = await supabaseAdmin.auth.getUser(token);
+          if (authErr || !authData?.user) {
+            return Response.json({ installed: false, error: "Unauthorized" }, { status: 401, headers: NO_STORE });
+          }
+        } catch {
+          return Response.json({ installed: false, error: "Unauthorized" }, { status: 401, headers: NO_STORE });
+        }
+
         const url = new URL(request.url);
         const site = url.searchParams.get("url");
         const expectedId = url.searchParams.get("id");
