@@ -258,10 +258,18 @@ serve(async (req) => {
 
     // ---- Admin notification: no startup row lookup, sends to admin only ----
     if (type === "admin-new-application") {
-      const startupName: string = data?.startupName ?? "Unknown";
-      const startupUrl: string = data?.startupUrl ?? "";
-      const description: string = data?.description ?? "";
-      const applicantEmail: string = data?.applicantEmail ?? "unknown";
+      const startupName = escapeHtml(data?.startupName ?? "Unknown");
+      const startupUrlRaw = String(data?.startupUrl ?? "");
+      // Only allow http/https so the anchor can't turn into a javascript: URL.
+      let startupUrlSafe = "#";
+      try {
+        const u = new URL(startupUrlRaw);
+        if (u.protocol === "http:" || u.protocol === "https:") startupUrlSafe = u.href;
+      } catch { /* keep placeholder */ }
+      const startupUrlAttr = escapeHtml(startupUrlSafe);
+      const startupUrlText = escapeHtml(startupUrlRaw);
+      const description = escapeHtml(data?.description ?? "");
+      const applicantEmail = escapeHtml(data?.applicantEmail ?? "unknown");
 
       to = ADMIN_EMAIL;
       subject = `🆕 New application: ${startupName}`;
@@ -273,7 +281,7 @@ serve(async (req) => {
             <p style="margin:0 0 8px 0;font-size:13px;color:#71717a;">Startup</p>
             <p style="margin:0 0 14px 0;font-size:16px;font-weight:600;color:#0a0a0a;">${startupName}</p>
             <p style="margin:0 0 8px 0;font-size:13px;color:#71717a;">Website</p>
-            <p style="margin:0 0 14px 0;font-size:14px;"><a href="${startupUrl}" style="color:#0a0a0a;">${startupUrl}</a></p>
+            <p style="margin:0 0 14px 0;font-size:14px;"><a href="${startupUrlAttr}" style="color:#0a0a0a;">${startupUrlText}</a></p>
             <p style="margin:0 0 8px 0;font-size:13px;color:#71717a;">One-liner</p>
             <p style="margin:0 0 14px 0;font-size:14px;color:#27272a;">${description}</p>
             <p style="margin:0 0 8px 0;font-size:13px;color:#71717a;">Applicant</p>
@@ -291,27 +299,39 @@ serve(async (req) => {
     }
 
     // ---- Founder submission confirmation (no startupId required) ----
-    if (type === "startup-submitted") {
-      const email: string = data?.email;
-      const founderName = ((data?.name as string | undefined) ?? "").split(" ")[0] || "Founder";
-      const startupName: string = data?.startupName ?? "your startup";
+    if (type === "startup-submitted" || type === "welcome") {
+      // Recipient email is always the authenticated caller — never trust the
+      // request body, or anyone could send fake confirmations to any address.
+      const email = caller.email;
       if (!email) return new Response("No email", { status: 400, headers: corsHeaders });
+      const founderNameRaw = ((data?.name as string | undefined) ?? (caller.user_metadata?.full_name as string | undefined) ?? "");
+      const founderName = escapeHtml(founderNameRaw.split(" ")[0] || "Founder");
+      const startupName = escapeHtml(data?.startupName ?? "your startup");
 
       to = email;
-      subject = `We received your StartupBar application — ${startupName}`;
+      subject = type === "welcome"
+        ? `Welcome to StartupBar`
+        : `We received your StartupBar application — ${data?.startupName ?? "your startup"}`;
       html = shell({
-        heading: "Application received ✓",
-        bodyHtml: `
-          ${p(`Hi ${founderName},`)}
-          ${p(`Thanks for applying to StartupBar. We've received your application for ${strong(startupName)} and it's now in our review queue.`)}
-          ${p(`We review every application within ${strong("24 hours")}. You'll get another email the moment ${startupName} goes live across the network.`)}
-          ${p(`In the meantime, make sure the embed snippet stays installed on your site — we check for it during review.`)}
-        `,
+        heading: type === "welcome" ? "Welcome 👋" : "Application received ✓",
+        bodyHtml: type === "welcome"
+          ? `
+            ${p(`Hi ${founderName},`)}
+            ${p(`Welcome to StartupBar. Head to your dashboard to submit your startup and get free traffic from the network.`)}
+          `
+          : `
+            ${p(`Hi ${founderName},`)}
+            ${p(`Thanks for applying to StartupBar. We've received your application for ${strong(startupName)} and it's now in our review queue.`)}
+            ${p(`We review every application within ${strong("24 hours")}. You'll get another email the moment ${startupName} goes live across the network.`)}
+            ${p(`In the meantime, make sure the embed snippet stays installed on your site — we check for it during review.`)}
+          `,
       });
 
       await sendEmail(to, subject, html);
       return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
+
+
 
     // ---- Founder-targeted types that DO need a startup lookup ----
     const { data: startup } = await supabase
