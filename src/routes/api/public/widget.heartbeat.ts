@@ -41,16 +41,23 @@ export const Route = createFileRoute("/api/public/widget/heartbeat")({
           if (error || !startup) return new Response(null, { status: 404, headers: cors });
           if (startup.banned) return new Response(null, { status: 403, headers: cors });
 
-          // Verify the heartbeat originates from the startup's own website.
-          // Raises the bar against cross-startup visibility spoofing that
-          // would poison admin moderation signals. Headers can be spoofed
-          // by non-browsers, but any real browser embedding the loader
-          // sends a matching Origin/Referer.
+          // Verify the heartbeat originates from the startup's registered
+          // domain (or a subdomain of it — startups often install the widget
+          // on app.example.com while registering example.com). Raises the
+          // bar against cross-startup visibility spoofing without breaking
+          // real installs.
+          //
+          // If Origin/Referer are absent (strict Referrer-Policy, no-referrer
+          // meta, etc.) we soft-pass: this endpoint is bookkeeping only, and
+          // a false negative here would show compliant widgets as "hidden"
+          // to the admin. Only reject when a *wrong* host IS present.
           const expectedHost = hostOf(startup.website_url);
           const originHost = hostOf(request.headers.get("origin")) ?? hostOf(request.headers.get("referer"));
-          if (!expectedHost || !originHost || originHost !== expectedHost) {
-            return new Response(null, { status: 403, headers: cors });
+          if (originHost && expectedHost) {
+            const matches = originHost === expectedHost || originHost.endsWith(`.${expectedHost}`);
+            if (!matches) return new Response(null, { status: 403, headers: cors });
           }
+
 
           const now = new Date();
 

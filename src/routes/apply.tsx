@@ -334,10 +334,22 @@ function Apply() {
     setVerifyMsg("");
     try {
       const { data: sess } = await supabase.auth.getSession();
-      const token = sess.session?.access_token;
+      let token = sess.session?.access_token;
+      // getSession() can race with hydration on hard refresh; getUser()
+      // awaits it and yields a real session if there is one.
+      if (!token) {
+        const { data: u } = await supabase.auth.getUser();
+        if (u.user) token = (await supabase.auth.getSession()).data.session?.access_token;
+      }
       const res = await fetch(`/api/public/verify-install?url=${encodeURIComponent(checkUrl)}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
+      if (res.status === 401) {
+        setVerifyStatus("error");
+        setVerifyMsg("Session expired — please sign in again and retry the check.");
+        return;
+      }
+
       const json = await res.json();
       if (json.installed && json.cspFrameBlocked) {
         setVerifyStatus("csp-frame");

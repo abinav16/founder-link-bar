@@ -8,11 +8,14 @@ const corsHeaders = {
 
 // Allowlist of return_url origins. Prevents attackers from creating checkouts
 // that redirect the paying user to an attacker-controlled page after payment.
+// NOTE: If a new custom domain is added for the app, add its https origin here
+// too — otherwise checkouts on that domain will 400 with "Invalid return_url".
 const ALLOWED_RETURN_ORIGINS = new Set([
   "https://startupbar.co",
   "https://www.startupbar.co",
   "https://founder-link-bar.lovable.app",
 ]);
+
 
 function isAllowedReturnUrl(raw: unknown): raw is string {
   if (typeof raw !== "string" || !raw) return false;
