@@ -189,7 +189,10 @@ function AuthPage() {
         const redirectPath = next === "/apply" ? "/apply" : "/dashboard";
         const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}${redirectPath}`, data: { full_name: name } } });
         if (error) throw error;
-        supabase.functions.invoke("send-email", { body: { type: "welcome", data: { email, name } } }).catch(() => {});
+        // Welcome email fires from the root onAuthStateChange on first
+        // SIGNED_IN — signUp() has no session yet when email confirmation
+        // is on, so send-email would reject the token-less request.
+
         toast.success("Account created — check your email to confirm."); setMode("signin");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
