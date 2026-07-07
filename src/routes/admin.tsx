@@ -91,7 +91,11 @@ function AdminPage() {
   async function checkEmbed(id: string, website: string) {
     setEmbed((p) => ({ ...p, [id]: { state: "checking" } }));
     try {
-      const r = await fetch(`/api/public/verify-install?url=${encodeURIComponent(website)}&id=${encodeURIComponent(id)}`);
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess.session?.access_token;
+      const r = await fetch(`/api/public/verify-install?url=${encodeURIComponent(website)}&id=${encodeURIComponent(id)}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       const j = await r.json();
       const next: EmbedState = j.installed
         ? { state: "installed", suspicious: !!j.suspicious, cspBlocked: !!j.cspBlocked, idMismatch: !!j.idMismatch, installedId: j.installedId ?? null }

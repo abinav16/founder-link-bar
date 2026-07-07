@@ -4,6 +4,15 @@ import { createFileRoute } from "@tanstack/react-router";
 // No emails, no automatic status changes, no bans — all escalation is manual
 // via the admin panel to avoid false positives from transient overlays.
 
+function hostOf(raw: string | null): string | null {
+  if (!raw) return null;
+  try {
+    return new URL(raw).hostname.replace(/^www\./, "").toLowerCase();
+  } catch {
+    return null;
+  }
+}
+
 export const Route = createFileRoute("/api/public/widget/heartbeat")({
   server: {
     handlers: {
@@ -25,12 +34,23 @@ export const Route = createFileRoute("/api/public/widget/heartbeat")({
 
           const { data: startup, error } = await supabaseAdmin
             .from("startups")
-            .select("id, widget_hidden_at, banned")
+            .select("id, widget_hidden_at, banned, website_url")
             .eq("id", id)
             .maybeSingle();
 
           if (error || !startup) return new Response(null, { status: 404, headers: cors });
           if (startup.banned) return new Response(null, { status: 403, headers: cors });
+
+          // Verify the heartbeat originates from the startup's own website.
+          // Raises the bar against cross-startup visibility spoofing that
+          // would poison admin moderation signals. Headers can be spoofed
+          // by non-browsers, but any real browser embedding the loader
+          // sends a matching Origin/Referer.
+          const expectedHost = hostOf(startup.website_url);
+          const originHost = hostOf(request.headers.get("origin")) ?? hostOf(request.headers.get("referer"));
+          if (!expectedHost || !originHost || originHost !== expectedHost) {
+            return new Response(null, { status: 403, headers: cors });
+          }
 
           const now = new Date();
 
