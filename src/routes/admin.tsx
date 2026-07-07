@@ -92,10 +92,15 @@ function AdminPage() {
     setEmbed((p) => ({ ...p, [id]: { state: "checking" } }));
     try {
       const { data: sess } = await supabase.auth.getSession();
-      const token = sess.session?.access_token;
+      let token = sess.session?.access_token;
+      if (!token) {
+        const { data: u } = await supabase.auth.getUser();
+        if (u.user) token = (await supabase.auth.getSession()).data.session?.access_token;
+      }
       const r = await fetch(`/api/public/verify-install?url=${encodeURIComponent(website)}&id=${encodeURIComponent(id)}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
+
       const j = await r.json();
       const next: EmbedState = j.installed
         ? { state: "installed", suspicious: !!j.suspicious, cspBlocked: !!j.cspBlocked, idMismatch: !!j.idMismatch, installedId: j.installedId ?? null }

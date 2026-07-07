@@ -259,13 +259,20 @@ serve(async (req) => {
     // ---- Admin notification: no startup row lookup, sends to admin only ----
     if (type === "admin-new-application") {
       const startupName = escapeHtml(data?.startupName ?? "Unknown");
-      const startupUrlRaw = String(data?.startupUrl ?? "");
+      const startupUrlRaw = String(data?.startupUrl ?? "").trim();
       // Only allow http/https so the anchor can't turn into a javascript: URL.
+      // If the applicant submitted a bare domain (no scheme), try https://
+      // before falling back to a placeholder so admins still get a live link.
       let startupUrlSafe = "#";
-      try {
-        const u = new URL(startupUrlRaw);
-        if (u.protocol === "http:" || u.protocol === "https:") startupUrlSafe = u.href;
-      } catch { /* keep placeholder */ }
+      const tryParse = (raw: string) => {
+        try {
+          const u = new URL(raw);
+          if (u.protocol === "http:" || u.protocol === "https:") return u.href;
+        } catch { /* fall through */ }
+        return null;
+      };
+      startupUrlSafe = tryParse(startupUrlRaw) ?? (startupUrlRaw ? tryParse(`https://${startupUrlRaw}`) : null) ?? "#";
+
       const startupUrlAttr = escapeHtml(startupUrlSafe);
       const startupUrlText = escapeHtml(startupUrlRaw);
       const description = escapeHtml(data?.description ?? "");

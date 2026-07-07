@@ -412,10 +412,19 @@ function DashboardPage() {
     setInstallStatus("checking");
     try {
       const { data: sess } = await supabase.auth.getSession();
-      const token = sess.session?.access_token;
+      let token = sess.session?.access_token;
+      if (!token) {
+        const { data: u } = await supabase.auth.getUser();
+        if (u.user) token = (await supabase.auth.getSession()).data.session?.access_token;
+      }
       const res = await fetch(`/api/public/verify-install?url=${encodeURIComponent(siteUrl)}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
+      if (res.status === 401) {
+        setInstallStatus("unknown");
+        return;
+      }
+
       const json = await res.json();
       setInstallStatus(json.installed ? "live" : "disconnected");
     } catch {
