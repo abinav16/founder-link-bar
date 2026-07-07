@@ -57,6 +57,14 @@ const p = (text: string) =>
 
 const strong = (text: string) => `<strong style="color:#0a0a0a;">${text}</strong>`;
 
+const escapeHtml = (v: unknown) =>
+  String(v ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -64,9 +72,43 @@ serve(async (req) => {
     const { type, data } = await req.json();
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+    // Require an authenticated caller for every email type. Prevents anyone on
+    // the internet from spamming arbitrary addresses or triggering misleading
+    // "official" founder emails by POSTing directly to this function.
+    const authHeaderTop = req.headers.get("Authorization") ?? "";
+    const bearerTop = authHeaderTop.replace("Bearer ", "").trim();
+    if (!bearerTop) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const { data: callerData, error: callerErr } = await supabase.auth.getUser(bearerTop);
+    if (callerErr || !callerData.user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const caller = callerData.user;
+    const callerEmail = (caller.email ?? "").toLowerCase();
+    const isAdmin = callerEmail === ADMIN_EMAIL.toLowerCase();
+
+    // Founder-targeted moderation types must only be triggered by the admin.
+    const adminOnlyTypes = new Set([
+      "startup-approved",
+      "startup-rejected",
+      "startup-warning",
+      "startup-removed-no-widget",
+    ]);
+    if (adminOnlyTypes.has(type) && !isAdmin) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     let subject = "";
     let html = "";
     let to: string | string[] = "";
+
 
     // ---- Admin broadcast: custom subject + body to a recipient segment ----
     if (type === "admin-broadcast" || type === "admin-broadcast-preview" || type === "admin-broadcast-recipients") {
