@@ -120,13 +120,34 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+
+      // First-sign-in welcome email. send-email now requires a Bearer token,
+      // so we can't fire it from the signUp() call anymore (no session yet
+      // with email confirmation on). Trigger it once per user on SIGNED_IN,
+      // using localStorage as a "welcomed" flag.
+      if (event === "SIGNED_IN" && session?.user) {
+        const key = `startupbar:welcomed:${session.user.id}`;
+        try {
+          if (typeof window !== "undefined" && !window.localStorage.getItem(key)) {
+            window.localStorage.setItem(key, "1");
+            const name = (session.user.user_metadata?.full_name as string | undefined) ?? "";
+            supabase.functions
+              .invoke("send-email", { body: { type: "welcome", data: { name } } })
+              .catch(() => {
+                // Non-fatal — clear the flag so we retry next sign-in.
+                try { window.localStorage.removeItem(key); } catch { /* ignore */ }
+              });
+          }
+        } catch { /* ignore */ }
+      }
     });
     return () => sub.subscription.unsubscribe();
   }, [router, queryClient]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
