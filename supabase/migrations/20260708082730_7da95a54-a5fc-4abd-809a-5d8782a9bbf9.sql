@@ -1,0 +1,1 @@
+UPDATE public.startups SET id = 'ff7dcd11-ae8b-4839-8d15-eae6b3c3fac7' WHERE id = 'ff971468-bfc7-477f-80bf-e0661b569cbb';
