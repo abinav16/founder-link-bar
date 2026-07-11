@@ -173,7 +173,7 @@ function Apply() {
   const [url, setUrl] = useState(initial.url);
   const [desc, setDesc] = useState(initial.desc);
   const [resubmitId, setResubmitId] = useState<string>(initial.resubmitId);
-  const [startupId, setStartupId] = useState<string>(() => initial.resubmitId || crypto.randomUUID());
+  const [startupId, setStartupId] = useState<string>(() => initial.resubmitId || initial.startupId || crypto.randomUUID());
   const [copied, setCopied] = useState(false);
   const [verifyStatus, setVerifyStatus] = useState<"idle" | "checking" | "live" | "csp" | "csp-frame" | "csp-img" | "not-found" | "error">("idle");
   const [verifyMsg, setVerifyMsg] = useState("");
