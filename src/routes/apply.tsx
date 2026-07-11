@@ -322,7 +322,7 @@ function Apply() {
   async function handlePayment() {
     setPaymentLoading(true);
     const { data: u } = await supabase.auth.getUser();
-    const returnUrl = `${window.location.origin}/apply?paid=true&name=${encodeURIComponent(name)}&url=${encodeURIComponent(url)}&desc=${encodeURIComponent(desc)}`;
+    const returnUrl = `${window.location.origin}/apply?paid=true&name=${encodeURIComponent(name)}&url=${encodeURIComponent(url)}&desc=${encodeURIComponent(desc)}&sid=${encodeURIComponent(startupId)}`;
     const { data, error } = await supabase.functions.invoke("create-dodo-checkout", {
       body: { email: u.user?.email, name: u.user?.user_metadata?.full_name, return_url: returnUrl },
     });
