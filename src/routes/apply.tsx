@@ -290,7 +290,7 @@ function Apply() {
     if (typeof window === "undefined") return;
     if (resubmitId) return; // resubmits are URL-driven — don't overwrite the fresh-apply draft
     if (!name && !url && !desc) return;
-    sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ step, name, url, desc }));
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ step, name, url, desc, startupId }));
   }, [step, name, url, desc, resubmitId]);
 
   const snippet = `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}"></script>`;
