@@ -166,7 +166,7 @@ function readInitialFromUrl() {
 
 function Apply() {
   const navigate = useNavigate();
-  const initial = (typeof window !== "undefined" ? readInitialFromUrl() : { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "", resubmitId: "" });
+  const initial = (typeof window !== "undefined" ? readInitialFromUrl() : { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "", resubmitId: "", startupId: "" });
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [step, setStep] = useState<1 | 2>(initial.step);
   const [name, setName] = useState(initial.name);
