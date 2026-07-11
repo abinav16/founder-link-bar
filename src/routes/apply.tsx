@@ -116,24 +116,31 @@ function GuideItem({ title, children }: { title: string; children: React.ReactNo
 
 const DRAFT_KEY = "startupbar:apply-draft";
 
-function readDraft(): { step: 1 | 2; name: string; url: string; desc: string } | null {
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function readDraft(): { step: 1 | 2; name: string; url: string; desc: string; startupId: string } | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = sessionStorage.getItem(DRAFT_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
+    const sid = typeof parsed.startupId === "string" && UUID_RE.test(parsed.startupId) ? parsed.startupId : "";
     return {
       step: parsed.step === 2 ? 2 : 1,
       name: parsed.name ?? "",
       url: parsed.url ?? "",
       desc: parsed.desc ?? "",
+      startupId: sid,
     };
   } catch { return null; }
 }
 
 function readInitialFromUrl() {
-  if (typeof window === "undefined") return { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "", resubmitId: "" };
+  if (typeof window === "undefined") return { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "", resubmitId: "", startupId: "" };
   const p = new URLSearchParams(window.location.search);
+  const draft = readDraft();
+  const urlSid = p.get("sid") ?? "";
+  const sidFromUrl = UUID_RE.test(urlSid) ? urlSid : "";
   if (p.get("paid") === "true") {
     return {
       step: 2 as 1 | 2,
@@ -143,18 +150,19 @@ function readInitialFromUrl() {
       paid: true,
       paymentId: p.get("payment_id") ?? "",
       resubmitId: "",
+      startupId: sidFromUrl || draft?.startupId || "",
     };
   }
   const resubmitId = p.get("resubmit") ?? "";
   if (resubmitId) {
-    return { step: 2 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "", resubmitId };
+    return { step: 2 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "", resubmitId, startupId: "" };
   }
-  const draft = readDraft();
   if (draft) {
-    return { step: draft.step, name: draft.name, url: draft.url, desc: draft.desc, paid: false, paymentId: "", resubmitId: "" };
+    return { step: draft.step, name: draft.name, url: draft.url, desc: draft.desc, paid: false, paymentId: "", resubmitId: "", startupId: draft.startupId };
   }
-  return { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "", resubmitId: "" };
+  return { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "", resubmitId: "", startupId: "" };
 }
+
 
 function Apply() {
   const navigate = useNavigate();
