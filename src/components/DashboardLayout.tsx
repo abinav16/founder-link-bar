@@ -64,11 +64,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-dvh bg-[#f7f7f6] flex flex-col">
-      {isNavigating && (
-        <div className="fixed top-0 left-0 right-0 z-50 h-[2px] bg-black/[0.06]">
-          <div className="progress-bar h-full bg-black w-full" />
-        </div>
-      )}
+      <div
+        className={`fixed top-0 left-0 right-0 z-50 h-[2px] bg-black/[0.06] transition-opacity ${
+          isNavigating ? "opacity-100" : "pointer-events-none opacity-0"
+        }`}
+        aria-hidden
+      >
+        <div className="progress-bar h-full bg-black w-full" />
+      </div>
 
       <header className="sticky top-0 z-30 border-b border-black/8 bg-white">
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4 sm:gap-8 sm:px-6">
