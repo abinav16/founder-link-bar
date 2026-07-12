@@ -19,19 +19,19 @@ export type Database = {
           created_at: string
           host_startup_id: string | null
           id: string
-          shown_startup_id: string
+          shown_startup_id: string | null
         }
         Insert: {
           created_at?: string
           host_startup_id?: string | null
           id?: string
-          shown_startup_id: string
+          shown_startup_id?: string | null
         }
         Update: {
           created_at?: string
           host_startup_id?: string | null
           id?: string
-          shown_startup_id?: string
+          shown_startup_id?: string | null
         }
         Relationships: [
           {
@@ -148,7 +148,7 @@ export type Database = {
           os: string | null
           path: string | null
           referrer: string | null
-          shown_startup_id: string
+          shown_startup_id: string | null
         }
         Insert: {
           browser?: string | null
@@ -160,7 +160,7 @@ export type Database = {
           os?: string | null
           path?: string | null
           referrer?: string | null
-          shown_startup_id: string
+          shown_startup_id?: string | null
         }
         Update: {
           browser?: string | null
@@ -172,7 +172,7 @@ export type Database = {
           os?: string | null
           path?: string | null
           referrer?: string | null
-          shown_startup_id?: string
+          shown_startup_id?: string | null
         }
         Relationships: [
           {
