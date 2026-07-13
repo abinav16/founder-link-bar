@@ -23,6 +23,50 @@ async function sendEmail(to: string | string[], subject: string, html: string) {
   if (!res.ok) throw new Error(await res.text());
 }
 
+// Get or create a stable one-click unsubscribe token for an email.
+async function getOrCreateUnsubToken(
+  supabase: ReturnType<typeof createClient>,
+  email: string,
+): Promise<string> {
+  const normalized = email.trim().toLowerCase();
+  const { data: existing } = await supabase
+    .from("email_unsubscribe_tokens")
+    .select("token")
+    .eq("email", normalized)
+    .maybeSingle();
+  if (existing?.token) return existing.token as string;
+  const token = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
+  const { data: inserted } = await supabase
+    .from("email_unsubscribe_tokens")
+    .insert({ email: normalized, token })
+    .select("token")
+    .maybeSingle();
+  if (inserted?.token) return inserted.token as string;
+  // Race: another concurrent insert won — re-read.
+  const { data: reread } = await supabase
+    .from("email_unsubscribe_tokens")
+    .select("token")
+    .eq("email", normalized)
+    .maybeSingle();
+  return (reread?.token as string) ?? token;
+}
+
+function unsubscribeFooterHtml(url: string) {
+  return `<div style="margin-top:24px;padding-top:16px;border-top:1px solid #e4e4e7;font-size:11px;line-height:1.6;color:#a1a1aa;text-align:center;">
+    You're getting this because you signed up at <a href="https://startupbar.co" style="color:#a1a1aa;text-decoration:none;">startupbar.co</a>.
+    <br>Don't want these updates? <a href="${url}" style="color:#71717a;text-decoration:underline;">Unsubscribe in one click</a>. Important account emails (approvals, warnings) will still be sent.
+  </div>`;
+}
+
+// Extra headers for marketing sends → enables Gmail/Apple one-click and
+// keeps us on the right side of RFC 8058.
+function marketingHeaders(unsubUrl: string) {
+  return {
+    "List-Unsubscribe": `<${unsubUrl}>`,
+    "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+  };
+}
+
 // Branded shell used by every email type.
 function shell(opts: { heading: string; bodyHtml: string; signoff?: string }) {
   const signoff = opts.signoff ?? "— Abinav from StartupBar";
@@ -149,6 +193,10 @@ serve(async (req) => {
           byUser.set(s.user_id, arr);
         }
 
+        // Load unsubscribe suppressions once and drop those recipients.
+        const { data: sup } = await supabase.from("suppressed_emails").select("email");
+        const suppressedSet = new Set((sup ?? []).map((r: any) => String(r.email).toLowerCase()));
+
         return users
           .filter((u) => {
             const statuses = byUser.get(u.id) ?? [];
@@ -162,7 +210,17 @@ serve(async (req) => {
               default: return false;
             }
           })
+          .filter((u) => !suppressedSet.has(u.email.toLowerCase()))
           .map((u) => ({ email: u.email, name: u.name, userId: u.id }));
+      }
+
+      // Recipient counts (post-suppression) plus a raw pre-suppression total
+      // so admins see how many are opted-out for this segment.
+      async function segmentSuppressedCount(): Promise<number> {
+        // Cheap: count all rows in suppressed_emails. Segment membership check
+        // isn't worth the extra roundtrip for a UI-only hint.
+        const { count } = await supabase.from("suppressed_emails").select("*", { count: "exact", head: true });
+        return count ?? 0;
       }
 
       // Markdown-lite → HTML (safe)
@@ -187,7 +245,12 @@ serve(async (req) => {
       // Recipients-only lookup for UI count
       if (type === "admin-broadcast-recipients") {
         const list = await getRecipients();
-        return new Response(JSON.stringify({ count: list.length, sample: list.slice(0, 5).map((r) => r.email) }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        const unsubscribed = await segmentSuppressedCount();
+        return new Response(JSON.stringify({
+          count: list.length,
+          unsubscribed,
+          sample: list.slice(0, 5).map((r) => r.email),
+        }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
       const subjectIn: string = (data?.subject ?? "").toString().trim();
@@ -197,11 +260,15 @@ serve(async (req) => {
         return new Response(JSON.stringify({ error: "Missing subject or body" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
       const bodyHtml = renderBody(bodyIn);
-      const emailHtml = shell({ heading: headlineIn || subjectIn, bodyHtml });
+      // Preview uses a dummy token so the footer renders in the composer.
+      const previewHtml = shell({
+        heading: headlineIn || subjectIn,
+        bodyHtml: bodyHtml + unsubscribeFooterHtml("https://startupbar.co/u/preview"),
+      });
 
       // Preview render — return HTML for the panel
       if (type === "admin-broadcast-preview") {
-        return new Response(JSON.stringify({ html: emailHtml }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        return new Response(JSON.stringify({ html: previewHtml }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
       // Send. Personalization uses {{name}} in subject/body (optional).
@@ -211,12 +278,19 @@ serve(async (req) => {
         : await getRecipients();
 
       // Send one email, returning {ok, status, message}. Retries once on 429.
-      async function sendOne(toAddr: string, subj: string, htmlBody: string): Promise<{ ok: boolean; status: number; message: string }> {
+      async function sendOne(toAddr: string, subj: string, htmlBody: string, extraHeaders: Record<string, string>): Promise<{ ok: boolean; status: number; message: string }> {
         const bcc = toAddr.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? undefined : ADMIN_EMAIL;
         const doFetch = () => fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ from: FROM, to: toAddr, subject: subj, html: htmlBody, ...(bcc ? { bcc } : {}) }),
+          body: JSON.stringify({
+            from: FROM,
+            to: toAddr,
+            subject: subj,
+            html: htmlBody,
+            headers: extraHeaders,
+            ...(bcc ? { bcc } : {}),
+          }),
         });
         let res = await doFetch();
         if (res.status === 429) {
@@ -234,9 +308,14 @@ serve(async (req) => {
         const firstName = (r.name || "").split(" ")[0] || "there";
         const personalizedSubject = subjectIn.replace(/\{\{\s*name\s*\}\}/gi, firstName);
         const personalizedBody = bodyHtml.replace(/\{\{\s*name\s*\}\}/gi, firstName);
-        const html = shell({ heading: (headlineIn || subjectIn).replace(/\{\{\s*name\s*\}\}/gi, firstName), bodyHtml: personalizedBody });
+        const token = await getOrCreateUnsubToken(supabase, r.email);
+        const unsubUrl = `https://startupbar.co/u/${token}`;
+        const html = shell({
+          heading: (headlineIn || subjectIn).replace(/\{\{\s*name\s*\}\}/gi, firstName),
+          bodyHtml: personalizedBody + unsubscribeFooterHtml(unsubUrl),
+        });
         try {
-          const result = await sendOne(r.email, personalizedSubject, html);
+          const result = await sendOne(r.email, personalizedSubject, html, marketingHeaders(unsubUrl));
           if (result.ok) {
             sent += 1;
           } else {

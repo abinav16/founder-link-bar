@@ -20,9 +20,11 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WidgetBarRouteImport } from './routes/widget.bar'
+import { Route as UTokenRouteImport } from './routes/u.$token'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as ApiPublicVerifyInstallRouteImport } from './routes/api/public/verify-install'
+import { Route as ApiPublicUnsubscribeRouteImport } from './routes/api/public/unsubscribe'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicWidgetPickRouteImport } from './routes/api/public/widget.pick'
 import { Route as ApiPublicWidgetHeartbeatRouteImport } from './routes/api/public/widget.heartbeat'
@@ -83,6 +85,11 @@ const WidgetBarRoute = WidgetBarRouteImport.update({
   path: '/widget/bar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UTokenRoute = UTokenRouteImport.update({
+  id: '/u/$token',
+  path: '/u/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -96,6 +103,11 @@ const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
 const ApiPublicVerifyInstallRoute = ApiPublicVerifyInstallRouteImport.update({
   id: '/api/public/verify-install',
   path: '/api/public/verify-install',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicUnsubscribeRoute = ApiPublicUnsubscribeRouteImport.update({
+  id: '/api/public/unsubscribe',
+  path: '/api/public/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LovableEmailQueueProcessRoute =
@@ -138,7 +150,9 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/u/$token': typeof UTokenRoute
   '/widget/bar': typeof WidgetBarRoute
+  '/api/public/unsubscribe': typeof ApiPublicUnsubscribeRoute
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
   '/api/public/track/site-visit': typeof ApiPublicTrackSiteVisitRoute
   '/api/public/widget/click': typeof ApiPublicWidgetClickRoute
@@ -158,7 +172,9 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/u/$token': typeof UTokenRoute
   '/widget/bar': typeof WidgetBarRoute
+  '/api/public/unsubscribe': typeof ApiPublicUnsubscribeRoute
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
   '/api/public/track/site-visit': typeof ApiPublicTrackSiteVisitRoute
   '/api/public/widget/click': typeof ApiPublicWidgetClickRoute
@@ -180,7 +196,9 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/u/$token': typeof UTokenRoute
   '/widget/bar': typeof WidgetBarRoute
+  '/api/public/unsubscribe': typeof ApiPublicUnsubscribeRoute
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
   '/api/public/track/site-visit': typeof ApiPublicTrackSiteVisitRoute
   '/api/public/widget/click': typeof ApiPublicWidgetClickRoute
@@ -202,7 +220,9 @@ export interface FileRouteTypes {
     | '/terms'
     | '/account'
     | '/dashboard'
+    | '/u/$token'
     | '/widget/bar'
+    | '/api/public/unsubscribe'
     | '/api/public/verify-install'
     | '/api/public/track/site-visit'
     | '/api/public/widget/click'
@@ -222,7 +242,9 @@ export interface FileRouteTypes {
     | '/terms'
     | '/account'
     | '/dashboard'
+    | '/u/$token'
     | '/widget/bar'
+    | '/api/public/unsubscribe'
     | '/api/public/verify-install'
     | '/api/public/track/site-visit'
     | '/api/public/widget/click'
@@ -243,7 +265,9 @@ export interface FileRouteTypes {
     | '/terms'
     | '/_authenticated/account'
     | '/_authenticated/dashboard'
+    | '/u/$token'
     | '/widget/bar'
+    | '/api/public/unsubscribe'
     | '/api/public/verify-install'
     | '/api/public/track/site-visit'
     | '/api/public/widget/click'
@@ -263,7 +287,9 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
+  UTokenRoute: typeof UTokenRoute
   WidgetBarRoute: typeof WidgetBarRoute
+  ApiPublicUnsubscribeRoute: typeof ApiPublicUnsubscribeRoute
   ApiPublicVerifyInstallRoute: typeof ApiPublicVerifyInstallRoute
   ApiPublicTrackSiteVisitRoute: typeof ApiPublicTrackSiteVisitRoute
   ApiPublicWidgetClickRoute: typeof ApiPublicWidgetClickRoute
@@ -351,6 +377,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WidgetBarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/u/$token': {
+      id: '/u/$token'
+      path: '/u/$token'
+      fullPath: '/u/$token'
+      preLoaderRoute: typeof UTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -370,6 +403,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/verify-install'
       fullPath: '/api/public/verify-install'
       preLoaderRoute: typeof ApiPublicVerifyInstallRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/unsubscribe': {
+      id: '/api/public/unsubscribe'
+      path: '/api/public/unsubscribe'
+      fullPath: '/api/public/unsubscribe'
+      preLoaderRoute: typeof ApiPublicUnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/lovable/email/queue/process': {
@@ -434,7 +474,9 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
+  UTokenRoute: UTokenRoute,
   WidgetBarRoute: WidgetBarRoute,
+  ApiPublicUnsubscribeRoute: ApiPublicUnsubscribeRoute,
   ApiPublicVerifyInstallRoute: ApiPublicVerifyInstallRoute,
   ApiPublicTrackSiteVisitRoute: ApiPublicTrackSiteVisitRoute,
   ApiPublicWidgetClickRoute: ApiPublicWidgetClickRoute,
@@ -445,13 +487,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

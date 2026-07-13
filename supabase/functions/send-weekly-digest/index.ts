@@ -13,7 +13,33 @@ const cors = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-function shell(firstName: string, intro: string, sections: string) {
+async function getOrCreateUnsubToken(
+  admin: ReturnType<typeof createClient>,
+  email: string,
+): Promise<string> {
+  const normalized = email.trim().toLowerCase();
+  const { data: existing } = await admin
+    .from("email_unsubscribe_tokens")
+    .select("token")
+    .eq("email", normalized)
+    .maybeSingle();
+  if (existing?.token) return existing.token as string;
+  const token = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
+  const { data: inserted } = await admin
+    .from("email_unsubscribe_tokens")
+    .insert({ email: normalized, token })
+    .select("token")
+    .maybeSingle();
+  if (inserted?.token) return inserted.token as string;
+  const { data: reread } = await admin
+    .from("email_unsubscribe_tokens")
+    .select("token")
+    .eq("email", normalized)
+    .maybeSingle();
+  return (reread?.token as string) ?? token;
+}
+
+function shell(firstName: string, intro: string, sections: string, unsubUrl: string) {
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -51,9 +77,12 @@ function shell(firstName: string, intro: string, sections: string) {
         </tr>
         <tr>
           <td style="background:#f8fafc;border-radius:0 0 12px 12px;padding:20px 32px;border-top:1px solid #e2e8f0;">
-            <p style="margin:0;font-size:11px;color:#94a3b8;line-height:1.6;">
+            <p style="margin:0 0 6px;font-size:11px;color:#94a3b8;line-height:1.6;">
               You're getting this because you joined <a href="https://startupbar.co" style="color:#64748b;text-decoration:none;">StartupBar</a>.
               Sent every Monday.
+            </p>
+            <p style="margin:0;font-size:11px;color:#94a3b8;line-height:1.6;">
+              Don't want weekly stats? <a href="${unsubUrl}" style="color:#64748b;text-decoration:underline;">Unsubscribe in one click</a>. You'll still get important account emails.
             </p>
           </td>
         </tr>
@@ -114,11 +143,20 @@ function section(s: {
 </div>`;
 }
 
-async function sendEmail(to: string, html: string) {
+async function sendEmail(to: string, html: string, unsubUrl: string) {
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: FROM, to, subject: SUBJECT, html }),
+    body: JSON.stringify({
+      from: FROM,
+      to,
+      subject: SUBJECT,
+      html,
+      headers: {
+        "List-Unsubscribe": `<${unsubUrl}>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+      },
+    }),
   });
   if (!res.ok) throw new Error(`Resend ${res.status}: ${await res.text()}`);
   return res.json();
@@ -160,13 +198,22 @@ serve(async (req) => {
       byUser.get(s.user_id)!.push({ id: s.id, name: s.name });
     }
 
+    // Load unsubscribed emails once so we can skip opted-out founders.
+    const { data: sup } = await admin.from("suppressed_emails").select("email");
+    const suppressedSet = new Set((sup ?? []).map((r: any) => String(r.email).toLowerCase()));
+
     let sent = 0;
+    let skipped = 0;
     const errors: Array<{ userId: string; error: string }> = [];
 
     for (const [userId, userStartups] of byUser) {
       try {
         const { data: { user } } = await admin.auth.admin.getUserById(userId);
         if (!user?.email) continue;
+        if (suppressedSet.has(user.email.toLowerCase())) {
+          skipped++;
+          continue;
+        }
 
         const sections: string[] = [];
         for (const s of userStartups) {
@@ -213,8 +260,10 @@ serve(async (req) => {
           ? `Here's how <strong style="color:#0f172a;">${userStartups[0].name}</strong> performed on the StartupBar network this week.`
           : `Here's how your <strong style="color:#0f172a;">${userStartups.length} startups</strong> performed on the StartupBar network this week.`;
 
-        const html = shell(firstName, intro, sections.join("\n"));
-        await sendEmail(user.email, html);
+        const token = await getOrCreateUnsubToken(admin, user.email);
+        const unsubUrl = `https://startupbar.co/u/${token}`;
+        const html = shell(firstName, intro, sections.join("\n"), unsubUrl);
+        await sendEmail(user.email, html, unsubUrl);
         sent++;
       } catch (e) {
         console.error(`Failed for user ${userId}:`, e);
@@ -222,7 +271,7 @@ serve(async (req) => {
       }
     }
 
-    return new Response(JSON.stringify({ ok: true, sent, errors }), {
+    return new Response(JSON.stringify({ ok: true, sent, skipped, errors }), {
       headers: { ...cors, "Content-Type": "application/json" },
     });
   } catch (err) {

@@ -585,6 +585,7 @@ function BroadcastPanel() {
   const [headline, setHeadline] = useState("");
   const [body, setBody] = useState("");
   const [count, setCount] = useState<number | null>(null);
+  const [unsubscribed, setUnsubscribed] = useState<number>(0);
   const [loadingCount, setLoadingCount] = useState(false);
   const [previewHtml, setPreviewHtml] = useState<string>("");
   const [sending, setSending] = useState(false);
@@ -598,7 +599,9 @@ function BroadcastPanel() {
         body: { type: "admin-broadcast-recipients", data: { segment: seg } },
       });
       if (error) throw error;
-      setCount((data as { count: number })?.count ?? 0);
+      const r = data as { count: number; unsubscribed?: number };
+      setCount(r?.count ?? 0);
+      setUnsubscribed(r?.unsubscribed ?? 0);
     } catch (e) {
       toast.error("Couldn't load recipient count");
     } finally {
@@ -681,6 +684,9 @@ function BroadcastPanel() {
               <Users className="h-3 w-3" />
               {loadingCount ? "Counting…" : count === null ? "—" : `${count} recipient${count === 1 ? "" : "s"}`}
               <span className="text-black/30">· {SEGMENTS.find((s) => s.value === segment)?.hint}</span>
+              {unsubscribed > 0 && (
+                <span className="text-black/40">· {unsubscribed} opted out</span>
+              )}
             </div>
           </div>
 
