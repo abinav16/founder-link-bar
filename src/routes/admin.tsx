@@ -684,6 +684,9 @@ function BroadcastPanel() {
               <Users className="h-3 w-3" />
               {loadingCount ? "Counting…" : count === null ? "—" : `${count} recipient${count === 1 ? "" : "s"}`}
               <span className="text-black/30">· {SEGMENTS.find((s) => s.value === segment)?.hint}</span>
+              {unsubscribed > 0 && (
+                <span className="text-black/40">· {unsubscribed} opted out</span>
+              )}
             </div>
           </div>
 
