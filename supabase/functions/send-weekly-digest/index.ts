@@ -260,8 +260,10 @@ serve(async (req) => {
           ? `Here's how <strong style="color:#0f172a;">${userStartups[0].name}</strong> performed on the StartupBar network this week.`
           : `Here's how your <strong style="color:#0f172a;">${userStartups.length} startups</strong> performed on the StartupBar network this week.`;
 
-        const html = shell(firstName, intro, sections.join("\n"));
-        await sendEmail(user.email, html);
+        const token = await getOrCreateUnsubToken(admin, user.email);
+        const unsubUrl = `https://startupbar.co/u/${token}`;
+        const html = shell(firstName, intro, sections.join("\n"), unsubUrl);
+        await sendEmail(user.email, html, unsubUrl);
         sent++;
       } catch (e) {
         console.error(`Failed for user ${userId}:`, e);
