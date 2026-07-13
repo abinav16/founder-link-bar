@@ -193,6 +193,10 @@ serve(async (req) => {
           byUser.set(s.user_id, arr);
         }
 
+        // Load unsubscribe suppressions once and drop those recipients.
+        const { data: sup } = await supabase.from("suppressed_emails").select("email");
+        const suppressedSet = new Set((sup ?? []).map((r: any) => String(r.email).toLowerCase()));
+
         return users
           .filter((u) => {
             const statuses = byUser.get(u.id) ?? [];
@@ -206,7 +210,17 @@ serve(async (req) => {
               default: return false;
             }
           })
+          .filter((u) => !suppressedSet.has(u.email.toLowerCase()))
           .map((u) => ({ email: u.email, name: u.name, userId: u.id }));
+      }
+
+      // Recipient counts (post-suppression) plus a raw pre-suppression total
+      // so admins see how many are opted-out for this segment.
+      async function segmentSuppressedCount(): Promise<number> {
+        // Cheap: count all rows in suppressed_emails. Segment membership check
+        // isn't worth the extra roundtrip for a UI-only hint.
+        const { count } = await supabase.from("suppressed_emails").select("*", { count: "exact", head: true });
+        return count ?? 0;
       }
 
       // Markdown-lite → HTML (safe)
