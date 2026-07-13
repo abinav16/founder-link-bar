@@ -143,11 +143,20 @@ function section(s: {
 </div>`;
 }
 
-async function sendEmail(to: string, html: string) {
+async function sendEmail(to: string, html: string, unsubUrl: string) {
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: FROM, to, subject: SUBJECT, html }),
+    body: JSON.stringify({
+      from: FROM,
+      to,
+      subject: SUBJECT,
+      html,
+      headers: {
+        "List-Unsubscribe": `<${unsubUrl}>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+      },
+    }),
   });
   if (!res.ok) throw new Error(`Resend ${res.status}: ${await res.text()}`);
   return res.json();
