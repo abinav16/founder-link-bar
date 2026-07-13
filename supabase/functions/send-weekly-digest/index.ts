@@ -13,7 +13,33 @@ const cors = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-function shell(firstName: string, intro: string, sections: string) {
+async function getOrCreateUnsubToken(
+  admin: ReturnType<typeof createClient>,
+  email: string,
+): Promise<string> {
+  const normalized = email.trim().toLowerCase();
+  const { data: existing } = await admin
+    .from("email_unsubscribe_tokens")
+    .select("token")
+    .eq("email", normalized)
+    .maybeSingle();
+  if (existing?.token) return existing.token as string;
+  const token = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
+  const { data: inserted } = await admin
+    .from("email_unsubscribe_tokens")
+    .insert({ email: normalized, token })
+    .select("token")
+    .maybeSingle();
+  if (inserted?.token) return inserted.token as string;
+  const { data: reread } = await admin
+    .from("email_unsubscribe_tokens")
+    .select("token")
+    .eq("email", normalized)
+    .maybeSingle();
+  return (reread?.token as string) ?? token;
+}
+
+function shell(firstName: string, intro: string, sections: string, unsubUrl: string) {
   return `<!DOCTYPE html>
 <html>
 <head>
