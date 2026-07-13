@@ -23,6 +23,50 @@ async function sendEmail(to: string | string[], subject: string, html: string) {
   if (!res.ok) throw new Error(await res.text());
 }
 
+// Get or create a stable one-click unsubscribe token for an email.
+async function getOrCreateUnsubToken(
+  supabase: ReturnType<typeof createClient>,
+  email: string,
+): Promise<string> {
+  const normalized = email.trim().toLowerCase();
+  const { data: existing } = await supabase
+    .from("email_unsubscribe_tokens")
+    .select("token")
+    .eq("email", normalized)
+    .maybeSingle();
+  if (existing?.token) return existing.token as string;
+  const token = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
+  const { data: inserted } = await supabase
+    .from("email_unsubscribe_tokens")
+    .insert({ email: normalized, token })
+    .select("token")
+    .maybeSingle();
+  if (inserted?.token) return inserted.token as string;
+  // Race: another concurrent insert won — re-read.
+  const { data: reread } = await supabase
+    .from("email_unsubscribe_tokens")
+    .select("token")
+    .eq("email", normalized)
+    .maybeSingle();
+  return (reread?.token as string) ?? token;
+}
+
+function unsubscribeFooterHtml(url: string) {
+  return `<div style="margin-top:24px;padding-top:16px;border-top:1px solid #e4e4e7;font-size:11px;line-height:1.6;color:#a1a1aa;text-align:center;">
+    You're getting this because you signed up at <a href="https://startupbar.co" style="color:#a1a1aa;text-decoration:none;">startupbar.co</a>.
+    <br>Don't want these updates? <a href="${url}" style="color:#71717a;text-decoration:underline;">Unsubscribe in one click</a>. Important account emails (approvals, warnings) will still be sent.
+  </div>`;
+}
+
+// Extra headers for marketing sends → enables Gmail/Apple one-click and
+// keeps us on the right side of RFC 8058.
+function marketingHeaders(unsubUrl: string) {
+  return {
+    "List-Unsubscribe": `<${unsubUrl}>`,
+    "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+  };
+}
+
 // Branded shell used by every email type.
 function shell(opts: { heading: string; bodyHtml: string; signoff?: string }) {
   const signoff = opts.signoff ?? "— Abinav from StartupBar";
