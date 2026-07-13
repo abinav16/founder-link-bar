@@ -198,13 +198,22 @@ serve(async (req) => {
       byUser.get(s.user_id)!.push({ id: s.id, name: s.name });
     }
 
+    // Load unsubscribed emails once so we can skip opted-out founders.
+    const { data: sup } = await admin.from("suppressed_emails").select("email");
+    const suppressedSet = new Set((sup ?? []).map((r: any) => String(r.email).toLowerCase()));
+
     let sent = 0;
+    let skipped = 0;
     const errors: Array<{ userId: string; error: string }> = [];
 
     for (const [userId, userStartups] of byUser) {
       try {
         const { data: { user } } = await admin.auth.admin.getUserById(userId);
         if (!user?.email) continue;
+        if (suppressedSet.has(user.email.toLowerCase())) {
+          skipped++;
+          continue;
+        }
 
         const sections: string[] = [];
         for (const s of userStartups) {
