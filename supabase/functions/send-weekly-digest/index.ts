@@ -271,7 +271,7 @@ serve(async (req) => {
       }
     }
 
-    return new Response(JSON.stringify({ ok: true, sent, errors }), {
+    return new Response(JSON.stringify({ ok: true, sent, skipped, errors }), {
       headers: { ...cors, "Content-Type": "application/json" },
     });
   } catch (err) {
