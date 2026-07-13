@@ -77,9 +77,12 @@ function shell(firstName: string, intro: string, sections: string, unsubUrl: str
         </tr>
         <tr>
           <td style="background:#f8fafc;border-radius:0 0 12px 12px;padding:20px 32px;border-top:1px solid #e2e8f0;">
-            <p style="margin:0;font-size:11px;color:#94a3b8;line-height:1.6;">
+            <p style="margin:0 0 6px;font-size:11px;color:#94a3b8;line-height:1.6;">
               You're getting this because you joined <a href="https://startupbar.co" style="color:#64748b;text-decoration:none;">StartupBar</a>.
               Sent every Monday.
+            </p>
+            <p style="margin:0;font-size:11px;color:#94a3b8;line-height:1.6;">
+              Don't want weekly stats? <a href="${unsubUrl}" style="color:#64748b;text-decoration:underline;">Unsubscribe in one click</a>. You'll still get important account emails.
             </p>
           </td>
         </tr>
