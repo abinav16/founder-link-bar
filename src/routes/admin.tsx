@@ -758,3 +758,114 @@ function BroadcastPanel() {
     </div>
   );
 }
+
+const REASON_LABELS: Record<string, string> = {
+  too_many_emails: "Too many emails",
+  not_relevant: "Not relevant",
+  no_longer_interested: "No longer interested",
+  content_quality: "Content quality",
+  never_signed_up: "Never signed up",
+  other: "Other",
+  unspecified: "Not specified",
+};
+
+function UnsubReasonsPanel() {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<{
+    total: number;
+    counts: Record<string, number>;
+    recent: Array<{ email: string; reason: string; details: string | null; at: string }>;
+  } | null>(null);
+
+  async function load() {
+    setLoading(true);
+    try {
+      const { data: res, error } = await supabase.functions.invoke("send-email", {
+        body: { type: "admin-unsub-reasons" },
+      });
+      if (error) throw error;
+      setData(res as any);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (open && !data) void load();
+  }, [open]);
+
+  const sortedCounts = data
+    ? Object.entries(data.counts).sort((a, b) => b[1] - a[1])
+    : [];
+  const max = sortedCounts[0]?.[1] ?? 1;
+
+  return (
+    <section className="mb-8 rounded-2xl border border-black/8 bg-white">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between px-5 py-3.5 text-left"
+      >
+        <div>
+          <h2 className="text-sm font-semibold tracking-tight text-black">Unsubscribe analytics</h2>
+          <p className="text-xs text-black/50">
+            {data ? `${data.total} total unsubscribes` : "Reason breakdown from user opt-outs"}
+          </p>
+        </div>
+        <span className="text-xs text-black/40">{open ? "Hide" : "Show"}</span>
+      </button>
+      {open && (
+        <div className="border-t border-black/8 px-5 py-4 space-y-5">
+          {loading && <div className="text-xs text-black/50">Loading…</div>}
+          {data && data.total === 0 && (
+            <div className="text-xs text-black/50">No unsubscribes yet.</div>
+          )}
+          {data && data.total > 0 && (
+            <>
+              <div className="space-y-1.5">
+                {sortedCounts.map(([code, count]) => (
+                  <div key={code} className="flex items-center gap-3 text-xs">
+                    <div className="w-40 shrink-0 text-black/70">{REASON_LABELS[code] ?? code}</div>
+                    <div className="flex-1 h-2 rounded-full bg-black/5 overflow-hidden">
+                      <div
+                        className="h-full bg-black"
+                        style={{ width: `${(count / max) * 100}%` }}
+                      />
+                    </div>
+                    <div className="w-10 text-right tabular-nums text-black/60">{count}</div>
+                  </div>
+                ))}
+              </div>
+              {data.recent.length > 0 && (
+                <div>
+                  <div className="mb-2 text-[11px] uppercase tracking-[0.15em] text-black/40 font-semibold">
+                    Recent
+                  </div>
+                  <div className="divide-y divide-black/5 rounded-lg border border-black/8">
+                    {data.recent.map((r, i) => (
+                      <div key={i} className="px-3 py-2 text-xs">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-medium text-black truncate">{r.email}</span>
+                          <span className="text-black/40 shrink-0">
+                            {new Date(r.at).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <div className="mt-0.5 text-black/60">
+                          {REASON_LABELS[r.reason] ?? r.reason}
+                          {r.details ? ` — ${r.details}` : ""}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
