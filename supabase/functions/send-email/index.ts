@@ -155,7 +155,7 @@ serve(async (req) => {
 
 
     // ---- Admin broadcast: custom subject + body to a recipient segment ----
-    if (type === "admin-broadcast" || type === "admin-broadcast-preview" || type === "admin-broadcast-recipients") {
+    if (type === "admin-broadcast" || type === "admin-broadcast-preview" || type === "admin-broadcast-recipients" || type === "admin-unsub-reasons") {
       // Verify caller is admin
       const authHeader = req.headers.get("Authorization") ?? "";
       const token = authHeader.replace("Bearer ", "").trim();
