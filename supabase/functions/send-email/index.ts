@@ -253,6 +253,34 @@ serve(async (req) => {
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
+      // Aggregate unsubscribe reasons for admin analytics
+      if (type === "admin-unsub-reasons") {
+        const { data: rows } = await supabase
+          .from("suppressed_emails")
+          .select("email,reason,metadata,created_at")
+          .eq("reason", "unsubscribe")
+          .order("created_at", { ascending: false });
+        const list = (rows ?? []) as Array<{ email: string; metadata: any; created_at: string }>;
+        const counts: Record<string, number> = {};
+        const recent: Array<{ email: string; reason: string; details: string | null; at: string }> = [];
+        for (const r of list) {
+          const code = (r.metadata?.reason_code as string) ?? "unspecified";
+          counts[code] = (counts[code] ?? 0) + 1;
+          if (recent.length < 25) {
+            recent.push({
+              email: r.email,
+              reason: code,
+              details: (r.metadata?.details as string) ?? null,
+              at: r.created_at,
+            });
+          }
+        }
+        return new Response(JSON.stringify({ total: list.length, counts, recent }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+
       const subjectIn: string = (data?.subject ?? "").toString().trim();
       const headlineIn: string = (data?.headline ?? subjectIn).toString().trim();
       const bodyIn: string = (data?.bodyMarkdown ?? "").toString();
