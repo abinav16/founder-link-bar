@@ -25,6 +25,8 @@ function UnsubscribePage() {
   const { token } = Route.useParams();
   const [state, setState] = useState<State>({ kind: "loading" });
   const [busy, setBusy] = useState(false);
+  const [reason, setReason] = useState<string>("");
+  const [details, setDetails] = useState<string>("");
 
   useEffect(() => {
     let cancelled = false;
@@ -57,6 +59,12 @@ function UnsubscribePage() {
     try {
       const res = await fetch(`/api/public/unsubscribe?token=${encodeURIComponent(token)}&action=${action}`, {
         method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(
+          action === "unsubscribe"
+            ? { reason: reason || "unspecified", details: details.trim() }
+            : {},
+        ),
       });
       if (!res.ok) throw new Error("Request failed");
       const json = (await res.json()) as { email: string; unsubscribed: boolean };
@@ -67,6 +75,7 @@ function UnsubscribePage() {
       setBusy(false);
     }
   }
+
 
   return (
     <div className="min-h-dvh bg-[#f7f7f6] flex flex-col">
@@ -116,6 +125,52 @@ function UnsubscribePage() {
                   <span className="font-medium text-black">{state.email}</span>.
                 </p>
               </div>
+
+              <div className="space-y-2">
+                <label className="text-[11px] uppercase tracking-[0.15em] text-black/40 font-semibold">
+                  Reason <span className="text-black/30 normal-case tracking-normal font-normal">(optional — helps us improve)</span>
+                </label>
+                <div className="grid gap-1.5">
+                  {[
+                    { v: "too_many_emails", l: "Too many emails" },
+                    { v: "not_relevant", l: "Content isn't relevant to me" },
+                    { v: "no_longer_interested", l: "No longer interested in StartupBar" },
+                    { v: "content_quality", l: "Emails feel low quality or spammy" },
+                    { v: "never_signed_up", l: "I never signed up" },
+                    { v: "other", l: "Other" },
+                  ].map((r) => (
+                    <label
+                      key={r.v}
+                      className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm cursor-pointer transition ${
+                        reason === r.v
+                          ? "border-black bg-black/[0.03] text-black"
+                          : "border-black/10 text-black/70 hover:border-black/25"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="unsub-reason"
+                        value={r.v}
+                        checked={reason === r.v}
+                        onChange={() => setReason(r.v)}
+                        className="accent-black"
+                      />
+                      {r.l}
+                    </label>
+                  ))}
+                </div>
+                {reason === "other" && (
+                  <textarea
+                    value={details}
+                    onChange={(e) => setDetails(e.target.value)}
+                    maxLength={500}
+                    rows={3}
+                    placeholder="Tell us more (optional)"
+                    className="mt-1 w-full rounded-lg border border-black/12 bg-white px-3 py-2 text-sm text-black placeholder:text-black/40 focus:border-black focus:outline-none resize-y"
+                  />
+                )}
+              </div>
+
               <div className="rounded-lg border border-black/8 bg-[#faf9f7] px-4 py-3 text-xs text-black/60 leading-relaxed">
                 You'll still receive important account emails — application approvals, rejections, warnings, and payment receipts.
               </div>
@@ -137,6 +192,7 @@ function UnsubscribePage() {
               </div>
             </div>
           )}
+
 
           {state.kind === "done" && state.unsubscribed && (
             <div className="space-y-4">
