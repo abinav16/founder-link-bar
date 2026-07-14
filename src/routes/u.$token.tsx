@@ -25,6 +25,8 @@ function UnsubscribePage() {
   const { token } = Route.useParams();
   const [state, setState] = useState<State>({ kind: "loading" });
   const [busy, setBusy] = useState(false);
+  const [reason, setReason] = useState<string>("");
+  const [details, setDetails] = useState<string>("");
 
   useEffect(() => {
     let cancelled = false;
@@ -57,6 +59,12 @@ function UnsubscribePage() {
     try {
       const res = await fetch(`/api/public/unsubscribe?token=${encodeURIComponent(token)}&action=${action}`, {
         method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(
+          action === "unsubscribe"
+            ? { reason: reason || "unspecified", details: details.trim() }
+            : {},
+        ),
       });
       if (!res.ok) throw new Error("Request failed");
       const json = (await res.json()) as { email: string; unsubscribed: boolean };
@@ -67,6 +75,7 @@ function UnsubscribePage() {
       setBusy(false);
     }
   }
+
 
   return (
     <div className="min-h-dvh bg-[#f7f7f6] flex flex-col">
