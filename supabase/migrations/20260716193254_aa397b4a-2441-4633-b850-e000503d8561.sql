@@ -1,0 +1,1 @@
+ALTER TABLE public.startups ADD COLUMN IF NOT EXISTS widget_last_page_url text;

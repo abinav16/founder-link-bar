@@ -237,6 +237,7 @@ export type Database = {
           widget_currently_visible: boolean | null
           widget_hidden_at: string | null
           widget_last_heartbeat_at: string | null
+          widget_last_page_url: string | null
         }
         Insert: {
           banned?: boolean
@@ -256,6 +257,7 @@ export type Database = {
           widget_currently_visible?: boolean | null
           widget_hidden_at?: string | null
           widget_last_heartbeat_at?: string | null
+          widget_last_page_url?: string | null
         }
         Update: {
           banned?: boolean
@@ -275,6 +277,7 @@ export type Database = {
           widget_currently_visible?: boolean | null
           widget_hidden_at?: string | null
           widget_last_heartbeat_at?: string | null
+          widget_last_page_url?: string | null
         }
         Relationships: []
       }
