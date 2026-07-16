@@ -61,6 +61,23 @@ export const Route = createFileRoute("/api/public/widget/heartbeat")({
 
           const now = new Date();
 
+          // Compose the last-seen URL (origin from validated referer/origin +
+          // path from the loader). Purely for admin observability — we only
+          // store it when we already trust the origin.
+          let lastPageUrl: string | null = null;
+          try {
+            const rawPath = url.searchParams.get("path");
+            const originHeader = request.headers.get("origin") ?? request.headers.get("referer");
+            if (rawPath && rawPath.startsWith("/") && originHeader) {
+              const originUrl = new URL(originHeader);
+              const safePath = rawPath.slice(0, 200).replace(/[\s<>"']/g, "");
+              lastPageUrl = `${originUrl.protocol}//${originUrl.host}${safePath}`;
+              if (lastPageUrl.length > 300) lastPageUrl = lastPageUrl.slice(0, 300);
+            }
+          } catch {
+            lastPageUrl = null;
+          }
+
           // Bookkeeping only. Never mutate status, never send email.
           await supabaseAdmin
             .from("startups")
@@ -70,7 +87,8 @@ export const Route = createFileRoute("/api/public/widget/heartbeat")({
               widget_hidden_at: visible
                 ? null
                 : (startup.widget_hidden_at ?? now.toISOString()),
-            })
+              ...(lastPageUrl ? { widget_last_page_url: lastPageUrl } : {}),
+            } as never)
             .eq("id", id);
 
           return new Response(null, { status: 200, headers: cors });

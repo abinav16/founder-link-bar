@@ -41,6 +41,7 @@ interface Startup {
   widget_hidden_at: string | null;
   widget_last_heartbeat_at: string | null;
   widget_currently_visible: boolean | null;
+  widget_last_page_url: string | null;
   strike_count: number;
   rejection_reason: string | null;
   banned: boolean;
@@ -440,6 +441,17 @@ function AdminPage() {
                             <span className="text-[10px] text-black/35">
                               last seen {new Date(s.widget_last_heartbeat_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
                             </span>
+                            {s.widget_last_page_url && (
+                              <a
+                                href={s.widget_last_page_url}
+                                target="_blank"
+                                rel="noreferrer"
+                                title={s.widget_last_page_url}
+                                className="max-w-[180px] truncate text-[10px] text-black/40 hover:text-black/70 hover:underline"
+                              >
+                                on {(() => { try { const u = new URL(s.widget_last_page_url); return u.pathname === "/" ? u.host : u.pathname; } catch { return s.widget_last_page_url; } })()}
+                              </a>
+                            )}
                           </div>
                         ) : (
                           <span className="text-xs text-black/25">No heartbeat yet</span>
