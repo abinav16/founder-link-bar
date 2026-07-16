@@ -170,7 +170,13 @@
         }
         lastSample = sample;
         var img = new Image();
-        img.src = origin + '/api/public/widget/heartbeat?id=' + encodeURIComponent(id) + '&visible=' + report;
+        var pathPart = '';
+        try {
+          var p = window.location.pathname || '/';
+          if (p.length > 200) p = p.slice(0, 200);
+          pathPart = '&path=' + encodeURIComponent(p);
+        } catch (e) {}
+        img.src = origin + '/api/public/widget/heartbeat?id=' + encodeURIComponent(id) + '&visible=' + report + pathPart;
       } catch (e) {}
     }
 
