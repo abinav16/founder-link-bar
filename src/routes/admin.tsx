@@ -41,6 +41,7 @@ interface Startup {
   widget_hidden_at: string | null;
   widget_last_heartbeat_at: string | null;
   widget_currently_visible: boolean | null;
+  widget_last_page_url: string | null;
   strike_count: number;
   rejection_reason: string | null;
   banned: boolean;
