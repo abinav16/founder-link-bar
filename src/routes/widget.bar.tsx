@@ -200,10 +200,12 @@ function WidgetBar() {
           <Info size={12} />
         </button>
 
-        {/* STARTUPBAR badge — always visible */}
-        <a href="https://startupbar.co" target="_blank" rel="noopener noreferrer" style={labelStyle}>
-          STARTUPBAR
-        </a>
+        {/* STARTUPBAR badge — hidden on mobile to save space */}
+        {!isMobile && (
+          <a href="https://startupbar.co" target="_blank" rel="noopener noreferrer" style={labelStyle}>
+            STARTUPBAR
+          </a>
+        )}
 
         {loaded && startup ? (
           <>
@@ -233,10 +235,11 @@ function WidgetBar() {
 
             <a
               href={`/api/public/widget/click?id=${startup.id}${host ? `&host=${host}` : ""}${domain ? `&via=${encodeURIComponent(domain)}` : ""}`}
-              target="_top"
-              style={{ ...arrowLinkBase, fontWeight: isMobile ? 800 : 500, fontSize: isMobile ? 16 : 12 }}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ ...arrowLinkBase, fontWeight: isMobile ? 800 : 500, fontSize: isMobile ? 14 : 12 }}
             >
-              {isMobile ? "→" : "Visit →"}
+              Visit →
             </a>
           </>
         ) : (
