@@ -235,10 +235,11 @@ function WidgetBar() {
 
             <a
               href={`/api/public/widget/click?id=${startup.id}${host ? `&host=${host}` : ""}${domain ? `&via=${encodeURIComponent(domain)}` : ""}`}
-              target="_top"
-              style={{ ...arrowLinkBase, fontWeight: isMobile ? 800 : 500, fontSize: isMobile ? 16 : 12 }}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ ...arrowLinkBase, fontWeight: isMobile ? 800 : 500, fontSize: isMobile ? 14 : 12 }}
             >
-              {isMobile ? "→" : "Visit →"}
+              Visit →
             </a>
           </>
         ) : (
