@@ -200,10 +200,12 @@ function WidgetBar() {
           <Info size={12} />
         </button>
 
-        {/* STARTUPBAR badge — always visible */}
-        <a href="https://startupbar.co" target="_blank" rel="noopener noreferrer" style={labelStyle}>
-          STARTUPBAR
-        </a>
+        {/* STARTUPBAR badge — hidden on mobile to save space */}
+        {!isMobile && (
+          <a href="https://startupbar.co" target="_blank" rel="noopener noreferrer" style={labelStyle}>
+            STARTUPBAR
+          </a>
+        )}
 
         {loaded && startup ? (
           <>
