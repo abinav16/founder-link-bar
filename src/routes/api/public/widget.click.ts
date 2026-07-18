@@ -10,6 +10,7 @@ export const Route = createFileRoute("/api/public/widget/click")({
         const id = url.searchParams.get("id");
         const host = url.searchParams.get("host");
         const source = url.searchParams.get("source");
+        const via = url.searchParams.get("via");
         if (!id) return new Response("Missing id", { status: 400 });
         const supabase = createClient<Database>(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } });
         const { data: s } = await supabase.from("startups").select("website_url, status").eq("id", id).maybeSingle();
@@ -26,6 +27,7 @@ export const Route = createFileRoute("/api/public/widget/click")({
         dest.searchParams.set("utm_source", "startupbar");
         dest.searchParams.set("utm_medium", source === "dashboard" ? "dashboard" : "bar");
         dest.searchParams.set("utm_campaign", source === "dashboard" ? "dashboard" : "network");
+        if (via) dest.searchParams.set("_sbvia", via.slice(0, 200));
         return new Response(null, { status: 302, headers: { Location: dest.toString(), "Cache-Control": "no-store" } });
       },
     },
