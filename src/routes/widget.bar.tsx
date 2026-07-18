@@ -58,7 +58,7 @@ const darkTokens: typeof lightTokens = {
 };
 
 function WidgetBar() {
-  const { host, theme: urlTheme, domain, path, sbref, mobile } = useSearch({ from: "/widget/bar" });
+  const { host, theme: urlTheme, domain, path, sbref, pref, mobile } = useSearch({ from: "/widget/bar" });
   const [activeTheme, setActiveTheme] = useState<"light" | "dark">(urlTheme ?? "light");
   const tokens = activeTheme === "dark" ? darkTokens : lightTokens;
   const [startup, setStartup] = useState<Startup | null>(null);
