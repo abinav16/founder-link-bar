@@ -1,33 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { parseUA, extractCountry, extractIp, lookupCountry } from "@/lib/ua";
 
 // The StartupBar marketing site is represented as an approved startup row so
 // that pageview impressions satisfy the impressions RLS policy and show up on
 // the network-wide "live activity" globe on the homepage.
 const STARTUPBAR_SITE_ID = "0d2db708-f4e9-4b77-bd83-c446826c76b1";
 
-function parseUA(ua: string): { device: string; os: string; browser: string } {
-  const u = ua.toLowerCase();
-  let device = "desktop";
-  if (/ipad|tablet/.test(u)) device = "tablet";
-  else if (/mobi|iphone|android/.test(u)) device = "mobile";
-
-  let os = "unknown";
-  if (/windows/.test(u)) os = "Windows";
-  else if (/mac os x|macintosh/.test(u)) os = "macOS";
-  else if (/iphone|ipad|ios/.test(u)) os = "iOS";
-  else if (/android/.test(u)) os = "Android";
-  else if (/linux/.test(u)) os = "Linux";
-
-  let browser = "unknown";
-  if (/edg\//.test(u)) browser = "Edge";
-  else if (/chrome\//.test(u) && !/edg\//.test(u)) browser = "Chrome";
-  else if (/safari\//.test(u) && !/chrome\//.test(u)) browser = "Safari";
-  else if (/firefox\//.test(u)) browser = "Firefox";
-
-  return { device, os, browser };
-}
 
 async function lookupCountry(ip: string | null): Promise<string | null> {
   if (!ip) return null;
