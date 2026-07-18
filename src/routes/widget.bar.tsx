@@ -10,6 +10,7 @@ const search = z.object({
   domain: z.string().optional(),
   path: z.string().optional(),
   sbref: z.string().optional(),
+  pref: z.string().optional(),
   mobile: z.coerce.number().optional(),
 });
 
@@ -57,7 +58,7 @@ const darkTokens: typeof lightTokens = {
 };
 
 function WidgetBar() {
-  const { host, theme: urlTheme, domain, path, sbref, mobile } = useSearch({ from: "/widget/bar" });
+  const { host, theme: urlTheme, domain, path, sbref, pref, mobile } = useSearch({ from: "/widget/bar" });
   const [activeTheme, setActiveTheme] = useState<"light" | "dark">(urlTheme ?? "light");
   const tokens = activeTheme === "dark" ? darkTokens : lightTokens;
   const [startup, setStartup] = useState<Startup | null>(null);
@@ -87,6 +88,7 @@ function WidgetBar() {
         if (domain) params.set("domain", domain);
         if (path) params.set("path", path);
         if (sbref) params.set("sbref", sbref);
+        if (pref) params.set("pref", pref);
         const res = await fetch(`/api/public/widget/pick?${params.toString()}`);
         if (res.ok) {
           const data = (await res.json()) as Startup | null;

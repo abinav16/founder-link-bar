@@ -1,47 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { parseUA, extractCountry, extractIp, lookupCountry } from "@/lib/ua";
 
 // The StartupBar marketing site is represented as an approved startup row so
 // that pageview impressions satisfy the impressions RLS policy and show up on
 // the network-wide "live activity" globe on the homepage.
 const STARTUPBAR_SITE_ID = "0d2db708-f4e9-4b77-bd83-c446826c76b1";
 
-function parseUA(ua: string): { device: string; os: string; browser: string } {
-  const u = ua.toLowerCase();
-  let device = "desktop";
-  if (/ipad|tablet/.test(u)) device = "tablet";
-  else if (/mobi|iphone|android/.test(u)) device = "mobile";
-
-  let os = "unknown";
-  if (/windows/.test(u)) os = "Windows";
-  else if (/mac os x|macintosh/.test(u)) os = "macOS";
-  else if (/iphone|ipad|ios/.test(u)) os = "iOS";
-  else if (/android/.test(u)) os = "Android";
-  else if (/linux/.test(u)) os = "Linux";
-
-  let browser = "unknown";
-  if (/edg\//.test(u)) browser = "Edge";
-  else if (/chrome\//.test(u) && !/edg\//.test(u)) browser = "Chrome";
-  else if (/safari\//.test(u) && !/chrome\//.test(u)) browser = "Safari";
-  else if (/firefox\//.test(u)) browser = "Firefox";
-
-  return { device, os, browser };
-}
-
-async function lookupCountry(ip: string | null): Promise<string | null> {
-  if (!ip) return null;
-  try {
-    const res = await fetch(`https://ipapi.co/${ip}/country/`, {
-      headers: { "User-Agent": "startupbar-site-tracker" },
-    });
-    if (!res.ok) return null;
-    const txt = (await res.text()).trim();
-    return /^[A-Z]{2}$/.test(txt) ? txt : null;
-  } catch {
-    return null;
-  }
-}
 
 export const Route = createFileRoute("/api/public/track/site-visit")({
   server: {
@@ -55,17 +21,9 @@ export const Route = createFileRoute("/api/public/track/site-visit")({
           const ua = request.headers.get("user-agent") ?? "";
           const { device, os, browser } = parseUA(ua);
 
-          // Country: Cloudflare header first, else IP lookup fallback
-          let country = request.headers.get("cf-ipcountry");
-          if (country === "XX" || country === "T1") country = null;
-          if (!country) {
-            const ip =
-              request.headers.get("cf-connecting-ip") ||
-              request.headers.get("x-real-ip") ||
-              (request.headers.get("x-forwarded-for") || "").split(",")[0]?.trim() ||
-              null;
-            country = await lookupCountry(ip);
-          }
+          let country = extractCountry(request);
+          if (!country) country = await lookupCountry(extractIp(request));
+
 
           const supabase = createClient<Database>(
             process.env.SUPABASE_URL!,
