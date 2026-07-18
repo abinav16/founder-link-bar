@@ -88,6 +88,7 @@ function WidgetBar() {
         if (domain) params.set("domain", domain);
         if (path) params.set("path", path);
         if (sbref) params.set("sbref", sbref);
+        if (pref) params.set("pref", pref);
         const res = await fetch(`/api/public/widget/pick?${params.toString()}`);
         if (res.ok) {
           const data = (await res.json()) as Startup | null;
