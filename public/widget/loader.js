@@ -48,6 +48,13 @@
     var iframe = document.createElement('iframe');
     var iframeSrc = origin + '/widget/bar?host=' + encodeURIComponent(id) + '&theme=' + theme + '&domain=' + encodeURIComponent(window.location.hostname) + '&path=' + encodeURIComponent(window.location.pathname) + (isMobile ? '&mobile=1' : '');
     try {
+      var pref = document.referrer || '';
+      if (pref && pref.length > 0) {
+        if (pref.length > 500) pref = pref.slice(0, 500);
+        iframeSrc += '&pref=' + encodeURIComponent(pref);
+      }
+    } catch (e) {}
+    try {
       var lp = new URLSearchParams(window.location.search);
       if (lp.get('utm_source') === 'startupbar') {
         var sbvia = lp.get('_sbvia');
