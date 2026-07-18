@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
+const STARTUPBAR_SITE_ID = "0d2db708-f4e9-4b77-bd83-c446826c76b1";
+
 export const Route = createFileRoute("/api/public/widget/click")({
   server: {
     handlers: {
@@ -11,8 +13,21 @@ export const Route = createFileRoute("/api/public/widget/click")({
         const host = url.searchParams.get("host");
         const source = url.searchParams.get("source");
         const via = url.searchParams.get("via");
-        if (!id) return new Response("Missing id", { status: 400 });
         const supabase = createClient<Database>(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } });
+
+        // Badge click: not tied to a specific promoted startup — record against
+        // the StartupBar site itself so it shows up as widget-sourced traffic.
+        if (source === "badge") {
+          await supabase.from("clicks").insert({ shown_startup_id: STARTUPBAR_SITE_ID, host_startup_id: host ?? null });
+          const dest = new URL("https://startupbar.co/");
+          dest.searchParams.set("utm_source", "startupbar");
+          dest.searchParams.set("utm_medium", "badge");
+          dest.searchParams.set("utm_campaign", "network");
+          if (via) dest.searchParams.set("_sbvia", via.slice(0, 200));
+          return new Response(null, { status: 302, headers: { Location: dest.toString(), "Cache-Control": "no-store" } });
+        }
+
+        if (!id) return new Response("Missing id", { status: 400 });
         const { data: s } = await supabase.from("startups").select("website_url, status").eq("id", id).maybeSingle();
         if (!s || s.status !== "approved") return new Response("Not found", { status: 404 });
 
@@ -33,3 +48,4 @@ export const Route = createFileRoute("/api/public/widget/click")({
     },
   },
 });
+
