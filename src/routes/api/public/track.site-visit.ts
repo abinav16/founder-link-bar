@@ -16,7 +16,22 @@ export const Route = createFileRoute("/api/public/track/site-visit")({
         try {
           const body = await request.json().catch(() => ({}));
           const path = typeof body?.path === "string" ? body.path.slice(0, 500) : "/";
-          const referrer = typeof body?.referrer === "string" ? body.referrer.slice(0, 500) : null;
+          let referrer = typeof body?.referrer === "string" ? body.referrer.slice(0, 500) : null;
+
+          // If the landing URL carries StartupBar attribution (utm_source=startupbar
+          // or _sbvia=<host>), override referrer so the homepage globe classifies
+          // the visit as StartupBar network traffic instead of Direct.
+          try {
+            const qIdx = path.indexOf("?");
+            if (qIdx >= 0) {
+              const sp = new URLSearchParams(path.slice(qIdx + 1));
+              const utm = sp.get("utm_source");
+              const via = sp.get("_sbvia");
+              if (utm === "startupbar" || via) {
+                referrer = via ? `startupbar:${via.slice(0, 200)}` : "startupbar";
+              }
+            }
+          } catch {}
 
           const ua = request.headers.get("user-agent") ?? "";
           const { device, os, browser } = parseUA(ua);
