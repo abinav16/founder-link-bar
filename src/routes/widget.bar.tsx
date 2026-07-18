@@ -204,7 +204,7 @@ function WidgetBar() {
 
         {/* STARTUPBAR badge — hidden on mobile to save space */}
         {!isMobile && (
-          <a href="https://startupbar.co" target="_blank" rel="noopener noreferrer" style={labelStyle}>
+          <a href={`/api/public/widget/click?source=badge${host ? `&host=${host}` : ""}${domain ? `&via=${encodeURIComponent(domain)}` : ""}`} target="_blank" rel="noopener noreferrer" style={labelStyle}>
             STARTUPBAR
           </a>
         )}
