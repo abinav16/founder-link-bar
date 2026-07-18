@@ -10,6 +10,7 @@ const search = z.object({
   domain: z.string().optional(),
   path: z.string().optional(),
   sbref: z.string().optional(),
+  pref: z.string().optional(),
   mobile: z.coerce.number().optional(),
 });
 
