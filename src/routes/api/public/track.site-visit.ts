@@ -9,20 +9,6 @@ import { parseUA, extractCountry, extractIp, lookupCountry } from "@/lib/ua";
 const STARTUPBAR_SITE_ID = "0d2db708-f4e9-4b77-bd83-c446826c76b1";
 
 
-async function lookupCountry(ip: string | null): Promise<string | null> {
-  if (!ip) return null;
-  try {
-    const res = await fetch(`https://ipapi.co/${ip}/country/`, {
-      headers: { "User-Agent": "startupbar-site-tracker" },
-    });
-    if (!res.ok) return null;
-    const txt = (await res.text()).trim();
-    return /^[A-Z]{2}$/.test(txt) ? txt : null;
-  } catch {
-    return null;
-  }
-}
-
 export const Route = createFileRoute("/api/public/track/site-visit")({
   server: {
     handlers: {
@@ -35,17 +21,9 @@ export const Route = createFileRoute("/api/public/track/site-visit")({
           const ua = request.headers.get("user-agent") ?? "";
           const { device, os, browser } = parseUA(ua);
 
-          // Country: Cloudflare header first, else IP lookup fallback
-          let country = request.headers.get("cf-ipcountry");
-          if (country === "XX" || country === "T1") country = null;
-          if (!country) {
-            const ip =
-              request.headers.get("cf-connecting-ip") ||
-              request.headers.get("x-real-ip") ||
-              (request.headers.get("x-forwarded-for") || "").split(",")[0]?.trim() ||
-              null;
-            country = await lookupCountry(ip);
-          }
+          let country = extractCountry(request);
+          if (!country) country = await lookupCountry(extractIp(request));
+
 
           const supabase = createClient<Database>(
             process.env.SUPABASE_URL!,
