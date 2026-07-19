@@ -1,19 +1,11 @@
-## Track STARTUPBAR badge clicks
+## Problem
 
-Right now the badge in the widget bar is a plain external link to `https://startupbar.co` — no click row is written. We'll route it through our click tracker so we can measure it, without attributing it to any startup.
+In `src/routes/__root.tsx` the inline loader-injection script skips widget injection when `pathname` matches `/network`, `/leaderboard`, `/dashboard`, `/account`, or `/auth`. On client-side navigation into those pages the previously-injected iframe stays, but a hard refresh re-runs the guard and hides it — causing the inconsistent behavior.
 
-### Changes
+## Change
 
-1. **`src/routes/widget.bar.tsx`** — Change the STARTUPBAR badge `<a>` from `href="https://startupbar.co"` to `href="/api/public/widget/click?source=badge${host ? &host=... : ""}${domain ? &via=... : ""}"` (target=_blank preserved). This mirrors how the "Visit →" arrow works.
+In `src/routes/__root.tsx`, remove the `appRoutes` exclusion inside the inline `<script>` so the loader is injected on every route (including on refresh of app pages).
 
-2. **`src/routes/api/public/widget.click.ts`** — Handle `source=badge`:
-   - When `source === "badge"`, skip the startup lookup, insert a click row with `shown_startup_id = <StartupBar site id>` and `host_startup_id = host ?? null`, then 302 to `https://startupbar.co/` with `utm_source=startupbar`, `utm_medium=badge`, `utm_campaign=network`, and `_sbvia=<host domain>` so the landing on startupbar.co is also correctly attributed on the homepage globe (same mechanism we just shipped).
-   - Preserve existing behavior for all other `source` values.
+Result: widget appears on all pages consistently on both client-side navigation and page refresh.
 
-### Result
-
-- Badge clicks show up in the `clicks` table (attributed to the StartupBar site startup, with `host_startup_id` set to the site that referred them).
-- They appear in "widget clicks" totals because `host_startup_id` is non-null.
-- The visitor's landing on startupbar.co gets categorized as StartupBar (not Direct) on the homepage globe.
-
-No schema changes needed.
+No other files need changes — `public/widget/loader.js` already handles injection, theme detection, heartbeat, and cleanup uniformly.
