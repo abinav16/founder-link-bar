@@ -403,7 +403,7 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
       <div className="absolute bottom-0 inset-x-0" style={{ height: 48, background: "linear-gradient(to top, rgba(0,0,0,0.6), transparent)", zIndex: 3 }} />
       <div className="absolute bottom-[16px] inset-x-8" style={{ height: 1, background: "rgba(255,255,255,0.06)", zIndex: 3 }} />
 
-      <div className="absolute inset-x-0 pointer-events-none" style={{ top: "50%", left: 0, right: 0, transform: "translateY(-50%)", zIndex: 4 }}>
+      <div className="absolute inset-x-0 pointer-events-none" style={{ top: "50%", left: 0, right: 0, transform: "translateY(-50%)", zIndex: 6 }}>
         <div className="hidden sm:grid w-full items-center px-14" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
           <div className="flex items-center gap-10 justify-center">
             <PillStat value={stats ? String(stats.totalStartups) : "—"} label="Startups" />
