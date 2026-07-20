@@ -222,14 +222,17 @@ function LeaderboardPage() {
                     return (
                       <div
                         key={row.id}
-                        className={`rounded-2xl border flex flex-col items-center text-center p-3 transition-all ${
+                        className={`rounded-2xl border flex flex-col items-center text-center p-3 transition-all relative ${
                           originalIndex === 0
-                            ? "bg-black border-black lg:-mt-3 shadow-xl shadow-black/15 relative z-10"
+                            ? "bg-black border-black lg:-mt-3 shadow-xl shadow-black/15 z-10"
                             : "bg-white border-black/8"
                         }`}
                       >
                         {originalIndex === 0 && (
                           <p className="text-[8px] font-bold tracking-[0.15em] uppercase text-white/40 mb-1">Leader</p>
+                        )}
+                        {isNew(row.created_at) && (
+                          <NewBadge className="absolute top-2 right-2" />
                         )}
                         <div className="text-xl mb-1">{MEDALS[originalIndex]}</div>
                         <StartupFavicon
