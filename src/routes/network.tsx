@@ -77,7 +77,12 @@ function fmt(n: number) {
 
 type Card = NetworkDashboardResult["recentStartups"][0];
 
+function isNew(createdAt: string) {
+  return Date.now() - new Date(createdAt).getTime() < 7 * 24 * 60 * 60 * 1000;
+}
+
 function StartupCard({ s }: { s: Card }) {
+  const fresh = isNew(s.created_at);
   return (
     <a
       href={`/api/public/widget/click?id=${s.id}&source=dashboard`}
@@ -85,6 +90,11 @@ function StartupCard({ s }: { s: Card }) {
       rel="noopener noreferrer"
       className="group relative flex flex-col gap-3 sm:gap-5 rounded-2xl bg-white border border-black/[0.06] p-4 sm:p-6 hover:border-black/[0.12] hover:shadow-[0_12px_48px_rgba(0,0,0,0.07)] transition-all duration-300 h-full"
     >
+      {fresh && (
+        <span className="absolute top-3 right-3 text-[9px] font-semibold tracking-[0.12em] uppercase px-1.5 py-0.5 rounded-full bg-black text-white leading-none">
+          New
+        </span>
+      )}
       <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl overflow-hidden bg-black/[0.03] border border-black/[0.06] flex items-center justify-center shrink-0">
         <StartupFavicon url={s.website_url} name={s.name} size={36} />
       </div>
@@ -110,6 +120,7 @@ function StartupCard({ s }: { s: Card }) {
     </a>
   );
 }
+
 
 function StartupRow({ s }: { s: Card }) {
   return (
