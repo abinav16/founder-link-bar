@@ -80,6 +80,18 @@ export const Route = createFileRoute("/leaderboard")({
 
 const MEDALS = ["🥇", "🥈", "🥉"];
 
+function isNew(createdAt: string) {
+  return Date.now() - new Date(createdAt).getTime() < 7 * 24 * 60 * 60 * 1000;
+}
+
+function NewBadge({ className = "" }: { className?: string }) {
+  return (
+    <span className={`text-[9px] font-semibold tracking-[0.12em] uppercase px-1.5 py-0.5 rounded-full bg-black text-white leading-none ${className}`}>
+      New
+    </span>
+  );
+}
+
 function MiniSparkline({ data, color = "#000" }: { data: number[]; color?: string }) {
   const max = Math.max(...data, 1);
   return (
