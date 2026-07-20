@@ -389,6 +389,7 @@ function LeaderboardPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-sm text-black truncate">{row.name}</span>
+                    {isNew(row.created_at) && <NewBadge />}
                     {row.id === myId && (
                       <span className="rounded-full bg-black px-1.5 py-0.5 text-[8px] font-bold text-white uppercase tracking-wide shrink-0">You</span>
                     )}
