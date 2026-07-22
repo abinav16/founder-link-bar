@@ -431,7 +431,7 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
         </div>
         <div className="sm:hidden flex flex-col items-center gap-2">
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/70 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-            <div style={{ width: 16, height: 4, background: "white", borderRadius: 3 }} />
+            <div style={{ width: 14, height: 3, background: "white", borderRadius: 3 }} />
             <span style={{ color: "white", fontSize: 15, fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1 }}>StartupBar</span>
           </div>
           <div className="flex items-center gap-2">
