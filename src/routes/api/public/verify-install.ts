@@ -77,19 +77,43 @@ export const Route = createFileRoute("/api/public/verify-install")({
             html.includes("widget/loader.js") ||
             html.includes("data-startup-id");
 
-          // Defense-in-depth: detect cheap CSS hiding around the loader script.
+          // Defense-in-depth: only flag "Hidden (CSS)" when CSS actually
+          // targets our widget. The previous heuristic scanned the 400 chars
+          // before the loader tag and false-positived on unrelated rules
+          // (e.g. `.nav-links { display: none }` in a media query above it).
           let suspicious = false;
           if (installed) {
-            const re = /<script[^>]*(?:startupbar\.co\/widget|widget\/loader\.js|data-startup-id)[^>]*>/i;
-            const m = html.match(re);
-            if (m && typeof m.index === "number") {
-              const window = html.slice(Math.max(0, m.index - 400), m.index).toLowerCase();
-              suspicious =
-                /display\s*:\s*none/.test(window) ||
-                /visibility\s*:\s*hidden/.test(window) ||
-                /opacity\s*:\s*0(?!\.)/.test(window) ||
-                /height\s*:\s*0(?:px)?\b/.test(window) ||
-                /\bhidden\b\s*[>"']/.test(window);
+            const scriptRe = /<script\b([^>]*)(?:startupbar\.co\/widget|widget\/loader\.js|data-startup-id)([^>]*)>/i;
+            const m = html.match(scriptRe);
+            const hidingDeclRe = /display\s*:\s*none|visibility\s*:\s*hidden|opacity\s*:\s*0(?!\.)|height\s*:\s*0(?:px)?\b/i;
+
+            // 1. Script tag itself hidden via inline style or `hidden` attr.
+            if (m) {
+              const attrs = `${m[1] ?? ""} ${m[2] ?? ""}`;
+              const styleAttr = attrs.match(/\bstyle\s*=\s*["']([^"']*)["']/i);
+              if (styleAttr && hidingDeclRe.test(styleAttr[1])) suspicious = true;
+              if (!suspicious && /\shidden(\s|=|>|$)/i.test(attrs)) suspicious = true;
+            }
+
+            // 2. Any <style> block whose rule both references our widget and
+            //    contains a hiding declaration.
+            if (!suspicious) {
+              const widgetSelectorRe = /startupbar|data-startup-id|startupbar-bar/i;
+              const styleBlockRe = /<style\b[^>]*>([\s\S]*?)<\/style>/gi;
+              let sb: RegExpExecArray | null;
+              while (!suspicious && (sb = styleBlockRe.exec(html)) !== null) {
+                const rules = sb[1].split("}");
+                for (const rule of rules) {
+                  const brace = rule.indexOf("{");
+                  if (brace === -1) continue;
+                  const selector = rule.slice(0, brace);
+                  const decls = rule.slice(brace + 1);
+                  if (widgetSelectorRe.test(selector) && hidingDeclRe.test(decls)) {
+                    suspicious = true;
+                    break;
+                  }
+                }
+              }
             }
 
             // Pull the actual data-startup-id value from the script tag so we
@@ -102,6 +126,7 @@ export const Route = createFileRoute("/api/public/verify-install")({
               idMismatch = true;
             }
           }
+
 
           // Detect Content-Security-Policy that blocks the widget script,
           // its iframe, or the favicons we render inside it.
