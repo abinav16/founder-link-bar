@@ -455,6 +455,18 @@ function Apply() {
         </div>
       </header>
 
+      {authed && (
+        <button
+          type="button"
+          onClick={handlePayment}
+          disabled={paymentLoading}
+          className="fixed bottom-4 right-4 z-50 rounded-lg border border-black/10 bg-white px-3 py-2 text-xs font-medium text-black shadow-lg hover:bg-black/[0.03] disabled:opacity-50"
+          title="Debug: open Dodo checkout"
+        >
+          {paymentLoading ? "Opening…" : "🧪 Test payment"}
+        </button>
+      )}
+
       <main>
       {step === 1 && (
 
