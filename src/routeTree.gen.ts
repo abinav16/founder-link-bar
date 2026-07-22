@@ -25,6 +25,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as ApiPublicVerifyInstallRouteImport } from './routes/api/public/verify-install'
 import { Route as ApiPublicUnsubscribeRouteImport } from './routes/api/public/unsubscribe'
+import { Route as ApiPublicDodoWebhookRouteImport } from './routes/api/public/dodo-webhook'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicWidgetPickRouteImport } from './routes/api/public/widget.pick'
 import { Route as ApiPublicWidgetHeartbeatRouteImport } from './routes/api/public/widget.heartbeat'
@@ -110,6 +111,11 @@ const ApiPublicUnsubscribeRoute = ApiPublicUnsubscribeRouteImport.update({
   path: '/api/public/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicDodoWebhookRoute = ApiPublicDodoWebhookRouteImport.update({
+  id: '/api/public/dodo-webhook',
+  path: '/api/public/dodo-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LovableEmailQueueProcessRoute =
   LovableEmailQueueProcessRouteImport.update({
     id: '/lovable/email/queue/process',
@@ -152,6 +158,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/u/$token': typeof UTokenRoute
   '/widget/bar': typeof WidgetBarRoute
+  '/api/public/dodo-webhook': typeof ApiPublicDodoWebhookRoute
   '/api/public/unsubscribe': typeof ApiPublicUnsubscribeRoute
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
   '/api/public/track/site-visit': typeof ApiPublicTrackSiteVisitRoute
@@ -174,6 +181,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/u/$token': typeof UTokenRoute
   '/widget/bar': typeof WidgetBarRoute
+  '/api/public/dodo-webhook': typeof ApiPublicDodoWebhookRoute
   '/api/public/unsubscribe': typeof ApiPublicUnsubscribeRoute
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
   '/api/public/track/site-visit': typeof ApiPublicTrackSiteVisitRoute
@@ -198,6 +206,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/u/$token': typeof UTokenRoute
   '/widget/bar': typeof WidgetBarRoute
+  '/api/public/dodo-webhook': typeof ApiPublicDodoWebhookRoute
   '/api/public/unsubscribe': typeof ApiPublicUnsubscribeRoute
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
   '/api/public/track/site-visit': typeof ApiPublicTrackSiteVisitRoute
@@ -222,6 +231,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/u/$token'
     | '/widget/bar'
+    | '/api/public/dodo-webhook'
     | '/api/public/unsubscribe'
     | '/api/public/verify-install'
     | '/api/public/track/site-visit'
@@ -244,6 +254,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/u/$token'
     | '/widget/bar'
+    | '/api/public/dodo-webhook'
     | '/api/public/unsubscribe'
     | '/api/public/verify-install'
     | '/api/public/track/site-visit'
@@ -267,6 +278,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/u/$token'
     | '/widget/bar'
+    | '/api/public/dodo-webhook'
     | '/api/public/unsubscribe'
     | '/api/public/verify-install'
     | '/api/public/track/site-visit'
@@ -289,6 +301,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   UTokenRoute: typeof UTokenRoute
   WidgetBarRoute: typeof WidgetBarRoute
+  ApiPublicDodoWebhookRoute: typeof ApiPublicDodoWebhookRoute
   ApiPublicUnsubscribeRoute: typeof ApiPublicUnsubscribeRoute
   ApiPublicVerifyInstallRoute: typeof ApiPublicVerifyInstallRoute
   ApiPublicTrackSiteVisitRoute: typeof ApiPublicTrackSiteVisitRoute
@@ -412,6 +425,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicUnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/dodo-webhook': {
+      id: '/api/public/dodo-webhook'
+      path: '/api/public/dodo-webhook'
+      fullPath: '/api/public/dodo-webhook'
+      preLoaderRoute: typeof ApiPublicDodoWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/queue/process': {
       id: '/lovable/email/queue/process'
       path: '/lovable/email/queue/process'
@@ -476,6 +496,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   UTokenRoute: UTokenRoute,
   WidgetBarRoute: WidgetBarRoute,
+  ApiPublicDodoWebhookRoute: ApiPublicDodoWebhookRoute,
   ApiPublicUnsubscribeRoute: ApiPublicUnsubscribeRoute,
   ApiPublicVerifyInstallRoute: ApiPublicVerifyInstallRoute,
   ApiPublicTrackSiteVisitRoute: ApiPublicTrackSiteVisitRoute,

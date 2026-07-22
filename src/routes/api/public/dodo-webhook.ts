@@ -95,20 +95,11 @@ export const Route = createFileRoute("/api/public/dodo-webhook")({
         // Resolve user_id from metadata first, then customer email.
         let userId: string | null = metaUserId ?? null;
         if (!userId && customerEmail) {
-          const { data: userRow } = await supabaseAdmin
-            .from("profiles" as any)
-            .select("id")
-            .eq("email", customerEmail)
-            .maybeSingle();
-          if (userRow?.id) userId = userRow.id as string;
-          if (!userId) {
-            // Fall back to auth admin API by email.
-            const { data: authList } = await supabaseAdmin.auth.admin.listUsers();
-            const match = authList?.users?.find(
-              (u) => (u.email ?? "").toLowerCase() === customerEmail,
-            );
-            if (match) userId = match.id;
-          }
+          const { data: authList } = await supabaseAdmin.auth.admin.listUsers();
+          const match = authList?.users?.find(
+            (u) => (u.email ?? "").toLowerCase() === customerEmail,
+          );
+          if (match) userId = match.id;
         }
 
         if (!userId) {
