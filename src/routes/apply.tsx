@@ -449,7 +449,14 @@ function Apply() {
     supabase.functions.invoke("send-email", { body: { type: "admin-new-application", data: { startupName: parsed.name, startupUrl: parsed.website_url, description: parsed.description, applicantEmail: userData.user!.email } } }).catch(() => {});
 
     sessionStorage.removeItem(DRAFT_KEY);
-    toast.success("Application submitted!");
+    toast.success("Application submitted!", {
+      description: "We review every application within 24 hours. You'll get an email once you're approved.",
+      duration: 6000,
+      action: {
+        label: "Go to dashboard",
+        onClick: () => navigate({ to: "/dashboard" }),
+      },
+    });
     navigate({ to: "/dashboard" });
   }
 
