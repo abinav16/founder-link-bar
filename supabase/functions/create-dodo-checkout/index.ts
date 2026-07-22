@@ -104,6 +104,10 @@ serve(async (req) => {
         payment_link: true,
         product_cart: [{ product_id: productId, quantity: 1 }],
         return_url: finalReturnUrl,
+        // Metadata is echoed back on webhook events, letting us reliably
+        // map a payment to a StartupBar user even if the customer email
+        // differs from their auth email.
+        metadata: { user_id: userData.user.id },
       }),
     });
 
