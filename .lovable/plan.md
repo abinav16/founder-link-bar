@@ -1,54 +1,21 @@
-## Plan A — Visibility for deleted / withdrawn applications
+## Root cause
 
-Give the admin panel a permanent record of every application, even if the founder later deletes their startup, so cases like Royal SoftWorks never disappear silently.
+Reproducing `create-dodo-checkout` against Dodo's live API returns:
 
-### What we'll build
+> `Product id 'pdt_0NhWYhoEbLJW16TY9Eicc' does not exist`
 
-1. **`application_events` audit table** (append-only)
-   - Columns: `id`, `startup_id` (nullable, no FK cascade), `startup_name`, `website_url`, `applicant_email`, `applicant_user_id`, `event_type` (`submitted` | `deleted` | `resubmitted` | `approved` | `rejected`), `metadata jsonb`, `created_at`.
-   - RLS: `SELECT` restricted to admin email (`danielabinav16@gmail.com`); `service_role` full access. No anon/user access.
-   - GRANTs per the standard pattern.
+The product hardcoded in the edge function no longer resolves in Dodo. Solomon (and every other founder trying to buy a listing since it broke) hits a generic "Could not create payment session" toast — that's the "payment processor is not working" he emailed about. The correct current live product ID is `pdt_0NhWTstgLoJiLAByVyHaR`.
 
-2. **DB triggers on `public.startups`** (can't be bypassed by the client)
-   - `AFTER INSERT` → insert `submitted` event.
-   - `AFTER UPDATE` on `status` → insert `approved` / `rejected` / `resubmitted` accordingly.
-   - `AFTER DELETE` → insert `deleted` event (captures the row's snapshot in `metadata` so we still have name/URL after the row is gone).
-   - Trigger function is `SECURITY DEFINER` with `search_path = public` and pulls `applicant_email` from `auth.users` via `user_id`.
+## Plan
 
-3. **Admin panel: "Recently removed" section** (`src/routes/admin.tsx`)
-   - New collapsible block above/beside Pending, showing `deleted` events from the last 30 days.
-   - Each row: startup name, website, applicant email (click-to-copy + mailto:), submitted-at, deleted-at, and a small "Reach out" button that opens a mailto with a warm pre-filled draft.
-   - Read via a new server function `getRecentlyRemoved` using `requireSupabaseAuth` + admin email check.
+1. **Store the product ID as a Supabase secret** — request `DODO_PRODUCT_ID` via `add_secret` so future rotations don't need a code change.
+2. **Update `supabase/functions/create-dodo-checkout/index.ts`** to read `Deno.env.get("DODO_PRODUCT_ID")` instead of the hardcoded `pdt_0NhWYhoEbLJW16TY9Eicc`. Fall back to a clear 500 with `"Missing DODO_PRODUCT_ID"` if unset, matching the existing `DODO_PAYMENTS_API_KEY` check.
+3. **Deploy** the edge function.
+4. **Verify** by calling `create-dodo-checkout` via `curl_edge_functions` and confirming a real `payment_link` comes back.
+5. **Reply to Solomon** — I'll draft a short warm email letting him know the checkout is fixed and he can retry from his dashboard's "Add another startup" flow, apologizing for the friction.
 
-4. **No changes to the user-facing delete flow** — founders keep the ability to remove their own listing from `/account`. We just get a durable trail.
+## Not doing
 
-### Files touched
-
-- New migration: `application_events` table + triggers + RLS + GRANTs.
-- New: `src/lib/admin-events.functions.ts` (server fn to list recent removals, admin-only).
-- Edit: `src/routes/admin.tsx` (new section).
-
-### Acceptance
-
-- Deleting a startup from `/account` writes a `deleted` row visible in Admin.
-- Backfill: seed a single `deleted` row for Royal SoftWorks manually from the notification email data so it shows up immediately.
-- Non-admin users get no access to `application_events` (RLS blocks + admin email gate on the server fn).
-
----
-
-## Warm email to send to the Royal SoftWorks applicant
-
-> **Subject:** Everything okay with your StartupBar application?
->
-> Hey,
->
-> I got your Royal SoftWorks application come through last night — thanks for putting it in! I went to review it just now and noticed the listing isn't in our system anymore, which usually means it was removed from the account page.
->
-> Totally no worries if that was on purpose. I just wanted to check in — did something feel off, or was there a step that wasn't clear? If you'd like, I'm happy to jump in and get you set up personally: walk you through the widget snippet, help place it on royalsoftworks.com, and get you approved on the network the same day.
->
-> Just reply here and I'll take it from there.
->
-> Cheers,
-> Daniel — StartupBar
-
-Short, warm, no pressure, offers concrete help. Once Plan A ships you'll have the applicant's email pulled straight from the admin panel with a one-click "Reach out" button for cases like this in the future.
+- Not touching `verify-dodo-payment` (the verify path uses payment IDs, not product IDs — unaffected).
+- Not changing `DODO_MODE` — live mode is correct; the product just needed the new ID.
+- Not refunding or manually granting Solomon a free listing since he explicitly said he's happy to pay.

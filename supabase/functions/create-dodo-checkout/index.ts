@@ -42,6 +42,13 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    const productId = Deno.env.get("DODO_PRODUCT_ID");
+    if (!productId) {
+      return new Response(JSON.stringify({ error: "Missing DODO_PRODUCT_ID" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Require an authenticated caller. Derive the email from the verified JWT
     // rather than trusting whatever the request body claims.
@@ -94,7 +101,7 @@ serve(async (req) => {
         billing: { city: "", country: "US", state: "", street: "", zipcode: "" },
         customer: { email, name: name || email },
         payment_link: true,
-        product_cart: [{ product_id: "pdt_0NhWYhoEbLJW16TY9Eicc", quantity: 1 }],
+        product_cart: [{ product_id: productId, quantity: 1 }],
         return_url: finalReturnUrl,
       }),
     });
