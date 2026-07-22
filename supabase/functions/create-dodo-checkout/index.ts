@@ -25,6 +25,7 @@ function isAllowedReturnUrl(raw: unknown): raw is string {
     if (ALLOWED_RETURN_ORIGINS.has(u.origin)) return true;
     // Allow Lovable preview subdomains for this project.
     if (u.hostname.endsWith(".lovable.app")) return true;
+    if (u.hostname.endsWith(".lovableproject.com")) return true;
     return false;
   } catch {
     return false;
