@@ -142,11 +142,13 @@ function readInitialFromUrl() {
   const urlSid = p.get("sid") ?? "";
   const sidFromUrl = UUID_RE.test(urlSid) ? urlSid : "";
   if (p.get("paid") === "true") {
+    // On return from Dodo, prefer sessionStorage draft over URL params so
+    // we don't need to leak PII (name/url/desc) through the return URL.
     return {
       step: 2 as 1 | 2,
-      name: p.get("name") ?? "",
-      url: p.get("url") ?? "",
-      desc: p.get("desc") ?? "",
+      name: draft?.name ?? p.get("name") ?? "",
+      url: draft?.url ?? p.get("url") ?? "",
+      desc: draft?.desc ?? p.get("desc") ?? "",
       paid: true,
       paymentId: p.get("payment_id") ?? "",
       resubmitId: "",
@@ -246,6 +248,8 @@ function Apply() {
   }, [authed, resubmitId]);
 
   // Verify payment server-side once on return from Dodo, then auto-submit.
+  // Retries a few times because Dodo can be a beat slow to mark succeeded,
+  // and the webhook is the authoritative fallback if this path fails.
   useEffect(() => {
     if (!initial.paid) return;
     if (!initial.paymentId) {
@@ -255,12 +259,22 @@ function Apply() {
     }
     let cancelled = false;
     (async () => {
-      const { data, error } = await supabase.functions.invoke("verify-dodo-payment", {
-        body: { payment_id: initial.paymentId },
-      });
+      let ok = false;
+      for (let attempt = 0; attempt < 4 && !cancelled; attempt++) {
+        const { data, error } = await supabase.functions.invoke("verify-dodo-payment", {
+          body: { payment_id: initial.paymentId },
+        });
+        if (cancelled) return;
+        if (!error && data?.ok) { ok = true; break; }
+        // Backoff: 1.5s, 3s, 4.5s, 6s.
+        await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+      }
       if (cancelled) return;
-      if (error || !data?.ok) {
-        toast.error("We couldn't verify your payment. Please contact support.");
+      if (!ok) {
+        toast.info(
+          "Payment received — it may take a minute to appear. Refresh this page or your dashboard shortly.",
+          { duration: 8000 },
+        );
         setVerifyingPayment(false);
         window.history.replaceState({}, "", "/apply");
         return;
@@ -321,8 +335,16 @@ function Apply() {
 
   async function handlePayment() {
     setPaymentLoading(true);
+    // Persist the draft so we can restore state after Dodo redirects back —
+    // we deliberately keep the return URL tiny (no PII in query string).
+    try {
+      sessionStorage.setItem(
+        DRAFT_KEY,
+        JSON.stringify({ step: 2, name, url, desc, startupId }),
+      );
+    } catch { /* ignore */ }
     const { data: u } = await supabase.auth.getUser();
-    const returnUrl = `${window.location.origin}/apply?paid=true&name=${encodeURIComponent(name)}&url=${encodeURIComponent(url)}&desc=${encodeURIComponent(desc)}&sid=${encodeURIComponent(startupId)}`;
+    const returnUrl = `${window.location.origin}/apply?paid=true&sid=${encodeURIComponent(startupId)}`;
     const { data, error } = await supabase.functions.invoke("create-dodo-checkout", {
       body: { email: u.user?.email, name: u.user?.user_metadata?.full_name, return_url: returnUrl },
     });
