@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      application_events: {
+        Row: {
+          applicant_email: string | null
+          applicant_user_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          startup_id: string | null
+          startup_name: string
+          website_url: string | null
+        }
+        Insert: {
+          applicant_email?: string | null
+          applicant_user_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          startup_id?: string | null
+          startup_name: string
+          website_url?: string | null
+        }
+        Update: {
+          applicant_email?: string | null
+          applicant_user_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          startup_id?: string | null
+          startup_name?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       clicks: {
         Row: {
           created_at: string
