@@ -429,12 +429,12 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
             <PillStat value={stats ? fmt(stats.totalClicks) : "—"} label="Total Clicks" />
           </div>
         </div>
-        <div className="sm:hidden flex flex-col items-center gap-3">
+        <div className="sm:hidden flex flex-col items-center gap-2 px-5 py-3 rounded-full bg-black/70 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
           <div className="flex items-center gap-1.5">
             <div style={{ width: 16, height: 4, background: "white", borderRadius: 3 }} />
             <span style={{ color: "white", fontSize: 15, fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1 }}>StartupBar</span>
           </div>
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-4">
             <PillStat small value={stats ? String(stats.totalStartups) : "—"} label="Startups" />
             <PillStat small value={stats ? `${stats.ctr}%` : "—"} label="CTR" />
             <PillStat small value={stats ? fmt(stats.totalImpressions) : "—"} label="Impressions" />
