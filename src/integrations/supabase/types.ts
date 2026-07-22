@@ -346,6 +346,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_orphan_payments: {
+        Args: { _older_than_minutes?: number }
+        Returns: {
+          created_at: string
+          dodo_payment_id: string
+          email: string
+          id: string
+          user_id: string
+        }[]
+      }
       consume_prepaid_listing: { Args: { _user_id: string }; Returns: string }
       delete_email: {
         Args: { message_id: number; queue_name: string }

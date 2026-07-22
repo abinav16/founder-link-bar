@@ -224,7 +224,8 @@ function AdminPage() {
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
         <BroadcastPanel />
         <UnsubReasonsPanel />
-        <RemovedApplicationsPanel />
+       <OrphanPaymentsPanel />
+       <RemovedApplicationsPanel />
 
 
 
@@ -991,4 +992,88 @@ function RemovedApplicationsPanel() {
   );
 }
 
+
+type OrphanPayment = {
+  id: string;
+  user_id: string;
+  dodo_payment_id: string;
+  created_at: string;
+  email: string | null;
+};
+
+function OrphanPaymentsPanel() {
+  const [open, setOpen] = useState(false);
+  const [rows, setRows] = useState<OrphanPayment[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  async function load() {
+    setLoading(true);
+    const { data, error } = await supabase.rpc("admin_orphan_payments", { _older_than_minutes: 10 });
+    if (!error && data) setRows(data as OrphanPayment[]);
+    setLoading(false);
+  }
+
+  useEffect(() => { if (open) load(); }, [open]);
+
+  function mailto(r: OrphanPayment): string {
+    const subject = encodeURIComponent(`Your StartupBar payment — let me help finish setup`);
+    const body = encodeURIComponent(
+      `Hey,\n\nI saw a successful payment on your account (${r.dodo_payment_id}) but your listing didn't finish submitting on our end — sorry about that.\n\nCan you reply with the site URL, name, and a one-liner description? I'll add it manually and email you the widget snippet the moment it's live.\n\nCheers,\nDaniel — StartupBar`,
+    );
+    return `mailto:${r.email ?? ""}?subject=${subject}&body=${body}`;
+  }
+
+  return (
+    <section className="mb-6 rounded-2xl border border-red-200 bg-red-50/40">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left sm:px-5"
+      >
+        <div className="flex items-center gap-2">
+          <Mail className="h-4 w-4 text-red-600" />
+          <span className="text-sm font-semibold tracking-tight text-black">Paid but not submitted</span>
+          {rows.length > 0 && (
+            <span className="rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-semibold text-white">{rows.length}</span>
+          )}
+        </div>
+        <span className="text-xs text-black/40">{open ? "Hide" : "Show"}</span>
+      </button>
+      {open && (
+        <div className="border-t border-red-200 px-4 py-3 sm:px-5">
+          {loading ? (
+            <div className="flex items-center gap-2 text-xs text-black/40">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading…
+            </div>
+          ) : rows.length === 0 ? (
+            <p className="text-xs text-black/50">No orphaned payments right now. 🎉</p>
+          ) : (
+            <ul className="divide-y divide-red-200">
+              {rows.map((r) => (
+                <li key={r.id} className="flex flex-wrap items-center gap-3 py-2.5">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="truncate text-sm font-medium text-black">{r.email ?? "(unknown email)"}</span>
+                      <span className="rounded-full border border-black/10 bg-white px-1.5 py-0.5 text-[10px] font-mono text-black/50">
+                        {r.dodo_payment_id}
+                      </span>
+                    </div>
+                    <div className="mt-0.5 text-xs text-black/50">
+                      Paid {new Date(r.created_at).toLocaleString()}
+                    </div>
+                  </div>
+                  <a
+                    href={mailto(r)}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-black/12 bg-white px-2.5 py-1.5 text-xs font-medium text-black hover:bg-black hover:text-white transition-colors"
+                  >
+                    <Mail className="h-3.5 w-3.5" /> Reach out
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
 
