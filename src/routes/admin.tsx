@@ -884,3 +884,111 @@ function UnsubReasonsPanel() {
   );
 }
 
+type RemovedEvent = {
+  id: string;
+  startup_name: string;
+  website_url: string | null;
+  applicant_email: string | null;
+  created_at: string;
+  metadata: { description?: string; last_status?: string } | null;
+};
+
+function RemovedApplicationsPanel() {
+  const [open, setOpen] = useState(false);
+  const [rows, setRows] = useState<RemovedEvent[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  async function load() {
+    setLoading(true);
+    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const { data } = await supabase
+      .from("application_events")
+      .select("id, startup_name, website_url, applicant_email, created_at, metadata")
+      .eq("event_type", "deleted")
+      .gte("created_at", since)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    setRows((data as RemovedEvent[]) ?? []);
+    setLoading(false);
+  }
+
+  useEffect(() => { if (open) load(); }, [open]);
+
+  function outreachMailto(r: RemovedEvent) {
+    const subject = encodeURIComponent(`Everything okay with your StartupBar application?`);
+    const body = encodeURIComponent(
+      `Hey,\n\nI got your ${r.startup_name} application come through recently — thanks for putting it in! I went to review it just now and noticed the listing isn't in our system anymore, which usually means it was removed from the account page.\n\nTotally no worries if that was on purpose. I just wanted to check in — did something feel off, or was there a step that wasn't clear? If you'd like, I'm happy to jump in and get you set up personally: walk you through the widget snippet, help place it on ${r.website_url ?? "your site"}, and get you approved on the network the same day.\n\nJust reply here and I'll take it from there.\n\nCheers,\nDaniel — StartupBar`
+    );
+    const to = r.applicant_email ?? "";
+    return `mailto:${to}?subject=${subject}&body=${body}`;
+  }
+
+  return (
+    <section className="mb-6 rounded-2xl border border-black/8 bg-white">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left sm:px-5"
+      >
+        <div className="flex items-center gap-2">
+          <CircleSlash className="h-4 w-4 text-black/50" />
+          <span className="text-sm font-semibold tracking-tight text-black">Recently removed</span>
+          <span className="rounded-full bg-black/8 px-2 py-0.5 text-[10px] font-semibold text-black/60">30d</span>
+        </div>
+        <span className="text-xs text-black/40">{open ? "Hide" : "Show"}</span>
+      </button>
+      {open && (
+        <div className="border-t border-black/8 px-4 py-3 sm:px-5">
+          {loading ? (
+            <div className="flex items-center gap-2 text-xs text-black/40">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading…
+            </div>
+          ) : rows.length === 0 ? (
+            <p className="text-xs text-black/40">No applications removed in the last 30 days.</p>
+          ) : (
+            <ul className="divide-y divide-black/8">
+              {rows.map((r) => (
+                <li key={r.id} className="flex flex-wrap items-center gap-3 py-2.5">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="truncate text-sm font-medium text-black">{r.startup_name}</span>
+                      {r.metadata?.last_status && (
+                        <span className="rounded-full border border-black/10 bg-black/[0.03] px-1.5 py-0.5 text-[10px] font-medium text-black/50">
+                          was {r.metadata.last_status}
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-black/50">
+                      {r.website_url && (
+                        <a href={r.website_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-black">
+                          {r.website_url.replace(/^https?:\/\//, "")} <ExternalLink className="h-3 w-3" />
+                        </a>
+                      )}
+                      {r.applicant_email && (
+                        <button
+                          onClick={() => { navigator.clipboard.writeText(r.applicant_email!); toast.success("Email copied"); }}
+                          className="hover:text-black"
+                          title="Copy email"
+                        >
+                          {r.applicant_email}
+                        </button>
+                      )}
+                      <span>Removed {new Date(r.created_at).toLocaleString()}</span>
+                    </div>
+                  </div>
+                  <a
+                    href={outreachMailto(r)}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-black/12 bg-white px-2.5 py-1.5 text-xs font-medium text-black hover:bg-black hover:text-white transition-colors"
+                  >
+                    <Mail className="h-3.5 w-3.5" /> Reach out
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
+
