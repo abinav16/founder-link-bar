@@ -42,6 +42,13 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    const productId = Deno.env.get("DODO_PRODUCT_ID");
+    if (!productId) {
+      return new Response(JSON.stringify({ error: "Missing DODO_PRODUCT_ID" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Require an authenticated caller. Derive the email from the verified JWT
     // rather than trusting whatever the request body claims.
