@@ -11,7 +11,7 @@ function Logo() {
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-black/8 bg-white px-6 py-10">
+    <footer className="border-t border-black/8 bg-white px-6 py-5">
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-col gap-1">
