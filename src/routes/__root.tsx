@@ -106,18 +106,34 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
 
-  // Inject the StartupBar widget after hydration so its DOM mutations don't
-  // cause a hydration mismatch (which was making the header re-mount and
-  // look like the page loaded twice).
+  // Inject the StartupBar widget after full hydration + a paint tick so its
+  // DOM mutations (shifting fixed/sticky elements down by 36px, adding
+  // scroll-padding to <html>, padding-top to <body>) don't race React's
+  // progressive Suspense hydration and force subtrees to re-render — which
+  // is what made the header look like it disappeared then loaded again.
   useEffect(() => {
     if (document.querySelector('script[data-startupbar-loader]')) return;
-    const s = document.createElement("script");
-    s.src = "https://startupbar.co/widget/loader.js";
-    s.setAttribute("data-startup-id", "0d2db708-f4e9-4b77-bd83-c446826c76b1");
-    s.setAttribute("data-startupbar-loader", "1");
-    s.async = true;
-    document.head.appendChild(s);
+    let cancelled = false;
+    const inject = () => {
+      if (cancelled) return;
+      if (document.querySelector('script[data-startupbar-loader]')) return;
+      const s = document.createElement("script");
+      s.src = "https://startupbar.co/widget/loader.js";
+      s.setAttribute("data-startup-id", "0d2db708-f4e9-4b77-bd83-c446826c76b1");
+      s.setAttribute("data-startupbar-loader", "1");
+      s.async = true;
+      document.head.appendChild(s);
+    };
+    const schedule = () => {
+      const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => void }).requestIdleCallback;
+      if (ric) ric(inject, { timeout: 1500 });
+      else window.setTimeout(inject, 800);
+    };
+    if (document.readyState === "complete") schedule();
+    else window.addEventListener("load", schedule, { once: true });
+    return () => { cancelled = true; };
   }, []);
+
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
