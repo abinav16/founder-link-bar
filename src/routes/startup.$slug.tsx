@@ -16,7 +16,74 @@ const pageQuery = (slug: string) =>
     queryFn: () => getStartupPage({ data: { slug } }),
   });
 
+function StartupPageSkeleton() {
+  return (
+    <DashboardLayout>
+      <div className="-mx-4 -my-6 bg-white text-black sm:-mx-6 sm:-my-8">
+        <main className="mx-auto max-w-6xl px-5 pb-8 pt-10 md:pt-16">
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-start gap-5">
+              <div className="h-20 w-20 shrink-0 animate-pulse rounded-2xl border border-black/8 bg-black/[0.05]" />
+              <div className="min-w-0 flex-1 pt-1">
+                <div className="h-9 w-56 animate-pulse rounded-full bg-black/[0.06]" />
+                <div className="mt-4 h-3 w-[min(34rem,70vw)] animate-pulse rounded-full bg-black/[0.045]" />
+                <div className="mt-2 h-3 w-[min(26rem,60vw)] animate-pulse rounded-full bg-black/[0.035]" />
+                <div className="mt-4 flex gap-2">
+                  <div className="h-6 w-28 animate-pulse rounded-full bg-black/[0.045]" />
+                  <div className="h-6 w-36 animate-pulse rounded-full bg-black/[0.035]" />
+                </div>
+              </div>
+            </div>
+            <div className="h-11 w-28 animate-pulse rounded-xl bg-black/[0.06]" />
+          </div>
+
+          <div className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-5">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="rounded-xl border border-black/8 bg-white p-4">
+                <div className="h-2.5 w-24 animate-pulse rounded-full bg-black/[0.05]" />
+                <div className="mt-4 h-7 w-16 animate-pulse rounded-full bg-black/[0.06]" />
+                <div className="mt-2 h-2.5 w-20 animate-pulse rounded-full bg-black/[0.035]" />
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-12">
+            <div className="mb-4 flex items-center gap-2">
+              <div className="h-4 w-4 animate-pulse rounded-full bg-black/[0.05]" />
+              <div className="h-3 w-28 animate-pulse rounded-full bg-black/[0.05]" />
+            </div>
+            <div className="overflow-hidden rounded-2xl border border-black/10 bg-white">
+              <div className="flex items-center gap-1.5 border-b border-black/6 bg-black/[0.02] px-3 py-2">
+                <span className="h-2.5 w-2.5 rounded-full bg-black/10" />
+                <span className="h-2.5 w-2.5 rounded-full bg-black/10" />
+                <span className="h-2.5 w-2.5 rounded-full bg-black/10" />
+                <span className="ml-2 h-3 w-48 animate-pulse rounded-full bg-black/[0.05]" />
+              </div>
+              <div className="h-[500px] animate-pulse bg-gradient-to-br from-black/[0.035] via-black/[0.015] to-black/[0.05]" />
+            </div>
+          </div>
+
+          <div className="mt-10 rounded-2xl border border-black/8 bg-black/[0.02] p-6 md:p-8">
+            <div className="mb-5 h-3 w-24 animate-pulse rounded-full bg-black/[0.05]" />
+            <div className="flex items-start gap-5">
+              <div className="h-16 w-16 shrink-0 animate-pulse rounded-full bg-black/[0.06]" />
+              <div className="flex-1 space-y-2 pt-2">
+                <div className="h-3 w-full animate-pulse rounded-full bg-black/[0.045]" />
+                <div className="h-3 w-4/5 animate-pulse rounded-full bg-black/[0.035]" />
+                <div className="mt-4 h-3 w-40 animate-pulse rounded-full bg-black/[0.04]" />
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </DashboardLayout>
+  );
+}
+
 export const Route = createFileRoute("/startup/$slug")({
+  pendingMs: 150,
+  pendingMinMs: 350,
+  pendingComponent: StartupPageSkeleton,
   loader: async ({ params, context }) => {
     const data = await context.queryClient.ensureQueryData(pageQuery(params.slug));
     if (!data) throw notFound();
@@ -153,7 +220,7 @@ function StartupPage() {
             <Activity className="h-4 w-4 text-black/40" />
             <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-black/40">Live preview</h2>
           </div>
-          <StartupEmbed url={s.website_url} name={s.name} initialBlocked={s.iframe_blocked} />
+          <StartupEmbed startupId={s.id} url={s.website_url} name={s.name} initialBlocked={s.iframe_blocked} />
         </div>
 
         {/* FOUNDER — always rendered */}
@@ -283,7 +350,7 @@ function FounderSection({ s }: { s: { name: string; user_id: string | null; foun
     let cancel = false;
     supabase.auth.getUser().then(({ data }) => {
       if (!cancel && data.user?.id && s.user_id && data.user.id === s.user_id) setIsOwner(true);
-    });
+});
     return () => { cancel = true; };
   }, [s.user_id]);
 

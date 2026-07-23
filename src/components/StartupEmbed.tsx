@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { RefreshCw, ExternalLink, MousePointerClick, ImageOff } from "lucide-react";
+import { getStartupEmbedStatus } from "@/lib/startup-page.functions";
 
-export function StartupEmbed({ url, name, initialBlocked }: { url: string; name: string; initialBlocked?: boolean | null }) {
+export function StartupEmbed({ startupId, url, name, initialBlocked }: { startupId: string; url: string; name: string; initialBlocked?: boolean | null }) {
   const [interactive, setInteractive] = useState(false);
-  const [blocked, setBlocked] = useState<boolean>(!!initialBlocked);
+  const [blocked, setBlocked] = useState<boolean | null>(initialBlocked ?? null);
   const [reloadKey, setReloadKey] = useState(0);
   const [loaded, setLoaded] = useState(false);
   const [shotFailed, setShotFailed] = useState(false);
@@ -12,8 +14,19 @@ export function StartupEmbed({ url, name, initialBlocked }: { url: string; name:
   let host = url;
   try { host = new URL(normalized).hostname.replace(/^www\./, ""); } catch {}
 
+  const embedStatusQ = useQuery({
+    queryKey: ["startup-embed-status", startupId],
+    queryFn: () => getStartupEmbedStatus({ data: { id: startupId } }),
+    enabled: blocked === null,
+    staleTime: 60 * 60 * 1000,
+  });
+
   useEffect(() => {
-    if (blocked) return;
+    if (typeof embedStatusQ.data === "boolean") setBlocked(embedStatusQ.data);
+  }, [embedStatusQ.data]);
+
+  useEffect(() => {
+    if (blocked !== false) return;
     setLoaded(false);
     // If iframe hasn't fired `load` within 3.5s, assume it's being blocked
     // (X-Frame-Options / frame-ancestors show the browser's own error page,
@@ -23,6 +36,31 @@ export function StartupEmbed({ url, name, initialBlocked }: { url: string; name:
     }, 3500);
     return () => window.clearTimeout(t);
   }, [reloadKey, blocked, loaded]);
+
+  if (blocked === null) {
+    return (
+      <div className="relative overflow-hidden rounded-2xl border border-black/10 bg-white">
+        <div className="flex items-center justify-between gap-2 border-b border-black/6 bg-black/[0.02] px-3 py-2">
+          <div className="flex min-w-0 items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-black/10" />
+            <span className="h-2.5 w-2.5 rounded-full bg-black/10" />
+            <span className="h-2.5 w-2.5 rounded-full bg-black/10" />
+            <span className="ml-2 h-3 w-44 max-w-[45vw] rounded-full bg-black/[0.06]" />
+          </div>
+          <div className="h-7 w-16 rounded-md bg-black/[0.04]" />
+        </div>
+        <div className="relative h-[500px] animate-pulse bg-gradient-to-br from-black/[0.035] via-black/[0.015] to-black/[0.05]">
+          <div className="absolute left-6 top-6 h-4 w-40 rounded-full bg-white/70" />
+          <div className="absolute left-6 top-14 h-3 w-64 rounded-full bg-white/55" />
+          <div className="absolute inset-x-6 bottom-6 grid grid-cols-3 gap-3">
+            <div className="h-20 rounded-xl bg-white/55" />
+            <div className="h-20 rounded-xl bg-white/45" />
+            <div className="h-20 rounded-xl bg-white/35" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (blocked) {
     const shot = `https://api.microlink.io/?url=${encodeURIComponent(normalized)}&screenshot=true&meta=false&embed=screenshot.url`;

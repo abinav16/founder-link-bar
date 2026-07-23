@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { StartupFavicon } from "@/components/StartupFavicon";
@@ -119,12 +119,14 @@ function StartupCard({ s }: { s: Card }) {
           <span className="text-[11px] text-black/20 tracking-wide">Just joined</span>
         )}
         {s.slug && (
-          <a
-            href={`/startup/${s.slug}`}
+          <Link
+            to="/startup/$slug"
+            params={{ slug: s.slug }}
+            preload="intent"
             className="pointer-events-auto text-[10px] font-medium text-black/35 hover:text-black transition-colors"
           >
             Profile →
-          </a>
+          </Link>
         )}
       </div>
     </div>
@@ -157,9 +159,14 @@ function StartupRow({ s }: { s: Card }) {
           ? <span className="text-[11px] text-black/30 font-medium tabular-nums">{s.impressions_24h} seen</span>
           : <span className="text-[11px] text-black/18 tracking-wide">New</span>}
         {s.slug && (
-          <a href={`/startup/${s.slug}`} className="pointer-events-auto text-[10px] font-medium text-black/30 hover:text-black transition-colors">
+          <Link
+            to="/startup/$slug"
+            params={{ slug: s.slug }}
+            preload="intent"
+            className="pointer-events-auto text-[10px] font-medium text-black/30 hover:text-black transition-colors"
+          >
             Profile
-          </a>
+          </Link>
         )}
       </div>
     </div>
