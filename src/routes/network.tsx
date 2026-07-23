@@ -567,11 +567,15 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
 }
 
 function HorizontalCardRail({ items }: { items: Card[] }) {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (scrollerRef.current) scrollerRef.current.scrollLeft = 0;
+  }, [items]);
   return (
-    <div className="relative -mx-4 sm:-mx-6">
+    <div className="relative">
       <div
-        className="flex gap-4 overflow-x-auto snap-x snap-mandatory px-4 sm:px-6 pb-2"
-        style={{ scrollbarWidth: "thin" }}
+        ref={scrollerRef}
+        className="sb-rail flex gap-4 overflow-x-auto snap-x pb-3"
       >
         {items.map((s) => (
           <div
