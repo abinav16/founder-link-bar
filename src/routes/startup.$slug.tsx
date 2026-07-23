@@ -131,10 +131,11 @@ function StartupPage() {
         </div>
 
         {/* STATS */}
-        <div className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-4">
+        <div className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-5">
           <Stat label="Impressions received" value={fmt(s.impressions)} sub="in others' bars" />
           <Stat label="Impressions contributed" value={fmt(s.impressions_given)} sub="shown from this site" />
           <Stat label="Clicks received" value={fmt(s.clicks)} sub="landings via StartupBar" />
+          <Stat label="Clicks contributed" value={fmt(s.clicks_given)} sub="outbound via this site" />
           <Stat label="Network CTR" value={`${ctr}%`} sub="clicks ÷ impressions" />
         </div>
 

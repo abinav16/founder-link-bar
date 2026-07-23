@@ -42,6 +42,7 @@ export interface StartupPageData {
   impressions: number;
   clicks: number;
   impressions_given: number;
+  clicks_given: number;
   referrers: StartupReferrer[];
   pulse: number;
 }
@@ -130,6 +131,7 @@ export const getStartupPage = createServerFn({ method: "GET" })
       impressions: Number(t.impressions ?? 0),
       clicks: Number(t.clicks ?? 0),
       impressions_given: Number(t.impressions_given ?? 0),
+      clicks_given: Number(t.clicks_given ?? 0),
       referrers: refs.map((r) => ({ ...r, cnt: Number(r.cnt) })),
       pulse,
     };
