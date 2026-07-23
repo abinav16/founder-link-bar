@@ -367,22 +367,22 @@ function FounderSection({ s }: { s: { name: string; user_id: string | null; foun
   const initial = (s.founder_name || s.name).charAt(0).toUpperCase();
 
   return (
-    <div className="mt-10 rounded-2xl border border-black/8 bg-gradient-to-br from-black/[0.02] to-transparent p-6 md:p-8">
+    <div className="mt-10 rounded-2xl border border-black/8 bg-gradient-to-br from-black/[0.02] to-transparent p-5 sm:p-6 md:p-8">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/40">
           <User className="h-3.5 w-3.5" /> Founder
         </div>
         {isOwner && (
           <Link to="/account" className="inline-flex items-center gap-1.5 rounded-lg border border-black/10 bg-white px-3 py-1.5 text-xs font-medium text-black/70 hover:border-black/25 hover:text-black">
-            <Pencil className="h-3 w-3" /> {hasAny ? "Edit your story" : "Add your story"}
+            <Pencil className="h-3 w-3" /> <span className="hidden sm:inline">{hasAny ? "Edit your story" : "Add your story"}</span><span className="sm:hidden">{hasAny ? "Edit" : "Add"}</span>
           </Link>
         )}
       </div>
-      <div className="flex items-start gap-5">
+      <div className="flex items-start gap-4 sm:gap-5">
         {s.founder_avatar_url ? (
-          <img src={s.founder_avatar_url} alt={s.founder_name || "Founder"} className="h-16 w-16 shrink-0 rounded-full object-cover ring-2 ring-white shadow" />
+          <img src={s.founder_avatar_url} alt={s.founder_name || "Founder"} className="h-12 w-12 sm:h-16 sm:w-16 shrink-0 rounded-full object-cover ring-2 ring-white shadow" />
         ) : (
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-black/8 text-lg font-semibold text-black/40">
+          <div className="flex h-12 w-12 sm:h-16 sm:w-16 shrink-0 items-center justify-center rounded-full bg-black/8 text-lg font-semibold text-black/40">
             {initial}
           </div>
         )}
@@ -390,7 +390,7 @@ function FounderSection({ s }: { s: { name: string; user_id: string | null; foun
           {s.founder_quote ? (
             <div className="relative">
               <Quote className="absolute -left-1 -top-2 h-5 w-5 text-black/10" />
-              <p className="pl-6 text-[17px] italic leading-relaxed text-black/75" style={{ fontFamily: "var(--font-quote)" }}>
+              <p className="pl-5 sm:pl-6 text-[15px] sm:text-[17px] italic leading-relaxed text-black/75" style={{ fontFamily: "var(--font-quote)" }}>
                 "{s.founder_quote}"
               </p>
             </div>
