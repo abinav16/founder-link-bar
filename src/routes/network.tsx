@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { StartupFavicon } from "@/components/StartupFavicon";
@@ -88,6 +88,7 @@ function useHydrated() {
 
 function StartupProfileLink({ slug, children, className }: { slug: string; children: ReactNode; className?: string }) {
   const hydrated = useHydrated();
+  const navigate = useNavigate();
 
   if (!hydrated) {
     return (
@@ -98,9 +99,13 @@ function StartupProfileLink({ slug, children, className }: { slug: string; child
   }
 
   return (
-    <Link to="/startup/$slug" params={{ slug }} preload="intent" className={className}>
+    <button
+      type="button"
+      onClick={() => navigate({ to: "/startup/$slug", params: { slug } })}
+      className={`${className ?? ""} appearance-none border-0 bg-transparent p-0 text-left cursor-pointer`}
+    >
       {children}
-    </Link>
+    </button>
   );
 }
 
