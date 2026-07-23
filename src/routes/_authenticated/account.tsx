@@ -485,13 +485,14 @@ function AccountPage() {
                       <button
                         type="button"
                         onClick={removeAvatar}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-red-100 px-3 py-1.5 text-xs font-medium text-red-400 hover:border-red-200 hover:text-red-500 transition-all"
+                        title="Remove photo"
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-full text-black/30 hover:bg-black/5 hover:text-red-500 transition-all"
                       >
-                        <X className="h-3 w-3" /> Remove
+                        <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     )}
                   </div>
-                  <p className="mt-1.5 text-[10px] text-black/30">Any image works — we'll let you crop it into a circle and compress it automatically. Shown as your founder photo on public startup pages.</p>
+                  <p className="mt-1.5 text-[10px] text-black/30">Shown as your founder photo on public startup pages.</p>
                 </div>
                 <div>
                   <label className="mb-1.5 block text-xs font-medium text-black/60">Display name</label>
