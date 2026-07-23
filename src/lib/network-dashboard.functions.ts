@@ -80,6 +80,7 @@ export const getNetworkDashboard = createServerFn({ method: "GET" }).handler(
 
     const cards: StartupCard[] = (startups ?? []).map((s: any) => ({
       id: s.id,
+      slug: s.slug ?? null,
       name: s.name,
       website_url: s.website_url,
       description: s.description,
@@ -88,6 +89,7 @@ export const getNetworkDashboard = createServerFn({ method: "GET" }).handler(
       impressions_24h: imp24hMap[s.id] ?? 0,
       clicks_24h: click24hMap[s.id] ?? 0,
     }));
+
 
     return {
       stats: {
