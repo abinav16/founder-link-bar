@@ -71,13 +71,19 @@ function StartupCard({ startup, onUpdate, onDelete }: {
   const [deleting, setDeleting] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [logoUrl, setLogoUrl] = useState(startup.logo_url);
+  const [reviewOpen, setReviewOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const hasChanges = sName.trim() !== startup.name || sDesc.trim() !== startup.description;
   const founderChanged = fQuote.trim() !== (startup.founder_quote ?? "");
 
-  async function save(e: React.FormEvent) {
+  function onSubmitClick(e: React.FormEvent) {
     e.preventDefault();
+    if (!hasChanges || saving) return;
+    setReviewOpen(true);
+  }
+
+  async function confirmSubmit() {
     setSaving(true);
     const { error } = await supabase.from("startups").update({
       name: sName.trim(),
@@ -85,8 +91,9 @@ function StartupCard({ startup, onUpdate, onDelete }: {
       status: "pending",
     }).eq("id", startup.id);
     setSaving(false);
+    setReviewOpen(false);
     if (error) { toast.error(error.message); return; }
-    toast.success("Changes submitted for review");
+    toast.success("Sent for review", { description: "We usually review within 24 hours." });
     onUpdate(startup.id, { name: sName.trim(), description: sDesc.trim(), status: "pending" });
   }
 
