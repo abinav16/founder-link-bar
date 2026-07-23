@@ -97,12 +97,47 @@ function StartupCard({ startup, onUpdate, onDelete }: {
 
   async function saveFounder() {
     setSavingFounder(true);
-    const patch = { founder_quote: fQuote.trim() || null };
+    const patch = {
+      founder_quote: fQuote.trim() || null,
+      founder_name: fName.trim() || null,
+    };
     const { error } = await supabase.from("startups").update(patch as any).eq("id", startup.id);
     setSavingFounder(false);
     if (error) { toast.error(error.message); return; }
     toast.success("Founder profile updated");
     onUpdate(startup.id, patch as any);
+  }
+
+  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { toast.error("Image must be under 2 MB"); return; }
+    setUploadingAvatar(true);
+    const { data: userData, error: userErr } = await supabase.auth.getUser();
+    if (userErr || !userData.user) { toast.error("Please sign in again"); setUploadingAvatar(false); return; }
+    const ext = file.name.split(".").pop();
+    const path = `${userData.user.id}/founder-${startup.id}.${ext}`;
+    const { error: uploadErr } = await supabase.storage
+      .from("startup-logos")
+      .upload(path, file, { upsert: true, contentType: file.type });
+    if (uploadErr) { toast.error(uploadErr.message); setUploadingAvatar(false); return; }
+    const { data: { publicUrl } } = supabase.storage.from("startup-logos").getPublicUrl(path);
+    const busted = `${publicUrl}?t=${Date.now()}`;
+    const { error: dbErr } = await supabase.from("startups").update({ founder_avatar_url: publicUrl } as any).eq("id", startup.id);
+    if (dbErr) { toast.error(dbErr.message); setUploadingAvatar(false); return; }
+    setFAvatar(busted);
+    onUpdate(startup.id, { founder_avatar_url: publicUrl } as any);
+    toast.success("Founder photo updated");
+    setUploadingAvatar(false);
+    e.target.value = "";
+  }
+
+  async function removeAvatar() {
+    const { error } = await supabase.from("startups").update({ founder_avatar_url: null } as any).eq("id", startup.id);
+    if (error) { toast.error(error.message); return; }
+    setFAvatar(null);
+    onUpdate(startup.id, { founder_avatar_url: null } as any);
+    toast.success("Founder photo removed");
   }
 
 
