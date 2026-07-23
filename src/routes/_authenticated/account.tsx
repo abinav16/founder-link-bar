@@ -308,6 +308,38 @@ function StartupCard({ startup, onUpdate, onDelete }: {
 
         </div>
       )}
+
+      <Dialog open={reviewOpen} onOpenChange={(o) => !saving && setReviewOpen(o)}>
+        <DialogContent className="sm:max-w-[440px]">
+          <DialogHeader>
+            <div className="flex items-center gap-3">
+              <LogoPreview logoUrl={logoUrl} websiteUrl={startup.website_url} size={44} />
+              <div className="min-w-0 flex-1 text-left">
+                <DialogTitle className="text-base font-semibold text-black truncate">{sName.trim() || startup.name}</DialogTitle>
+                <p className="text-xs text-black/40 truncate">{startup.website_url}</p>
+              </div>
+            </div>
+            <DialogDescription className="pt-3 text-left text-sm leading-relaxed text-black/60">
+              Your changes will be sent to the StartupBar team for review. During this time <span className="font-medium text-black/80">{sName.trim() || startup.name}</span> will be temporarily removed from the network and won't appear in the widget or leaderboard.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-xs text-amber-700">
+            <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            <span>Reviews usually take under 24 hours. You'll be back live as soon as it's approved.</span>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-2">
+            <button type="button" onClick={() => setReviewOpen(false)} disabled={saving}
+              className="rounded-lg border border-black/12 px-4 py-2 text-sm font-medium text-black/60 hover:text-black hover:border-black/25 transition-all disabled:opacity-50">
+              Cancel
+            </button>
+            <button type="button" onClick={confirmSubmit} disabled={saving}
+              className="inline-flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/80 transition-all disabled:opacity-60">
+              <Save className="h-3.5 w-3.5" />
+              {saving ? "Submitting…" : "Submit for review"}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
