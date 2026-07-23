@@ -27,15 +27,16 @@ export function StartupEmbed({ startupId, url, name, initialBlocked }: { startup
 
   useEffect(() => {
     if (blocked !== false) return;
-    setLoaded(false);
-    // If iframe hasn't fired `load` within 3.5s, assume it's being blocked
-    // (X-Frame-Options / frame-ancestors show the browser's own error page,
-    // which never triggers onError and blocks cross-origin doc inspection).
+    if (loaded) return;
+    // Trust the server-side probe. If it said "not blocked" (or is still
+    // fetching but the iframe is rendering optimistically), don't second-guess
+    // with a client-side timeout — that was flipping to snapshot mid-load.
+    if (initialBlocked === false || embedStatusQ.data === false) return;
     const t = window.setTimeout(() => {
       if (!loaded) setBlocked(true);
-    }, 3500);
+    }, 8000);
     return () => window.clearTimeout(t);
-  }, [reloadKey, blocked, loaded]);
+  }, [reloadKey, blocked, loaded, embedStatusQ.data, initialBlocked]);
 
   if (blocked === null) {
     return (
