@@ -200,6 +200,7 @@ interface Startup {
   status: "pending" | "approved" | "rejected";
   rejection_reason?: string | null;
   logo_url?: string | null;
+  widget_last_heartbeat_at?: string | null;
 }
 
 function StatusPill({ status }: { status: Startup["status"] }) {
