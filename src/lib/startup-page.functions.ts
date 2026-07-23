@@ -38,6 +38,7 @@ export interface StartupPageData {
   founder_name: string | null;
   founder_quote: string | null;
   founder_avatar_url: string | null;
+  founder_twitter: string | null;
   iframe_blocked: boolean | null;
   impressions: number;
   clicks: number;
