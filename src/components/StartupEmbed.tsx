@@ -126,7 +126,7 @@ export function StartupEmbed({ startupId, url, name, initialBlocked }: { startup
           ref={iframeRef}
           src={normalized}
           title={`${name} live preview`}
-          className={interactive ? "h-[720px] w-full" : "h-[500px] w-full"}
+          className="h-[500px] w-full"
           sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
           referrerPolicy="no-referrer"
           loading="lazy"
