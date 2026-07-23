@@ -251,8 +251,8 @@ function StartupCard({ startup, onUpdate, onDelete }: {
             </div>
 
             <div className="flex items-center gap-3 pt-1">
-              <button type="submit" disabled={saving}
-                className="inline-flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/80 transition-all disabled:opacity-50">
+              <button type="submit" disabled={saving || !hasChanges}
+                className="inline-flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/80 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
                 <Save className="h-3.5 w-3.5" />
                 {saving ? "Submitting…" : hasChanges ? "Submit for review" : "Saved"}
               </button>
