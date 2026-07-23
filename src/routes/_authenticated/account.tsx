@@ -407,9 +407,9 @@ function AccountPage() {
     if (uploadErr) { toast.error(uploadErr.message); setUploadingAvatar(false); return; }
 
     const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
-    const bustedUrl = `${publicUrl}?t=${Date.now()}`;
+    const bustedUrl = `${publicUrl}?v=${Date.now()}`;
 
-    const { error: metaErr } = await supabase.auth.updateUser({ data: { avatar_url: publicUrl } });
+    const { error: metaErr } = await supabase.auth.updateUser({ data: { avatar_url: bustedUrl } });
     if (metaErr) { toast.error(metaErr.message); setUploadingAvatar(false); return; }
 
     setAvatarUrl(bustedUrl);
