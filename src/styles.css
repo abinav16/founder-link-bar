@@ -154,3 +154,28 @@
   background: #0a0a0a;
 }
 .sb-fade-up { animation: sb-fade-up 0.8s ease-out both; }
+
+/* Elegant thin horizontal scrollbar for card rails */
+.sb-rail {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.18) transparent;
+  scroll-behavior: smooth;
+}
+.sb-rail::-webkit-scrollbar {
+  height: 6px;
+}
+.sb-rail::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 0 24px;
+}
+.sb-rail::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 9999px;
+  transition: background 0.2s ease;
+}
+.sb-rail:hover::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.28);
+}
+.sb-rail::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.45);
+}
