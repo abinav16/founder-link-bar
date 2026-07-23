@@ -402,6 +402,14 @@ export type Database = {
         }
         Returns: number
       }
+      public_founder_info: {
+        Args: { _user_id: string }
+        Returns: {
+          avatar_url: string
+          full_name: string
+          twitter_handle: string
+        }[]
+      }
       public_network_activity: {
         Args: never
         Returns: {
