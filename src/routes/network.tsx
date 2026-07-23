@@ -3,7 +3,8 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { getNetworkDashboard, type NetworkDashboardResult } from "@/lib/network-dashboard.functions";
-import { ArrowUpRight, ArrowRight, Eye, Globe } from "lucide-react";
+import { ArrowUpRight, ArrowRight, Eye, Globe, Search, X } from "lucide-react";
+
 
 function NetworkPending() {
   return (
@@ -565,13 +566,43 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
   );
 }
 
+function HorizontalCardRail({ items }: { items: Card[] }) {
+  return (
+    <div className="relative -mx-4 sm:-mx-6">
+      <div
+        className="flex gap-4 overflow-x-auto snap-x snap-mandatory px-4 sm:px-6 pb-2"
+        style={{ scrollbarWidth: "thin" }}
+      >
+        {items.map((s) => (
+          <div
+            key={s.id}
+            className="snap-start shrink-0 w-[280px] sm:w-[340px]"
+          >
+            <StartupCard s={s} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function NetworkDashboardPage() {
   const data = Route.useLoaderData() as NetworkDashboardResult;
   const stats = data?.stats;
+  const [query, setQuery] = useState("");
+
+  const allStartups = data.recentStartups;
+  const q = query.trim().toLowerCase();
+  const filtered = q
+    ? allStartups.filter((s) => {
+        const hay = `${s.name} ${s.description} ${s.website_url}`.toLowerCase();
+        return hay.includes(q);
+      })
+    : allStartups;
 
   return (
     <DashboardLayout>
-      <div className="space-y-8">
+      <div className="space-y-10">
         {data.recentStartups.length > 0 && (
           <MagneticField startups={data.recentStartups} stats={stats} />
         )}
@@ -589,12 +620,48 @@ function NetworkDashboardPage() {
         {data.newThisWeek.length > 0 && (
           <div>
             <SectionLabel title="New This Week" count={data.newThisWeek.length} />
-            <div className="rounded-2xl bg-white border border-black/[0.06] px-6 py-2">
-              {data.newThisWeek.map((s) => <StartupRow key={s.id} s={s} />)}
-            </div>
+            <HorizontalCardRail items={data.newThisWeek} />
           </div>
         )}
+
+        <div>
+          <div className="flex items-center gap-3 mb-6">
+            <h2 className="text-[11px] font-semibold text-black/30 uppercase tracking-[0.12em] shrink-0">Startups in Network</h2>
+            <span className="text-[11px] text-black/20 font-medium">{allStartups.length}</span>
+            <div className="flex-1 h-px bg-black/[0.05]" />
+            <div className="relative shrink-0 w-[200px] sm:w-[280px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-black/30" strokeWidth={2} />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search startups…"
+                className="w-full h-9 pl-9 pr-8 rounded-full border border-black/10 bg-white text-[13px] text-black placeholder:text-black/30 focus:outline-none focus:border-black/30 transition-colors"
+              />
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => setQuery("")}
+                  aria-label="Clear search"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-5 w-5 rounded-full text-black/40 hover:text-black hover:bg-black/[0.06] transition-colors"
+                >
+                  <X className="h-3 w-3" strokeWidth={2.5} />
+                </button>
+              )}
+            </div>
+          </div>
+          {filtered.length > 0 ? (
+            <div className="rounded-2xl bg-white border border-black/[0.06] px-6 py-2">
+              {filtered.map((s) => <StartupRow key={s.id} s={s} />)}
+            </div>
+          ) : (
+            <div className="rounded-2xl bg-white border border-black/[0.06] px-6 py-16 text-center">
+              <p className="text-sm text-black/40">No startups match "{query}"</p>
+            </div>
+          )}
+        </div>
       </div>
     </DashboardLayout>
   );
 }
+
