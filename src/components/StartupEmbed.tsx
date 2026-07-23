@@ -113,7 +113,7 @@ export function StartupEmbed({ startupId, url, name, initialBlocked }: { startup
             className="rounded-md p-1.5 text-black/40 hover:bg-black/5 hover:text-black">
             <RefreshCw className="h-3.5 w-3.5" />
           </button>
-          <a href={normalized} target="_blank" rel="noopener noreferrer"
+          <a href={`/api/public/widget/click?id=${startupId}&source=profile`} target="_blank" rel="noopener noreferrer"
             className="rounded-md p-1.5 text-black/40 hover:bg-black/5 hover:text-black">
             <ExternalLink className="h-3.5 w-3.5" />
           </a>
