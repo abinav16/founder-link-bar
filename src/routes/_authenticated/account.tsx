@@ -63,17 +63,23 @@ function StartupCard({ startup, onUpdate, onDelete }: {
   const [expanded, setExpanded] = useState(false);
   const [sName, setSName] = useState(startup.name);
   const [sDesc, setSDesc] = useState(startup.description);
+  const [fName, setFName] = useState(startup.founder_name ?? "");
   const [fQuote, setFQuote] = useState(startup.founder_quote ?? "");
+  const [fAvatar, setFAvatar] = useState(startup.founder_avatar_url);
   const [saving, setSaving] = useState(false);
   const [savingFounder, setSavingFounder] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [logoUrl, setLogoUrl] = useState(startup.logo_url);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const hasChanges = sName.trim() !== startup.name || sDesc.trim() !== startup.description;
-  const founderChanged = fQuote.trim() !== (startup.founder_quote ?? "");
+  const founderChanged =
+    fQuote.trim() !== (startup.founder_quote ?? "") ||
+    fName.trim() !== (startup.founder_name ?? "");
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
