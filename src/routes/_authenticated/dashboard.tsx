@@ -200,6 +200,7 @@ interface Startup {
   status: "pending" | "approved" | "rejected";
   rejection_reason?: string | null;
   logo_url?: string | null;
+  widget_last_heartbeat_at?: string | null;
 }
 
 function StatusPill({ status }: { status: Startup["status"] }) {
@@ -577,9 +578,15 @@ function DashboardPage() {
             </div>
 
             {startup.status === "pending" && (
-              <div className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-3.5 text-sm text-amber-800">
-                <strong>Under review</strong> — we approve applications within 24 hours. The embed script unlocks once you're approved.
-              </div>
+              startup.widget_last_heartbeat_at ? (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-3.5 text-sm text-amber-800">
+                  <strong>Changes under review</strong> · we re-approve within 24 hours. Your existing embed keeps loading on your site, but new impressions and clicks pause until it's approved again. Your stats below stay intact.
+                </div>
+              ) : (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-3.5 text-sm text-amber-800">
+                  <strong>Under review</strong> · we approve applications within 24 hours. Your embed script becomes available once you're approved.
+                </div>
+              )
             )}
 
             {startup.status === "rejected" && (
