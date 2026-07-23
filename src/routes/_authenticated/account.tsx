@@ -490,7 +490,7 @@ function AccountPage() {
                       </button>
                     )}
                   </div>
-                  <p className="mt-1.5 text-[10px] text-black/30">PNG, JPG, WebP or GIF · max 2 MB. Shown as your founder photo on public startup pages.</p>
+                  <p className="mt-1.5 text-[10px] text-black/30">Any image works — we'll let you crop it into a circle and compress it automatically. Shown as your founder photo on public startup pages.</p>
                 </div>
                 <div>
                   <label className="mb-1.5 block text-xs font-medium text-black/60">Display name</label>
