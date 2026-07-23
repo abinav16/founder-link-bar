@@ -267,7 +267,7 @@ export type Database = {
           logo_url: string | null
           name: string
           rejection_reason: string | null
-          slug: string
+          slug: string | null
           status: Database["public"]["Enums"]["startup_status"]
           strike_count: number
           updated_at: string
@@ -292,7 +292,7 @@ export type Database = {
           logo_url?: string | null
           name: string
           rejection_reason?: string | null
-          slug: string
+          slug?: string | null
           status?: Database["public"]["Enums"]["startup_status"]
           strike_count?: number
           updated_at?: string
@@ -317,7 +317,7 @@ export type Database = {
           logo_url?: string | null
           name?: string
           rejection_reason?: string | null
-          slug?: string
+          slug?: string | null
           status?: Database["public"]["Enums"]["startup_status"]
           strike_count?: number
           updated_at?: string
