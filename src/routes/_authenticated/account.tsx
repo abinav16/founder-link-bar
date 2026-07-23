@@ -469,7 +469,7 @@ function AccountPage() {
                       type="file"
                       accept="image/jpeg,image/png,image/webp,image/gif"
                       className="hidden"
-                      onChange={handleAvatarUpload}
+                      onChange={handleAvatarPick}
                     />
                     <button
                       type="button"
