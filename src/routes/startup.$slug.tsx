@@ -170,19 +170,19 @@ function StartupPage() {
   return (
     <DashboardLayout>
       <div className="-mx-4 -my-6 sm:-mx-6 sm:-my-8 bg-white text-black">
-      <main className="mx-auto max-w-6xl px-5 pt-10 md:pt-16 pb-8">
+      <main className="mx-auto max-w-6xl px-4 sm:px-5 pt-8 md:pt-16 pb-8">
 
         {/* HERO */}
-        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-start gap-5">
-            <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-black/8 bg-black/[0.02]">
+        <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-start gap-3 sm:gap-5 min-w-0">
+            <div className="h-14 w-14 sm:h-20 sm:w-20 shrink-0 overflow-hidden rounded-2xl border border-black/8 bg-black/[0.02]">
               <StartupFavicon url={s.website_url} name={s.name} logoUrl={s.logo_url} size={80} />
             </div>
-            <div className="min-w-0">
-              <h1 className="text-3xl font-semibold tracking-tight md:text-4xl" style={{ fontFamily: "var(--font-display)" }}>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight break-words" style={{ fontFamily: "var(--font-display)" }}>
                 {s.name}
               </h1>
-              <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-black/60">{s.description}</p>
+              <p className="mt-2 max-w-xl text-[14px] sm:text-[15px] leading-relaxed text-black/60">{s.description}</p>
               <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-black/45">
                 <span className="inline-flex items-center gap-1 rounded-full bg-black/5 px-2.5 py-1">
                   <Calendar className="h-3 w-3" /> Joined {joined}
@@ -200,13 +200,13 @@ function StartupPage() {
             </div>
           </div>
           <a href={`/api/public/widget/click?id=${s.id}&source=profile`} target="_blank" rel="noopener noreferrer"
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-black px-4 py-2.5 text-sm font-medium text-white hover:bg-black/85">
+            className="inline-flex w-full md:w-auto justify-center shrink-0 items-center gap-1.5 rounded-xl bg-black px-4 py-2.5 text-sm font-medium text-white hover:bg-black/85">
             Visit site <ExternalLink className="h-3.5 w-3.5" />
           </a>
         </div>
 
         {/* STATS */}
-        <div className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-5">
+        <div className="mt-8 sm:mt-10 grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-5">
           <Stat label="Impressions received" value={fmt(s.impressions)} sub="in others' bars" />
           <Stat label="Impressions contributed" value={fmt(s.impressions_given)} sub="shown from this site" />
           <Stat label="Clicks received" value={fmt(s.clicks)} sub="landings via StartupBar" />
