@@ -1,9 +1,12 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { getStartupPage, getStartupPulse } from "@/lib/startup-page.functions";
 import { StartupEmbed } from "@/components/StartupEmbed";
 import { StartupFavicon } from "@/components/StartupFavicon";
-import { ExternalLink, Quote, Activity, ArrowUpRight, Calendar } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { ExternalLink, Quote, Activity, ArrowUpRight, Calendar, User, Pencil } from "lucide-react";
+
 
 const pageQuery = (slug: string) =>
   queryOptions({
@@ -127,33 +130,9 @@ function StartupPage() {
           </a>
         </div>
 
-        {/* FOUNDER */}
-        {(s.founder_quote || s.founder_name || s.founder_avatar_url) && (
-          <div className="mt-10 rounded-2xl border border-black/8 bg-gradient-to-br from-black/[0.02] to-transparent p-6 md:p-8">
-            <div className="flex items-start gap-5">
-              {s.founder_avatar_url ? (
-                <img src={s.founder_avatar_url} alt={s.founder_name || "Founder"} className="h-16 w-16 shrink-0 rounded-full object-cover ring-2 ring-white shadow" />
-              ) : (
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-black/10 text-lg font-semibold text-black/40">
-                  {(s.founder_name || s.name).charAt(0).toUpperCase()}
-                </div>
-              )}
-              <div className="min-w-0 flex-1">
-                {s.founder_quote && (
-                  <div className="relative">
-                    <Quote className="absolute -left-1 -top-2 h-5 w-5 text-black/10" />
-                    <p className="pl-6 text-[17px] italic leading-relaxed text-black/75" style={{ fontFamily: "var(--font-display)" }}>
-                      "{s.founder_quote}"
-                    </p>
-                  </div>
-                )}
-                {s.founder_name && (
-                  <p className="mt-3 text-sm font-medium text-black/70">— {s.founder_name}<span className="ml-1 font-normal text-black/40">, founder of {s.name}</span></p>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+        {/* FOUNDER — always rendered */}
+        <FounderSection s={s} />
+
 
         {/* STATS */}
         <div className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -224,3 +203,62 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
     </div>
   );
 }
+
+function FounderSection({ s }: { s: { name: string; user_id: string | null; founder_name: string | null; founder_quote: string | null; founder_avatar_url: string | null } }) {
+  const [isOwner, setIsOwner] = useState(false);
+  useEffect(() => {
+    let cancel = false;
+    supabase.auth.getUser().then(({ data }) => {
+      if (!cancel && data.user?.id && s.user_id && data.user.id === s.user_id) setIsOwner(true);
+    });
+    return () => { cancel = true; };
+  }, [s.user_id]);
+
+  const hasAny = !!(s.founder_quote || s.founder_name || s.founder_avatar_url);
+  const displayName = s.founder_name || (hasAny ? null : `Founder of ${s.name}`);
+  const initial = (s.founder_name || s.name).charAt(0).toUpperCase();
+
+  return (
+    <div className="mt-10 rounded-2xl border border-black/8 bg-gradient-to-br from-black/[0.02] to-transparent p-6 md:p-8">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/40">
+          <User className="h-3.5 w-3.5" /> Founder
+        </div>
+        {isOwner && (
+          <Link to="/account" className="inline-flex items-center gap-1.5 rounded-lg border border-black/10 bg-white px-3 py-1.5 text-xs font-medium text-black/70 hover:border-black/25 hover:text-black">
+            <Pencil className="h-3 w-3" /> {hasAny ? "Edit your story" : "Add your story"}
+          </Link>
+        )}
+      </div>
+      <div className="flex items-start gap-5">
+        {s.founder_avatar_url ? (
+          <img src={s.founder_avatar_url} alt={s.founder_name || "Founder"} className="h-16 w-16 shrink-0 rounded-full object-cover ring-2 ring-white shadow" />
+        ) : (
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-black/8 text-lg font-semibold text-black/40">
+            {initial}
+          </div>
+        )}
+        <div className="min-w-0 flex-1">
+          {s.founder_quote ? (
+            <div className="relative">
+              <Quote className="absolute -left-1 -top-2 h-5 w-5 text-black/10" />
+              <p className="pl-6 text-[17px] italic leading-relaxed text-black/75" style={{ fontFamily: "var(--font-display)" }}>
+                "{s.founder_quote}"
+              </p>
+            </div>
+          ) : (
+            <p className="text-[15px] italic leading-relaxed text-black/40">
+              The founder hasn't shared their story yet.
+            </p>
+          )}
+          {displayName && (
+            <p className="mt-3 text-sm font-medium text-black/70">
+              {s.founder_name ? <>— {s.founder_name}<span className="ml-1 font-normal text-black/40">, founder of {s.name}</span></> : <span className="text-black/50">{displayName}</span>}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
