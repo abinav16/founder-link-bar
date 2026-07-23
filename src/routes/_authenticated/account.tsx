@@ -337,7 +337,7 @@ function AccountPage() {
       setName(u.user.user_metadata?.full_name ?? "");
 
       const { data } = await supabase
-        .from("startups").select("id, name, website_url, description, status, logo_url, user_id").eq("user_id", u.user.id).order("created_at", { ascending: true });
+        .from("startups").select("id, name, website_url, description, status, logo_url, user_id, slug, founder_name, founder_quote, founder_avatar_url").eq("user_id", u.user.id).order("created_at", { ascending: true });
       if (data) setStartups(data as Startup[]);
     })();
   }, []);
