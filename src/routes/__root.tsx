@@ -105,6 +105,20 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
+
+  // Inject the StartupBar widget after hydration so its DOM mutations don't
+  // cause a hydration mismatch (which was making the header re-mount and
+  // look like the page loaded twice).
+  useEffect(() => {
+    if (document.querySelector('script[data-startupbar-loader]')) return;
+    const s = document.createElement("script");
+    s.src = "https://startupbar.co/widget/loader.js";
+    s.setAttribute("data-startup-id", "0d2db708-f4e9-4b77-bd83-c446826c76b1");
+    s.setAttribute("data-startupbar-loader", "1");
+    s.async = true;
+    document.head.appendChild(s);
+  }, []);
+
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
