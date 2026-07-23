@@ -24,7 +24,12 @@ interface Startup {
   status: "pending" | "approved" | "rejected";
   logo_url: string | null;
   user_id: string;
+  slug: string | null;
+  founder_name: string | null;
+  founder_quote: string | null;
+  founder_avatar_url: string | null;
 }
+
 
 const inputCls = "w-full rounded-lg border border-black/12 bg-white px-3.5 py-2.5 text-sm text-black placeholder:text-black/45 outline-none transition focus:border-black/30 focus:ring-2 focus:ring-black/8 disabled:bg-black/[0.03] disabled:text-black/40";
 
@@ -58,7 +63,11 @@ function StartupCard({ startup, onUpdate, onDelete }: {
   const [expanded, setExpanded] = useState(false);
   const [sName, setSName] = useState(startup.name);
   const [sDesc, setSDesc] = useState(startup.description);
+  const [fName, setFName] = useState(startup.founder_name ?? "");
+  const [fQuote, setFQuote] = useState(startup.founder_quote ?? "");
+  const [fAvatar, setFAvatar] = useState(startup.founder_avatar_url ?? "");
   const [saving, setSaving] = useState(false);
+  const [savingFounder, setSavingFounder] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -66,6 +75,10 @@ function StartupCard({ startup, onUpdate, onDelete }: {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const hasChanges = sName.trim() !== startup.name || sDesc.trim() !== startup.description;
+  const founderChanged =
+    fName.trim() !== (startup.founder_name ?? "") ||
+    fQuote.trim() !== (startup.founder_quote ?? "") ||
+    fAvatar.trim() !== (startup.founder_avatar_url ?? "");
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -80,6 +93,21 @@ function StartupCard({ startup, onUpdate, onDelete }: {
     toast.success("Changes submitted for review");
     onUpdate(startup.id, { name: sName.trim(), description: sDesc.trim(), status: "pending" });
   }
+
+  async function saveFounder() {
+    setSavingFounder(true);
+    const patch = {
+      founder_name: fName.trim() || null,
+      founder_quote: fQuote.trim() || null,
+      founder_avatar_url: fAvatar.trim() || null,
+    };
+    const { error } = await supabase.from("startups").update(patch as any).eq("id", startup.id);
+    setSavingFounder(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Founder profile updated");
+    onUpdate(startup.id, patch as any);
+  }
+
 
   async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -250,6 +278,45 @@ function StartupCard({ startup, onUpdate, onDelete }: {
               )}
             </div>
           </form>
+
+          <div className="mt-6 border-t border-black/6 pt-5">
+            <div className="mb-3 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-black">Founder profile</p>
+                <p className="text-[11px] text-black/40">Shown on your public startup page.</p>
+              </div>
+              {startup.status === "approved" && startup.slug && (
+                <a href={`/startup/${startup.slug}`} target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-[11px] font-medium text-black/50 hover:text-black">
+                  View page <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+            </div>
+            <div className="space-y-3">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-black/60">Founder name</label>
+                  <input maxLength={80} value={fName} onChange={(e) => setFName(e.target.value)} placeholder="Jane Doe" className={inputCls} />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-black/60">Avatar URL</label>
+                  <input value={fAvatar} onChange={(e) => setFAvatar(e.target.value)} placeholder="https://..." className={inputCls} />
+                </div>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-black/60">Founder quote ({fQuote.length}/240)</label>
+                <textarea maxLength={240} rows={2} value={fQuote} onChange={(e) => setFQuote(e.target.value)}
+                  placeholder="Why you built it, in one sentence."
+                  className={inputCls + " resize-none"} />
+              </div>
+              <button type="button" onClick={saveFounder} disabled={savingFounder || !founderChanged}
+                className="inline-flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/80 transition-all disabled:opacity-40">
+                <Save className="h-3.5 w-3.5" />
+                {savingFounder ? "Saving…" : founderChanged ? "Save founder info" : "Saved"}
+              </button>
+            </div>
+          </div>
+
         </div>
       )}
     </div>
@@ -270,7 +337,7 @@ function AccountPage() {
       setName(u.user.user_metadata?.full_name ?? "");
 
       const { data } = await supabase
-        .from("startups").select("id, name, website_url, description, status, logo_url, user_id").eq("user_id", u.user.id).order("created_at", { ascending: true });
+        .from("startups").select("id, name, website_url, description, status, logo_url, user_id, slug, founder_name, founder_quote, founder_avatar_url").eq("user_id", u.user.id).order("created_at", { ascending: true });
       if (data) setStartups(data as Startup[]);
     })();
   }, []);

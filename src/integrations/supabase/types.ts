@@ -259,10 +259,15 @@ export type Database = {
           banned: boolean
           created_at: string
           description: string
+          founder_avatar_url: string | null
+          founder_name: string | null
+          founder_quote: string | null
           id: string
+          iframe_blocked: boolean | null
           logo_url: string | null
           name: string
           rejection_reason: string | null
+          slug: string | null
           status: Database["public"]["Enums"]["startup_status"]
           strike_count: number
           updated_at: string
@@ -279,10 +284,15 @@ export type Database = {
           banned?: boolean
           created_at?: string
           description: string
+          founder_avatar_url?: string | null
+          founder_name?: string | null
+          founder_quote?: string | null
           id?: string
+          iframe_blocked?: boolean | null
           logo_url?: string | null
           name: string
           rejection_reason?: string | null
+          slug?: string | null
           status?: Database["public"]["Enums"]["startup_status"]
           strike_count?: number
           updated_at?: string
@@ -299,10 +309,15 @@ export type Database = {
           banned?: boolean
           created_at?: string
           description?: string
+          founder_avatar_url?: string | null
+          founder_name?: string | null
+          founder_quote?: string | null
           id?: string
+          iframe_blocked?: boolean | null
           logo_url?: string | null
           name?: string
           rejection_reason?: string | null
+          slug?: string | null
           status?: Database["public"]["Enums"]["startup_status"]
           strike_count?: number
           updated_at?: string
@@ -425,6 +440,18 @@ export type Database = {
           given: number
           received: number
           startup_id: string
+        }[]
+      }
+      public_startup_pulse: { Args: { _startup_id: string }; Returns: number }
+      public_startup_referrers: {
+        Args: { _startup_id: string }
+        Returns: {
+          cnt: number
+          logo_url: string
+          name: string
+          slug: string
+          startup_id: string
+          website_url: string
         }[]
       }
       public_startup_totals: {

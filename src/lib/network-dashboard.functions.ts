@@ -19,6 +19,7 @@ export interface NetworkStats {
 
 export interface StartupCard {
   id: string;
+  slug: string | null;
   name: string;
   website_url: string;
   description: string;
@@ -27,6 +28,7 @@ export interface StartupCard {
   impressions_24h: number;
   clicks_24h: number;
 }
+
 
 export interface NetworkDashboardResult {
   stats: NetworkStats;
@@ -44,8 +46,9 @@ export const getNetworkDashboard = createServerFn({ method: "GET" }).handler(
 
     const { data: startups } = await supabase
       .from("startups")
-      .select("id, name, website_url, description, logo_url, created_at")
+      .select("id, slug, name, website_url, description, logo_url, created_at")
       .eq("status", "approved")
+
       .order("created_at", { ascending: false })
       .limit(200);
 
@@ -77,6 +80,7 @@ export const getNetworkDashboard = createServerFn({ method: "GET" }).handler(
 
     const cards: StartupCard[] = (startups ?? []).map((s: any) => ({
       id: s.id,
+      slug: s.slug ?? null,
       name: s.name,
       website_url: s.website_url,
       description: s.description,
@@ -85,6 +89,7 @@ export const getNetworkDashboard = createServerFn({ method: "GET" }).handler(
       impressions_24h: imp24hMap[s.id] ?? 0,
       clicks_24h: click24hMap[s.id] ?? 0,
     }));
+
 
     return {
       stats: {

@@ -84,22 +84,24 @@ function isNew(createdAt: string) {
 function StartupCard({ s }: { s: Card }) {
   const fresh = isNew(s.created_at);
   return (
-    <a
-      href={`/api/public/widget/click?id=${s.id}&source=dashboard`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group relative flex flex-col gap-3 sm:gap-5 rounded-2xl bg-white border border-black/[0.06] p-4 sm:p-6 hover:border-black/[0.12] hover:shadow-[0_12px_48px_rgba(0,0,0,0.07)] transition-all duration-300 h-full"
-    >
+    <div className="group relative flex flex-col gap-3 sm:gap-5 rounded-2xl bg-white border border-black/[0.06] p-4 sm:p-6 hover:border-black/[0.12] hover:shadow-[0_12px_48px_rgba(0,0,0,0.07)] transition-all duration-300 h-full">
+      <a
+        href={`/api/public/widget/click?id=${s.id}&source=dashboard`}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`Visit ${s.name}`}
+        className="absolute inset-0 z-0"
+      />
       {fresh && (
-        <span className="absolute top-3 right-3 text-[9px] font-semibold tracking-[0.12em] uppercase px-1.5 py-0.5 rounded-full bg-black text-white leading-none">
+        <span className="absolute top-3 right-3 z-20 text-[9px] font-semibold tracking-[0.12em] uppercase px-1.5 py-0.5 rounded-full bg-black text-white leading-none">
           New
         </span>
       )}
-      <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl overflow-hidden bg-black/[0.03] border border-black/[0.06] flex items-center justify-center shrink-0">
+      <div className="relative z-10 w-9 h-9 sm:w-11 sm:h-11 rounded-xl overflow-hidden bg-black/[0.03] border border-black/[0.06] flex items-center justify-center shrink-0 pointer-events-none">
         <StartupFavicon url={s.website_url} name={s.name} size={36} />
       </div>
 
-      <div className="flex-1 min-w-0 space-y-1">
+      <div className="relative z-10 flex-1 min-w-0 space-y-1 pointer-events-none">
         <div className="flex items-start justify-between gap-1">
           <h3 className="text-[13px] sm:text-[15px] font-semibold text-black leading-snug">{s.name}</h3>
           <ArrowUpRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-black/20 shrink-0 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
@@ -107,7 +109,7 @@ function StartupCard({ s }: { s: Card }) {
         <p className="text-[11px] sm:text-[13px] text-black/45 leading-relaxed line-clamp-2">{s.description}</p>
       </div>
 
-      <div className="hidden sm:block border-t border-black/[0.05] pt-4">
+      <div className="relative z-10 hidden sm:flex items-center justify-between border-t border-black/[0.05] pt-4 pointer-events-none">
         {s.impressions_24h > 0 ? (
           <div className="flex items-center gap-2">
             <span className="text-[11px] text-black/35 font-medium tabular-nums">{s.impressions_24h} impressions today</span>
@@ -116,38 +118,54 @@ function StartupCard({ s }: { s: Card }) {
         ) : (
           <span className="text-[11px] text-black/20 tracking-wide">Just joined</span>
         )}
+        {s.slug && (
+          <a
+            href={`/startup/${s.slug}`}
+            className="pointer-events-auto text-[10px] font-medium text-black/35 hover:text-black transition-colors"
+          >
+            Profile →
+          </a>
+        )}
       </div>
-    </a>
+    </div>
   );
 }
 
 
 function StartupRow({ s }: { s: Card }) {
   return (
-    <a
-      href={`/api/public/widget/click?id=${s.id}&source=dashboard`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group flex items-center gap-4 py-3.5 border-b border-black/[0.05] last:border-0 transition-colors duration-150"
-    >
-      <div className="shrink-0 w-9 h-9 rounded-lg overflow-hidden bg-black/[0.03] border border-black/[0.06] flex items-center justify-center">
+    <div className="group relative flex items-center gap-4 py-3.5 border-b border-black/[0.05] last:border-0 transition-colors duration-150">
+      <a
+        href={`/api/public/widget/click?id=${s.id}&source=dashboard`}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`Visit ${s.name}`}
+        className="absolute inset-0 z-0"
+      />
+      <div className="relative z-10 shrink-0 w-9 h-9 rounded-lg overflow-hidden bg-black/[0.03] border border-black/[0.06] flex items-center justify-center pointer-events-none">
         <StartupFavicon url={s.website_url} name={s.name} size={32} />
       </div>
-      <div className="min-w-0 flex-1">
+      <div className="relative z-10 min-w-0 flex-1 pointer-events-none">
         <div className="flex items-center gap-1.5">
           <span className="text-sm font-medium text-black truncate">{s.name}</span>
           <ArrowUpRight className="h-3 w-3 text-black/20 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150" />
         </div>
         <p className="text-xs text-black/38 truncate mt-0.5 leading-relaxed">{s.description}</p>
       </div>
-      <div className="shrink-0 text-right">
+      <div className="relative z-10 shrink-0 text-right flex items-center gap-3">
         {s.impressions_24h > 0
           ? <span className="text-[11px] text-black/30 font-medium tabular-nums">{s.impressions_24h} seen</span>
           : <span className="text-[11px] text-black/18 tracking-wide">New</span>}
+        {s.slug && (
+          <a href={`/startup/${s.slug}`} className="pointer-events-auto text-[10px] font-medium text-black/30 hover:text-black transition-colors">
+            Profile
+          </a>
+        )}
       </div>
-    </a>
+    </div>
   );
 }
+
 
 function SectionLabel({ title, count }: { title: string; count?: number }) {
   return (
