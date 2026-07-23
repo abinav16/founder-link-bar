@@ -69,6 +69,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           isNavigating ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
         aria-hidden
+        suppressHydrationWarning
       >
         <div className="progress-bar h-full bg-black w-full" />
       </div>
