@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Save, User, Globe, Trash2, Plus, ChevronDown, ChevronUp, ExternalLink, Info, Upload, X, Clock } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { AvatarCropDialog } from "@/components/AvatarCropDialog";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
@@ -352,6 +353,7 @@ function AccountPage() {
   const [startups, setStartups] = useState<Startup[]>([]);
   const [savingProfile, setSavingProfile] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
@@ -385,18 +387,23 @@ function AccountPage() {
     else { setTwitter(handle); toast.success("Profile updated"); }
   }
 
-  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleAvatarPick(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
     if (!userId) { toast.error("Please sign in again"); return; }
-    if (file.size > 2 * 1024 * 1024) { toast.error("Image must be under 2 MB"); return; }
+    if (!file.type.startsWith("image/")) { toast.error("Please choose an image"); return; }
+    setPendingAvatarFile(file);
+  }
 
+  async function uploadCroppedAvatar(blob: Blob) {
+    setPendingAvatarFile(null);
+    if (!userId) return;
     setUploadingAvatar(true);
-    const ext = (file.name.split(".").pop() || "png").toLowerCase();
-    const path = `${userId}/avatar.${ext}`;
+    const path = `${userId}/avatar.jpg`;
     const { error: uploadErr } = await supabase.storage
       .from("avatars")
-      .upload(path, file, { upsert: true, contentType: file.type });
+      .upload(path, blob, { upsert: true, contentType: "image/jpeg" });
     if (uploadErr) { toast.error(uploadErr.message); setUploadingAvatar(false); return; }
 
     const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
@@ -408,7 +415,6 @@ function AccountPage() {
     setAvatarUrl(bustedUrl);
     toast.success("Profile picture updated");
     setUploadingAvatar(false);
-    e.target.value = "";
   }
 
   async function removeAvatar() {
@@ -427,6 +433,7 @@ function AccountPage() {
   }
 
   return (
+    <>
     <DashboardLayout>
       <div>
         <div>
@@ -463,7 +470,7 @@ function AccountPage() {
                       type="file"
                       accept="image/jpeg,image/png,image/webp,image/gif"
                       className="hidden"
-                      onChange={handleAvatarUpload}
+                      onChange={handleAvatarPick}
                     />
                     <button
                       type="button"
@@ -484,7 +491,7 @@ function AccountPage() {
                       </button>
                     )}
                   </div>
-                  <p className="mt-1.5 text-[10px] text-black/30">PNG, JPG, WebP or GIF · max 2 MB. Shown as your founder photo on public startup pages.</p>
+                  <p className="mt-1.5 text-[10px] text-black/30">Any image works — we'll let you crop it into a circle and compress it automatically. Shown as your founder photo on public startup pages.</p>
                 </div>
                 <div>
                   <label className="mb-1.5 block text-xs font-medium text-black/60">Display name</label>
@@ -546,5 +553,11 @@ function AccountPage() {
         </div>
       </div>
     </DashboardLayout>
+    <AvatarCropDialog
+      file={pendingAvatarFile}
+      onCancel={() => setPendingAvatarFile(null)}
+      onConfirm={uploadCroppedAvatar}
+    />
+    </>
   );
 }
