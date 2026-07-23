@@ -91,31 +91,10 @@ function RootShell({ children }: { children: ReactNode }) {
             `,
           }}
         />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                function inject() {
-                  if (document.querySelector('script[data-startupbar-loader]')) return;
-                  var s = document.createElement('script');
-                  s.src = 'https://startupbar.co/widget/loader.js';
-                  s.setAttribute('data-startup-id', '0d2db708-f4e9-4b77-bd83-c446826c76b1');
-                  s.setAttribute('data-startupbar-loader', '1');
-                  s.async = true;
-                  document.head.appendChild(s);
-                }
-                // Defer until after React hydration so the widget's DOM mutations
-                // (shifting fixed/sticky elements down by 36px) don't race hydration
-                // and force a client-side rerender that looks like the page loads twice.
-                if (document.readyState === 'complete') {
-                  setTimeout(inject, 0);
-                } else {
-                  window.addEventListener('load', function() { setTimeout(inject, 0); });
-                }
-              })();
-            `,
-          }}
-        />
+        {/* Widget loader is injected client-side from RootComponent's useEffect
+            so it runs after React hydration — otherwise its DOM mutations
+            (shifting fixed/sticky elements) race hydration and force a
+            client rerender that looks like the page loads twice. */}
 
       </head>
       <body>{children}<Scripts /></body>
