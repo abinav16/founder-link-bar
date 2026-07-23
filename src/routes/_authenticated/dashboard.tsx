@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Copy, Check, Code2, ArrowRight, BarChart2, MousePointerClick, Layers, Percent, ChevronDown, Globe2, Smartphone, Monitor, Tablet } from "lucide-react";
+import { Copy, Check, Code2, ArrowRight, BarChart2, MousePointerClick, Layers, Percent, ChevronDown, Globe2, Smartphone, Monitor, Tablet, User } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { StartupFavicon } from "@/components/StartupFavicon";
@@ -609,13 +609,20 @@ function DashboardPage() {
             )}
 
             {startup.status === "approved" && (startup as any).slug && !((startup as any).founder_quote) && (
-              <div className="flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3">
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-amber-900">Your public page is missing your founder story</p>
-                  <p className="mt-0.5 text-xs text-amber-800/80">Add a quote and photo — visitors trust profiles with a face and a founder voice.</p>
+              <div className="flex flex-col md:flex-row items-center gap-5 md:gap-6 rounded-2xl border border-border bg-card p-5 md:p-6 shadow-sm">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-border bg-secondary">
+                  <User className="h-6 w-6 text-muted-foreground" />
                 </div>
-                <Link to="/account" className="shrink-0 rounded-lg bg-amber-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-800">
-                  Add your story →
+                <div className="flex-1 text-center md:text-left">
+                  <p className="text-[17px] font-semibold tracking-tight text-foreground">Your public page is missing your founder story</p>
+                  <p className="mt-0.5 max-w-lg text-sm leading-relaxed text-muted-foreground">Add a quote and photo. Visitors trust profiles with a face and a founder voice.</p>
+                </div>
+                <Link
+                  to="/account"
+                  className="shrink-0 inline-flex items-center gap-2 rounded-full bg-primary px-7 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  Add your story
+                  <ArrowRight className="h-4 w-4 opacity-70" />
                 </Link>
               </div>
             )}
