@@ -458,6 +458,7 @@ export type Database = {
         Args: { _ids: string[] }
         Returns: {
           clicks: number
+          clicks_given: number
           impressions: number
           impressions_given: number
           startup_id: string
