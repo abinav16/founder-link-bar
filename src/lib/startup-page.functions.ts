@@ -38,6 +38,7 @@ export interface StartupPageData {
   founder_name: string | null;
   founder_quote: string | null;
   founder_avatar_url: string | null;
+  founder_twitter: string | null;
   iframe_blocked: boolean | null;
   impressions: number;
   clicks: number;
@@ -105,6 +106,7 @@ export const getStartupPage = createServerFn({ method: "GET" })
     // The per-startup founder_quote remains the only startup-scoped field.
     let founderName: string | null = null;
     let founderAvatar: string | null = null;
+    let founderTwitter: string | null = null;
     if (row.user_id) {
       try {
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -112,6 +114,11 @@ export const getStartupPage = createServerFn({ method: "GET" })
         const meta = (u?.user?.user_metadata ?? {}) as Record<string, any>;
         founderName = meta.full_name || meta.name || null;
         founderAvatar = meta.avatar_url || meta.picture || null;
+        const rawTw = (meta.twitter_handle || meta.twitter || "").toString().trim();
+        if (rawTw) {
+          const handle = rawTw.replace(/^https?:\/\/(www\.)?(x|twitter)\.com\//i, "").replace(/^@/, "").replace(/\/.*$/, "").trim();
+          founderTwitter = handle || null;
+        }
       } catch { /* non-fatal */ }
     }
 
@@ -127,6 +134,7 @@ export const getStartupPage = createServerFn({ method: "GET" })
       founder_name: founderName,
       founder_quote: row.founder_quote ?? null,
       founder_avatar_url: founderAvatar,
+      founder_twitter: founderTwitter,
       iframe_blocked: row.iframe_blocked ?? null,
       impressions: Number(t.impressions ?? 0),
       clicks: Number(t.clicks ?? 0),

@@ -307,6 +307,7 @@ function StartupCard({ startup, onUpdate, onDelete }: {
 function AccountPage() {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
+  const [twitter, setTwitter] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [startups, setStartups] = useState<Startup[]>([]);
   const [savingProfile, setSavingProfile] = useState(false);
@@ -321,6 +322,7 @@ function AccountPage() {
       setUserId(u.user.id);
       setEmail(u.user.email ?? "");
       setName(u.user.user_metadata?.full_name ?? "");
+      setTwitter(u.user.user_metadata?.twitter_handle ?? "");
       setAvatarUrl(u.user.user_metadata?.avatar_url ?? u.user.user_metadata?.picture ?? null);
 
       const { data } = await supabase
@@ -329,13 +331,18 @@ function AccountPage() {
     })();
   }, []);
 
+  function normalizeTwitter(input: string): string {
+    return input.trim().replace(/^https?:\/\/(www\.)?(x|twitter)\.com\//i, "").replace(/^@/, "").replace(/\/.*$/, "").trim();
+  }
+
   async function saveProfile(e: React.FormEvent) {
     e.preventDefault();
     setSavingProfile(true);
-    const { error } = await supabase.auth.updateUser({ data: { full_name: name } });
+    const handle = normalizeTwitter(twitter);
+    const { error } = await supabase.auth.updateUser({ data: { full_name: name, twitter_handle: handle || null } });
     setSavingProfile(false);
     if (error) toast.error(error.message);
-    else toast.success("Profile updated");
+    else { setTwitter(handle); toast.success("Profile updated"); }
   }
 
   async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -442,6 +449,19 @@ function AccountPage() {
                 <div>
                   <label className="mb-1.5 block text-xs font-medium text-black/60">Display name</label>
                   <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" className={inputCls} />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-black/60">X (Twitter) handle</label>
+                  <div className="relative">
+                    <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-black/40">@</span>
+                    <input
+                      value={twitter}
+                      onChange={(e) => setTwitter(e.target.value)}
+                      placeholder="yourhandle"
+                      className={`${inputCls} pl-7`}
+                    />
+                  </div>
+                  <p className="mt-1.5 text-[10px] text-black/30">Shown next to your founder photo on public startup pages. Paste a handle, @handle, or X profile URL.</p>
                 </div>
                 <div>
                   <label className="mb-1.5 block text-xs font-medium text-black/60">Email</label>

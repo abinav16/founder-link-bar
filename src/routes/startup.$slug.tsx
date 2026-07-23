@@ -344,7 +344,15 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
   );
 }
 
-function FounderSection({ s }: { s: { name: string; user_id: string | null; founder_name: string | null; founder_quote: string | null; founder_avatar_url: string | null } }) {
+function XLogo({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  );
+}
+
+function FounderSection({ s }: { s: { name: string; user_id: string | null; founder_name: string | null; founder_quote: string | null; founder_avatar_url: string | null; founder_twitter: string | null } }) {
   const [isOwner, setIsOwner] = useState(false);
   useEffect(() => {
     let cancel = false;
@@ -354,7 +362,7 @@ function FounderSection({ s }: { s: { name: string; user_id: string | null; foun
     return () => { cancel = true; };
   }, [s.user_id]);
 
-  const hasAny = !!(s.founder_quote || s.founder_name || s.founder_avatar_url);
+  const hasAny = !!(s.founder_quote || s.founder_name || s.founder_avatar_url || s.founder_twitter);
   const displayName = s.founder_name || (hasAny ? null : `Founder of ${s.name}`);
   const initial = (s.founder_name || s.name).charAt(0).toUpperCase();
 
@@ -391,10 +399,25 @@ function FounderSection({ s }: { s: { name: string; user_id: string | null; foun
               The founder hasn't shared their story yet.
             </p>
           )}
-          {displayName && (
-            <p className="mt-3 text-sm font-medium text-black/70">
-              {s.founder_name ? <>— {s.founder_name}<span className="ml-1 font-normal text-black/40">, founder of {s.name}</span></> : <span className="text-black/50">{displayName}</span>}
-            </p>
+          {(displayName || s.founder_twitter) && (
+            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+              {displayName && (
+                <p className="text-sm font-medium text-black/70">
+                  {s.founder_name ? <>— {s.founder_name}<span className="ml-1 font-normal text-black/40">, founder of {s.name}</span></> : <span className="text-black/50">{displayName}</span>}
+                </p>
+              )}
+              {s.founder_twitter && (
+                <a
+                  href={`https://x.com/${s.founder_twitter}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-2.5 py-1 text-xs font-medium text-black/70 hover:border-black/30 hover:text-black transition-colors"
+                >
+                  <XLogo className="h-3 w-3" />
+                  @{s.founder_twitter}
+                </a>
+              )}
+            </div>
           )}
         </div>
       </div>
