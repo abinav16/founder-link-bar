@@ -3,8 +3,8 @@ import { queryOptions, useSuspenseQuery, useQuery } from "@tanstack/react-query"
 import { useEffect, useState } from "react";
 import { getStartupPage, getStartupPulse } from "@/lib/startup-page.functions";
 import { StartupEmbed } from "@/components/StartupEmbed";
-import { SiteHeader } from "@/components/SiteHeader";
-import { SiteFooter } from "@/components/SiteFooter";
+import { DashboardLayout } from "@/components/DashboardLayout";
+
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { supabase } from "@/integrations/supabase/client";
 import { ExternalLink, Quote, Activity, ArrowUpRight, Calendar, User, Pencil, LayoutDashboard, Share2, Check } from "lucide-react";
@@ -101,10 +101,10 @@ function StartupPage() {
   const external = s.website_url.startsWith("http") ? s.website_url : `https://${s.website_url}`;
 
   return (
-    <div className="min-h-screen bg-white text-black">
-      <SiteHeader />
-
+    <DashboardLayout>
+      <div className="-mx-4 -my-6 sm:-mx-6 sm:-my-8 bg-white text-black">
       <main className="mx-auto max-w-6xl px-5 pt-10 md:pt-16 pb-8">
+
         {/* HERO */}
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-start gap-5">
@@ -189,10 +189,11 @@ function StartupPage() {
         {/* FOOTER CTA — varies by auth state */}
         <StartupPageCta name={s.name} authReady={authState.ready} isSignedIn={isSignedIn} isOwner={isOwner} slug={s.slug} />
       </main>
-      <SiteFooter />
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }
+
 
 function StartupPageCta({ name, authReady, isSignedIn, isOwner, slug }: { name: string; authReady: boolean; isSignedIn: boolean; isOwner: boolean; slug: string }) {
   const [copied, setCopied] = useState(false);
