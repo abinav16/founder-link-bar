@@ -3,8 +3,8 @@ import { queryOptions, useSuspenseQuery, useQuery } from "@tanstack/react-query"
 import { useEffect, useState } from "react";
 import { getStartupPage, getStartupPulse } from "@/lib/startup-page.functions";
 import { StartupEmbed } from "@/components/StartupEmbed";
-import { SiteHeader } from "@/components/SiteHeader";
-import { SiteFooter } from "@/components/SiteFooter";
+import { DashboardLayout } from "@/components/DashboardLayout";
+
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { supabase } from "@/integrations/supabase/client";
 import { ExternalLink, Quote, Activity, ArrowUpRight, Calendar, User, Pencil, LayoutDashboard, Share2, Check } from "lucide-react";
