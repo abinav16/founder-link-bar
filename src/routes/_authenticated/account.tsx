@@ -314,8 +314,8 @@ function StartupCard({ startup, onUpdate, onDelete }: {
           <div className="mt-6 border-t border-black/6 pt-5">
             <div className="mb-3 flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-black">Founder quote</p>
-                <p className="text-[11px] text-black/40">Your account name and avatar are used automatically. Update them in Profile above.</p>
+                <p className="text-sm font-medium text-black">Founder profile</p>
+                <p className="text-[11px] text-black/40">Defaults come from your account. Override name, photo, or quote per startup below.</p>
               </div>
               {startup.status === "approved" && startup.slug && (
                 <a href={`/startup/${startup.slug}`} target="_blank" rel="noopener noreferrer"
@@ -324,7 +324,52 @@ function StartupCard({ startup, onUpdate, onDelete }: {
                 </a>
               )}
             </div>
-            <div className="space-y-3">
+            <div className="space-y-4">
+              <div>
+                <label className="mb-2 block text-xs font-medium text-black/60">Founder photo</label>
+                <div className="flex items-center gap-4">
+                  <div
+                    className="h-14 w-14 shrink-0 rounded-full border border-black/8 bg-black/[0.03]"
+                    style={fAvatar ? { background: `url(${fAvatar}) center/cover no-repeat` } : undefined}
+                  >
+                    {!fAvatar && <div className="flex h-full w-full items-center justify-center"><User className="h-5 w-5 text-black/30" /></div>}
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <input
+                      ref={avatarInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      className="hidden"
+                      onChange={handleAvatarUpload}
+                    />
+                    <button
+                      type="button"
+                      disabled={uploadingAvatar}
+                      onClick={() => avatarInputRef.current?.click()}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-black/12 px-3 py-1.5 text-xs font-medium text-black/60 hover:border-black/25 hover:text-black transition-all disabled:opacity-40"
+                    >
+                      <Upload className="h-3 w-3" />
+                      {uploadingAvatar ? "Uploading…" : fAvatar ? "Replace photo" : "Upload photo"}
+                    </button>
+                    {fAvatar && (
+                      <button
+                        type="button"
+                        onClick={removeAvatar}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-red-100 px-3 py-1.5 text-xs font-medium text-red-400 hover:border-red-200 hover:text-red-500 transition-all"
+                      >
+                        <X className="h-3 w-3" /> Remove
+                      </button>
+                    )}
+                    <p className="text-[10px] text-black/30">PNG, JPG, or WebP · max 2 MB. Leave empty to use your account avatar.</p>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-black/60">Founder name</label>
+                <input maxLength={80} value={fName} onChange={(e) => setFName(e.target.value)}
+                  placeholder="Leave empty to use your account name"
+                  className={inputCls} />
+              </div>
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-black/60">Founder quote ({fQuote.length}/240)</label>
                 <textarea maxLength={240} rows={2} value={fQuote} onChange={(e) => setFQuote(e.target.value)}
@@ -334,10 +379,11 @@ function StartupCard({ startup, onUpdate, onDelete }: {
               <button type="button" onClick={saveFounder} disabled={savingFounder || !founderChanged}
                 className="inline-flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/80 transition-all disabled:opacity-40">
                 <Save className="h-3.5 w-3.5" />
-                {savingFounder ? "Saving…" : founderChanged ? "Save quote" : "Saved"}
+                {savingFounder ? "Saving…" : founderChanged ? "Save changes" : "Saved"}
               </button>
             </div>
           </div>
+
 
         </div>
       )}
