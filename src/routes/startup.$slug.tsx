@@ -86,15 +86,7 @@ function StartupPage() {
 
   return (
     <div className="min-h-screen bg-white text-black">
-      <nav className="border-b border-black/6 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-          <Link to="/" className="font-semibold tracking-tight">StartupBar</Link>
-          <div className="flex items-center gap-4 text-sm text-black/60">
-            <Link to="/network" className="hover:text-black">Network</Link>
-            <Link to="/leaderboard" className="hover:text-black">Leaderboard</Link>
-          </div>
-        </div>
-      </nav>
+      <SiteHeader />
 
       <main className="mx-auto max-w-6xl px-5 py-10 md:py-16">
         {/* HERO */}
