@@ -116,15 +116,18 @@ function isNew(createdAt: string) {
 
 function StartupCard({ s }: { s: Card }) {
   const fresh = isNew(s.created_at);
+  const profileHref = s.slug ? `/startup/${s.slug}` : undefined;
+  const visitHref = `/api/public/widget/click?id=${s.id}&source=dashboard`;
   return (
     <div className="group relative flex flex-col gap-3 sm:gap-5 rounded-2xl bg-white border border-black/[0.06] p-4 sm:p-6 hover:border-black/[0.12] hover:shadow-[0_12px_48px_rgba(0,0,0,0.07)] transition-all duration-300 h-full">
-      <a
-        href={`/api/public/widget/click?id=${s.id}&source=dashboard`}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label={`Visit ${s.name}`}
-        className="absolute inset-0 z-0"
-      />
+      {profileHref && (
+        <StartupProfileLink
+          slug={s.slug!}
+          className="absolute inset-0 z-0"
+        >
+          <span className="sr-only">View {s.name} profile</span>
+        </StartupProfileLink>
+      )}
       {fresh && (
         <span className="absolute top-3 right-3 z-20 text-[9px] font-semibold tracking-[0.12em] uppercase px-1.5 py-0.5 rounded-full bg-black text-white leading-none">
           New
@@ -151,14 +154,26 @@ function StartupCard({ s }: { s: Card }) {
         ) : (
           <span className="text-[11px] text-black/20 tracking-wide">Just joined</span>
         )}
-        {s.slug && (
-          <StartupProfileLink
-            slug={s.slug}
-            className="pointer-events-auto inline-flex items-center justify-center h-7 w-7 rounded-full bg-black text-white hover:bg-black/80 transition-colors"
+        <div className="flex items-center gap-1.5">
+          <a
+            href={visitHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Visit ${s.name} website`}
+            title="Visit website"
+            className="pointer-events-auto inline-flex items-center justify-center h-7 w-7 rounded-full border border-black/10 bg-white text-black/60 hover:text-black hover:border-black/30 transition-colors"
           >
-            <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.25} />
-          </StartupProfileLink>
-        )}
+            <Globe className="h-3.5 w-3.5" strokeWidth={2} />
+          </a>
+          {s.slug && (
+            <StartupProfileLink
+              slug={s.slug}
+              className="pointer-events-auto inline-flex items-center justify-center h-7 w-7 rounded-full bg-black text-white hover:bg-black/80 transition-colors"
+            >
+              <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.25} />
+            </StartupProfileLink>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -166,15 +181,17 @@ function StartupCard({ s }: { s: Card }) {
 
 
 function StartupRow({ s }: { s: Card }) {
+  const visitHref = `/api/public/widget/click?id=${s.id}&source=dashboard`;
   return (
     <div className="group relative flex items-center gap-4 py-3.5 border-b border-black/[0.05] last:border-0 transition-colors duration-150">
-      <a
-        href={`/api/public/widget/click?id=${s.id}&source=dashboard`}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label={`Visit ${s.name}`}
-        className="absolute inset-0 z-0"
-      />
+      {s.slug && (
+        <StartupProfileLink
+          slug={s.slug}
+          className="absolute inset-0 z-0"
+        >
+          <span className="sr-only">View {s.name} profile</span>
+        </StartupProfileLink>
+      )}
       <div className="relative z-10 shrink-0 w-9 h-9 rounded-lg overflow-hidden bg-black/[0.03] border border-black/[0.06] flex items-center justify-center pointer-events-none">
         <StartupFavicon url={s.website_url} name={s.name} logoUrl={s.logo_url} size={32} />
       </div>
@@ -194,6 +211,16 @@ function StartupRow({ s }: { s: Card }) {
             </span>
           )
           : <span className="text-[11px] text-black/18 tracking-wide">New</span>}
+        <a
+          href={visitHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`Visit ${s.name} website`}
+          title="Visit website"
+          className="pointer-events-auto inline-flex items-center justify-center h-7 w-7 rounded-full border border-black/10 bg-white text-black/60 hover:text-black hover:border-black/30 transition-colors"
+        >
+          <Globe className="h-3.5 w-3.5" strokeWidth={2} />
+        </a>
         {s.slug && (
           <StartupProfileLink
             slug={s.slug}
