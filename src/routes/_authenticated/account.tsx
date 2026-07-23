@@ -188,7 +188,7 @@ function StartupCard({ startup, onUpdate, onDelete }: {
 
       {expanded && (
         <div className="border-t border-black/6 px-5 py-5">
-          <form onSubmit={save} className="space-y-4">
+          <form onSubmit={onSubmitClick} className="space-y-4">
             <div>
               <label className="mb-2 block text-xs font-medium text-black/60">Startup logo</label>
               <div className="flex items-center gap-4">
