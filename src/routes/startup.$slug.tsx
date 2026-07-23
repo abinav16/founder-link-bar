@@ -189,10 +189,11 @@ function StartupPage() {
         {/* FOOTER CTA — varies by auth state */}
         <StartupPageCta name={s.name} authReady={authState.ready} isSignedIn={isSignedIn} isOwner={isOwner} slug={s.slug} />
       </main>
-      <SiteFooter />
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }
+
 
 function StartupPageCta({ name, authReady, isSignedIn, isOwner, slug }: { name: string; authReady: boolean; isSignedIn: boolean; isOwner: boolean; slug: string }) {
   const [copied, setCopied] = useState(false);
