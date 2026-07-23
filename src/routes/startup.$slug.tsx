@@ -390,7 +390,7 @@ function FounderSection({ s }: { s: { name: string; user_id: string | null; foun
           {s.founder_quote ? (
             <div className="relative">
               <Quote className="absolute -left-1 -top-2 h-5 w-5 text-black/10" />
-              <p className="pl-6 text-[17px] italic leading-relaxed text-black/75" style={{ fontFamily: "var(--font-display)" }}>
+              <p className="pl-6 text-[17px] italic leading-relaxed text-black/75" style={{ fontFamily: "var(--font-quote)" }}>
                 "{s.founder_quote}"
               </p>
             </div>
