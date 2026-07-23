@@ -433,6 +433,7 @@ function AccountPage() {
   }
 
   return (
+    <>
     <DashboardLayout>
       <div>
         <div>
