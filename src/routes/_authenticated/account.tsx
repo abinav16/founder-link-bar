@@ -251,7 +251,7 @@ function StartupCard({ startup, onUpdate, onDelete }: {
               <textarea required maxLength={100} rows={2} value={sDesc} onChange={(e) => setSDesc(e.target.value)} className={inputCls + " resize-none"} />
             </div>
 
-            <div className="flex items-center gap-3 pt-1">
+            <div className="flex flex-wrap items-center gap-2 pt-1">
               <button type="submit" disabled={saving || !hasChanges}
                 className="inline-flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/80 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
                 <Save className="h-3.5 w-3.5" />
@@ -264,7 +264,7 @@ function StartupCard({ startup, onUpdate, onDelete }: {
                   <Trash2 className="h-3.5 w-3.5" /> Delete
                 </button>
               ) : (
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="text-sm text-black/40">Sure?</span>
                   <button type="button" onClick={handleDelete} disabled={deleting}
                     className="rounded-lg bg-red-500 px-3 py-2 text-sm font-medium text-white hover:bg-red-600 transition-all disabled:opacity-50">
