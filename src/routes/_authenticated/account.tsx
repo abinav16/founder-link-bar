@@ -63,9 +63,7 @@ function StartupCard({ startup, onUpdate, onDelete }: {
   const [expanded, setExpanded] = useState(false);
   const [sName, setSName] = useState(startup.name);
   const [sDesc, setSDesc] = useState(startup.description);
-  const [fName, setFName] = useState(startup.founder_name ?? "");
   const [fQuote, setFQuote] = useState(startup.founder_quote ?? "");
-  const [fAvatar, setFAvatar] = useState(startup.founder_avatar_url ?? "");
   const [saving, setSaving] = useState(false);
   const [savingFounder, setSavingFounder] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -75,10 +73,7 @@ function StartupCard({ startup, onUpdate, onDelete }: {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const hasChanges = sName.trim() !== startup.name || sDesc.trim() !== startup.description;
-  const founderChanged =
-    fName.trim() !== (startup.founder_name ?? "") ||
-    fQuote.trim() !== (startup.founder_quote ?? "") ||
-    fAvatar.trim() !== (startup.founder_avatar_url ?? "");
+  const founderChanged = fQuote.trim() !== (startup.founder_quote ?? "");
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -96,11 +91,7 @@ function StartupCard({ startup, onUpdate, onDelete }: {
 
   async function saveFounder() {
     setSavingFounder(true);
-    const patch = {
-      founder_name: fName.trim() || null,
-      founder_quote: fQuote.trim() || null,
-      founder_avatar_url: fAvatar.trim() || null,
-    };
+    const patch = { founder_quote: fQuote.trim() || null };
     const { error } = await supabase.from("startups").update(patch as any).eq("id", startup.id);
     setSavingFounder(false);
     if (error) { toast.error(error.message); return; }
@@ -282,8 +273,8 @@ function StartupCard({ startup, onUpdate, onDelete }: {
           <div className="mt-6 border-t border-black/6 pt-5">
             <div className="mb-3 flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-black">Founder profile</p>
-                <p className="text-[11px] text-black/40">Shown on your public startup page.</p>
+                <p className="text-sm font-medium text-black">Founder quote</p>
+                <p className="text-[11px] text-black/40">Your account name and avatar are used automatically. Update them in Profile above.</p>
               </div>
               {startup.status === "approved" && startup.slug && (
                 <a href={`/startup/${startup.slug}`} target="_blank" rel="noopener noreferrer"
@@ -293,16 +284,6 @@ function StartupCard({ startup, onUpdate, onDelete }: {
               )}
             </div>
             <div className="space-y-3">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1.5 block text-xs font-medium text-black/60">Founder name</label>
-                  <input maxLength={80} value={fName} onChange={(e) => setFName(e.target.value)} placeholder="Jane Doe" className={inputCls} />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs font-medium text-black/60">Avatar URL</label>
-                  <input value={fAvatar} onChange={(e) => setFAvatar(e.target.value)} placeholder="https://..." className={inputCls} />
-                </div>
-              </div>
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-black/60">Founder quote ({fQuote.length}/240)</label>
                 <textarea maxLength={240} rows={2} value={fQuote} onChange={(e) => setFQuote(e.target.value)}
@@ -312,7 +293,7 @@ function StartupCard({ startup, onUpdate, onDelete }: {
               <button type="button" onClick={saveFounder} disabled={savingFounder || !founderChanged}
                 className="inline-flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/80 transition-all disabled:opacity-40">
                 <Save className="h-3.5 w-3.5" />
-                {savingFounder ? "Saving…" : founderChanged ? "Save founder info" : "Saved"}
+                {savingFounder ? "Saving…" : founderChanged ? "Save quote" : "Saved"}
               </button>
             </div>
           </div>

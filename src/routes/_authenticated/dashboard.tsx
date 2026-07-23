@@ -614,8 +614,8 @@ function DashboardPage() {
                   <User className="h-6 w-6 text-muted-foreground" />
                 </div>
                 <div className="flex-1 text-center md:text-left">
-                  <p className="text-[17px] font-semibold tracking-tight text-foreground">Your public page is missing your founder story</p>
-                  <p className="mt-0.5 max-w-lg text-sm leading-relaxed text-muted-foreground">Add a quote and photo. Visitors trust profiles with a face and a founder voice.</p>
+                  <p className="text-[17px] font-semibold tracking-tight text-foreground">Your public page is missing your founder quote</p>
+                  <p className="mt-0.5 max-w-lg text-sm leading-relaxed text-muted-foreground">Add one sentence on why you built it. Visitors trust profiles with a founder voice.</p>
                 </div>
                 <Link
                   to="/account"

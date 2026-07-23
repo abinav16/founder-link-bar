@@ -101,6 +101,20 @@ export const getStartupPage = createServerFn({ method: "GET" })
     const refs = ((referrersRes.data as any) ?? []) as StartupReferrer[];
     const pulse = Number(pulseRes.data ?? 0);
 
+    // Derive founder identity from the owner's auth account (name + avatar).
+    // The per-startup founder_quote remains the only startup-scoped field.
+    let founderName: string | null = null;
+    let founderAvatar: string | null = null;
+    if (row.user_id) {
+      try {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { data: u } = await supabaseAdmin.auth.admin.getUserById(row.user_id);
+        const meta = (u?.user?.user_metadata ?? {}) as Record<string, any>;
+        founderName = meta.full_name || meta.name || null;
+        founderAvatar = meta.avatar_url || meta.picture || null;
+      } catch { /* non-fatal */ }
+    }
+
     return {
       id: row.id,
       slug: row.slug,
@@ -110,9 +124,9 @@ export const getStartupPage = createServerFn({ method: "GET" })
       logo_url: row.logo_url,
       created_at: row.created_at,
       user_id: row.user_id ?? null,
-      founder_name: row.founder_name ?? null,
+      founder_name: founderName,
       founder_quote: row.founder_quote ?? null,
-      founder_avatar_url: row.founder_avatar_url ?? null,
+      founder_avatar_url: founderAvatar,
       iframe_blocked: row.iframe_blocked ?? null,
       impressions: Number(t.impressions ?? 0),
       clicks: Number(t.clicks ?? 0),
