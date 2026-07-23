@@ -104,23 +104,25 @@ export const getStartupPage = createServerFn({ method: "GET" })
 
     // Derive founder identity from the owner's auth account (name + avatar).
     // The per-startup founder_quote remains the only startup-scoped field.
+    // Uses a security-definer RPC (public_founder_info) so we don't depend on
+    // the service-role admin client, which isn't always available at runtime.
     let founderName: string | null = null;
     let founderAvatar: string | null = null;
     let founderTwitter: string | null = null;
     if (row.user_id) {
       try {
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const { data: u } = await supabaseAdmin.auth.admin.getUserById(row.user_id);
-        const meta = (u?.user?.user_metadata ?? {}) as Record<string, any>;
-        founderName = meta.full_name || meta.name || null;
-        founderAvatar = meta.avatar_url || meta.picture || null;
-        const rawTw = (meta.twitter_handle || meta.twitter || "").toString().trim();
+        const { data: fi } = await supabase.rpc("public_founder_info" as any, { _user_id: row.user_id });
+        const info = ((fi as any) ?? [])[0] ?? {};
+        founderName = (info.full_name as string) || null;
+        founderAvatar = (info.avatar_url as string) || null;
+        const rawTw = ((info.twitter_handle as string) || "").toString().trim();
         if (rawTw) {
           const handle = rawTw.replace(/^https?:\/\/(www\.)?(x|twitter)\.com\//i, "").replace(/^@/, "").replace(/\/.*$/, "").trim();
           founderTwitter = handle || null;
         }
       } catch { /* non-fatal */ }
     }
+
 
     return {
       id: row.id,
