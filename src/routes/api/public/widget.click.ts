@@ -40,8 +40,10 @@ export const Route = createFileRoute("/api/public/widget/click")({
         }
 
         dest.searchParams.set("utm_source", "startupbar");
-        dest.searchParams.set("utm_medium", source === "dashboard" ? "dashboard" : "bar");
-        dest.searchParams.set("utm_campaign", source === "dashboard" ? "dashboard" : "network");
+        const medium = source === "dashboard" ? "dashboard" : source === "profile" ? "profile" : source === "preview" ? "preview" : "bar";
+        const campaign = source === "dashboard" ? "dashboard" : source === "profile" || source === "preview" ? "profile" : "network";
+        dest.searchParams.set("utm_medium", medium);
+        dest.searchParams.set("utm_campaign", campaign);
         if (via) dest.searchParams.set("_sbvia", via.slice(0, 200));
         return new Response(null, { status: 302, headers: { Location: dest.toString(), "Cache-Control": "no-store" } });
       },
