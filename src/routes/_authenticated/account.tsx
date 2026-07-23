@@ -63,7 +63,11 @@ function StartupCard({ startup, onUpdate, onDelete }: {
   const [expanded, setExpanded] = useState(false);
   const [sName, setSName] = useState(startup.name);
   const [sDesc, setSDesc] = useState(startup.description);
+  const [fName, setFName] = useState(startup.founder_name ?? "");
+  const [fQuote, setFQuote] = useState(startup.founder_quote ?? "");
+  const [fAvatar, setFAvatar] = useState(startup.founder_avatar_url ?? "");
   const [saving, setSaving] = useState(false);
+  const [savingFounder, setSavingFounder] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -71,6 +75,10 @@ function StartupCard({ startup, onUpdate, onDelete }: {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const hasChanges = sName.trim() !== startup.name || sDesc.trim() !== startup.description;
+  const founderChanged =
+    fName.trim() !== (startup.founder_name ?? "") ||
+    fQuote.trim() !== (startup.founder_quote ?? "") ||
+    fAvatar.trim() !== (startup.founder_avatar_url ?? "");
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -85,6 +93,21 @@ function StartupCard({ startup, onUpdate, onDelete }: {
     toast.success("Changes submitted for review");
     onUpdate(startup.id, { name: sName.trim(), description: sDesc.trim(), status: "pending" });
   }
+
+  async function saveFounder() {
+    setSavingFounder(true);
+    const patch = {
+      founder_name: fName.trim() || null,
+      founder_quote: fQuote.trim() || null,
+      founder_avatar_url: fAvatar.trim() || null,
+    };
+    const { error } = await supabase.from("startups").update(patch as any).eq("id", startup.id);
+    setSavingFounder(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Founder profile updated");
+    onUpdate(startup.id, patch as any);
+  }
+
 
   async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
