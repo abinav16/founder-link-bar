@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { RefreshCw, ExternalLink, MousePointerClick, ImageOff } from "lucide-react";
+import { RefreshCw, ExternalLink, ImageOff } from "lucide-react";
 import { getStartupEmbedStatus } from "@/lib/startup-page.functions";
 
 export function StartupEmbed({ startupId, url, name, initialBlocked }: { startupId: string; url: string; name: string; initialBlocked?: boolean | null }) {
