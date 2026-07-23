@@ -307,15 +307,21 @@ function StartupCard({ startup, onUpdate, onDelete }: {
 function AccountPage() {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [startups, setStartups] = useState<Startup[]>([]);
   const [savingProfile, setSavingProfile] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     (async () => {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) return;
+      setUserId(u.user.id);
       setEmail(u.user.email ?? "");
       setName(u.user.user_metadata?.full_name ?? "");
+      setAvatarUrl(u.user.user_metadata?.avatar_url ?? u.user.user_metadata?.picture ?? null);
 
       const { data } = await supabase
         .from("startups").select("id, name, website_url, description, status, logo_url, user_id, slug, founder_name, founder_quote, founder_avatar_url").eq("user_id", u.user.id).order("created_at", { ascending: true });
@@ -330,6 +336,39 @@ function AccountPage() {
     setSavingProfile(false);
     if (error) toast.error(error.message);
     else toast.success("Profile updated");
+  }
+
+  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!userId) { toast.error("Please sign in again"); return; }
+    if (file.size > 2 * 1024 * 1024) { toast.error("Image must be under 2 MB"); return; }
+
+    setUploadingAvatar(true);
+    const ext = (file.name.split(".").pop() || "png").toLowerCase();
+    const path = `${userId}/avatar.${ext}`;
+    const { error: uploadErr } = await supabase.storage
+      .from("avatars")
+      .upload(path, file, { upsert: true, contentType: file.type });
+    if (uploadErr) { toast.error(uploadErr.message); setUploadingAvatar(false); return; }
+
+    const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
+    const bustedUrl = `${publicUrl}?t=${Date.now()}`;
+
+    const { error: metaErr } = await supabase.auth.updateUser({ data: { avatar_url: publicUrl } });
+    if (metaErr) { toast.error(metaErr.message); setUploadingAvatar(false); return; }
+
+    setAvatarUrl(bustedUrl);
+    toast.success("Profile picture updated");
+    setUploadingAvatar(false);
+    e.target.value = "";
+  }
+
+  async function removeAvatar() {
+    const { error } = await supabase.auth.updateUser({ data: { avatar_url: null } });
+    if (error) { toast.error(error.message); return; }
+    setAvatarUrl(null);
+    toast.success("Profile picture removed");
   }
 
   function handleUpdate(id: string, data: Partial<Startup>) {
@@ -352,18 +391,53 @@ function AccountPage() {
           <div className="grid gap-6 md:grid-cols-[220px_1fr]">
             <div>
               <h2 className="text-sm font-semibold text-black">Profile</h2>
-              <p className="mt-1 text-xs leading-relaxed text-black/40">Your name and email. Email cannot be changed.</p>
+              <p className="mt-1 text-xs leading-relaxed text-black/40">Your name, photo, and email. Email cannot be changed.</p>
             </div>
             <div className="rounded-xl border border-black/8 bg-white p-6">
               <form onSubmit={saveProfile} className="space-y-4">
                 <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-black/6">
-                    <User className="h-5 w-5 text-black/40" />
+                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-black/6">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center"><User className="h-5 w-5 text-black/40" /></div>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-black truncate">{name || "—"}</p>
                     <p className="text-xs text-black/40 truncate">{email}</p>
                   </div>
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-black/60">Profile picture</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      ref={avatarInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      className="hidden"
+                      onChange={handleAvatarUpload}
+                    />
+                    <button
+                      type="button"
+                      disabled={uploadingAvatar}
+                      onClick={() => avatarInputRef.current?.click()}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-black/12 px-3 py-1.5 text-xs font-medium text-black/60 hover:border-black/25 hover:text-black transition-all disabled:opacity-40"
+                    >
+                      <Upload className="h-3 w-3" />
+                      {uploadingAvatar ? "Uploading…" : avatarUrl ? "Replace photo" : "Upload photo"}
+                    </button>
+                    {avatarUrl && (
+                      <button
+                        type="button"
+                        onClick={removeAvatar}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-red-100 px-3 py-1.5 text-xs font-medium text-red-400 hover:border-red-200 hover:text-red-500 transition-all"
+                      >
+                        <X className="h-3 w-3" /> Remove
+                      </button>
+                    )}
+                  </div>
+                  <p className="mt-1.5 text-[10px] text-black/30">PNG, JPG, WebP or GIF · max 2 MB. Shown as your founder photo on public startup pages.</p>
                 </div>
                 <div>
                   <label className="mb-1.5 block text-xs font-medium text-black/60">Display name</label>
