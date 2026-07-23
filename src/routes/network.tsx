@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { getNetworkDashboard, type NetworkDashboardResult } from "@/lib/network-dashboard.functions";
@@ -65,6 +65,9 @@ export const Route = createFileRoute("/network")({
     links: [{ rel: "canonical", href: "https://startupbar.co/network" }],
   }),
   loader: () => getNetworkDashboard({}),
+  pendingMs: 0,
+  pendingMinMs: 300,
+  pendingComponent: NetworkPending,
 
   component: NetworkDashboardPage,
 });
@@ -76,6 +79,35 @@ function fmt(n: number) {
 }
 
 type Card = NetworkDashboardResult["recentStartups"][0];
+
+function useHydrated() {
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
+  return hydrated;
+}
+
+function StartupProfileLink({ slug, children, className }: { slug: string; children: ReactNode; className?: string }) {
+  const hydrated = useHydrated();
+  const navigate = useNavigate();
+
+  if (!hydrated) {
+    return (
+      <span aria-disabled="true" className={className}>
+        {children}
+      </span>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => navigate({ to: "/startup/$slug", params: { slug } })}
+      className={`${className ?? ""} appearance-none border-0 bg-transparent p-0 text-left cursor-pointer`}
+    >
+      {children}
+    </button>
+  );
+}
 
 function isNew(createdAt: string) {
   return Date.now() - new Date(createdAt).getTime() < 7 * 24 * 60 * 60 * 1000;
@@ -119,12 +151,12 @@ function StartupCard({ s }: { s: Card }) {
           <span className="text-[11px] text-black/20 tracking-wide">Just joined</span>
         )}
         {s.slug && (
-          <a
-            href={`/startup/${s.slug}`}
+          <StartupProfileLink
+            slug={s.slug}
             className="pointer-events-auto text-[10px] font-medium text-black/35 hover:text-black transition-colors"
           >
             Profile →
-          </a>
+          </StartupProfileLink>
         )}
       </div>
     </div>
@@ -157,9 +189,12 @@ function StartupRow({ s }: { s: Card }) {
           ? <span className="text-[11px] text-black/30 font-medium tabular-nums">{s.impressions_24h} seen</span>
           : <span className="text-[11px] text-black/18 tracking-wide">New</span>}
         {s.slug && (
-          <a href={`/startup/${s.slug}`} className="pointer-events-auto text-[10px] font-medium text-black/30 hover:text-black transition-colors">
+          <StartupProfileLink
+            slug={s.slug}
+            className="pointer-events-auto text-[10px] font-medium text-black/30 hover:text-black transition-colors"
+          >
             Profile
-          </a>
+          </StartupProfileLink>
         )}
       </div>
     </div>

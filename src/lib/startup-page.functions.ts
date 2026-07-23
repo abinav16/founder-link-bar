@@ -97,20 +97,6 @@ export const getStartupPage = createServerFn({ method: "GET" })
       supabase.rpc("public_startup_pulse" as any, { _startup_id: row.id }),
     ]);
 
-    let iframeBlocked: boolean | null = row.iframe_blocked ?? null;
-    if (iframeBlocked === null) {
-      try {
-        iframeBlocked = await probeIframeBlocked(row.website_url);
-        // write-through cache using admin (bypasses RLS)
-        try {
-          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-          await supabaseAdmin.from("startups").update({ iframe_blocked: iframeBlocked } as any).eq("id", row.id);
-        } catch { /* non-fatal */ }
-      } catch {
-        iframeBlocked = null;
-      }
-    }
-
     const t = ((totalsRes.data as any) ?? [])[0] ?? {};
     const refs = ((referrersRes.data as any) ?? []) as StartupReferrer[];
     const pulse = Number(pulseRes.data ?? 0);
@@ -127,7 +113,7 @@ export const getStartupPage = createServerFn({ method: "GET" })
       founder_name: row.founder_name ?? null,
       founder_quote: row.founder_quote ?? null,
       founder_avatar_url: row.founder_avatar_url ?? null,
-      iframe_blocked: iframeBlocked,
+      iframe_blocked: row.iframe_blocked ?? null,
       impressions: Number(t.impressions ?? 0),
       clicks: Number(t.clicks ?? 0),
       impressions_given: Number(t.impressions_given ?? 0),
@@ -135,6 +121,29 @@ export const getStartupPage = createServerFn({ method: "GET" })
       referrers: refs.map((r) => ({ ...r, cnt: Number(r.cnt) })),
       pulse,
     };
+  });
+
+export const getStartupEmbedStatus = createServerFn({ method: "GET" })
+  .inputValidator((d: { id: string }) => d)
+  .handler(async ({ data }): Promise<boolean> => {
+    const supabase = getClient();
+    const { data: s } = await supabase
+      .from("startups")
+      .select("id, website_url, iframe_blocked" as any)
+      .eq("id", data.id)
+      .eq("status", "approved")
+      .maybeSingle();
+
+    if (!s) return true;
+    const row = s as any;
+    if (row.iframe_blocked !== null && row.iframe_blocked !== undefined) return Boolean(row.iframe_blocked);
+
+    const iframeBlocked = await probeIframeBlocked(row.website_url);
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      await supabaseAdmin.from("startups").update({ iframe_blocked: iframeBlocked } as any).eq("id", row.id);
+    } catch { /* non-fatal */ }
+    return iframeBlocked;
   });
 
 export const getStartupPulse = createServerFn({ method: "GET" })

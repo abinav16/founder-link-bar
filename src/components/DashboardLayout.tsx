@@ -140,7 +140,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       </header>
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
-        <div key={path} className="page-enter">
+        <div className="page-enter">
           {children}
         </div>
       </main>
