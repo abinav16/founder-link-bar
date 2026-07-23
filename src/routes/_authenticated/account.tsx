@@ -558,5 +558,6 @@ function AccountPage() {
       onCancel={() => setPendingAvatarFile(null)}
       onConfirm={uploadCroppedAvatar}
     />
+    </>
   );
 }
