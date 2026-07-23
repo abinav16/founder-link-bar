@@ -12,6 +12,7 @@ function getClient() {
 
 export interface LeaderboardRow {
   id: string;
+  slug: string | null;
   name: string;
   website_url: string;
   description: string;
@@ -29,8 +30,9 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
 
   const { data: startups, error } = await supabase
     .from("startups")
-    .select("id, name, website_url, description, logo_url, created_at")
+    .select("id, slug, name, website_url, description, logo_url, created_at")
     .eq("status", "approved");
+
 
   if (error) throw error;
 
