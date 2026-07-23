@@ -97,7 +97,7 @@ function RootShell({ children }: { children: ReactNode }) {
             client rerender that looks like the page loads twice. */}
 
       </head>
-      <body>{children}<Scripts /></body>
+      <body suppressHydrationWarning>{children}<Scripts /></body>
     </html>
   );
 }
