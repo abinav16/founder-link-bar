@@ -64,8 +64,9 @@ async function loadTrafficBreakdown(startupId: string): Promise<TrafficBreakdown
   const [impsR, clksR] = await Promise.all([
     supabase
       .from("impressions")
-      .select("country, device, host_startup_id")
+      .select("country, device, host_startup_id, referrer")
       .eq("shown_startup_id", startupId)
+      .neq("referrer", "dev-simulate")
       .limit(2000),
     supabase
       .from("clicks")
@@ -135,9 +136,9 @@ async function loadDashboardData(startupId: string) {
   since.setHours(0, 0, 0, 0);
 
   const [impsR, clksR, dailyR, rankR, current, breakdown] = await Promise.all([
-    supabase.from("impressions").select("*", { count: "exact", head: true }).eq("shown_startup_id", startupId),
+    supabase.from("impressions").select("*", { count: "exact", head: true }).eq("shown_startup_id", startupId).neq("referrer", "dev-simulate"),
     supabase.from("clicks").select("*", { count: "exact", head: true }).eq("shown_startup_id", startupId),
-    supabase.from("impressions").select("created_at").eq("shown_startup_id", startupId).gte("created_at", since.toISOString()),
+    supabase.from("impressions").select("created_at").eq("shown_startup_id", startupId).neq("referrer", "dev-simulate").gte("created_at", since.toISOString()),
     supabase.rpc("get_startup_rank", { _startup_id: startupId }),
     fetch(`/api/public/widget/pick?host=${startupId}&preview=true`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
     loadTrafficBreakdown(startupId),
@@ -624,7 +625,7 @@ function DashboardPage() {
               </div>
             </div>
 
-            <LiveVisitorMap scopeStartupId={startup.id} title="Live visitors on your startup" devSimulate startupName={startup.name} startupLogoUrl={startup.logo_url ?? undefined} />
+            <LiveVisitorMap scopeStartupId={startup.id} title="Live visitors on your startup" startupName={startup.name} startupLogoUrl={startup.logo_url ?? undefined} />
 
             {(breakdown.countries.length > 0 || breakdown.topReferrers.length > 0) && (
               <div className="space-y-3">

@@ -585,6 +585,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
         .from("impressions")
         .select("id, country, device, host_startup_id, referrer, path, created_at")
         .gte("created_at", startOfDay.toISOString())
+        .neq("referrer", "dev-simulate")
         .order("created_at", { ascending: false })
         .limit(5000);
       // Dashboard scope: show all visits that happened ON this startup's site
