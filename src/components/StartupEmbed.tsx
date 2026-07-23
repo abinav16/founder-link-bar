@@ -136,11 +136,11 @@ export function StartupEmbed({ startupId, url, name, initialBlocked }: { startup
         {!interactive && (
           <button
             onClick={() => setInteractive(true)}
-            className="absolute inset-0 flex items-center justify-center bg-black/0 transition hover:bg-black/[0.02]"
+            className="group absolute inset-0 flex items-start justify-end p-3 transition"
             aria-label="Click to interact"
           >
-            <span className="pointer-events-none inline-flex items-center gap-2 rounded-full bg-black/85 px-4 py-2 text-xs font-medium text-white shadow-lg backdrop-blur">
-              <MousePointerClick className="h-3.5 w-3.5" /> Click to interact
+            <span className="pointer-events-none inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-medium text-black shadow-md ring-1 ring-black/10 backdrop-blur transition group-hover:bg-white">
+              <MousePointerClick className="h-3 w-3" /> Click to interact
             </span>
           </button>
         )}
