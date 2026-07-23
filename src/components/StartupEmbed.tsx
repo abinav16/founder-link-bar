@@ -4,7 +4,6 @@ import { RefreshCw, ExternalLink, MousePointerClick, ImageOff } from "lucide-rea
 import { getStartupEmbedStatus } from "@/lib/startup-page.functions";
 
 export function StartupEmbed({ startupId, url, name, initialBlocked }: { startupId: string; url: string; name: string; initialBlocked?: boolean | null }) {
-  const [interactive, setInteractive] = useState(false);
   const [blocked, setBlocked] = useState<boolean | null>(initialBlocked ?? null);
   const [reloadKey, setReloadKey] = useState(0);
   const [loaded, setLoaded] = useState(false);
