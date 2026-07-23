@@ -387,18 +387,23 @@ function AccountPage() {
     else { setTwitter(handle); toast.success("Profile updated"); }
   }
 
-  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleAvatarPick(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
     if (!userId) { toast.error("Please sign in again"); return; }
-    if (file.size > 2 * 1024 * 1024) { toast.error("Image must be under 2 MB"); return; }
+    if (!file.type.startsWith("image/")) { toast.error("Please choose an image"); return; }
+    setPendingAvatarFile(file);
+  }
 
+  async function uploadCroppedAvatar(blob: Blob) {
+    setPendingAvatarFile(null);
+    if (!userId) return;
     setUploadingAvatar(true);
-    const ext = (file.name.split(".").pop() || "png").toLowerCase();
-    const path = `${userId}/avatar.${ext}`;
+    const path = `${userId}/avatar.jpg`;
     const { error: uploadErr } = await supabase.storage
       .from("avatars")
-      .upload(path, file, { upsert: true, contentType: file.type });
+      .upload(path, blob, { upsert: true, contentType: "image/jpeg" });
     if (uploadErr) { toast.error(uploadErr.message); setUploadingAvatar(false); return; }
 
     const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
@@ -410,7 +415,6 @@ function AccountPage() {
     setAvatarUrl(bustedUrl);
     toast.success("Profile picture updated");
     setUploadingAvatar(false);
-    e.target.value = "";
   }
 
   async function removeAvatar() {
