@@ -110,14 +110,6 @@ export function StartupEmbed({ startupId, url, name, initialBlocked }: { startup
           <span className="ml-2 truncate text-[11px] text-black/40">{normalized}</span>
         </div>
         <div className="flex items-center gap-1">
-          {!interactive && (
-            <button
-              onClick={() => setInteractive(true)}
-              className="mr-1 inline-flex items-center gap-1.5 rounded-md bg-black px-2.5 py-1 text-[11px] font-medium text-white hover:bg-black/85"
-            >
-              <MousePointerClick className="h-3 w-3" /> Click to interact
-            </button>
-          )}
           <button onClick={() => { setLoaded(false); setReloadKey((k) => k + 1); }}
             className="rounded-md p-1.5 text-black/40 hover:bg-black/5 hover:text-black">
             <RefreshCw className="h-3.5 w-3.5" />
@@ -144,9 +136,13 @@ export function StartupEmbed({ startupId, url, name, initialBlocked }: { startup
         {!interactive && (
           <button
             onClick={() => setInteractive(true)}
-            className="absolute inset-0"
+            className="absolute inset-0 flex items-center justify-center bg-black/0 transition hover:bg-black/[0.02]"
             aria-label="Click to interact"
-          />
+          >
+            <span className="pointer-events-none inline-flex items-center gap-2 rounded-full bg-black/85 px-4 py-2 text-xs font-medium text-white shadow-lg backdrop-blur">
+              <MousePointerClick className="h-3.5 w-3.5" /> Click to interact
+            </span>
+          </button>
         )}
       </div>
     </div>
