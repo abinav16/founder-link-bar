@@ -625,7 +625,7 @@ function DashboardPage() {
               </div>
             </div>
 
-            <LiveVisitorMap scopeStartupId={startup.id} title="Live visitors on your startup" devSimulate startupName={startup.name} startupLogoUrl={startup.logo_url ?? undefined} />
+            <LiveVisitorMap scopeStartupId={startup.id} title="Live visitors on your startup" startupName={startup.name} startupLogoUrl={startup.logo_url ?? undefined} />
 
             {(breakdown.countries.length > 0 || breakdown.topReferrers.length > 0) && (
               <div className="space-y-3">
