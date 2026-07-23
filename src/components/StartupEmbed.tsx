@@ -136,7 +136,3 @@ export function StartupEmbed({ startupId, url, name, initialBlocked }: { startup
     </div>
   );
 }
-      </div>
-    </div>
-  );
-}
