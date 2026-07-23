@@ -307,6 +307,7 @@ function StartupCard({ startup, onUpdate, onDelete }: {
 function AccountPage() {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
+  const [twitter, setTwitter] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [startups, setStartups] = useState<Startup[]>([]);
   const [savingProfile, setSavingProfile] = useState(false);
@@ -321,6 +322,7 @@ function AccountPage() {
       setUserId(u.user.id);
       setEmail(u.user.email ?? "");
       setName(u.user.user_metadata?.full_name ?? "");
+      setTwitter(u.user.user_metadata?.twitter_handle ?? "");
       setAvatarUrl(u.user.user_metadata?.avatar_url ?? u.user.user_metadata?.picture ?? null);
 
       const { data } = await supabase
@@ -329,13 +331,18 @@ function AccountPage() {
     })();
   }, []);
 
+  function normalizeTwitter(input: string): string {
+    return input.trim().replace(/^https?:\/\/(www\.)?(x|twitter)\.com\//i, "").replace(/^@/, "").replace(/\/.*$/, "").trim();
+  }
+
   async function saveProfile(e: React.FormEvent) {
     e.preventDefault();
     setSavingProfile(true);
-    const { error } = await supabase.auth.updateUser({ data: { full_name: name } });
+    const handle = normalizeTwitter(twitter);
+    const { error } = await supabase.auth.updateUser({ data: { full_name: name, twitter_handle: handle || null } });
     setSavingProfile(false);
     if (error) toast.error(error.message);
-    else toast.success("Profile updated");
+    else { setTwitter(handle); toast.success("Profile updated"); }
   }
 
   async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
