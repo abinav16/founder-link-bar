@@ -101,10 +101,10 @@ function StartupPage() {
   const external = s.website_url.startsWith("http") ? s.website_url : `https://${s.website_url}`;
 
   return (
-    <div className="min-h-screen bg-white text-black">
-      <SiteHeader />
-
+    <DashboardLayout>
+      <div className="-mx-4 -my-6 sm:-mx-6 sm:-my-8 bg-white text-black">
       <main className="mx-auto max-w-6xl px-5 pt-10 md:pt-16 pb-8">
+
         {/* HERO */}
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-start gap-5">
