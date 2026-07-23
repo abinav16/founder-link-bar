@@ -101,17 +101,17 @@ export const getStartupPage = createServerFn({ method: "GET" })
     const refs = ((referrersRes.data as any) ?? []) as StartupReferrer[];
     const pulse = Number(pulseRes.data ?? 0);
 
-    // Founder identity: prefer startup-scoped overrides, fall back to
-    // the owner's auth account (name + avatar) when not set.
-    let founderName: string | null = row.founder_name ?? null;
-    let founderAvatar: string | null = row.founder_avatar_url ?? null;
-    if ((!founderName || !founderAvatar) && row.user_id) {
+    // Derive founder identity from the owner's auth account (name + avatar).
+    // The per-startup founder_quote remains the only startup-scoped field.
+    let founderName: string | null = null;
+    let founderAvatar: string | null = null;
+    if (row.user_id) {
       try {
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { data: u } = await supabaseAdmin.auth.admin.getUserById(row.user_id);
         const meta = (u?.user?.user_metadata ?? {}) as Record<string, any>;
-        if (!founderName) founderName = meta.full_name || meta.name || null;
-        if (!founderAvatar) founderAvatar = meta.avatar_url || meta.picture || null;
+        founderName = meta.full_name || meta.name || null;
+        founderAvatar = meta.avatar_url || meta.picture || null;
       } catch { /* non-fatal */ }
     }
 
