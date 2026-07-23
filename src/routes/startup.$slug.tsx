@@ -170,19 +170,19 @@ function StartupPage() {
   return (
     <DashboardLayout>
       <div className="-mx-4 -my-6 sm:-mx-6 sm:-my-8 bg-white text-black">
-      <main className="mx-auto max-w-6xl px-5 pt-10 md:pt-16 pb-8">
+      <main className="mx-auto max-w-6xl px-4 sm:px-5 pt-8 md:pt-16 pb-8">
 
         {/* HERO */}
-        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-start gap-5">
-            <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-black/8 bg-black/[0.02]">
+        <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-start gap-3 sm:gap-5 min-w-0">
+            <div className="h-14 w-14 sm:h-20 sm:w-20 shrink-0 overflow-hidden rounded-2xl border border-black/8 bg-black/[0.02]">
               <StartupFavicon url={s.website_url} name={s.name} logoUrl={s.logo_url} size={80} />
             </div>
-            <div className="min-w-0">
-              <h1 className="text-3xl font-semibold tracking-tight md:text-4xl" style={{ fontFamily: "var(--font-display)" }}>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight break-words" style={{ fontFamily: "var(--font-display)" }}>
                 {s.name}
               </h1>
-              <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-black/60">{s.description}</p>
+              <p className="mt-2 max-w-xl text-[14px] sm:text-[15px] leading-relaxed text-black/60">{s.description}</p>
               <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-black/45">
                 <span className="inline-flex items-center gap-1 rounded-full bg-black/5 px-2.5 py-1">
                   <Calendar className="h-3 w-3" /> Joined {joined}
@@ -200,13 +200,13 @@ function StartupPage() {
             </div>
           </div>
           <a href={`/api/public/widget/click?id=${s.id}&source=profile`} target="_blank" rel="noopener noreferrer"
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-black px-4 py-2.5 text-sm font-medium text-white hover:bg-black/85">
+            className="inline-flex w-full md:w-auto justify-center shrink-0 items-center gap-1.5 rounded-xl bg-black px-4 py-2.5 text-sm font-medium text-white hover:bg-black/85">
             Visit site <ExternalLink className="h-3.5 w-3.5" />
           </a>
         </div>
 
         {/* STATS */}
-        <div className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-5">
+        <div className="mt-8 sm:mt-10 grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-5">
           <Stat label="Impressions received" value={fmt(s.impressions)} sub="in others' bars" />
           <Stat label="Impressions contributed" value={fmt(s.impressions_given)} sub="shown from this site" />
           <Stat label="Clicks received" value={fmt(s.clicks)} sub="landings via StartupBar" />
@@ -280,17 +280,17 @@ function StartupPageCta({ name, authReady, isSignedIn, isOwner, slug }: { name: 
 
   if (isOwner) {
     return (
-      <div className="mt-16 rounded-2xl border border-black/8 bg-gradient-to-br from-black to-black/85 text-white p-8 text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/50">This is your page</p>
-        <h3 className="mt-2 text-2xl font-semibold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+      <div className="mt-12 sm:mt-16 rounded-2xl border border-black/8 bg-gradient-to-br from-black to-black/85 text-white p-6 sm:p-8 text-center">
+        <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.14em] text-white/50">This is your page</p>
+        <h3 className="mt-2 text-xl sm:text-2xl font-semibold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
           Share {name} with the world
         </h3>
-        <p className="mt-2 text-sm text-white/60">Post it on X, LinkedIn, or your launch thread — every visit here counts toward your traffic.</p>
-        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-          <button onClick={copyLink} className="inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black hover:bg-white/90">
+        <p className="mt-2 text-[13px] sm:text-sm text-white/60">Post it on X, LinkedIn, or your launch thread — every visit here counts toward your traffic.</p>
+        <div className="mt-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2">
+          <button onClick={copyLink} className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-white px-4 py-2.5 text-sm font-medium text-black hover:bg-white/90">
             {copied ? <><Check className="h-3.5 w-3.5" /> Copied</> : <><Share2 className="h-3.5 w-3.5" /> Copy page link</>}
           </button>
-          <Link to="/dashboard" className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 px-4 py-2 text-sm font-medium text-white hover:bg-white/10">
+          <Link to="/dashboard" className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-white/20 px-4 py-2.5 text-sm font-medium text-white hover:bg-white/10">
             <LayoutDashboard className="h-3.5 w-3.5" /> Open dashboard
           </Link>
         </div>
@@ -300,18 +300,18 @@ function StartupPageCta({ name, authReady, isSignedIn, isOwner, slug }: { name: 
 
   if (isSignedIn) {
     return (
-      <div className="mt-16 rounded-2xl border border-black/8 bg-black text-white p-8 text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/50">Enjoying {name}?</p>
-        <h3 className="mt-2 text-3xl font-semibold" style={{ fontFamily: '"SF Pro Rounded", ui-rounded, "Nunito", "Quicksand", system-ui, sans-serif' }}>
+      <div className="mt-12 sm:mt-16 rounded-2xl border border-black/8 bg-black text-white p-6 sm:p-8 text-center">
+        <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.14em] text-white/50">Enjoying {name}?</p>
+        <h3 className="mt-2 text-2xl sm:text-3xl font-semibold" style={{ fontFamily: '"SF Pro Rounded", ui-rounded, "Nunito", "Quicksand", system-ui, sans-serif' }}>
           Send some traffic their way
         </h3>
-        <p className="mt-2 text-sm text-white/60">Share this page with your network, or head to your dashboard to check your own numbers.</p>
+        <p className="mt-2 text-[13px] sm:text-sm text-white/60">Share this page with your network, or head to your dashboard to check your own numbers.</p>
 
-        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-          <button onClick={copyLink} className="inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black hover:bg-white/90">
+        <div className="mt-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2">
+          <button onClick={copyLink} className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-white px-4 py-2.5 text-sm font-medium text-black hover:bg-white/90">
             {copied ? <><Check className="h-3.5 w-3.5" /> Copied</> : <><Share2 className="h-3.5 w-3.5" /> Share this page</>}
           </button>
-          <Link to="/dashboard" className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 px-4 py-2 text-sm font-medium text-white hover:bg-white/10">
+          <Link to="/dashboard" className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-white/20 px-4 py-2.5 text-sm font-medium text-white hover:bg-white/10">
             <LayoutDashboard className="h-3.5 w-3.5" /> My dashboard
           </Link>
         </div>
@@ -321,13 +321,13 @@ function StartupPageCta({ name, authReady, isSignedIn, isOwner, slug }: { name: 
 
   // Signed-out: original acquisition CTA
   return (
-    <div className="mt-16 rounded-2xl border border-black/8 bg-black text-white p-8 text-center">
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/50">Want a page like this?</p>
-      <h3 className="mt-2 text-2xl font-semibold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+    <div className="mt-12 sm:mt-16 rounded-2xl border border-black/8 bg-black text-white p-6 sm:p-8 text-center">
+      <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.14em] text-white/50">Want a page like this?</p>
+      <h3 className="mt-2 text-xl sm:text-2xl font-semibold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
         Join StartupBar
       </h3>
-      <p className="mt-2 text-sm text-white/60">Exchange traffic with other founders. Every embed unlocks a public page like {name}'s.</p>
-      <Link to="/apply" className="mt-5 inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black hover:bg-white/90">
+      <p className="mt-2 text-[13px] sm:text-sm text-white/60">Exchange traffic with other founders. Every embed unlocks a public page like {name}'s.</p>
+      <Link to="/apply" className="mt-5 inline-flex w-full sm:w-auto items-center justify-center gap-1.5 rounded-lg bg-white px-4 py-2.5 text-sm font-medium text-black hover:bg-white/90">
         Apply your startup <ArrowUpRight className="h-3.5 w-3.5" />
       </Link>
     </div>
@@ -367,22 +367,22 @@ function FounderSection({ s }: { s: { name: string; user_id: string | null; foun
   const initial = (s.founder_name || s.name).charAt(0).toUpperCase();
 
   return (
-    <div className="mt-10 rounded-2xl border border-black/8 bg-gradient-to-br from-black/[0.02] to-transparent p-6 md:p-8">
+    <div className="mt-10 rounded-2xl border border-black/8 bg-gradient-to-br from-black/[0.02] to-transparent p-5 sm:p-6 md:p-8">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/40">
           <User className="h-3.5 w-3.5" /> Founder
         </div>
         {isOwner && (
           <Link to="/account" className="inline-flex items-center gap-1.5 rounded-lg border border-black/10 bg-white px-3 py-1.5 text-xs font-medium text-black/70 hover:border-black/25 hover:text-black">
-            <Pencil className="h-3 w-3" /> {hasAny ? "Edit your story" : "Add your story"}
+            <Pencil className="h-3 w-3" /> <span className="hidden sm:inline">{hasAny ? "Edit your story" : "Add your story"}</span><span className="sm:hidden">{hasAny ? "Edit" : "Add"}</span>
           </Link>
         )}
       </div>
-      <div className="flex items-start gap-5">
+      <div className="flex items-start gap-4 sm:gap-5">
         {s.founder_avatar_url ? (
-          <img src={s.founder_avatar_url} alt={s.founder_name || "Founder"} className="h-16 w-16 shrink-0 rounded-full object-cover ring-2 ring-white shadow" />
+          <img src={s.founder_avatar_url} alt={s.founder_name || "Founder"} className="h-12 w-12 sm:h-16 sm:w-16 shrink-0 rounded-full object-cover ring-2 ring-white shadow" />
         ) : (
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-black/8 text-lg font-semibold text-black/40">
+          <div className="flex h-12 w-12 sm:h-16 sm:w-16 shrink-0 items-center justify-center rounded-full bg-black/8 text-lg font-semibold text-black/40">
             {initial}
           </div>
         )}
@@ -390,7 +390,7 @@ function FounderSection({ s }: { s: { name: string; user_id: string | null; foun
           {s.founder_quote ? (
             <div className="relative">
               <Quote className="absolute -left-1 -top-2 h-5 w-5 text-black/10" />
-              <p className="pl-6 text-[17px] italic leading-relaxed text-black/75" style={{ fontFamily: "var(--font-quote)" }}>
+              <p className="pl-5 sm:pl-6 text-[15px] sm:text-[17px] italic leading-relaxed text-black/75" style={{ fontFamily: "var(--font-quote)" }}>
                 "{s.founder_quote}"
               </p>
             </div>

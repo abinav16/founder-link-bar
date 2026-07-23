@@ -609,7 +609,7 @@ function NetworkDashboardPage() {
 
         <div>
           <SectionLabel title="Recently Joined" />
-          <div className="sm:hidden rounded-2xl bg-white border border-black/[0.06] px-6 py-2">
+          <div className="sm:hidden rounded-2xl bg-white border border-black/[0.06] px-4 py-2">
             {data.recentStartups.slice(0, 3).map((s) => <StartupRow key={s.id} s={s} />)}
           </div>
           <div className="hidden sm:grid gap-4 sm:grid-cols-3">
@@ -625,11 +625,13 @@ function NetworkDashboardPage() {
         )}
 
         <div>
-          <div className="flex items-center gap-3 mb-6">
-            <h2 className="text-[11px] font-semibold text-black/30 uppercase tracking-[0.12em] shrink-0">Startups in Network</h2>
-            <span className="text-[11px] text-black/20 font-medium">{allStartups.length}</span>
-            <div className="flex-1 h-px bg-black/[0.05]" />
-            <div className="relative shrink-0 w-[200px] sm:w-[280px]">
+          <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <h2 className="text-[11px] font-semibold text-black/30 uppercase tracking-[0.12em] shrink-0">Startups in Network</h2>
+              <span className="text-[11px] text-black/20 font-medium">{allStartups.length}</span>
+              <div className="hidden sm:block flex-1 h-px bg-black/[0.05]" />
+            </div>
+            <div className="relative shrink-0 w-full sm:w-[280px] sm:ml-auto">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-black/30" strokeWidth={2} />
               <input
                 type="text"
@@ -651,7 +653,7 @@ function NetworkDashboardPage() {
             </div>
           </div>
           {filtered.length > 0 ? (
-            <div className="rounded-2xl bg-white border border-black/[0.06] px-6 py-2">
+            <div className="rounded-2xl bg-white border border-black/[0.06] px-4 sm:px-6 py-2">
               {filtered.map((s) => <StartupRow key={s.id} s={s} />)}
             </div>
           ) : (
