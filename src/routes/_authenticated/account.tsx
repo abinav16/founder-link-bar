@@ -24,7 +24,12 @@ interface Startup {
   status: "pending" | "approved" | "rejected";
   logo_url: string | null;
   user_id: string;
+  slug: string | null;
+  founder_name: string | null;
+  founder_quote: string | null;
+  founder_avatar_url: string | null;
 }
+
 
 const inputCls = "w-full rounded-lg border border-black/12 bg-white px-3.5 py-2.5 text-sm text-black placeholder:text-black/45 outline-none transition focus:border-black/30 focus:ring-2 focus:ring-black/8 disabled:bg-black/[0.03] disabled:text-black/40";
 
