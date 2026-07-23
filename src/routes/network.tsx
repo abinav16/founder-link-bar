@@ -143,7 +143,7 @@ function StartupRow({ s }: { s: Card }) {
         className="absolute inset-0 z-0"
       />
       <div className="relative z-10 shrink-0 w-9 h-9 rounded-lg overflow-hidden bg-black/[0.03] border border-black/[0.06] flex items-center justify-center pointer-events-none">
-        <StartupFavicon url={s.website_url} name={s.name} size={32} />
+        <StartupFavicon url={s.website_url} name={s.name} logoUrl={s.logo_url} size={32} />
       </div>
       <div className="relative z-10 min-w-0 flex-1 pointer-events-none">
         <div className="flex items-center gap-1.5">
