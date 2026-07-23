@@ -43,14 +43,12 @@ export function StartupEmbed({ url, name, initialBlocked }: { url: string; name:
               loading="lazy"
             />
           )}
-          <div className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between gap-2 bg-gradient-to-b from-black/60 to-transparent px-4 py-3">
-            <span className="rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-black/60 backdrop-blur">
-              Live snapshot
-            </span>
-          </div>
         </div>
         <div className="flex items-center justify-between gap-3 border-t border-black/10 bg-white/95 px-4 py-3 backdrop-blur">
           <div className="min-w-0">
+            <span className="mb-1 inline-flex rounded-full bg-black/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-black/60">
+              Live snapshot
+            </span>
             <p className="truncate text-sm font-medium text-black">{host}</p>
             <p className="truncate text-xs text-black/45">This site can't be embedded — open it in a new tab.</p>
           </div>
