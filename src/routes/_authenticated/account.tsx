@@ -552,5 +552,10 @@ function AccountPage() {
         </div>
       </div>
     </DashboardLayout>
+    <AvatarCropDialog
+      file={pendingAvatarFile}
+      onCancel={() => setPendingAvatarFile(null)}
+      onConfirm={uploadCroppedAvatar}
+    />
   );
 }
