@@ -19,6 +19,7 @@ export interface NetworkStats {
 
 export interface StartupCard {
   id: string;
+  slug: string | null;
   name: string;
   website_url: string;
   description: string;
@@ -27,6 +28,7 @@ export interface StartupCard {
   impressions_24h: number;
   clicks_24h: number;
 }
+
 
 export interface NetworkDashboardResult {
   stats: NetworkStats;
