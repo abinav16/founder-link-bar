@@ -132,17 +132,10 @@ export function StartupEmbed({ startupId, url, name, initialBlocked }: { startup
           onLoad={() => setLoaded(true)}
           onError={() => setBlocked(true)}
         />
-        {!interactive && (
-          <button
-            onClick={() => setInteractive(true)}
-            className="absolute inset-0 flex items-center justify-center bg-black/0 transition hover:bg-black/[0.02]"
-            aria-label="Click to interact"
-          >
-            <span className="pointer-events-none inline-flex items-center gap-2 rounded-full bg-black/85 px-4 py-2 text-xs font-medium text-white shadow-lg backdrop-blur">
-              <MousePointerClick className="h-3.5 w-3.5" /> Click to interact
-            </span>
-          </button>
-        )}
+      </div>
+    </div>
+  );
+}
       </div>
     </div>
   );
