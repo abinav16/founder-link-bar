@@ -186,14 +186,19 @@ function StartupRow({ s }: { s: Card }) {
       </div>
       <div className="relative z-10 shrink-0 text-right flex items-center gap-3">
         {s.impressions_24h > 0
-          ? <span className="text-[11px] text-black/30 font-medium tabular-nums">{s.impressions_24h} seen</span>
+          ? (
+            <span className="inline-flex items-center gap-1 text-[11px] text-black/35 font-medium tabular-nums">
+              <Eye className="h-3 w-3 text-black/30" strokeWidth={2} />
+              {s.impressions_24h}
+            </span>
+          )
           : <span className="text-[11px] text-black/18 tracking-wide">New</span>}
         {s.slug && (
           <StartupProfileLink
             slug={s.slug}
-            className="pointer-events-auto text-[10px] font-medium text-black/30 hover:text-black transition-colors"
+            className="pointer-events-auto inline-flex items-center justify-center h-7 w-7 rounded-full bg-black text-white hover:bg-black/80 transition-colors"
           >
-            Profile
+            <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.25} />
           </StartupProfileLink>
         )}
       </div>
