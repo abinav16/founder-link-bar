@@ -608,7 +608,20 @@ function DashboardPage() {
               </div>
             )}
 
+            {startup.status === "approved" && (startup as any).slug && !((startup as any).founder_quote) && (
+              <div className="flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-amber-900">Your public page is missing your founder story</p>
+                  <p className="mt-0.5 text-xs text-amber-800/80">Add a quote and photo — visitors trust profiles with a face and a founder voice.</p>
+                </div>
+                <Link to="/account" className="shrink-0 rounded-lg bg-amber-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-800">
+                  Add your story →
+                </Link>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+
               <StatCard icon={BarChart2} label="Impressions" value={stats.impressions.toLocaleString()} sub="Times shown on the network" />
               <StatCard icon={MousePointerClick} label="Clicks" value={stats.clicks.toLocaleString()} sub="Visits driven to your site" />
               <StatCard icon={Percent} label="CTR" value={`${ctr}%`} sub="Click-through rate" />
