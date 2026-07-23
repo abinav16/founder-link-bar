@@ -153,9 +153,9 @@ function StartupCard({ s }: { s: Card }) {
         {s.slug && (
           <StartupProfileLink
             slug={s.slug}
-            className="pointer-events-auto text-[10px] font-medium text-black/35 hover:text-black transition-colors"
+            className="pointer-events-auto inline-flex items-center justify-center h-7 w-7 rounded-full bg-black text-white hover:bg-black/80 transition-colors"
           >
-            Profile →
+            <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.25} />
           </StartupProfileLink>
         )}
       </div>
