@@ -451,6 +451,19 @@ function AccountPage() {
                   <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" className={inputCls} />
                 </div>
                 <div>
+                  <label className="mb-1.5 block text-xs font-medium text-black/60">X (Twitter) handle</label>
+                  <div className="relative">
+                    <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-black/40">@</span>
+                    <input
+                      value={twitter}
+                      onChange={(e) => setTwitter(e.target.value)}
+                      placeholder="yourhandle"
+                      className={`${inputCls} pl-7`}
+                    />
+                  </div>
+                  <p className="mt-1.5 text-[10px] text-black/30">Shown next to your founder photo on public startup pages. Paste a handle, @handle, or X profile URL.</p>
+                </div>
+                <div>
                   <label className="mb-1.5 block text-xs font-medium text-black/60">Email</label>
                   <input value={email} disabled className={inputCls} />
                 </div>
