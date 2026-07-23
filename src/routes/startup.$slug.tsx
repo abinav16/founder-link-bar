@@ -104,7 +104,7 @@ function StartupPage() {
     <div className="min-h-screen bg-white text-black">
       <SiteHeader />
 
-      <main className="mx-auto max-w-6xl px-5 py-10 md:py-16">
+      <main className="mx-auto max-w-6xl px-5 pt-10 md:pt-16 pb-8">
         {/* HERO */}
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-start gap-5">
