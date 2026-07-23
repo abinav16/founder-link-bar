@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { getNetworkDashboard, type NetworkDashboardResult } from "@/lib/network-dashboard.functions";
-import { ArrowUpRight, ArrowRight, Eye } from "lucide-react";
+import { ArrowUpRight, ArrowRight, Eye, Globe } from "lucide-react";
 
 function NetworkPending() {
   return (
