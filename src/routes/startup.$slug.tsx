@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import { getStartupPage, getStartupPulse } from "@/lib/startup-page.functions";
 import { StartupEmbed } from "@/components/StartupEmbed";
 import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { supabase } from "@/integrations/supabase/client";
-import { ExternalLink, Quote, Activity, ArrowUpRight, Calendar, User, Pencil } from "lucide-react";
+import { ExternalLink, Quote, Activity, ArrowUpRight, Calendar, User, Pencil, LayoutDashboard, Share2, Check } from "lucide-react";
 
 
 const pageQuery = (slug: string) =>
@@ -73,6 +74,20 @@ function StartupPage() {
   const { slug } = Route.useParams();
   const { data } = useSuspenseQuery(pageQuery(slug));
   const s = data!;
+
+  const [authState, setAuthState] = useState<{ ready: boolean; userId: string | null }>({ ready: false, userId: null });
+  useEffect(() => {
+    let cancel = false;
+    supabase.auth.getUser().then(({ data }) => {
+      if (!cancel) setAuthState({ ready: true, userId: data.user?.id ?? null });
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setAuthState({ ready: true, userId: session?.user?.id ?? null });
+    });
+    return () => { cancel = true; sub.subscription.unsubscribe(); };
+  }, []);
+  const isSignedIn = !!authState.userId;
+  const isOwner = isSignedIn && !!s.user_id && authState.userId === s.user_id;
 
   const pulseQ = useQuery({
     queryKey: ["startup-pulse", s.id],
@@ -171,18 +186,81 @@ function StartupPage() {
           </div>
         )}
 
-        {/* FOOTER CTA */}
-        <div className="mt-16 rounded-2xl border border-black/8 bg-black text-white p-8 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/50">Want a page like this?</p>
-          <h3 className="mt-2 text-2xl font-semibold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-            Join StartupBar
-          </h3>
-          <p className="mt-2 text-sm text-white/60">Exchange traffic with other founders. Every embed unlocks a public page like {s.name}'s.</p>
-          <Link to="/apply" className="mt-5 inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black hover:bg-white/90">
-            Apply your startup <ArrowUpRight className="h-3.5 w-3.5" />
+        {/* FOOTER CTA — varies by auth state */}
+        <StartupPageCta name={s.name} authReady={authState.ready} isSignedIn={isSignedIn} isOwner={isOwner} slug={s.slug} />
+      </main>
+      <SiteFooter />
+    </div>
+  );
+}
+
+function StartupPageCta({ name, authReady, isSignedIn, isOwner, slug }: { name: string; authReady: boolean; isSignedIn: boolean; isOwner: boolean; slug: string }) {
+  const [copied, setCopied] = useState(false);
+  async function copyLink() {
+    const url = `${window.location.origin}/startup/${slug}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch {}
+  }
+
+  // Reserve space while auth resolves so the CTA doesn't flash the wrong copy.
+  if (!authReady) {
+    return <div aria-hidden className="mt-16 h-[220px] rounded-2xl border border-black/6 bg-black/[0.02]" />;
+  }
+
+  if (isOwner) {
+    return (
+      <div className="mt-16 rounded-2xl border border-black/8 bg-gradient-to-br from-black to-black/85 text-white p-8 text-center">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/50">This is your page</p>
+        <h3 className="mt-2 text-2xl font-semibold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+          Share {name} with the world
+        </h3>
+        <p className="mt-2 text-sm text-white/60">Post it on X, LinkedIn, or your launch thread — every visit here counts toward your traffic.</p>
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+          <button onClick={copyLink} className="inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black hover:bg-white/90">
+            {copied ? <><Check className="h-3.5 w-3.5" /> Copied</> : <><Share2 className="h-3.5 w-3.5" /> Copy page link</>}
+          </button>
+          <Link to="/dashboard" className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 px-4 py-2 text-sm font-medium text-white hover:bg-white/10">
+            <LayoutDashboard className="h-3.5 w-3.5" /> Open dashboard
           </Link>
         </div>
-      </main>
+      </div>
+    );
+  }
+
+  if (isSignedIn) {
+    return (
+      <div className="mt-16 rounded-2xl border border-black/8 bg-black text-white p-8 text-center">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/50">Enjoying {name}?</p>
+        <h3 className="mt-2 text-2xl font-semibold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+          Send some traffic their way
+        </h3>
+        <p className="mt-2 text-sm text-white/60">Share this page with your network — or head back to your dashboard to check your own numbers.</p>
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+          <button onClick={copyLink} className="inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black hover:bg-white/90">
+            {copied ? <><Check className="h-3.5 w-3.5" /> Copied</> : <><Share2 className="h-3.5 w-3.5" /> Share this page</>}
+          </button>
+          <Link to="/dashboard" className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 px-4 py-2 text-sm font-medium text-white hover:bg-white/10">
+            <LayoutDashboard className="h-3.5 w-3.5" /> My dashboard
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Signed-out: original acquisition CTA
+  return (
+    <div className="mt-16 rounded-2xl border border-black/8 bg-black text-white p-8 text-center">
+      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/50">Want a page like this?</p>
+      <h3 className="mt-2 text-2xl font-semibold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+        Join StartupBar
+      </h3>
+      <p className="mt-2 text-sm text-white/60">Exchange traffic with other founders. Every embed unlocks a public page like {name}'s.</p>
+      <Link to="/apply" className="mt-5 inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black hover:bg-white/90">
+        Apply your startup <ArrowUpRight className="h-3.5 w-3.5" />
+      </Link>
     </div>
   );
 }
