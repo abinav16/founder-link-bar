@@ -104,7 +104,7 @@ function StartupPage() {
     <div className="min-h-screen bg-white text-black">
       <SiteHeader />
 
-      <main className="mx-auto max-w-6xl px-5 py-10 md:py-16">
+      <main className="mx-auto max-w-6xl px-5 pt-10 md:pt-16 pb-8">
         {/* HERO */}
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-start gap-5">
@@ -234,10 +234,11 @@ function StartupPageCta({ name, authReady, isSignedIn, isOwner, slug }: { name: 
     return (
       <div className="mt-16 rounded-2xl border border-black/8 bg-black text-white p-8 text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/50">Enjoying {name}?</p>
-        <h3 className="mt-2 text-2xl font-semibold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+        <h3 className="mt-2 text-3xl font-semibold" style={{ fontFamily: '"SF Pro Rounded", ui-rounded, "Nunito", "Quicksand", system-ui, sans-serif' }}>
           Send some traffic their way
         </h3>
-        <p className="mt-2 text-sm text-white/60">Share this page with your network — or head back to your dashboard to check your own numbers.</p>
+        <p className="mt-2 text-sm text-white/60">Share this page with your network, or head to your dashboard to check your own numbers.</p>
+
         <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
           <button onClick={copyLink} className="inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black hover:bg-white/90">
             {copied ? <><Check className="h-3.5 w-3.5" /> Copied</> : <><Share2 className="h-3.5 w-3.5" /> Share this page</>}
