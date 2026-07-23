@@ -1,18 +1,35 @@
-## Why the mismatch happens
+## Verdict on the Reddit feedback
 
-The network page and profile page use the same `StartupFavicon` component, but they call it differently:
+**1. "Navigation disappears when scrolling" — REAL issue.**
+`src/routes/index.tsx` line 660 renders the landing header as `relative z-20 …` (not sticky). Once the user scrolls past ~64px, the nav (Network, Leaderboard, Sign in, **Join the network**) is gone until they scroll back to the top. On a marketing page where "Join" is the primary CTA, this is real friction — the commenter is right.
 
-- **Profile page** (`src/routes/startup.$slug.tsx`) passes the uploaded logo:
-  `<StartupFavicon url={...} name={...} logoUrl={s.logo_url} />` — so when the founder uploaded a logo, that logo is shown.
-- **Network page cards** (`src/routes/network.tsx` lines 101 and 146) omit `logoUrl`:
-  `<StartupFavicon url={s.website_url} name={s.name} />` — so the component falls back to `google.com/s2/favicons?domain=...`, which returns the site's raw favicon (or a generic globe when the site has no favicon set).
+Note: authenticated app pages (`DashboardLayout`) already use `sticky top-0 z-30` and are fine. This bug is only on the public landing page.
 
-The data itself is fine — `network-dashboard.functions.ts` already selects `logo_url` and returns it in the payload. The card renderers just aren't passing it through. (The magnetic canvas at line 474 already uses `logo_url`, which is why the animated bubbles look correct while the cards below don't.)
+**2. "Site logo does not link back to the homepage" — NOT a real issue.**
+`Logo()` at line 580 already wraps the mark + wordmark in `<Link to="/">`. Clicking it does navigate home. The QAlaunch tool likely flagged it because it's a `<Link>` (client-side router anchor) rather than a raw `<a href="/">`, or because the homepage doesn't visibly change when you're already on `/`. Nothing to fix.
 
-## Fix
+## Fix (only #1)
 
-In `src/routes/network.tsx`, add `logoUrl={s.logo_url}` to both `<StartupFavicon>` usages:
-- Featured card grid (~line 101)
-- "New this week" list (~line 146)
+In `src/routes/index.tsx`, change the landing `<header>` (line 660) from:
 
-That's the only change — one prop on two lines. The favicon component already prefers `logoUrl` when present and falls back to Google favicons otherwise, so sites without an uploaded logo keep their current behavior.
+```
+<header className="relative z-20 border-b border-black/8 bg-white">
+```
+
+to a sticky header, matching the pattern already used in `DashboardLayout`:
+
+```
+<header className="sticky top-0 z-30 border-b border-black/8 bg-white/90 backdrop-blur">
+```
+
+- `sticky top-0` keeps the nav + Join CTA visible on scroll.
+- `z-30` sits above hero/section content (`z-20`) but below the top progress bar / toasts.
+- `bg-white/90 backdrop-blur` keeps it legible over the hero without a hard opaque band as content scrolls under it (fallback stays white where backdrop-filter is unsupported).
+
+No other changes. Header markup, auth states, and links stay identical. This is a one-line CSS change on the landing page only.
+
+## Not doing
+
+- Not touching the logo link (already correct).
+- Not changing `DashboardLayout` or `SiteHeader` (already sticky / not the page the commenter tested).
+- Not adding scroll-hide/show behavior — plain sticky matches the rest of the app.

@@ -657,7 +657,7 @@ function Landing() {
   return (
     <div className="min-h-dvh bg-white text-black">
       {/* HEADER */}
-      <header className="relative z-20 border-b border-black/8 bg-white">
+      <header className="sticky top-0 z-30 border-b border-black/8 bg-white/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <Logo />
           <nav className="flex min-h-9 items-center gap-1 text-sm">
