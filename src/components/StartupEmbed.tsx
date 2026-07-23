@@ -90,7 +90,7 @@ export function StartupEmbed({ startupId, url, name, initialBlocked }: { startup
             <p className="truncate text-sm font-medium text-black">{host}</p>
             <p className="truncate text-xs text-black/45">This site can't be embedded — open it in a new tab.</p>
           </div>
-          <a href={normalized} target="_blank" rel="noopener noreferrer"
+          <a href={`/api/public/widget/click?id=${startupId}&source=profile`} target="_blank" rel="noopener noreferrer"
             className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-black px-3.5 py-2 text-xs font-medium text-white hover:bg-black/85">
             Open {host} <ExternalLink className="h-3 w-3" />
           </a>
