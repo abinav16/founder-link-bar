@@ -1,69 +1,36 @@
-# Plan: Per-Startup Detail Pages with Live Embed
+## Two issues
 
-## Goal
-Give every approved startup a public, shareable page at `/startup/$slug` with identity, founder story, network stats, and a live interactive preview of their site.
+### 1. "Refused to connect" isn't detected → blank iframe stays blank
+When a site sends `X-Frame-Options: DENY` or a frame-ancestors CSP, the browser shows its own "refused to connect" page inside the iframe. That is **not** a network error, so `onError` never fires, and because it's cross-origin we can't read `contentDocument` either — our current detector only catches the "empty same-origin doc" case, so we never flip to the Microlink fallback.
 
-## Live embed approach (no ScrapingBee needed)
-Use a real `<iframe>` — it's free, interactive, and no API required. ScrapingBee-style services only produce static screenshots, so the "click to focus and use the site inside our page" experience is only possible with an iframe.
+**Fix:** switch to a proactive server-side probe instead of client detection.
 
-Fallback for sites that block iframes (`X-Frame-Options` / CSP):
-- Use **Microlink.io** (`https://api.microlink.io/?url=<site>&screenshot=true`) — free tier, no API key, no connector setup.
-- Show the screenshot with a big "Open site ↗" button.
-- Detect the block: attempt to read `iframe.contentWindow` after load; on error/blank, swap to screenshot. Also maintain a small `iframe_blocked` boolean column on `startups` cached from the verify-install probe so we don't re-detect on every page load.
+- Add a lightweight server function `probeIframeEmbed({ url })` that does a `HEAD` (fallback `GET`) to the site and inspects:
+  - `x-frame-options` → `deny` / `sameorigin` = blocked
+  - `content-security-policy` → any `frame-ancestors` that doesn't include `*` or our origin = blocked
+  - non-2xx / network failure = blocked
+- Call it from the `startup.$slug` loader in parallel with `getStartupPage`, cache the result on the `startups.iframe_blocked` column (write-through), and pass it to `<StartupEmbed initialBlocked>`.
+- In `StartupEmbed`, when `initialBlocked` is true render the Microlink screenshot immediately with an "Open site ↗" CTA — no flash of broken iframe.
+- Also add a client-side safety net: if the iframe hasn't fired `load` within 3.5s, assume blocked and swap to the screenshot (covers slow/hanging cases like the current one).
+- Improve the fallback UI: nicer empty-state framing, "This site can't be embedded — here's a live snapshot" copy, plus a prominent "Open themarketcontext.com" button.
 
-## Page structure: `src/routes/startup.$slug.tsx`
+### 2. Founder details are missing from the page
+The founder block only renders when `founder_name`, `founder_quote`, or `founder_avatar_url` exists. For themarketcontext.com none are filled in, so the whole block disappears — that's why "founder details" look missing.
 
-### Hero
-- Circular startup logo, name, one-liner
-- "Joined <date>" pill
-- Founder avatar + name + quote (italic pull-quote style)
-- External-link button to the real site
+**Fix (presentation only, no forced signup):**
+- Always render a "Founder" section on the profile page.
+- When the founder hasn't filled anything in Account settings, show a soft placeholder card:
+  - Neutral avatar circle with the startup's initial
+  - "Founder of {startup name}" as the primary line
+  - Muted italic line: *"The founder hasn't shared their story yet."*
+  - If the current viewer owns this startup → small "Add your story" button linking to `/account` (founder fields section).
+- When partial data exists (e.g. quote but no avatar), render whatever is present with the same layout — no empty gaps.
+- Also surface a "Missing founder details" nudge on the owner's `/dashboard` so they know to fill it in.
 
-### Contribution stats (network impact)
-Reuse `public_startup_totals` scoped to this startup:
-- Impressions generated (shown in others' bars)
-- Clicks contributed (given from this startup's bar)
-- Clicks received (users clicked this startup)
-- Network CTR
+### Files touched
+- `src/lib/startup-page.functions.ts` — add `probeIframeEmbed` server fn, call in loader, persist `iframe_blocked`.
+- `src/components/StartupEmbed.tsx` — respect `initialBlocked`, add load-timeout fallback, polish blocked-state UI.
+- `src/routes/startup.$slug.tsx` — always render founder section with placeholder + owner CTA; wire probe result into embed.
+- `src/routes/_authenticated/dashboard.tsx` — small "Complete your founder profile" nudge when fields are empty.
 
-### Live embed section
-- Bordered rounded iframe, ~500px tall, `sandbox="allow-scripts allow-same-origin allow-forms allow-popups"`.
-- Idle overlay: dim + "Click to interact" hint. On click, remove overlay and expand to a taller focused view so the user can scroll/click inside.
-- Toolbar: reload, open external, copy URL.
-- If blocked → Microlink screenshot + "Open site" CTA.
-
-### Unique feature: "Live visitor pulse" (visibility booster)
-- Real-time-ish dot showing recent landings via StartupBar in the last 5 minutes (from clicks/site-visits filtered by this startup).
-- "Users also came from" — top 3 referring startups in the last 24h with mini logos, each linking to their `/startup/$slug`. This cross-links the whole network and drives organic visits between startup pages.
-
-### SEO
-Unique `head()`: title = `${name} — StartupBar`, description = one-liner, og:image = startup logo URL, canonical `/startup/<slug>`.
-
-## Data changes (single migration)
-1. Add to `startups`:
-   - `slug text unique` (indexed) — backfill from name for existing approved rows
-   - `founder_quote text`
-   - `founder_avatar_url text`
-   - `iframe_blocked boolean default null` (cached probe result)
-2. Backfill slugs via one-shot SQL.
-3. RLS: existing public SELECT policy already covers new columns.
-
-## Founder inputs (per your note)
-Founder quote and founder avatar are editable in **Account Settings** (`src/routes/_authenticated/settings.tsx` or existing account page), NOT the dashboard. Add two fields there:
-- Textarea for `founder_quote` (max ~200 chars)
-- Avatar upload → `startup-logos` bucket path `founders/<user_id>.png`, saved to `founder_avatar_url`
-
-Founder name reuses existing profile/auth name; no new input.
-
-## Files to create / modify
-- `src/routes/startup.$slug.tsx` — new public detail page
-- `src/components/StartupEmbed.tsx` — iframe + screenshot fallback
-- `src/components/LiveVisitorPulse.tsx` — recent visitors + referring startups
-- `src/lib/startups.functions.ts` — `getStartupBySlug`, `getStartupPageStats`, `getRecentReferrers`
-- `src/routes/_authenticated/settings.tsx` (or existing settings route) — add founder quote + avatar fields
-- `src/routes/network.tsx` — logos link to `/startup/$slug`
-- `src/routes/leaderboard.tsx` — rows link to `/startup/$slug`
-- Migration for schema + slug backfill
-
-## Open question before building
-Anything you'd like beyond the "Live visitor pulse" as the unique/cool feature — for example a shareable embeddable stats card ("This startup got X clicks via StartupBar"), or should I just build the pulse + referrers?
+No DB migration needed — `iframe_blocked`, `founder_name`, `founder_quote`, `founder_avatar_url` already exist.
