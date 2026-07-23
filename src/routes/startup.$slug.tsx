@@ -75,6 +75,20 @@ function StartupPage() {
   const { data } = useSuspenseQuery(pageQuery(slug));
   const s = data!;
 
+  const [authState, setAuthState] = useState<{ ready: boolean; userId: string | null }>({ ready: false, userId: null });
+  useEffect(() => {
+    let cancel = false;
+    supabase.auth.getUser().then(({ data }) => {
+      if (!cancel) setAuthState({ ready: true, userId: data.user?.id ?? null });
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setAuthState({ ready: true, userId: session?.user?.id ?? null });
+    });
+    return () => { cancel = true; sub.subscription.unsubscribe(); };
+  }, []);
+  const isSignedIn = !!authState.userId;
+  const isOwner = isSignedIn && !!s.user_id && authState.userId === s.user_id;
+
   const pulseQ = useQuery({
     queryKey: ["startup-pulse", s.id],
     queryFn: () => getStartupPulse({ data: { id: s.id } }),
