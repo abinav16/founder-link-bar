@@ -278,6 +278,45 @@ function StartupCard({ startup, onUpdate, onDelete }: {
               )}
             </div>
           </form>
+
+          <div className="mt-6 border-t border-black/6 pt-5">
+            <div className="mb-3 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-black">Founder profile</p>
+                <p className="text-[11px] text-black/40">Shown on your public startup page.</p>
+              </div>
+              {startup.status === "approved" && startup.slug && (
+                <a href={`/startup/${startup.slug}`} target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-[11px] font-medium text-black/50 hover:text-black">
+                  View page <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+            </div>
+            <div className="space-y-3">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-black/60">Founder name</label>
+                  <input maxLength={80} value={fName} onChange={(e) => setFName(e.target.value)} placeholder="Jane Doe" className={inputCls} />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-black/60">Avatar URL</label>
+                  <input value={fAvatar} onChange={(e) => setFAvatar(e.target.value)} placeholder="https://..." className={inputCls} />
+                </div>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-black/60">Founder quote ({fQuote.length}/240)</label>
+                <textarea maxLength={240} rows={2} value={fQuote} onChange={(e) => setFQuote(e.target.value)}
+                  placeholder="Why you built it, in one sentence."
+                  className={inputCls + " resize-none"} />
+              </div>
+              <button type="button" onClick={saveFounder} disabled={savingFounder || !founderChanged}
+                className="inline-flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/80 transition-all disabled:opacity-40">
+                <Save className="h-3.5 w-3.5" />
+                {savingFounder ? "Saving…" : founderChanged ? "Save founder info" : "Saved"}
+              </button>
+            </div>
+          </div>
+
         </div>
       )}
     </div>
