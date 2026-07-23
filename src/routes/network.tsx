@@ -102,7 +102,8 @@ function StartupProfileLink({ slug, children, className }: { slug: string; child
     <button
       type="button"
       onClick={() => navigate({ to: "/startup/$slug", params: { slug } })}
-      className={`${className ?? ""} appearance-none border-0 bg-transparent p-0 text-left cursor-pointer`}
+      className={className}
+      style={{ appearance: "none", border: 0, padding: 0, cursor: "pointer", font: "inherit" }}
     >
       {children}
     </button>
