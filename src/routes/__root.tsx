@@ -74,7 +74,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
         <script
@@ -91,22 +91,13 @@ function RootShell({ children }: { children: ReactNode }) {
             `,
           }}
         />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                var s = document.createElement('script');
-                s.src = 'https://startupbar.co/widget/loader.js';
-                s.setAttribute('data-startup-id', '0d2db708-f4e9-4b77-bd83-c446826c76b1');
-                s.async = true;
-                document.head.appendChild(s);
-              })();
-            `,
-          }}
-        />
+        {/* Widget loader is injected client-side from RootComponent's useEffect
+            so it runs after React hydration — otherwise its DOM mutations
+            (shifting fixed/sticky elements) race hydration and force a
+            client rerender that looks like the page loads twice. */}
 
       </head>
-      <body>{children}<Scripts /></body>
+      <body suppressHydrationWarning>{children}<Scripts /></body>
     </html>
   );
 }
@@ -114,6 +105,36 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
+
+  // Inject the StartupBar widget after full hydration + a paint tick so its
+  // DOM mutations (shifting fixed/sticky elements down by 36px, adding
+  // scroll-padding to <html>, padding-top to <body>) don't race React's
+  // progressive Suspense hydration and force subtrees to re-render — which
+  // is what made the header look like it disappeared then loaded again.
+  useEffect(() => {
+    if (document.querySelector('script[data-startupbar-loader]')) return;
+    let cancelled = false;
+    const inject = () => {
+      if (cancelled) return;
+      if (document.querySelector('script[data-startupbar-loader]')) return;
+      const s = document.createElement("script");
+      s.src = "https://startupbar.co/widget/loader.js";
+      s.setAttribute("data-startup-id", "0d2db708-f4e9-4b77-bd83-c446826c76b1");
+      s.setAttribute("data-startupbar-loader", "1");
+      s.async = true;
+      document.head.appendChild(s);
+    };
+    const schedule = () => {
+      const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => void }).requestIdleCallback;
+      if (ric) ric(inject, { timeout: 1500 });
+      else window.setTimeout(inject, 800);
+    };
+    if (document.readyState === "complete") schedule();
+    else window.addEventListener("load", schedule, { once: true });
+    return () => { cancelled = true; };
+  }, []);
+
+
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;

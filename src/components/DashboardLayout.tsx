@@ -69,11 +69,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           isNavigating ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
         aria-hidden
+        suppressHydrationWarning
       >
         <div className="progress-bar h-full bg-black w-full" />
       </div>
 
-      <header className="sticky top-0 z-30 border-b border-black/8 bg-white">
+      <header className="sticky top-0 z-30 border-b border-black/8 bg-white" suppressHydrationWarning>
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4 sm:gap-8 sm:px-6">
           <Link to="/" className="flex shrink-0 items-center gap-2">
             <div className="h-2 w-6 rounded-sm bg-black" />
