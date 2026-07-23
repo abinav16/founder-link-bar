@@ -280,17 +280,17 @@ function StartupPageCta({ name, authReady, isSignedIn, isOwner, slug }: { name: 
 
   if (isOwner) {
     return (
-      <div className="mt-16 rounded-2xl border border-black/8 bg-gradient-to-br from-black to-black/85 text-white p-8 text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/50">This is your page</p>
-        <h3 className="mt-2 text-2xl font-semibold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+      <div className="mt-12 sm:mt-16 rounded-2xl border border-black/8 bg-gradient-to-br from-black to-black/85 text-white p-6 sm:p-8 text-center">
+        <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.14em] text-white/50">This is your page</p>
+        <h3 className="mt-2 text-xl sm:text-2xl font-semibold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
           Share {name} with the world
         </h3>
-        <p className="mt-2 text-sm text-white/60">Post it on X, LinkedIn, or your launch thread — every visit here counts toward your traffic.</p>
-        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-          <button onClick={copyLink} className="inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black hover:bg-white/90">
+        <p className="mt-2 text-[13px] sm:text-sm text-white/60">Post it on X, LinkedIn, or your launch thread — every visit here counts toward your traffic.</p>
+        <div className="mt-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2">
+          <button onClick={copyLink} className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-white px-4 py-2.5 text-sm font-medium text-black hover:bg-white/90">
             {copied ? <><Check className="h-3.5 w-3.5" /> Copied</> : <><Share2 className="h-3.5 w-3.5" /> Copy page link</>}
           </button>
-          <Link to="/dashboard" className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 px-4 py-2 text-sm font-medium text-white hover:bg-white/10">
+          <Link to="/dashboard" className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-white/20 px-4 py-2.5 text-sm font-medium text-white hover:bg-white/10">
             <LayoutDashboard className="h-3.5 w-3.5" /> Open dashboard
           </Link>
         </div>
@@ -300,18 +300,18 @@ function StartupPageCta({ name, authReady, isSignedIn, isOwner, slug }: { name: 
 
   if (isSignedIn) {
     return (
-      <div className="mt-16 rounded-2xl border border-black/8 bg-black text-white p-8 text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/50">Enjoying {name}?</p>
-        <h3 className="mt-2 text-3xl font-semibold" style={{ fontFamily: '"SF Pro Rounded", ui-rounded, "Nunito", "Quicksand", system-ui, sans-serif' }}>
+      <div className="mt-12 sm:mt-16 rounded-2xl border border-black/8 bg-black text-white p-6 sm:p-8 text-center">
+        <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.14em] text-white/50">Enjoying {name}?</p>
+        <h3 className="mt-2 text-2xl sm:text-3xl font-semibold" style={{ fontFamily: '"SF Pro Rounded", ui-rounded, "Nunito", "Quicksand", system-ui, sans-serif' }}>
           Send some traffic their way
         </h3>
-        <p className="mt-2 text-sm text-white/60">Share this page with your network, or head to your dashboard to check your own numbers.</p>
+        <p className="mt-2 text-[13px] sm:text-sm text-white/60">Share this page with your network, or head to your dashboard to check your own numbers.</p>
 
-        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-          <button onClick={copyLink} className="inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black hover:bg-white/90">
+        <div className="mt-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2">
+          <button onClick={copyLink} className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-white px-4 py-2.5 text-sm font-medium text-black hover:bg-white/90">
             {copied ? <><Check className="h-3.5 w-3.5" /> Copied</> : <><Share2 className="h-3.5 w-3.5" /> Share this page</>}
           </button>
-          <Link to="/dashboard" className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 px-4 py-2 text-sm font-medium text-white hover:bg-white/10">
+          <Link to="/dashboard" className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-white/20 px-4 py-2.5 text-sm font-medium text-white hover:bg-white/10">
             <LayoutDashboard className="h-3.5 w-3.5" /> My dashboard
           </Link>
         </div>
@@ -321,13 +321,13 @@ function StartupPageCta({ name, authReady, isSignedIn, isOwner, slug }: { name: 
 
   // Signed-out: original acquisition CTA
   return (
-    <div className="mt-16 rounded-2xl border border-black/8 bg-black text-white p-8 text-center">
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/50">Want a page like this?</p>
-      <h3 className="mt-2 text-2xl font-semibold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+    <div className="mt-12 sm:mt-16 rounded-2xl border border-black/8 bg-black text-white p-6 sm:p-8 text-center">
+      <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.14em] text-white/50">Want a page like this?</p>
+      <h3 className="mt-2 text-xl sm:text-2xl font-semibold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
         Join StartupBar
       </h3>
-      <p className="mt-2 text-sm text-white/60">Exchange traffic with other founders. Every embed unlocks a public page like {name}'s.</p>
-      <Link to="/apply" className="mt-5 inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black hover:bg-white/90">
+      <p className="mt-2 text-[13px] sm:text-sm text-white/60">Exchange traffic with other founders. Every embed unlocks a public page like {name}'s.</p>
+      <Link to="/apply" className="mt-5 inline-flex w-full sm:w-auto items-center justify-center gap-1.5 rounded-lg bg-white px-4 py-2.5 text-sm font-medium text-black hover:bg-white/90">
         Apply your startup <ArrowUpRight className="h-3.5 w-3.5" />
       </Link>
     </div>
