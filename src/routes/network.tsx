@@ -305,10 +305,10 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
     const innerLeft = h / 2 + logoR * 0.6;
     const innerRight = w - h / 2 - logoR * 0.6;
     const usableW = Math.max(NODE_SIZE, innerRight - innerLeft);
-    const spacing = NODE_SIZE * 0.88;
+    const spacing = NODE_SIZE + 5;
     const perRow = Math.max(1, Math.floor(usableW / spacing));
     const rows = Math.max(1, Math.ceil(startups.length / perRow));
-    const rowGap = NODE_SIZE * 0.72;
+    const rowGap = NODE_SIZE + 4;
     const baseY = h - logoR - 5;
 
     const nodes = startups.map((startup, i) => {
