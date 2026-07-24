@@ -262,15 +262,14 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const nodeRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const stateRef = useRef<{ x: number; y: number; vx: number; vy: number; angle: number; av: number; homeY: number; size: number; snapped: boolean; snapCooldown: number }[]>([]);
+  const stateRef = useRef<{ x: number; y: number; vx: number; vy: number; angle: number; av: number; homeX: number; homeY: number; size: number; snapped: boolean; snapCooldown: number }[]>([]);
   const mouseRef = useRef({ x: -9999, y: -9999 });
   const rafRef = useRef<number>(0);
   const sizeRef = useRef({ w: 0, h: 0 });
   const startupKey = useMemo(() => startups.map(s => s.id).join(","), [startups]);
 
-  const GRAVITY = 0.5;
-  const GROUND_FRICTION = 0.84;
-  const AIR_DAMPING = 0.93;
+  const SPRING = 0.038;
+  const DAMPING = 0.82;
   const ATTRACT_K = 0.012;
   const ATTRACT_RADIUS = 260;
   const MAX_THREAD = 220;
@@ -303,14 +302,29 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
     });
 
     const logoR = NODE_SIZE / 2 + 3;
-    const pillR = h / 2;
-    const homeY = h - logoR - 2;
+    const innerLeft = h / 2 + logoR * 0.6;
+    const innerRight = w - h / 2 - logoR * 0.6;
+    const usableW = Math.max(NODE_SIZE, innerRight - innerLeft);
+    const spacing = NODE_SIZE + 5;
+    const perRow = Math.max(1, Math.floor(usableW / spacing));
+    const rows = Math.max(1, Math.ceil(startups.length / perRow));
+    const rowGap = NODE_SIZE + 4;
+    const baseY = h - logoR - 5;
 
-    const nodes = startups.map(() => {
-      const x = logoR + Math.random() * (w - 2 * logoR);
-      const y = logoR + Math.random() * (h * 0.35);
-      const vx = (Math.random() - 0.5) * 1.5;
-      return { x, y, vx, vy: 0, angle: 0, av: 0, homeY, size: NODE_SIZE, snapped: false, snapCooldown: 0 };
+    const nodes = startups.map((startup, i) => {
+      const row = Math.floor(i / perRow);
+      const indexInRow = i % perRow;
+      const rowCount = row === rows - 1 ? startups.length - row * perRow : perRow;
+      const rowWidth = Math.max(0, (rowCount - 1) * spacing);
+      const rowStart = innerLeft + Math.max(0, (usableW - rowWidth) / 2);
+      const stagger = row % 2 === 0 ? 0 : spacing * 0.42;
+      const homeX = Math.min(innerRight, Math.max(innerLeft, rowStart + indexInRow * spacing + stagger));
+      const homeY = Math.max(logoR + 4, baseY - row * rowGap);
+      const seed = startup.id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      const x = homeX + ((seed % 17) - 8) * 3;
+      const y = logoR + (seed % 7) * 5;
+      const vx = ((seed % 11) - 5) * 0.12;
+      return { x, y, vx, vy: 0, angle: 0, av: 0, homeX, homeY, size: NODE_SIZE, snapped: false, snapCooldown: 0 };
     });
     stateRef.current = nodes;
 
@@ -356,26 +370,25 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
           }
         }
 
-        node.vy += GRAVITY * dt;
+        node.vx += (node.homeX - node.x) * SPRING * dt;
+        node.vy += (node.homeY - node.y) * SPRING * dt;
         node.x += node.vx * dt;
         node.y += node.vy * dt;
+        node.vx *= Math.pow(DAMPING, dt);
+        node.vy *= Math.pow(DAMPING, dt);
 
         const { w: sw, h: sh } = sizeRef.current;
         const pillR = sh / 2;
         const margin = r + r;
-
-        const onGround = node.y >= node.homeY;
-        if (onGround) {
+        node.av = node.vx / r;
+        if (Math.abs(node.homeX - node.x) < 0.22 && Math.abs(node.homeY - node.y) < 0.22 && Math.abs(node.vx) < 0.025 && Math.abs(node.vy) < 0.025 && !mouseActive) {
+          node.x = node.homeX;
           node.y = node.homeY;
+          node.vx = 0;
           node.vy = 0;
-          node.av = node.vx / r;
-          node.vx *= Math.pow(GROUND_FRICTION, dt);
-          // kill jitter: stop tiny residual motion
-          if (Math.abs(node.vx) < 0.03) { node.vx = 0; node.av = 0; }
+          node.av = 0;
         } else {
-          node.vx *= Math.pow(AIR_DAMPING, dt);
-          node.vy *= Math.pow(AIR_DAMPING, dt);
-          node.av *= Math.pow(0.98, dt);
+          node.av *= Math.pow(0.96, dt);
         }
 
         if (node.y < margin) { node.y = margin; node.vy = Math.abs(node.vy) * 0.5; node.av *= -0.5; }
@@ -432,31 +445,23 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
         });
       }
 
-      for (let i = 0; i < nodes.length; i++) {
-        for (let j = i + 1; j < nodes.length; j++) {
-          const a = nodes[i], b = nodes[j];
-          const minDist = (a.size + b.size) / 2 + 2;
-          const dx = b.x - a.x;
-          const dy = b.y - a.y;
-          const dist = Math.sqrt(dx * dx + dy * dy) || 0.01;
-          if (dist < minDist) {
-            const overlap = (minDist - dist) / 2;
-            const nx = dx / dist, ny = dy / dist;
-            a.x -= nx * overlap; a.y -= ny * overlap;
-            b.x += nx * overlap; b.y += ny * overlap;
-            const dot = (a.vx - b.vx) * nx + (a.vy - b.vy) * ny;
-            if (dot > 0) {
-              a.vx -= dot * nx * 0.65; a.vy -= dot * ny * 0.65;
-              b.vx += dot * nx * 0.65; b.vy += dot * ny * 0.65;
+      if (mouseActive) {
+        for (let i = 0; i < nodes.length; i++) {
+          for (let j = i + 1; j < nodes.length; j++) {
+            const a = nodes[i], b = nodes[j];
+            const minDist = (a.size + b.size) / 2 + 1;
+            const dx = b.x - a.x;
+            const dy = b.y - a.y;
+            const dist = Math.sqrt(dx * dx + dy * dy) || 0.01;
+            if (dist < minDist) {
+              const overlap = (minDist - dist) * 0.18;
+              const nx = dx / dist, ny = dy / dist;
+              a.x -= nx * overlap; a.y -= ny * overlap;
+              b.x += nx * overlap; b.y += ny * overlap;
             }
           }
         }
       }
-
-      // post-collision clamp: keep resting nodes glued to the ground so they don't jitter
-      nodes.forEach((node) => {
-        if (node.y > node.homeY) { node.y = node.homeY; node.vy = 0; }
-      });
 
       nodes.forEach((node, i) => {
         const el = nodeRefs.current[i];
