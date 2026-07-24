@@ -370,6 +370,8 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
           node.vy = 0;
           node.av = node.vx / r;
           node.vx *= Math.pow(GROUND_FRICTION, dt);
+          // kill jitter: stop tiny residual motion
+          if (Math.abs(node.vx) < 0.03) { node.vx = 0; node.av = 0; }
         } else {
           node.vx *= Math.pow(AIR_DAMPING, dt);
           node.vy *= Math.pow(AIR_DAMPING, dt);
