@@ -453,9 +453,14 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
         }
       }
 
+      // post-collision clamp: keep resting nodes glued to the ground so they don't jitter
+      nodes.forEach((node) => {
+        if (node.y > node.homeY) { node.y = node.homeY; node.vy = 0; }
+      });
+
       nodes.forEach((node, i) => {
         const el = nodeRefs.current[i];
-        if (el) el.style.transform = `translate(${node.x - node.size / 2}px, ${node.y - node.size / 2}px) rotate(${node.angle}rad)`;
+        if (el) el.style.transform = `translate(${Math.round(node.x - node.size / 2)}px, ${Math.round(node.y - node.size / 2)}px) rotate(${node.angle}rad)`;
       });
 
       rafRef.current = requestAnimationFrame(tick);
