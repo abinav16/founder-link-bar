@@ -846,16 +846,33 @@ function Landing() {
             </div>
             {!mockDismissed && (
               <div
-                className="mt-6 flex justify-center text-center md:hidden"
+                className="mt-4 flex items-start justify-center gap-2 pr-4 md:hidden"
                 style={{ fontFamily: "'Caveat', cursive" }}
                 aria-hidden
               >
-                <div className="-rotate-2 text-[22px] leading-[1.1] text-neutral-800">
+                <svg width="46" height="64" viewBox="0 0 46 64" fill="none" className="shrink-0">
+                  <path
+                    d="M8 58 C 18 46, 30 34, 34 18 C 36 10, 34 6, 30 2"
+                    stroke="#1f2937"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    fill="none"
+                  />
+                  <path
+                    d="M30 2 L 24 6 M 30 2 L 34 9"
+                    stroke="#1f2937"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    fill="none"
+                  />
+                </svg>
+                <div className="mt-6 -rotate-2 text-[20px] leading-[1.1] text-neutral-800">
                   <div>The StartupBar widget <span className="text-amber-500">✨</span></div>
-                  <div className="text-[18px] text-neutral-500">(this is how it looks on your site)</div>
+                  <div className="text-[16px] text-neutral-500">(this is how it looks on your site)</div>
                 </div>
               </div>
             )}
+
           </div>
         </div>
       </section>
