@@ -1,35 +1,35 @@
-## Verdict on the Reddit feedback
+## Add a handwritten "Try this ✨" annotation to the hero mockup
 
-**1. "Navigation disappears when scrolling" — REAL issue.**
-`src/routes/index.tsx` line 660 renders the landing header as `relative z-20 …` (not sticky). Once the user scrolls past ~64px, the nav (Network, Leaderboard, Sign in, **Join the network**) is gone until they scroll back to the top. On a marketing page where "Join" is the primary CTA, this is real friction — the commenter is right.
+Skip the video/screenshot swap idea from before. Instead, do exactly what the reference image shows: a hand-drawn arrow + handwritten note pointing at the StartupBar widget bar in the existing hero mockup. Cheap, charming, converts.
 
-Note: authenticated app pages (`DashboardLayout`) already use `sticky top-0 z-30` and are fine. This bug is only on the public landing page.
+### What it looks like
 
-**2. "Site logo does not link back to the homepage" — NOT a real issue.**
-`Logo()` at line 580 already wraps the mark + wordmark in `<Link to="/">`. Clicking it does navigate home. The QAlaunch tool likely flagged it because it's a `<Link>` (client-side router anchor) rather than a raw `<a href="/">`, or because the homepage doesn't visibly change when you're already on `/`. Nothing to fix.
+- Below-left of the mockup window (roughly under the traffic-light dots / left edge of the bar), a curved hand-drawn arrow swoops up and points at the STARTUPBAR pill in the fake browser.
+- Next to the arrow, two lines of handwriting:
+  - `Try this ✨`
+  - `(people are addicted)`
+- Ink color: warm charcoal (not pure black), slightly rotated (~-4°), casual.
+- Desktop only for the full arrow+text; on mobile show just the text pill below the mockup (arrow gets cramped otherwise).
 
-## Fix (only #1)
+### Implementation
 
-In `src/routes/index.tsx`, change the landing `<header>` (line 660) from:
+In `src/routes/index.tsx`, in the hero mockup block (the `yourstartup.com` window around the widget bar preview):
 
-```
-<header className="relative z-20 border-b border-black/8 bg-white">
-```
+1. Wrap the mockup in a `relative` container (likely already is).
+2. Add an absolutely-positioned decoration next to the top-left of the widget bar:
+   - Inline SVG for the curved arrow (single `<path>`, `stroke-linecap="round"`, ~2px stroke, hand-drawn Bezier curve ending in a small arrowhead pointing up-right at the STARTUPBAR pill).
+   - A `<span>` with the two handwriting lines using the **Nothing You Could Do** Google font (loaded via `<link>` in `src/routes/__root.tsx` — matches the reference exactly and pairs well with our existing Instrument Serif / Inter / Lora stack).
+3. Hide the SVG arrow on `<md` breakpoints (`hidden md:block`); keep just the handwritten text visible and centered below the mockup on mobile.
+4. Add `aria-hidden` on the decorative SVG.
 
-to a sticky header, matching the pattern already used in `DashboardLayout`:
+### Font loading
 
-```
-<header className="sticky top-0 z-30 border-b border-black/8 bg-white/90 backdrop-blur">
-```
+Add `Nothing+You+Could+Do` to the existing Google Fonts `<link>` in `src/routes/__root.tsx` head. Add a `--font-hand` CSS var in `src/styles.css` and a `.font-hand` utility.
 
-- `sticky top-0` keeps the nav + Join CTA visible on scroll.
-- `z-30` sits above hero/section content (`z-20`) but below the top progress bar / toasts.
-- `bg-white/90 backdrop-blur` keeps it legible over the hero without a hard opaque band as content scrolls under it (fallback stays white where backdrop-filter is unsupported).
+### Files touched
 
-No other changes. Header markup, auth states, and links stay identical. This is a one-line CSS change on the landing page only.
+- `src/routes/index.tsx` — add annotation markup inside hero mockup
+- `src/routes/__root.tsx` — extend Google Fonts URL with the handwriting family
+- `src/styles.css` — add `--font-hand` variable and `.font-hand` utility
 
-## Not doing
-
-- Not touching the logo link (already correct).
-- Not changing `DashboardLayout` or `SiteHeader` (already sticky / not the page the commenter tested).
-- Not adding scroll-hide/show behavior — plain sticky matches the rest of the app.
+No logic, no data, no new components. Purely presentational.
