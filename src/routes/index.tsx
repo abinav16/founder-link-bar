@@ -760,10 +760,10 @@ function Landing() {
             {!mockDismissed && (
               <div
                 aria-hidden
-                className="pointer-events-none absolute right-1 top-[82px] z-10 flex items-start gap-1.5 sm:right-8 sm:top-[90px] sm:gap-2 md:right-6 md:top-[86px]"
+                className="pointer-events-none absolute right-5 top-[54px] z-10 flex items-start gap-1.5 sm:right-8 sm:top-[62px] sm:gap-2 md:right-6 md:top-[62px]"
                 style={{ fontFamily: "'Caveat', cursive" }}
               >
-                <svg viewBox="0 0 70 90" fill="none" className="h-16 w-12 shrink-0 sm:h-20 sm:w-14 md:h-[90px] md:w-[70px]">
+                <svg viewBox="0 0 70 90" fill="none" className="h-16 w-12 shrink-0 sm:h-20 sm:w-14 md:h-[88px] md:w-[68px]">
                   <path
                     d="M55 82 C 40 70, 22 55, 16 34 C 12 22, 14 12, 20 4"
                     stroke="currentColor"
@@ -779,8 +779,8 @@ function Landing() {
                     fill="none"
                   />
                 </svg>
-                <div className="mt-6 -rotate-2 whitespace-nowrap text-[18px] leading-[1.05] text-neutral-800 sm:mt-8 sm:text-[22px] md:mt-10 md:text-[24px]">
-                  <div>The StartupBar widget <span className="text-amber-500">✨</span></div>
+                <div className="mt-5 -rotate-2 whitespace-nowrap text-[17px] leading-[1.05] text-neutral-800 sm:mt-8 sm:text-[22px] md:mt-9 md:text-[24px]">
+                  <div>The StartupBar widget <span className="text-amber-500" style={{ fontFamily: "ui-sans-serif, system-ui, sans-serif" }}>✦</span></div>
                   <div className="text-[13px] text-neutral-500 sm:text-[17px] md:text-[19px]">(this is how it looks on your site)</div>
                 </div>
               </div>
