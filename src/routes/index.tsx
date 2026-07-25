@@ -843,6 +843,18 @@ function Landing() {
                 your website continues here as normal
               </div>
             </div>
+            {!mockDismissed && (
+              <div
+                className="mt-6 flex justify-center text-center md:hidden"
+                style={{ fontFamily: "'Caveat', cursive" }}
+                aria-hidden
+              >
+                <div className="-rotate-2 text-[22px] leading-[1.1] text-neutral-800">
+                  <div>Try this <span className="text-amber-500">✨</span></div>
+                  <div className="text-[18px] text-neutral-500">(people are addicted)</div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>
