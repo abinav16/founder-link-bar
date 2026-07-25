@@ -851,8 +851,8 @@ function Landing() {
                 aria-hidden
               >
                 <div className="-rotate-2 text-[22px] leading-[1.1] text-neutral-800">
-                  <div>Try this <span className="text-amber-500">✨</span></div>
-                  <div className="text-[18px] text-neutral-500">(people are addicted)</div>
+                  <div>The StartupBar widget <span className="text-amber-500">✨</span></div>
+                  <div className="text-[18px] text-neutral-500">(this is how it looks on your site)</div>
                 </div>
               </div>
             )}
