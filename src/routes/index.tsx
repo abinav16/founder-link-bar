@@ -756,35 +756,33 @@ function Landing() {
 
           {/* Browser mock */}
           <div className="relative mx-auto mt-10 sm:mt-20 max-w-3xl">
-            {/* Handwritten annotation pointing at the STARTUPBAR pill */}
+            {/* Handwritten annotation pointing at the widget bar (right side) */}
             {!mockDismissed && (
               <div
                 aria-hidden
-                className="pointer-events-none absolute left-2 top-[86px] z-10 hidden md:block"
+                className="pointer-events-none absolute right-6 top-[86px] z-10 hidden md:flex items-start gap-2"
                 style={{ fontFamily: "'Caveat', cursive" }}
               >
-                <div className="flex items-start gap-1">
-                  <svg width="70" height="90" viewBox="0 0 70 90" fill="none">
-                    <path
-                      d="M55 82 C 40 70, 22 55, 16 34 C 12 22, 14 12, 20 4"
-                      stroke="#1f2937"
-                      strokeWidth="1.75"
-                      strokeLinecap="round"
-                      fill="none"
-                    />
-                    <path
-                      d="M20 4 L 12 10 M 20 4 L 26 12"
-                      stroke="#1f2937"
-                      strokeWidth="1.75"
-                      strokeLinecap="round"
-                      fill="none"
-                    />
-                  </svg>
-                  <div className="mt-10 -rotate-3 text-[24px] leading-[1.05] text-neutral-800">
-                    <div>Try this <span className="text-amber-500">✨</span></div>
-                    <div className="text-[19px] text-neutral-500">(people are addicted)</div>
-                  </div>
+                <div className="mt-10 -rotate-2 text-right text-[24px] leading-[1.05] text-neutral-800">
+                  <div>The StartupBar widget <span className="text-amber-500">✨</span></div>
+                  <div className="text-[19px] text-neutral-500">(this is how it looks on your site)</div>
                 </div>
+                <svg width="70" height="90" viewBox="0 0 70 90" fill="none">
+                  <path
+                    d="M15 82 C 30 70, 48 55, 54 34 C 58 22, 56 12, 50 4"
+                    stroke="#1f2937"
+                    strokeWidth="1.75"
+                    strokeLinecap="round"
+                    fill="none"
+                  />
+                  <path
+                    d="M50 4 L 44 12 M 50 4 L 58 10"
+                    stroke="#1f2937"
+                    strokeWidth="1.75"
+                    strokeLinecap="round"
+                    fill="none"
+                  />
+                </svg>
               </div>
             )}
             <div className="relative overflow-hidden rounded-xl border border-black/10 bg-white shadow-[0_20px_60px_-20px_rgba(0,0,0,0.15)]">
@@ -833,8 +831,17 @@ function Landing() {
                   )}
                 </div>
               )}
-              <div className="grid place-items-center bg-black/[0.02] px-6 py-10 text-xs text-black/20 sm:py-24">
-                your website continues here as normal
+              <div className="bg-black/[0.02] px-6 py-8 sm:px-10 sm:py-14">
+                <div className="mx-auto max-w-xl space-y-3">
+                  <div className="h-4 w-2/3 rounded bg-black/[0.07]" />
+                  <div className="h-3 w-1/2 rounded bg-black/[0.05]" />
+                  <div className="h-3 w-5/12 rounded bg-black/[0.05]" />
+                </div>
+                <div className="mx-auto mt-8 grid max-w-xl grid-cols-3 gap-3 sm:mt-12 sm:gap-4">
+                  <div className="h-16 rounded-lg bg-black/[0.05] sm:h-20" />
+                  <div className="h-16 rounded-lg bg-black/[0.04] sm:h-20" />
+                  <div className="h-16 rounded-lg bg-black/[0.05] sm:h-20" />
+                </div>
               </div>
             </div>
             {!mockDismissed && (
@@ -844,8 +851,8 @@ function Landing() {
                 aria-hidden
               >
                 <div className="-rotate-2 text-[22px] leading-[1.1] text-neutral-800">
-                  <div>Try this <span className="text-amber-500">✨</span></div>
-                  <div className="text-[18px] text-neutral-500">(people are addicted)</div>
+                  <div>The StartupBar widget <span className="text-amber-500">✨</span></div>
+                  <div className="text-[18px] text-neutral-500">(this is how it looks on your site)</div>
                 </div>
               </div>
             )}
