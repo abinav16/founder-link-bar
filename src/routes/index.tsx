@@ -756,6 +756,37 @@ function Landing() {
 
           {/* Browser mock */}
           <div className="relative mx-auto mt-10 sm:mt-20 max-w-3xl">
+            {/* Handwritten annotation pointing at the STARTUPBAR pill */}
+            {!mockDismissed && (
+              <div
+                aria-hidden
+                className="pointer-events-none absolute left-2 top-[86px] z-10 hidden md:block"
+                style={{ fontFamily: "'Caveat', cursive" }}
+              >
+                <div className="flex items-start gap-1">
+                  <svg width="70" height="90" viewBox="0 0 70 90" fill="none">
+                    <path
+                      d="M55 82 C 40 70, 22 55, 16 34 C 12 22, 14 12, 20 4"
+                      stroke="#1f2937"
+                      strokeWidth="1.75"
+                      strokeLinecap="round"
+                      fill="none"
+                    />
+                    <path
+                      d="M20 4 L 12 10 M 20 4 L 26 12"
+                      stroke="#1f2937"
+                      strokeWidth="1.75"
+                      strokeLinecap="round"
+                      fill="none"
+                    />
+                  </svg>
+                  <div className="mt-10 -rotate-3 text-[24px] leading-[1.05] text-neutral-800">
+                    <div>Try this <span className="text-amber-500">✨</span></div>
+                    <div className="text-[19px] text-neutral-500">(people are addicted)</div>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="relative overflow-hidden rounded-xl border border-black/10 bg-white shadow-[0_20px_60px_-20px_rgba(0,0,0,0.15)]">
               <div className="flex h-9 items-center gap-2 border-b border-black/8 bg-black/[0.02] px-4">
                 <div className="h-2.5 w-2.5 rounded-full bg-red-400/80" />
@@ -806,6 +837,18 @@ function Landing() {
                 your website continues here as normal
               </div>
             </div>
+            {!mockDismissed && (
+              <div
+                className="mt-6 flex justify-center text-center md:hidden"
+                style={{ fontFamily: "'Caveat', cursive" }}
+                aria-hidden
+              >
+                <div className="-rotate-2 text-[22px] leading-[1.1] text-neutral-800">
+                  <div>Try this <span className="text-amber-500">✨</span></div>
+                  <div className="text-[18px] text-neutral-500">(people are addicted)</div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>
