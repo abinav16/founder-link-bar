@@ -760,7 +760,7 @@ function Landing() {
             {!mockDismissed && (
               <div
                 aria-hidden
-                className="pointer-events-none absolute -left-4 top-full z-10 hidden md:block"
+                className="pointer-events-none absolute left-8 top-full z-10 hidden md:block"
                 style={{ fontFamily: "'Caveat', cursive" }}
               >
                 <div className="relative -mt-2 flex items-start gap-2">
