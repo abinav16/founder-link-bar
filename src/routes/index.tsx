@@ -760,35 +760,29 @@ function Landing() {
             {!mockDismissed && (
               <div
                 aria-hidden
-                className="pointer-events-none absolute left-8 top-full z-10 hidden md:block"
+                className="pointer-events-none absolute left-2 top-[86px] z-10 hidden md:block"
                 style={{ fontFamily: "'Caveat', cursive" }}
               >
-                <div className="relative -mt-2 flex items-start gap-2">
-                  <svg
-                    width="90"
-                    height="70"
-                    viewBox="0 0 90 70"
-                    fill="none"
-                    className="-mt-2"
-                  >
+                <div className="flex items-start gap-1">
+                  <svg width="70" height="90" viewBox="0 0 70 90" fill="none">
                     <path
-                      d="M78 66 C 60 55, 40 45, 28 28 C 22 20, 20 12, 22 6"
+                      d="M55 82 C 40 70, 22 55, 16 34 C 12 22, 14 12, 20 4"
                       stroke="#1f2937"
                       strokeWidth="1.75"
                       strokeLinecap="round"
                       fill="none"
                     />
                     <path
-                      d="M22 6 L 16 14 M 22 6 L 30 10"
+                      d="M20 4 L 12 10 M 20 4 L 26 12"
                       stroke="#1f2937"
                       strokeWidth="1.75"
                       strokeLinecap="round"
                       fill="none"
                     />
                   </svg>
-                  <div className="mt-6 -rotate-3 text-[22px] leading-[1.1] text-neutral-800">
+                  <div className="mt-10 -rotate-3 text-[24px] leading-[1.05] text-neutral-800">
                     <div>Try this <span className="text-amber-500">✨</span></div>
-                    <div className="text-[18px] text-neutral-500">(people are addicted)</div>
+                    <div className="text-[19px] text-neutral-500">(people are addicted)</div>
                   </div>
                 </div>
               </div>
