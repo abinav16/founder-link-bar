@@ -11,6 +11,20 @@ const cors = {
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
 
+  // Require service-role bearer to prevent unauthenticated mass-email abuse.
+  const authHeader = req.headers.get("authorization") ?? "";
+  const token = authHeader.toLowerCase().startsWith("bearer ")
+    ? authHeader.slice(7).trim()
+    : "";
+  if (!token || token !== SUPABASE_SERVICE_ROLE_KEY) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...cors, "Content-Type": "application/json" },
+    });
+  }
+
+
+
   try {
     const res = await fetch(`${SUPABASE_URL}/functions/v1/send-weekly-digest`, {
       method: "POST",
