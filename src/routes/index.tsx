@@ -756,6 +756,43 @@ function Landing() {
 
           {/* Browser mock */}
           <div className="relative mx-auto mt-10 sm:mt-20 max-w-3xl">
+            {/* Handwritten annotation pointing at the STARTUPBAR pill */}
+            {!mockDismissed && (
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -left-4 top-full z-10 hidden md:block"
+                style={{ fontFamily: "'Caveat', cursive" }}
+              >
+                <div className="relative -mt-2 flex items-start gap-2">
+                  <svg
+                    width="90"
+                    height="70"
+                    viewBox="0 0 90 70"
+                    fill="none"
+                    className="-mt-2"
+                  >
+                    <path
+                      d="M78 66 C 60 55, 40 45, 28 28 C 22 20, 20 12, 22 6"
+                      stroke="#1f2937"
+                      strokeWidth="1.75"
+                      strokeLinecap="round"
+                      fill="none"
+                    />
+                    <path
+                      d="M22 6 L 16 14 M 22 6 L 30 10"
+                      stroke="#1f2937"
+                      strokeWidth="1.75"
+                      strokeLinecap="round"
+                      fill="none"
+                    />
+                  </svg>
+                  <div className="mt-6 -rotate-3 text-[22px] leading-[1.1] text-neutral-800">
+                    <div>Try this <span className="text-amber-500">✨</span></div>
+                    <div className="text-[18px] text-neutral-500">(people are addicted)</div>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="relative overflow-hidden rounded-xl border border-black/10 bg-white shadow-[0_20px_60px_-20px_rgba(0,0,0,0.15)]">
               <div className="flex h-9 items-center gap-2 border-b border-black/8 bg-black/[0.02] px-4">
                 <div className="h-2.5 w-2.5 rounded-full bg-red-400/80" />
