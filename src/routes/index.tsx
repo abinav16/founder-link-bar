@@ -685,7 +685,7 @@ function Landing() {
                   className="flex items-center gap-1.5 px-2 py-2 text-black/50 hover:text-black transition-colors sm:px-3"
                 >
                   <LayoutDashboard className="h-4 w-4" />
-                  <span className="hidden sm:inline">Overview</span>
+                  <span className="hidden sm:inline">Dashboard</span>
                 </Link>
                 <Link
                   to="/account"
