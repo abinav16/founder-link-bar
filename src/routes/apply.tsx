@@ -29,6 +29,7 @@ const schema = z.object({
   name: z.string().trim().min(2).max(60),
   website_url: z.string().trim().url().max(200),
   description: z.string().trim().min(10).max(100),
+  founder_quote: z.string().trim().max(280).optional(),
 });
 
 function BarPreview({ name, url, desc }: { name: string; url: string; desc: string }) {
@@ -174,6 +175,10 @@ function Apply() {
   const [name, setName] = useState(initial.name);
   const [url, setUrl] = useState(initial.url);
   const [desc, setDesc] = useState(initial.desc);
+  const [quote, setQuote] = useState(() => {
+    if (typeof window === "undefined") return "";
+    try { return JSON.parse(sessionStorage.getItem(DRAFT_KEY) ?? "{}")?.quote ?? ""; } catch { return ""; }
+  });
   const [resubmitId, setResubmitId] = useState<string>(initial.resubmitId);
   const [startupId, setStartupId] = useState<string>(() => initial.resubmitId || initial.startupId || crypto.randomUUID());
   const [copied, setCopied] = useState(false);
@@ -220,7 +225,7 @@ function Apply() {
       if (!u.user) return;
       const { data, error } = await supabase
         .from("startups")
-        .select("id, name, website_url, description, status, user_id")
+        .select("id, name, website_url, description, founder_quote, status, user_id")
         .eq("id", resubmitId)
         .maybeSingle();
       if (error || !data || data.user_id !== u.user.id) {
@@ -240,6 +245,7 @@ function Apply() {
       setName(data.name);
       setUrl(data.website_url);
       setDesc(data.description);
+      setQuote(data.founder_quote ?? "");
       setStartupId(data.id);
       setStep(2);
       // Script was already installed for this ID — verify automatically with the fetched URL.
@@ -303,9 +309,9 @@ function Apply() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (resubmitId) return; // resubmits are URL-driven — don't overwrite the fresh-apply draft
-    if (!name && !url && !desc) return;
-    sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ step, name, url, desc, startupId }));
-  }, [step, name, url, desc, resubmitId]);
+    if (!name && !url && !desc && !quote) return;
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ step, name, url, desc, quote, startupId }));
+  }, [step, name, url, desc, quote, resubmitId]);
 
   const snippet = `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}"></script>`;
 
@@ -317,14 +323,14 @@ function Apply() {
 
   function goToStep2(e: React.FormEvent) {
     e.preventDefault();
-    const parsed = schema.safeParse({ name, website_url: url, description: desc });
+    const parsed = schema.safeParse({ name, website_url: url, description: desc, founder_quote: quote });
     if (!parsed.success) {
       toast.error(parsed.error.issues[0]?.message ?? "Invalid input");
       return;
     }
     if (!authed) {
       // Save draft at step 1 — user must sign in before reaching the install step.
-      sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ step: 1, name, url, desc, startupId }));
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ step: 1, name, url, desc, quote, startupId }));
       sessionStorage.setItem("startupbar:auth-next", "/apply");
       navigate({ to: "/auth" });
       return;
@@ -340,7 +346,7 @@ function Apply() {
     try {
       sessionStorage.setItem(
         DRAFT_KEY,
-        JSON.stringify({ step: 2, name, url, desc, startupId }),
+        JSON.stringify({ step: 2, name, url, desc, quote, startupId }),
       );
     } catch { /* ignore */ }
     const { data: u } = await supabase.auth.getUser();
@@ -413,13 +419,14 @@ function Apply() {
     const user_id = userData.user?.id;
     if (!user_id) { navigate({ to: "/auth" }); return; }
 
-    const parsed = schema.parse({ name, website_url: url, description: desc });
+    const parsed = schema.parse({ name, website_url: url, description: desc, founder_quote: quote });
+    const payload = { ...parsed, founder_quote: quote.trim() || null };
 
     // Resubmit path: update the existing rejected row back to pending — no new row, no payment gate.
     if (resubmitId) {
       const { error: updErr } = await supabase
         .from("startups")
-        .update({ ...parsed, status: "pending", rejection_reason: null })
+        .update({ ...payload, status: "pending", rejection_reason: null })
         .eq("id", resubmitId)
         .eq("user_id", user_id);
       setLoading(false);
@@ -439,7 +446,7 @@ function Apply() {
       }
 
       const { error } = await supabase.from("startups").insert(
-        { id: startupId, user_id, ...parsed }
+        { id: startupId, user_id, ...payload }
       );
       setLoading(false);
       if (error) { toast.error(error.message); return; }
@@ -524,6 +531,13 @@ function Apply() {
                 <Field label="One-liner" hint="What your product does, in plain English. Max 100 chars.">
                   <textarea required maxLength={100} rows={3} value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="Turn meeting notes into action items, automatically." className={inputCls + " resize-none"} />
                   <div className="mt-1 text-right text-[11px] text-black/30">{desc.length} / 100</div>
+                </Field>
+                <Field label="Founder note (optional)" hint="A short line about why you're building this. Shown on your public startup profile page, next to your name and photo.">
+                  <textarea maxLength={280} rows={3} value={quote} onChange={(e) => setQuote(e.target.value)} placeholder="I built this after losing an hour every day to manual meeting notes." className={inputCls + " resize-none"} />
+                  <div className="mt-1 flex items-center justify-between text-[11px] text-black/30">
+                    <span>You can add or edit this later from your dashboard.</span>
+                    <span>{quote.length} / 280</span>
+                  </div>
                 </Field>
                 <button type="submit" className="group flex w-full items-center justify-center gap-2 rounded-lg bg-black py-3.5 text-sm font-medium text-white transition-all hover:bg-black/80">
                   Next — Install the script
