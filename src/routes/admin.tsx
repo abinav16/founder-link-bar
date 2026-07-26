@@ -138,7 +138,7 @@ function AdminPage() {
     // Ordinary roles can no longer read moderation/widget-health columns.
     const { data } = await supabase.rpc("admin_all_startups" as never);
 
-    const list = (data as Startup[]) ?? [];
+    const list = (data as unknown as Startup[] | null) ?? [];
     setStartups(list);
     setLoading(false);
     // Check embed for any startup with a website (including pending — that's the point)
