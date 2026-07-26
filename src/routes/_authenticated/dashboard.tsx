@@ -169,9 +169,12 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
     const { data: u } = await supabase.auth.getUser();
     const userName = u.user?.user_metadata?.full_name?.split(" ")[0] ?? "";
 
-    const { data: rows } = await supabase
-      .from("startups").select("*").eq("user_id", u.user!.id).order("created_at", { ascending: true });
-    const allStartups = (rows as Startup[]) ?? [];
+    // Owners read their own full rows (widget health, rejection reason) through
+    // a security-definer function — those columns are no longer granted to the
+    // authenticated role directly, so strangers can't read them off approved rows.
+    const { data: rows } = await supabase.rpc("get_my_startups" as never);
+    const allStartups = (rows as unknown as Startup[] | null) ?? [];
+
     const startup = allStartups[0] ?? null;
 
     if (!startup) {

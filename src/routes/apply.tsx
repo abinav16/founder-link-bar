@@ -203,7 +203,7 @@ function Apply() {
 
   async function refreshGateData(userId: string) {
     const [{ count }, { data: prepaid }] = await Promise.all([
-      supabase.from("startups").select("*", { count: "exact", head: true }).eq("user_id", userId).neq("status", "rejected"),
+      supabase.from("startups").select("id", { count: "exact", head: true }).eq("user_id", userId).neq("status", "rejected"),
       supabase.from("payments").select("id").eq("user_id", userId).eq("status", "succeeded").is("consumed_at", null).limit(1),
     ]);
     setExistingCount(count ?? 0);
