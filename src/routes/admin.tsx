@@ -134,10 +134,10 @@ function AdminPage() {
 
   async function load() {
     setLoading(true);
-    const { data } = await supabase
-      .from("startups")
-      .select("*")
-      .order("created_at", { ascending: false });
+    // Full rows come from an admin-only, email-gated database function.
+    // Ordinary roles can no longer read moderation/widget-health columns.
+    const { data } = await supabase.rpc("admin_all_startups" as never);
+
     const list = (data as Startup[]) ?? [];
     setStartups(list);
     setLoading(false);
