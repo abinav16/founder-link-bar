@@ -625,7 +625,7 @@ function NetworkDashboardPage() {
 
         {trending.length > 0 && (
           <div>
-            <SectionLabel title="Trending Today" count={trending.length} />
+            <SectionLabel title="Trending Today" />
             <div className="sm:hidden rounded-2xl bg-white border border-black/[0.06] px-4 py-2">
               {trending.map((s) => <StartupRow key={s.id} s={s} />)}
             </div>
