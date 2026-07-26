@@ -361,6 +361,40 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_all_startups: {
+        Args: never
+        Returns: {
+          banned: boolean
+          created_at: string
+          description: string
+          founder_avatar_url: string | null
+          founder_name: string | null
+          founder_quote: string | null
+          id: string
+          iframe_blocked: boolean | null
+          logo_url: string | null
+          name: string
+          rejection_reason: string | null
+          slug: string | null
+          status: Database["public"]["Enums"]["startup_status"]
+          strike_count: number
+          updated_at: string
+          user_id: string
+          warn_expires_at: string | null
+          warned_at: string | null
+          website_url: string
+          widget_currently_visible: boolean | null
+          widget_hidden_at: string | null
+          widget_last_heartbeat_at: string | null
+          widget_last_page_url: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "startups"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       admin_orphan_payments: {
         Args: { _older_than_minutes?: number }
         Returns: {
@@ -391,6 +425,40 @@ export type Database = {
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
+      }
+      get_my_startups: {
+        Args: never
+        Returns: {
+          banned: boolean
+          created_at: string
+          description: string
+          founder_avatar_url: string | null
+          founder_name: string | null
+          founder_quote: string | null
+          id: string
+          iframe_blocked: boolean | null
+          logo_url: string | null
+          name: string
+          rejection_reason: string | null
+          slug: string | null
+          status: Database["public"]["Enums"]["startup_status"]
+          strike_count: number
+          updated_at: string
+          user_id: string
+          warn_expires_at: string | null
+          warned_at: string | null
+          website_url: string
+          widget_currently_visible: boolean | null
+          widget_hidden_at: string | null
+          widget_last_heartbeat_at: string | null
+          widget_last_page_url: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "startups"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       get_startup_rank: { Args: { _startup_id: string }; Returns: number }
       move_to_dlq: {
