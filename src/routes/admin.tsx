@@ -1,10 +1,9 @@
 import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { checkIsAdmin } from "@/lib/admin-auth.functions";
 import { toast } from "sonner";
 import { Check, X, ExternalLink, LogOut, Clock, RefreshCw, Radio, CircleSlash, Loader2, Eye, EyeOff, ShieldOff, Ban, Send, Users, Mail } from "lucide-react";
-
-const ADMIN_EMAIL = "danielabinav16@gmail.com";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -20,13 +19,24 @@ export const Route = createFileRoute("/admin")({
   }),
   ssr: false,
   beforeLoad: async () => {
+    // Fast path: no session at all -> bounce before paying for a round trip.
     const { data } = await supabase.auth.getUser();
-    if (!data.user || data.user.email !== ADMIN_EMAIL) {
-      throw redirect({ to: "/" });
+    if (!data.user) throw redirect({ to: "/" });
+
+    // Authoritative check happens on the server against the verified bearer
+    // token, so a devtools breakpoint on this client code can't fake it.
+    let ok = false;
+    try {
+      ok = await checkIsAdmin();
+    } catch {
+      ok = false;
     }
+    if (!ok) throw redirect({ to: "/" });
   },
   component: AdminPage,
 });
+
+
 
 interface Startup {
   id: string;
