@@ -611,6 +611,11 @@ function NetworkDashboardPage() {
       })
     : allStartups;
 
+  const trending = [...allStartups]
+    .filter((s) => (s.clicks_24h ?? 0) > 0)
+    .sort((a, b) => (b.clicks_24h ?? 0) - (a.clicks_24h ?? 0) || (b.impressions_24h ?? 0) - (a.impressions_24h ?? 0))
+    .slice(0, 3);
+
   return (
     <DashboardLayout>
       <div className="space-y-10">
@@ -618,15 +623,18 @@ function NetworkDashboardPage() {
           <MagneticField startups={data.recentStartups} stats={stats} />
         )}
 
-        <div>
-          <SectionLabel title="Recently Joined" />
-          <div className="sm:hidden rounded-2xl bg-white border border-black/[0.06] px-4 py-2">
-            {data.recentStartups.slice(0, 3).map((s) => <StartupRow key={s.id} s={s} />)}
+        {trending.length > 0 && (
+          <div>
+            <SectionLabel title="Trending Today" count={trending.length} />
+            <div className="sm:hidden rounded-2xl bg-white border border-black/[0.06] px-4 py-2">
+              {trending.map((s) => <StartupRow key={s.id} s={s} />)}
+            </div>
+            <div className="hidden sm:grid gap-4 sm:grid-cols-3">
+              {trending.map((s) => <StartupCard key={s.id} s={s} />)}
+            </div>
           </div>
-          <div className="hidden sm:grid gap-4 sm:grid-cols-3">
-            {data.recentStartups.slice(0, 3).map((s) => <StartupCard key={s.id} s={s} />)}
-          </div>
-        </div>
+        )}
+
 
         {data.newThisWeek.length > 0 && (
           <div>
