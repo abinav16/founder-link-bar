@@ -597,19 +597,50 @@ function HorizontalCardRail({ items }: { items: Card[] }) {
   );
 }
 
+type NetworkSort = "newest" | "trending" | "clicks" | "impressions";
+
+const SORT_OPTIONS: { key: NetworkSort; label: string }[] = [
+  { key: "newest", label: "Newest" },
+  { key: "trending", label: "Trending" },
+  { key: "clicks", label: "Most clicks" },
+  { key: "impressions", label: "Most impressions" },
+];
+
 function NetworkDashboardPage() {
   const data = Route.useLoaderData() as NetworkDashboardResult;
   const stats = data?.stats;
   const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<NetworkSort>("newest");
 
   const allStartups = data.recentStartups;
   const q = query.trim().toLowerCase();
-  const filtered = q
-    ? allStartups.filter((s) => {
-        const hay = `${s.name} ${s.description} ${s.website_url}`.toLowerCase();
-        return hay.includes(q);
-      })
-    : allStartups;
+  const filtered = useMemo(() => {
+    const base = q
+      ? allStartups.filter((s) =>
+          `${s.name} ${s.description} ${s.website_url}`.toLowerCase().includes(q),
+        )
+      : allStartups;
+
+    const sorted = [...base];
+    switch (sort) {
+      case "trending":
+        sorted.sort(
+          (a, b) =>
+            (b.clicks_24h ?? 0) - (a.clicks_24h ?? 0) ||
+            (b.impressions_24h ?? 0) - (a.impressions_24h ?? 0),
+        );
+        break;
+      case "clicks":
+        sorted.sort((a, b) => (b.clicks ?? 0) - (a.clicks ?? 0) || (b.impressions ?? 0) - (a.impressions ?? 0));
+        break;
+      case "impressions":
+        sorted.sort((a, b) => (b.impressions ?? 0) - (a.impressions ?? 0) || (b.clicks ?? 0) - (a.clicks ?? 0));
+        break;
+      default:
+        sorted.sort((a, b) => (a.created_at < b.created_at ? 1 : a.created_at > b.created_at ? -1 : 0));
+    }
+    return sorted;
+  }, [allStartups, q, sort]);
 
   const trending = [...allStartups]
     .filter((s) => (s.clicks_24h ?? 0) > 0)
@@ -671,13 +702,40 @@ function NetworkDashboardPage() {
               )}
             </div>
           </div>
+
+          <div className="mb-4 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+            {SORT_OPTIONS.map((opt) => (
+              <button
+                key={opt.key}
+                type="button"
+                onClick={() => setSort(opt.key)}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-[12px] font-medium transition-all border ${
+                  sort === opt.key
+                    ? "bg-black text-white border-black"
+                    : "bg-white text-black/50 border-black/10 hover:text-black hover:border-black/25"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+
           {filtered.length > 0 ? (
             <div className="rounded-2xl bg-white border border-black/[0.06] px-4 sm:px-6 py-2">
               {filtered.map((s) => <StartupRow key={s.id} s={s} />)}
             </div>
           ) : (
             <div className="rounded-2xl bg-white border border-black/[0.06] px-6 py-16 text-center">
-              <p className="text-sm text-black/40">No startups match "{query}"</p>
+              <p className="text-sm text-black/60 font-medium">No startups match "{query}"</p>
+              <p className="mt-1.5 text-[13px] text-black/35">Try a shorter word, or browse the full network.</p>
+              <button
+                type="button"
+                onClick={() => { setQuery(""); setSort("newest"); }}
+                className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-black px-4 py-2 text-[13px] font-medium text-white hover:bg-black/85 transition-colors"
+              >
+                <X className="h-3.5 w-3.5" strokeWidth={2.5} />
+                Clear search
+              </button>
             </div>
           )}
         </div>

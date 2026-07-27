@@ -357,133 +357,87 @@ function SlideVisual3() {
   );
 }
 
-const SLIDES = [
+const STEPS = [
   {
+    step: "01",
     headline: "You promote others.\nOthers promote you.",
     bullets: [
       "Embed bar → promotes a verified startup",
       "They embed → your startup gets featured back",
       "Bigger network = more reach for everyone",
     ],
-    cta: { label: "Get started free", to: "/apply" },
     visual: <SlideVisual1 />,
   },
   {
+    step: "02",
     headline: "One line of code.\nInfinite reach.",
     bullets: [
       "Works on Next.js, Webflow, WordPress — anything",
       "Async load — zero impact on page speed",
       "Auto-updated, always shows the best match",
     ],
-    cta: { label: "Get your embed code", to: "/apply" },
     visual: <SlideVisual2 />,
   },
   {
+    step: "03",
     headline: "Every impression.\nEvery click. Tracked.",
     bullets: [
       "Real impressions — visible in viewport only",
       "Country, device, referrer — all free",
       "Verified traffic badge on your listing",
     ],
-    cta: { label: "View your dashboard", to: "/dashboard" },
     visual: <SlideVisual3 />,
   },
 ];
 
 function HowItWorks() {
-  const [active, setActive] = useState(0);
-  const [animating, setAnimating] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  function goTo(i: number) {
-    if (i === active || animating) return;
-    setAnimating(true);
-    setTimeout(() => { setActive(i); setAnimating(false); }, 220);
-  }
-
-  function resetTimer() {
-    if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => {
-      setAnimating(true);
-      setTimeout(() => {
-        setActive((prev) => (prev + 1) % SLIDES.length);
-        setAnimating(false);
-      }, 220);
-    }, 4000);
-  }
-
-  useEffect(() => {
-    resetTimer();
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, []);
-
-  function handleDotClick(i: number) {
-    goTo(i);
-    resetTimer();
-  }
-
   return (
     <section id="how" className="border-t border-black/8 bg-white px-6 py-14 sm:py-20 md:py-28 overflow-hidden">
       <div className="mx-auto max-w-5xl">
         <p className="mb-12 text-xs font-semibold uppercase tracking-[0.18em] text-black/35">How it works</p>
-        {/* All slides are stacked in the same grid cell so the container
-            height always equals the tallest slide — no layout jumps. */}
-        <div className="grid">
-          {SLIDES.map((slide, i) => {
-            const isActive = i === active;
-            return (
-              <div
-                key={i}
-                aria-hidden={!isActive}
-                className="col-start-1 row-start-1 grid items-center gap-12 transition-all duration-300 md:grid-cols-2 md:gap-20"
-                style={{
-                  opacity: isActive && !animating ? 1 : 0,
-                  transform: isActive && !animating ? "none" : "translateY(8px)",
-                  visibility: isActive ? "visible" : "hidden",
-                  pointerEvents: isActive ? "auto" : "none",
-                }}
-              >
-                <div>
-                  <h2
-                    className="text-3xl font-semibold leading-tight tracking-tight sm:text-4xl md:text-5xl"
-                    style={{ fontFamily: "var(--font-display)", whiteSpace: "pre-line" }}
-                  >
-                    {slide.headline}
-                  </h2>
-                  <ul className="mt-8 space-y-3">
-                    {slide.bullets.map((b) => (
-                      <li key={b} className="flex items-start gap-3 text-[15px] leading-relaxed text-black/55">
-                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-black/15 text-[11px] text-black/40">✓</span>
-                        {b}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link
-                    to={slide.cta.to}
-                    tabIndex={isActive ? 0 : -1}
-                    className="group mt-10 inline-flex items-center gap-2 rounded-lg bg-black px-5 py-3 text-sm font-medium text-white hover:bg-black/80 transition-all"
-                  >
-                    {slide.cta.label}
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                  </Link>
-                </div>
-                <div className="min-w-0 overflow-hidden">{slide.visual}</div>
+
+        <div className="space-y-20 md:space-y-28">
+          {STEPS.map((s, i) => (
+            <div
+              key={s.step}
+              className="grid items-center gap-10 md:grid-cols-2 md:gap-20"
+            >
+              <div className={i % 2 === 1 ? "md:order-2" : undefined}>
+                <span className="text-xs font-semibold tracking-[0.18em] text-black/25">STEP {s.step}</span>
+                <h2
+                  className="mt-3 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl md:text-[2.75rem]"
+                  style={{ fontFamily: "var(--font-display)", whiteSpace: "pre-line" }}
+                >
+                  {s.headline}
+                </h2>
+                <ul className="mt-7 space-y-3">
+                  {s.bullets.map((b) => (
+                    <li key={b} className="flex items-start gap-3 text-[15px] leading-relaxed text-black/55">
+                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-black/15 text-[11px] text-black/40">✓</span>
+                      {b}
+                    </li>
+                  ))}
+                </ul>
               </div>
-            );
-          })}
-        </div>
-        <div className="mt-12 flex items-center justify-center gap-2.5">
-          {SLIDES.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => handleDotClick(i)}
-              aria-label={`Go to slide ${i + 1}`}
-              aria-current={i === active ? "true" : undefined}
-              className={`rounded-full transition-all duration-300 ${
-                i === active ? "h-2.5 w-8 bg-black" : "h-2.5 w-2.5 bg-black/20 hover:bg-black/40"
-              }`}
-            />
+              <div className={`min-w-0 overflow-hidden ${i % 2 === 1 ? "md:order-1" : ""}`}>{s.visual}</div>
+            </div>
           ))}
+        </div>
+
+        <div className="mt-16 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+          <Link
+            to="/apply"
+            className="group inline-flex items-center gap-2 rounded-lg bg-black px-5 py-3 text-sm font-medium text-white transition-all hover:bg-black/80"
+          >
+            Get started free
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+          <Link
+            to="/dashboard"
+            className="inline-flex items-center gap-2 rounded-lg border border-black/12 px-5 py-3 text-sm font-medium text-black/60 transition-colors hover:border-black/30 hover:text-black"
+          >
+            View your dashboard
+          </Link>
         </div>
       </div>
     </section>
