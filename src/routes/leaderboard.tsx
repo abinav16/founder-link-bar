@@ -111,11 +111,20 @@ function MiniSparkline({ data, color = "#000" }: { data: number[]; color?: strin
   );
 }
 
+type Range = "today" | "week" | "all";
+
+const RANGE_OPTIONS: { key: Range; label: string }[] = [
+  { key: "today", label: "Today" },
+  { key: "week", label: "This week" },
+  { key: "all", label: "All-time" },
+];
+
 function LeaderboardPage() {
   const { leaderboard, activity } = Route.useLoaderData();
   const rowsByReceived = leaderboard.rowsByReceived;
   const rowsByGiven = leaderboard.rowsByGiven;
   const [tab, setTab] = useState<"received" | "given">("received");
+  const [range, setRange] = useState<Range>("all");
   // Hydrate myId from sessionStorage so repeat visits highlight "You"
   // without the post-render fetch flicker.
   const [myId, setMyId] = useState<string | null>(() => {
@@ -161,11 +170,23 @@ function LeaderboardPage() {
   const ctr = (row: LeaderboardRow) =>
     row.impressions > 0 ? ((row.clicks / row.impressions) * 100).toFixed(1) + "%" : "—";
 
-  const primaryMetric = (row: LeaderboardRow) =>
-    tab === "received" ? row.impressions : row.impressions_given;
+  // Daily buckets hold 7 days, index 6 = today — so a windowed range is a
+  // pure client-side re-read of data the loader already returned.
+  const primaryMetric = (row: LeaderboardRow) => {
+    const daily = tab === "received" ? row.dailyImpressions : row.dailyGiven;
+    if (range === "today") return daily[daily.length - 1] ?? 0;
+    if (range === "week") return daily.reduce((a, b) => a + b, 0);
+    return tab === "received" ? row.impressions : row.impressions_given;
+  };
 
-  const activeRows = tab === "received" ? rowsByReceived : rowsByGiven;
-  const podium = activeRows.slice(0, 3);
+  const baseRows = tab === "received" ? rowsByReceived : rowsByGiven;
+  const activeRows =
+    range === "all"
+      ? baseRows
+      : [...baseRows].sort((a, b) => primaryMetric(b) - primaryMetric(a));
+  const windowEmpty =
+    range !== "all" && activeRows.every((r: LeaderboardRow) => primaryMetric(r) === 0);
+  const podium = windowEmpty ? [] : activeRows.slice(0, 3);
 
   const podiumDisplay = [podium[1], podium[0], podium[2]].filter(Boolean) as LeaderboardRow[];
 
@@ -202,14 +223,45 @@ function LeaderboardPage() {
         </div>
       </div>
 
+      <div className="mb-4 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+        {RANGE_OPTIONS.map((opt) => (
+          <button
+            key={opt.key}
+            type="button"
+            onClick={() => setRange(opt.key)}
+            className={`shrink-0 px-3 py-1.5 rounded-full text-[12px] font-medium transition-all border ${
+              range === opt.key
+                ? "bg-black text-white border-black"
+                : "bg-white text-black/50 border-black/10 hover:text-black hover:border-black/25"
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
       <p className="text-sm text-black/45 mb-6">
         {tab === "received"
-          ? "Startups that appear most across the network — ranked by total impressions received."
-          : "Sites generating the most traffic for others — ranked by impressions they gave to the network."}
+          ? range === "today"
+            ? "Startups seen most across the network today — ranked by impressions received since the 5:30 AM IST reset."
+            : range === "week"
+              ? "Startups seen most over the last 7 days — ranked by impressions received."
+              : "Startups that appear most across the network — ranked by total impressions received."
+          : range === "today"
+            ? "Sites sending the most traffic to others today — ranked by impressions given."
+            : range === "week"
+              ? "Sites sending the most traffic over the last 7 days — ranked by impressions given."
+              : "Sites generating the most traffic for others — ranked by impressions they gave to the network."}
       </p>
 
       {activeRows.length === 0 ? (
         <div className="mt-16 text-center text-sm text-black/40">No approved startups yet.</div>
+      ) : windowEmpty ? (
+        <div className="mt-16 text-center text-sm text-black/40">
+          {range === "today"
+            ? "No activity yet today — check back after the 5:30 AM IST reset."
+            : "No activity in the last 7 days yet."}
+        </div>
       ) : (
         <>
           {podium.length > 0 && (
@@ -255,7 +307,8 @@ function LeaderboardPage() {
                             {primaryMetric(row).toLocaleString()}
                           </div>
                           <div className={`text-[8px] uppercase tracking-widest font-semibold mt-0.5 ${originalIndex === 0 ? "text-white/40" : "text-black/30"}`}>
-                            {tab === "received" ? "impressions" : "given"}
+                            {(tab === "received" ? "impressions" : "given") +
+                              (range === "today" ? " today" : range === "week" ? " · 7d" : "")}
                           </div>
                         </div>
                         <div className={`mt-2 pt-2 border-t w-full flex gap-3 justify-center ${originalIndex === 0 ? "border-white/10" : "border-black/6"}`}>
@@ -407,23 +460,31 @@ function LeaderboardPage() {
                 {tab === "received" ? (
                   <div className="shrink-0 flex gap-3 sm:gap-5 text-right">
                     <div>
-                      <div className="text-sm sm:text-base font-bold tabular-nums text-black">{row.impressions.toLocaleString()}</div>
-                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">Impr.</div>
+                      <div className="text-sm sm:text-base font-bold tabular-nums text-black">{primaryMetric(row).toLocaleString()}</div>
+                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">
+                        {range === "today" ? "Today" : range === "week" ? "7d impr." : "Impr."}
+                      </div>
                     </div>
                     <div>
                       <div className="text-sm sm:text-base font-bold tabular-nums text-black">{row.clicks.toLocaleString()}</div>
-                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">Clicks</div>
+                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">
+                        {range === "all" ? "Clicks" : "Clicks · all"}
+                      </div>
                     </div>
                     <div className="hidden sm:block">
                       <div className="text-base font-bold tabular-nums text-black">{ctr(row)}</div>
-                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">CTR</div>
+                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">
+                        {range === "all" ? "CTR" : "CTR · all"}
+                      </div>
                     </div>
                   </div>
                 ) : (
                   <div className="shrink-0 flex gap-3 sm:gap-5 text-right">
                     <div>
-                      <div className="text-sm sm:text-base font-bold tabular-nums text-black">{row.impressions_given.toLocaleString()}</div>
-                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">Given</div>
+                      <div className="text-sm sm:text-base font-bold tabular-nums text-black">{primaryMetric(row).toLocaleString()}</div>
+                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">
+                        {range === "today" ? "Given today" : range === "week" ? "Given · 7d" : "Given"}
+                      </div>
                     </div>
                     <div>
                       <div className="text-sm sm:text-base font-bold tabular-nums text-black">{row.impressions.toLocaleString()}</div>

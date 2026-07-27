@@ -163,6 +163,97 @@ async function loadDashboardData(startupId: string) {
   };
 }
 
+type RangeKey = "24h" | "7d" | "30d" | "all";
+
+const RANGE_OPTIONS: { key: RangeKey; label: string }[] = [
+  { key: "24h", label: "24h" },
+  { key: "7d", label: "7 days" },
+  { key: "30d", label: "30 days" },
+  { key: "all", label: "All time" },
+];
+
+const RANGE_SUB: Record<RangeKey, string> = {
+  "24h": "Last 24 hours",
+  "7d": "Last 7 days",
+  "30d": "Last 30 days",
+  all: "All time",
+};
+
+const RANGE_CHART_TITLE: Record<RangeKey, string> = {
+  "24h": "last 24 hours",
+  "7d": "last 7 days",
+  "30d": "last 30 days",
+  all: "last 7 days",
+};
+
+// Windowed totals + chart buckets. Counts use head+exact so they aren't
+// capped by PostgREST's default row limit; only the bucket rows are fetched.
+async function loadRangeData(startupId: string, range: RangeKey) {
+  if (range === "all") {
+    const base = await loadDashboardData(startupId);
+    return { stats: base.stats, chartData: base.chartData, labels: rollingLabels() };
+  }
+
+  const now = new Date();
+  const since = new Date();
+  if (range === "24h") {
+    since.setTime(now.getTime() - 24 * 3600 * 1000);
+  } else {
+    since.setDate(now.getDate() - (range === "7d" ? 6 : 29));
+    since.setHours(0, 0, 0, 0);
+  }
+
+  const [impsR, clksR, dailyR] = await Promise.all([
+    supabase.from("impressions").select("*", { count: "exact", head: true })
+      .eq("shown_startup_id", startupId).neq("referrer", "dev-simulate")
+      .gte("created_at", since.toISOString()),
+    supabase.from("clicks").select("*", { count: "exact", head: true })
+      .eq("shown_startup_id", startupId).gte("created_at", since.toISOString()),
+    supabase.from("impressions").select("created_at")
+      .eq("shown_startup_id", startupId).neq("referrer", "dev-simulate")
+      .gte("created_at", since.toISOString()).order("created_at", { ascending: true }).limit(20000),
+  ]);
+
+  const rows = (dailyR.data ?? []) as { created_at: string }[];
+  let chartData: number[];
+  let labels: string[];
+
+  if (range === "24h") {
+    chartData = Array.from({ length: 12 }, () => 0);
+    labels = Array.from({ length: 12 }, (_, i) => {
+      const d = new Date(now.getTime() - (11 - i) * 2 * 3600 * 1000);
+      return i % 3 === 0 ? `${d.getHours()}:00` : "";
+    });
+    rows.forEach((row) => {
+      const diff = now.getTime() - new Date(row.created_at).getTime();
+      const idx = 11 - Math.floor(diff / (2 * 3600 * 1000));
+      if (idx >= 0 && idx <= 11) chartData[idx]++;
+    });
+  } else {
+    const days = range === "7d" ? 7 : 30;
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    chartData = Array.from({ length: days }, () => 0);
+    labels = Array.from({ length: days }, (_, i) => {
+      const d = new Date(today);
+      d.setDate(today.getDate() - (days - 1 - i));
+      if (days === 7) return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d.getDay()];
+      return i % 5 === 0 || i === days - 1 ? `${d.getDate()}` : "";
+    });
+    rows.forEach((row) => {
+      const d = new Date(row.created_at); d.setHours(0, 0, 0, 0);
+      const diff = Math.round((today.getTime() - d.getTime()) / 86400000);
+      const idx = days - 1 - diff;
+      if (idx >= 0 && idx < days) chartData[idx]++;
+    });
+  }
+
+  return {
+    stats: { impressions: impsR.count ?? 0, clicks: clksR.count ?? 0 },
+    chartData,
+    labels,
+  };
+}
+
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — StartupBar" }] }),
   loader: async () => {
@@ -312,10 +403,35 @@ function DashboardPage() {
   }, [switcherOpen]);
   const [installStatus, setInstallStatus] = useState<"checking" | "live" | "disconnected" | "unknown">("unknown");
   const [chartData, setChartData] = useState<number[]>(loaderData.chartData);
+  const [chartLabels, setChartLabels] = useState<string[]>(() => rollingLabels());
+  const [range, setRange] = useState<RangeKey>("all");
+  const [rangeLoading, setRangeLoading] = useState(false);
   const [rank, setRank] = useState<number | null>(loaderData.rank);
   const [breakdown, setBreakdown] = useState<TrafficBreakdown>(loaderData.breakdown);
   const [liveTicker, setLiveTicker] = useState<{ country: string; device: string; ts: number } | null>(null);
   const [isLive, setIsLive] = useState(false);
+  const skipFirstRangeFetch = useRef(true);
+
+  useEffect(() => {
+    if (!startup) return;
+    if (skipFirstRangeFetch.current && range === "all") {
+      skipFirstRangeFetch.current = false;
+      return;
+    }
+    skipFirstRangeFetch.current = false;
+    let cancelled = false;
+    setRangeLoading(true);
+    loadRangeData(startup.id, range)
+      .then((r) => {
+        if (cancelled) return;
+        setStats(r.stats);
+        setChartData(r.chartData);
+        setChartLabels(r.labels);
+      })
+      .finally(() => { if (!cancelled) setRangeLoading(false); });
+    return () => { cancelled = true; };
+  }, [range, startup?.id]);
+
 
   useEffect(() => {
     if (startup) checkInstall(startup.website_url);
@@ -446,8 +562,12 @@ function DashboardPage() {
     setBreakdown({ countries: [], devices: [], topReferrers: [] });
     checkInstall(s.website_url);
     const extra = await loadDashboardData(s.id);
-    setStats(extra.stats);
-    setChartData(extra.chartData);
+    // The range effect owns stats/chart for non-"all" windows — don't clobber it.
+    if (range === "all") {
+      setStats(extra.stats);
+      setChartData(extra.chartData);
+      setChartLabels(rollingLabels());
+    }
     setRank(extra.rank);
     setCurrent(extra.current);
     setBreakdown(extra.breakdown);
@@ -637,21 +757,39 @@ function DashboardPage() {
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-
-              <StatCard icon={BarChart2} label="Impressions" value={stats.impressions.toLocaleString()} sub="Times shown on the network" />
-              <StatCard icon={MousePointerClick} label="Clicks" value={stats.clicks.toLocaleString()} sub="Visits driven to your site" />
-              <StatCard icon={Percent} label="CTR" value={`${ctr}%`} sub="Click-through rate" />
-              <StatCard icon={BarChart2} label="Rank" value={rank ? `#${rank}` : "—"} sub="By impressions" />
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+              {RANGE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.key}
+                  type="button"
+                  onClick={() => setRange(opt.key)}
+                  className={`shrink-0 rounded-full border px-3 py-1.5 text-[12px] font-medium transition-all ${
+                    range === opt.key
+                      ? "border-black bg-black text-white"
+                      : "border-black/10 bg-white text-black/50 hover:border-black/25 hover:text-black"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+              {rangeLoading && <span className="ml-1 text-[11px] text-black/30">Updating…</span>}
             </div>
 
-            <div className="rounded-xl border border-black/8 bg-white p-6">
+            <div className={`grid grid-cols-2 gap-4 lg:grid-cols-4 transition-opacity ${rangeLoading ? "opacity-60" : ""}`}>
+
+              <StatCard icon={BarChart2} label="Impressions" value={stats.impressions.toLocaleString()} sub={RANGE_SUB[range]} />
+              <StatCard icon={MousePointerClick} label="Clicks" value={stats.clicks.toLocaleString()} sub={RANGE_SUB[range]} />
+              <StatCard icon={Percent} label="CTR" value={`${ctr}%`} sub="Click-through rate" />
+              <StatCard icon={BarChart2} label="Rank" value={rank ? `#${rank}` : "—"} sub="By impressions (all time)" />
+            </div>
+
+            <div className={`rounded-xl border border-black/8 bg-white p-6 transition-opacity ${rangeLoading ? "opacity-60" : ""}`}>
               <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold text-black">Impressions — last 7 days</p>
-                <span className="text-xs text-black/30">This week</span>
+                <p className="text-sm font-semibold text-black">Impressions — {RANGE_CHART_TITLE[range]}</p>
+                <span className="text-xs text-black/30">{RANGE_OPTIONS.find((o) => o.key === range)?.label}</span>
               </div>
               <div className="mt-6">
-                <Sparkline data={chartData} labels={rollingLabels()} />
+                <Sparkline data={chartData} labels={chartLabels} />
               </div>
             </div>
 

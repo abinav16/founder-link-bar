@@ -27,6 +27,8 @@ export interface StartupCard {
   created_at: string;
   impressions_24h: number;
   clicks_24h: number;
+  impressions: number;
+  clicks: number;
 }
 
 
@@ -57,9 +59,10 @@ export const getNetworkDashboard = createServerFn({ method: "GET" }).handler(
     // Totals include ALL startups that ever participated in the network
     // (approved + rejected/removed) so removing a startup doesn't erase the
     // impressions/clicks it contributed to the network's totals.
-    const [totalsRes, per24hRes] = await Promise.all([
+    const [totalsRes, per24hRes, lifetimeRes] = await Promise.all([
       supabase.rpc("public_network_totals_all" as any),
       supabase.rpc("public_startup_24h" as any, { _ids: approvedIds }),
+      supabase.rpc("public_startup_totals" as any, { _ids: approvedIds }),
     ]);
 
     const totalsRow = (totalsRes.data as any)?.[0] ?? {};
@@ -78,6 +81,20 @@ export const getNetworkDashboard = createServerFn({ method: "GET" }).handler(
       click24hMap[r.startup_id] = Number(r.clicks_24h) || 0;
     }
 
+    // Lifetime per-startup totals power the "Most clicks" / "Most impressions"
+    // sorts in the network directory (24h numbers alone aren't enough).
+    const lifetime = (lifetimeRes.data ?? []) as Array<{
+      startup_id: string;
+      impressions: number;
+      clicks: number;
+    }>;
+    const impMap: Record<string, number> = {};
+    const clickMap: Record<string, number> = {};
+    for (const r of lifetime) {
+      impMap[r.startup_id] = Number(r.impressions) || 0;
+      clickMap[r.startup_id] = Number(r.clicks) || 0;
+    }
+
     const cards: StartupCard[] = (startups ?? []).map((s: any) => ({
       id: s.id,
       slug: s.slug ?? null,
@@ -88,6 +105,8 @@ export const getNetworkDashboard = createServerFn({ method: "GET" }).handler(
       created_at: s.created_at,
       impressions_24h: imp24hMap[s.id] ?? 0,
       clicks_24h: click24hMap[s.id] ?? 0,
+      impressions: impMap[s.id] ?? 0,
+      clicks: clickMap[s.id] ?? 0,
     }));
 
 
