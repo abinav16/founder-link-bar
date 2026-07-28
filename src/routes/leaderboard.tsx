@@ -121,6 +121,26 @@ const RANGE_OPTIONS: { key: Range; label: string }[] = [
   { key: "all", label: "All-time" },
 ];
 
+function ColHeader({ label, hint, className = "" }: { label: string; hint: string; className?: string }) {
+  return (
+    <Tooltip delayDuration={100}>
+      <TooltipTrigger asChild>
+        <span
+          tabIndex={0}
+          className={`inline-flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wide text-black/35 cursor-help outline-none ${className}`}
+        >
+          {label}
+          <Info className="h-2.5 w-2.5 text-black/25" />
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-[230px] text-[11px] leading-relaxed">
+        {hint}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+
 function LeaderboardPage() {
   const { leaderboard, activity } = Route.useLoaderData();
   const rowsByReceived = leaderboard.rowsByReceived;
