@@ -474,7 +474,7 @@ function LeaderboardPage() {
               <div className="w-7 shrink-0 text-center text-[9px] font-semibold uppercase tracking-wide text-black/25">#</div>
               <div className="w-9 shrink-0" />
               <div className="flex-1 min-w-0 text-[9px] font-semibold uppercase tracking-wide text-black/35">Startup</div>
-              <div className="w-[68px] shrink-0 flex justify-center">
+              <div className="w-[76px] shrink-0 flex justify-center">
                 <ColHeader
                   label="Trend"
                   hint={
@@ -559,7 +559,7 @@ function LeaderboardPage() {
                   <p className="text-xs text-black/40 truncate mt-0.5">{row.description}</p>
                 </div>
 
-                <div className="w-[68px] shrink-0 hidden sm:flex flex-col items-center gap-1">
+                <div className="w-[76px] shrink-0 hidden sm:flex flex-col items-center gap-1">
                   <MiniSparkline data={sparkData(row)} />
                   <span className="text-[8px] uppercase tracking-wide text-black/20 whitespace-nowrap">{sparkLabel}</span>
                 </div>
