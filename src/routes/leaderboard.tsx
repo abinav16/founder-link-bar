@@ -368,7 +368,7 @@ function LeaderboardPage() {
                           {tab === "received" ? (
                             <>
                               <div>
-                                <div className={`text-xs font-semibold ${originalIndex === 0 ? "text-white" : "text-black"}`}>{row.clicks}</div>
+                                <div className={`text-xs font-semibold ${originalIndex === 0 ? "text-white" : "text-black"}`}>{clicksMetric(row)}</div>
                                 <div className={`text-[8px] uppercase tracking-wide ${originalIndex === 0 ? "text-white/35" : "text-black/30"}`}>Clicks</div>
                               </div>
                               <div>
@@ -378,7 +378,7 @@ function LeaderboardPage() {
                             </>
                           ) : (
                             <div>
-                              <div className={`text-xs font-semibold ${originalIndex === 0 ? "text-white" : "text-black"}`}>{row.impressions}</div>
+                              <div className={`text-xs font-semibold ${originalIndex === 0 ? "text-white" : "text-black"}`}>{receivedMetric(row)}</div>
                               <div className={`text-[8px] uppercase tracking-wide ${originalIndex === 0 ? "text-white/35" : "text-black/30"}`}>Received</div>
                             </div>
                           )}
@@ -626,5 +626,5 @@ function LeaderboardPage() {
     </div>
   );
 
-  return <DashboardLayout>{body}</DashboardLayout>;
+  return <DashboardLayout><TooltipProvider>{body}</TooltipProvider></DashboardLayout>;
 }
