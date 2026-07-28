@@ -96,12 +96,13 @@ function NewBadge({ className = "" }: { className?: string }) {
 
 function MiniSparkline({ data, color = "#000" }: { data: number[]; color?: string }) {
   const max = Math.max(...data, 1);
+  const dense = data.length > 12;
   return (
-    <div className="flex items-end gap-[2px] h-7">
+    <div className={`flex items-end h-7 ${dense ? "gap-[1px]" : "gap-[2px]"}`}>
       {data.map((v, i) => (
         <div
           key={i}
-          className="w-[3px] rounded-full transition-all duration-500"
+          className={`rounded-full transition-all duration-500 ${dense ? "w-[2px]" : "w-[3px]"}`}
           style={{
             height: `${Math.max((v / max) * 100, v > 0 ? 15 : 8)}%`,
             background: color,
@@ -112,6 +113,7 @@ function MiniSparkline({ data, color = "#000" }: { data: number[]; color?: strin
     </div>
   );
 }
+
 
 type Range = "today" | "week" | "all";
 
