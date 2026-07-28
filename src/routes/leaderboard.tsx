@@ -167,17 +167,45 @@ function LeaderboardPage() {
   }, []);
 
 
-  const ctr = (row: LeaderboardRow) =>
-    row.impressions > 0 ? ((row.clicks / row.impressions) * 100).toFixed(1) + "%" : "—";
+  const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0);
 
-  // Daily buckets hold 7 days, index 6 = today — so a windowed range is a
-  // pure client-side re-read of data the loader already returned.
-  const primaryMetric = (row: LeaderboardRow) => {
-    const daily = tab === "received" ? row.dailyImpressions : row.dailyGiven;
-    if (range === "today") return daily[daily.length - 1] ?? 0;
-    if (range === "week") return daily.reduce((a, b) => a + b, 0);
-    return tab === "received" ? row.impressions : row.impressions_given;
+  // Daily buckets hold 7 days (index 6 = today); hourly buckets hold the 24
+  // hours of the current day — so every window is a pure client-side re-read.
+  const receivedMetric = (row: LeaderboardRow) => {
+    if (range === "today") return row.dailyImpressions[6] ?? 0;
+    if (range === "week") return sum(row.dailyImpressions);
+    return row.impressions;
   };
+  const givenMetric = (row: LeaderboardRow) => {
+    if (range === "today") return row.dailyGiven[6] ?? 0;
+    if (range === "week") return sum(row.dailyGiven);
+    return row.impressions_given;
+  };
+  const clicksMetric = (row: LeaderboardRow) => {
+    if (range === "today") return row.dailyClicks[6] ?? 0;
+    if (range === "week") return sum(row.dailyClicks);
+    return row.clicks;
+  };
+  const primaryMetric = (row: LeaderboardRow) =>
+    tab === "received" ? receivedMetric(row) : givenMetric(row);
+
+  const ctr = (row: LeaderboardRow) => {
+    const imp = receivedMetric(row);
+    const clk = clicksMetric(row);
+    return imp > 0 ? ((clk / imp) * 100).toFixed(1) + "%" : "—";
+  };
+  const ratio = (row: LeaderboardRow) => {
+    const recv = receivedMetric(row);
+    return recv > 0 ? `${(givenMetric(row) / recv).toFixed(1)}x` : "—";
+  };
+
+  const sparkData = (row: LeaderboardRow) => {
+    if (range === "today") return tab === "received" ? row.hourlyImpressions : row.hourlyGiven;
+    return tab === "received" ? row.dailyImpressions : row.dailyGiven;
+  };
+  const sparkLabel = range === "today" ? "Today · hourly" : range === "week" ? "Last 7 days" : "7-day trend";
+
+  const rangeSuffix = range === "today" ? "today" : range === "week" ? "7d" : "all-time";
 
   const baseRows = tab === "received" ? rowsByReceived : rowsByGiven;
   const activeRows =
@@ -189,6 +217,7 @@ function LeaderboardPage() {
   const podium = windowEmpty ? [] : activeRows.slice(0, 3);
 
   const podiumDisplay = [podium[1], podium[0], podium[2]].filter(Boolean) as LeaderboardRow[];
+
 
   const body = (
     <div className="max-w-5xl mx-auto">
