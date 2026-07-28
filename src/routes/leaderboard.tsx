@@ -4,7 +4,9 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { getLeaderboard, getNetworkActivity, type LeaderboardRow } from "@/lib/leaderboard.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { Trophy, ExternalLink } from "lucide-react";
+import { Trophy, ExternalLink, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
 
 function LeaderboardPending() {
   return (
