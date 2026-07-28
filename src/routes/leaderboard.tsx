@@ -4,7 +4,9 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { getLeaderboard, getNetworkActivity, type LeaderboardRow } from "@/lib/leaderboard.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { Trophy, ExternalLink } from "lucide-react";
+import { Trophy, ExternalLink, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
 
 function LeaderboardPending() {
   return (
@@ -94,12 +96,13 @@ function NewBadge({ className = "" }: { className?: string }) {
 
 function MiniSparkline({ data, color = "#000" }: { data: number[]; color?: string }) {
   const max = Math.max(...data, 1);
+  const dense = data.length > 12;
   return (
-    <div className="flex items-end gap-[2px] h-7">
+    <div className={`flex items-end h-7 ${dense ? "gap-[1px]" : "gap-[2px]"}`}>
       {data.map((v, i) => (
         <div
           key={i}
-          className="w-[3px] rounded-full transition-all duration-500"
+          className={`rounded-full transition-all duration-500 ${dense ? "w-[2px]" : "w-[3px]"}`}
           style={{
             height: `${Math.max((v / max) * 100, v > 0 ? 15 : 8)}%`,
             background: color,
@@ -111,6 +114,7 @@ function MiniSparkline({ data, color = "#000" }: { data: number[]; color?: strin
   );
 }
 
+
 type Range = "today" | "week" | "all";
 
 const RANGE_OPTIONS: { key: Range; label: string }[] = [
@@ -118,6 +122,26 @@ const RANGE_OPTIONS: { key: Range; label: string }[] = [
   { key: "week", label: "This week" },
   { key: "all", label: "All-time" },
 ];
+
+function ColHeader({ label, hint, className = "" }: { label: string; hint: string; className?: string }) {
+  return (
+    <Tooltip delayDuration={100}>
+      <TooltipTrigger asChild>
+        <span
+          tabIndex={0}
+          className={`inline-flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wide text-black/35 cursor-help outline-none ${className}`}
+        >
+          {label}
+          <Info className="h-2.5 w-2.5 text-black/25" />
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-[230px] text-[11px] leading-relaxed">
+        {hint}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
 
 function LeaderboardPage() {
   const { leaderboard, activity } = Route.useLoaderData();
@@ -167,17 +191,45 @@ function LeaderboardPage() {
   }, []);
 
 
-  const ctr = (row: LeaderboardRow) =>
-    row.impressions > 0 ? ((row.clicks / row.impressions) * 100).toFixed(1) + "%" : "—";
+  const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0);
 
-  // Daily buckets hold 7 days, index 6 = today — so a windowed range is a
-  // pure client-side re-read of data the loader already returned.
-  const primaryMetric = (row: LeaderboardRow) => {
-    const daily = tab === "received" ? row.dailyImpressions : row.dailyGiven;
-    if (range === "today") return daily[daily.length - 1] ?? 0;
-    if (range === "week") return daily.reduce((a, b) => a + b, 0);
-    return tab === "received" ? row.impressions : row.impressions_given;
+  // Daily buckets hold 7 days (index 6 = today); hourly buckets hold the 24
+  // hours of the current day — so every window is a pure client-side re-read.
+  const receivedMetric = (row: LeaderboardRow) => {
+    if (range === "today") return row.dailyImpressions[6] ?? 0;
+    if (range === "week") return sum(row.dailyImpressions);
+    return row.impressions;
   };
+  const givenMetric = (row: LeaderboardRow) => {
+    if (range === "today") return row.dailyGiven[6] ?? 0;
+    if (range === "week") return sum(row.dailyGiven);
+    return row.impressions_given;
+  };
+  const clicksMetric = (row: LeaderboardRow) => {
+    if (range === "today") return row.dailyClicks[6] ?? 0;
+    if (range === "week") return sum(row.dailyClicks);
+    return row.clicks;
+  };
+  const primaryMetric = (row: LeaderboardRow) =>
+    tab === "received" ? receivedMetric(row) : givenMetric(row);
+
+  const ctr = (row: LeaderboardRow) => {
+    const imp = receivedMetric(row);
+    const clk = clicksMetric(row);
+    return imp > 0 ? ((clk / imp) * 100).toFixed(1) + "%" : "—";
+  };
+  const ratio = (row: LeaderboardRow) => {
+    const recv = receivedMetric(row);
+    return recv > 0 ? `${(givenMetric(row) / recv).toFixed(1)}x` : "—";
+  };
+
+  const sparkData = (row: LeaderboardRow) => {
+    if (range === "today") return tab === "received" ? row.hourlyImpressions : row.hourlyGiven;
+    return tab === "received" ? row.dailyImpressions : row.dailyGiven;
+  };
+  const sparkLabel = range === "today" ? "Today · hourly" : range === "week" ? "Last 7 days" : "7-day trend";
+
+  const rangeSuffix = range === "today" ? "today" : range === "week" ? "7d" : "all-time";
 
   const baseRows = tab === "received" ? rowsByReceived : rowsByGiven;
   const activeRows =
@@ -189,6 +241,7 @@ function LeaderboardPage() {
   const podium = windowEmpty ? [] : activeRows.slice(0, 3);
 
   const podiumDisplay = [podium[1], podium[0], podium[2]].filter(Boolean) as LeaderboardRow[];
+
 
   const body = (
     <div className="max-w-5xl mx-auto">
@@ -315,7 +368,7 @@ function LeaderboardPage() {
                           {tab === "received" ? (
                             <>
                               <div>
-                                <div className={`text-xs font-semibold ${originalIndex === 0 ? "text-white" : "text-black"}`}>{row.clicks}</div>
+                                <div className={`text-xs font-semibold ${originalIndex === 0 ? "text-white" : "text-black"}`}>{clicksMetric(row)}</div>
                                 <div className={`text-[8px] uppercase tracking-wide ${originalIndex === 0 ? "text-white/35" : "text-black/30"}`}>Clicks</div>
                               </div>
                               <div>
@@ -325,7 +378,7 @@ function LeaderboardPage() {
                             </>
                           ) : (
                             <div>
-                              <div className={`text-xs font-semibold ${originalIndex === 0 ? "text-white" : "text-black"}`}>{row.impressions}</div>
+                              <div className={`text-xs font-semibold ${originalIndex === 0 ? "text-white" : "text-black"}`}>{receivedMetric(row)}</div>
                               <div className={`text-[8px] uppercase tracking-wide ${originalIndex === 0 ? "text-white/35" : "text-black/30"}`}>Received</div>
                             </div>
                           )}
@@ -415,7 +468,63 @@ function LeaderboardPage() {
           )}
 
 
-          <div className="mt-6 space-y-2">
+          <div className="mt-6">
+            {/* Column headers — desktop only; each metric explains itself on hover */}
+            <div className="hidden sm:flex items-center gap-4 px-5 pb-2">
+              <div className="w-7 shrink-0 text-center text-[9px] font-semibold uppercase tracking-wide text-black/25">#</div>
+              <div className="w-9 shrink-0" />
+              <div className="flex-1 min-w-0 text-[9px] font-semibold uppercase tracking-wide text-black/35">Startup</div>
+              <div className="w-[76px] shrink-0 flex justify-center">
+                <ColHeader
+                  label="Trend"
+                  hint={
+                    range === "today"
+                      ? "Activity hour by hour since today's 5:30 AM IST reset."
+                      : "Daily activity over the last 7 days — most recent day on the right."
+                  }
+                />
+              </div>
+              {tab === "received" ? (
+                <div className="shrink-0 flex gap-5">
+                  <div className="w-16 flex justify-end">
+                    <ColHeader
+                      label="Impr."
+                      hint={`Impressions received (${rangeSuffix}) — times this startup's card was shown inside other founders' widgets.`}
+                    />
+                  </div>
+                  <div className="w-16 flex justify-end">
+                    <ColHeader
+                      label="Clicks"
+                      hint={`Clicks received (${rangeSuffix}) — times a visitor clicked through to this startup from a widget, the network page, or the leaderboard.`}
+                    />
+                  </div>
+                  <div className="w-14 flex justify-end">
+                    <ColHeader label="CTR" hint={`Clicks ÷ impressions for the selected window (${rangeSuffix}).`} />
+                  </div>
+                </div>
+              ) : (
+                <div className="shrink-0 flex gap-5">
+                  <div className="w-16 flex justify-end">
+                    <ColHeader
+                      label="Given"
+                      hint={`Impressions given (${rangeSuffix}) — traffic this startup delivered to others by running the widget on its own site.`}
+                    />
+                  </div>
+                  <div className="w-16 flex justify-end">
+                    <ColHeader
+                      label="Recv."
+                      hint={`Impressions this startup received back from the network (${rangeSuffix}).`}
+                    />
+                  </div>
+                  <div className="w-14 flex justify-end">
+                    <ColHeader label="Ratio" hint="Impressions given ÷ impressions received. Above 1.0x means this site gives more than it gets." />
+                  </div>
+                </div>
+              )}
+              <div className="w-3.5 shrink-0" />
+            </div>
+
+            <div className="space-y-2">
             {activeRows.map((row: LeaderboardRow, i: number) => (
               <div
                 key={row.id}
@@ -450,51 +559,49 @@ function LeaderboardPage() {
                   <p className="text-xs text-black/40 truncate mt-0.5">{row.description}</p>
                 </div>
 
-                <div className="shrink-0 hidden sm:flex flex-col items-center gap-1">
-                  <MiniSparkline
-                    data={tab === "received" ? row.dailyImpressions : row.dailyGiven}
-                  />
-                  <span className="text-[8px] uppercase tracking-wide text-black/20">7 days</span>
+                <div className="w-[76px] shrink-0 hidden sm:flex flex-col items-center gap-1">
+                  <MiniSparkline data={sparkData(row)} />
+                  <span className="text-[8px] uppercase tracking-wide text-black/20 whitespace-nowrap">{sparkLabel}</span>
                 </div>
 
                 {tab === "received" ? (
                   <div className="shrink-0 flex gap-3 sm:gap-5 text-right">
-                    <div>
-                      <div className="text-sm sm:text-base font-bold tabular-nums text-black">{primaryMetric(row).toLocaleString()}</div>
-                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">
-                        {range === "today" ? "Today" : range === "week" ? "7d impr." : "Impr."}
-                      </div>
+                    <div className="sm:w-16">
+                      <div className="text-sm sm:text-base font-bold tabular-nums text-black">{receivedMetric(row).toLocaleString()}</div>
+                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5 sm:hidden">Impr.</div>
+                      {range !== "all" && (
+                        <div className="text-[9px] tabular-nums text-black/25 mt-0.5">{row.impressions.toLocaleString()} all-time</div>
+                      )}
                     </div>
-                    <div>
-                      <div className="text-sm sm:text-base font-bold tabular-nums text-black">{row.clicks.toLocaleString()}</div>
-                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">
-                        {range === "all" ? "Clicks" : "Clicks · all"}
-                      </div>
+                    <div className="sm:w-16">
+                      <div className="text-sm sm:text-base font-bold tabular-nums text-black">{clicksMetric(row).toLocaleString()}</div>
+                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5 sm:hidden">Clicks</div>
+                      {range !== "all" && (
+                        <div className="text-[9px] tabular-nums text-black/25 mt-0.5">{row.clicks.toLocaleString()} all-time</div>
+                      )}
                     </div>
-                    <div className="hidden sm:block">
+                    <div className="hidden sm:block sm:w-14">
                       <div className="text-base font-bold tabular-nums text-black">{ctr(row)}</div>
-                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">
-                        {range === "all" ? "CTR" : "CTR · all"}
-                      </div>
                     </div>
                   </div>
                 ) : (
                   <div className="shrink-0 flex gap-3 sm:gap-5 text-right">
-                    <div>
-                      <div className="text-sm sm:text-base font-bold tabular-nums text-black">{primaryMetric(row).toLocaleString()}</div>
-                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">
-                        {range === "today" ? "Given today" : range === "week" ? "Given · 7d" : "Given"}
-                      </div>
+                    <div className="sm:w-16">
+                      <div className="text-sm sm:text-base font-bold tabular-nums text-black">{givenMetric(row).toLocaleString()}</div>
+                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5 sm:hidden">Given</div>
+                      {range !== "all" && (
+                        <div className="text-[9px] tabular-nums text-black/25 mt-0.5">{row.impressions_given.toLocaleString()} all-time</div>
+                      )}
                     </div>
-                    <div>
-                      <div className="text-sm sm:text-base font-bold tabular-nums text-black">{row.impressions.toLocaleString()}</div>
-                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">Recv.</div>
+                    <div className="sm:w-16">
+                      <div className="text-sm sm:text-base font-bold tabular-nums text-black">{receivedMetric(row).toLocaleString()}</div>
+                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5 sm:hidden">Recv.</div>
+                      {range !== "all" && (
+                        <div className="text-[9px] tabular-nums text-black/25 mt-0.5">{row.impressions.toLocaleString()} all-time</div>
+                      )}
                     </div>
-                    <div className="hidden sm:block">
-                      <div className="text-base font-bold tabular-nums text-black">
-                        {row.impressions > 0 ? `${(row.impressions_given / row.impressions).toFixed(1)}x` : "—"}
-                      </div>
-                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5">Ratio</div>
+                    <div className="hidden sm:block sm:w-14">
+                      <div className="text-base font-bold tabular-nums text-black">{ratio(row)}</div>
                     </div>
                   </div>
                 )}
@@ -510,12 +617,14 @@ function LeaderboardPage() {
                 </a>
               </div>
             ))}
+            </div>
           </div>
+
 
         </>
       )}
     </div>
   );
 
-  return <DashboardLayout>{body}</DashboardLayout>;
+  return <DashboardLayout><TooltipProvider>{body}</TooltipProvider></DashboardLayout>;
 }
