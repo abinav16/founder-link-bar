@@ -518,6 +518,27 @@ export type Database = {
           startup_id: string
         }[]
       }
+      public_startup_daily_v2: {
+        Args: { _ids: string[] }
+        Returns: {
+          clicks: number
+          clicks_given: number
+          day_offset: number
+          given: number
+          received: number
+          startup_id: string
+        }[]
+      }
+      public_startup_hourly: {
+        Args: { _ids: string[] }
+        Returns: {
+          clicks: number
+          given: number
+          hour_offset: number
+          received: number
+          startup_id: string
+        }[]
+      }
       public_startup_pulse: { Args: { _startup_id: string }; Returns: number }
       public_startup_referrers: {
         Args: { _startup_id: string }
