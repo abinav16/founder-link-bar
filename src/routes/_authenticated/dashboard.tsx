@@ -183,15 +183,41 @@ const RANGE_CHART_TITLE: Record<RangeKey, string> = {
   "24h": "last 24 hours",
   "7d": "last 7 days",
   "30d": "last 30 days",
-  all: "last 7 days",
+  all: "last 12 months",
 };
+
+const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 // Windowed totals + chart buckets. Counts use head+exact so they aren't
 // capped by PostgREST's default row limit; only the bucket rows are fetched.
 async function loadRangeData(startupId: string, range: RangeKey) {
   if (range === "all") {
-    const base = await loadDashboardData(startupId);
-    return { stats: base.stats, chartData: base.chartData, labels: rollingLabels() };
+    const monthStart = new Date();
+    monthStart.setHours(0, 0, 0, 0);
+    monthStart.setDate(1);
+    monthStart.setMonth(monthStart.getMonth() - 11);
+
+    const [base, monthlyR] = await Promise.all([
+      loadDashboardData(startupId),
+      supabase.from("impressions").select("created_at")
+        .eq("shown_startup_id", startupId).neq("referrer", "dev-simulate")
+        .gte("created_at", monthStart.toISOString())
+        .order("created_at", { ascending: true }).limit(50000),
+    ]);
+
+    const chartData = Array.from({ length: 12 }, () => 0);
+    const labels = Array.from({ length: 12 }, (_, i) => {
+      const d = new Date(monthStart);
+      d.setMonth(monthStart.getMonth() + i);
+      return MONTH_NAMES[d.getMonth()];
+    });
+    ((monthlyR.data ?? []) as { created_at: string }[]).forEach((row) => {
+      const d = new Date(row.created_at);
+      const idx = (d.getFullYear() - monthStart.getFullYear()) * 12 + (d.getMonth() - monthStart.getMonth());
+      if (idx >= 0 && idx < 12) chartData[idx]++;
+    });
+
+    return { stats: base.stats, chartData, labels };
   }
 
   const now = new Date();
@@ -342,30 +368,41 @@ function rollingLabels(): string[] {
 function Sparkline({ data, labels }: { data: number[]; labels: string[] }) {
   const max = Math.max(...data, 1);
   const [tooltip, setTooltip] = useState<{ idx: number } | null>(null);
+  const TRACK = 80;
   return (
-    <div className="flex h-20 items-end gap-2">
+    <div className="flex gap-1.5 sm:gap-2">
       {data.map((v, i) => (
         <div
           key={i}
-          className="flex flex-1 flex-col items-center gap-1.5 relative"
+          className="relative flex flex-1 flex-col items-center"
           onMouseEnter={() => setTooltip({ idx: i })}
           onMouseLeave={() => setTooltip(null)}
         >
-          {tooltip?.idx === i && (
-            <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-black px-2 py-1 text-[10px] font-medium text-white z-10">
-              {v} impression{v !== 1 ? "s" : ""} · {labels[i]}
-            </div>
-          )}
-          <div
-            className="w-full rounded-t-sm bg-black transition-all duration-500"
-            style={{ height: `${Math.max((v / max) * 64, v > 0 ? 4 : 2)}px`, opacity: v > 0 ? 1 : 0.12 }}
-          />
-          <span className="text-[9px] text-black/25">{labels[i]}</span>
+          {/* fixed-height track so every bar sits on the same baseline */}
+          <div className="flex w-full items-end justify-center" style={{ height: TRACK }}>
+            {tooltip?.idx === i && (
+              <div className="absolute -top-7 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-md bg-black px-2 py-1 text-[10px] font-medium text-white">
+                {v.toLocaleString()} impression{v !== 1 ? "s" : ""} · {labels[i]}
+              </div>
+            )}
+            <div
+              className="w-full rounded-t-sm bg-black transition-all duration-500"
+              style={{
+                height: v > 0 ? `${Math.max((v / max) * TRACK, 4)}px` : "2px",
+                opacity: v > 0 ? 1 : 0.12,
+              }}
+            />
+          </div>
+          {/* fixed-height label row keeps columns aligned even when a label is blank */}
+          <span className="mt-1.5 flex h-3 items-center text-[9px] leading-none text-black/25">
+            {labels[i]}
+          </span>
         </div>
       ))}
     </div>
   );
 }
+
 
 function DashboardPage() {
   const loaderData = Route.useLoaderData();
@@ -410,16 +447,11 @@ function DashboardPage() {
   const [breakdown, setBreakdown] = useState<TrafficBreakdown>(loaderData.breakdown);
   const [liveTicker, setLiveTicker] = useState<{ country: string; device: string; ts: number } | null>(null);
   const [isLive, setIsLive] = useState(false);
-  const skipFirstRangeFetch = useRef(true);
 
   useEffect(() => {
     if (!startup) return;
-    if (skipFirstRangeFetch.current && range === "all") {
-      skipFirstRangeFetch.current = false;
-      return;
-    }
-    skipFirstRangeFetch.current = false;
     let cancelled = false;
+
     setRangeLoading(true);
     loadRangeData(startup.id, range)
       .then((r) => {
@@ -558,16 +590,12 @@ function DashboardPage() {
     setStartup(s);
     setStats({ impressions: 0, clicks: 0 });
     setCurrent(null);
-    setChartData([0, 0, 0, 0, 0, 0, 0]);
+    setChartData(chartData.map(() => 0));
     setBreakdown({ countries: [], devices: [], topReferrers: [] });
     checkInstall(s.website_url);
     const extra = await loadDashboardData(s.id);
-    // The range effect owns stats/chart for non-"all" windows — don't clobber it.
-    if (range === "all") {
-      setStats(extra.stats);
-      setChartData(extra.chartData);
-      setChartLabels(rollingLabels());
-    }
+    // The range effect owns stats + chart for every window — don't clobber it here.
+
     setRank(extra.rank);
     setCurrent(extra.current);
     setBreakdown(extra.breakdown);
