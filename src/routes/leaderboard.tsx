@@ -225,9 +225,10 @@ function LeaderboardPage() {
 
   const sparkData = (row: LeaderboardRow) => {
     if (range === "today") return tab === "received" ? row.hourlyImpressions : row.hourlyGiven;
+    if (range === "all") return tab === "received" ? row.monthlyImpressions : row.monthlyGiven;
     return tab === "received" ? row.dailyImpressions : row.dailyGiven;
   };
-  const sparkLabel = range === "today" ? "Today · hourly" : range === "week" ? "Last 7 days" : "7-day trend";
+  const sparkLabel = range === "today" ? "Today · hourly" : range === "week" ? "Last 7 days" : "Last 12 months";
 
   const rangeSuffix = range === "today" ? "today" : range === "week" ? "7d" : "all-time";
 
@@ -480,7 +481,9 @@ function LeaderboardPage() {
                   hint={
                     range === "today"
                       ? "Activity hour by hour since today's 5:30 AM IST reset."
-                      : "Daily activity over the last 7 days — most recent day on the right."
+                      : range === "all"
+                        ? "Monthly activity over the last 12 months — most recent month on the right."
+                        : "Daily activity over the last 7 days — most recent day on the right."
                   }
                 />
               </div>

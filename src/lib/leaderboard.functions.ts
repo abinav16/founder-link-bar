@@ -29,6 +29,9 @@ export interface LeaderboardRow {
   hourlyImpressions: number[];
   hourlyGiven: number[];
   hourlyClicks: number[];
+  monthlyImpressions: number[];
+  monthlyGiven: number[];
+  monthlyClicks: number[];
 }
 
 const zeros = (n: number) => Array.from({ length: n }, () => 0);
@@ -46,10 +49,11 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
 
   const ids = (startups ?? []).map((s) => s.id);
 
-  const [totalsRes, dailyRes, hourlyRes] = await Promise.all([
+  const [totalsRes, dailyRes, hourlyRes, monthlyRes] = await Promise.all([
     supabase.rpc("public_startup_totals" as any, { _ids: ids }),
     supabase.rpc("public_startup_daily_v2" as any, { _ids: ids }),
     supabase.rpc("public_startup_hourly" as any, { _ids: ids }),
+    supabase.rpc("public_startup_monthly" as any, { _ids: ids }),
   ]);
 
   const totals = (totalsRes.data ?? []) as Array<{
@@ -74,6 +78,13 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
     given: number;
     clicks: number;
   }>;
+  const monthly = (monthlyRes.data ?? []) as Array<{
+    startup_id: string;
+    month_offset: number;
+    received: number;
+    given: number;
+    clicks: number;
+  }>;
 
   const totalsMap = new Map(totals.map((t) => [t.startup_id, t]));
   const receivedBuckets = new Map<string, number[]>();
@@ -83,6 +94,9 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
   const hReceived = new Map<string, number[]>();
   const hGiven = new Map<string, number[]>();
   const hClicks = new Map<string, number[]>();
+  const mReceived = new Map<string, number[]>();
+  const mGiven = new Map<string, number[]>();
+  const mClicks = new Map<string, number[]>();
   for (const id of ids) {
     receivedBuckets.set(id, zeros(7));
     givenBuckets.set(id, zeros(7));
@@ -91,6 +105,9 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
     hReceived.set(id, zeros(24));
     hGiven.set(id, zeros(24));
     hClicks.set(id, zeros(24));
+    mReceived.set(id, zeros(12));
+    mGiven.set(id, zeros(12));
+    mClicks.set(id, zeros(12));
   }
   for (const row of daily) {
     const idx = 6 - Number(row.day_offset);
@@ -114,6 +131,17 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
     if (g) g[idx] = Number(row.given) || 0;
     if (c) c[idx] = Number(row.clicks) || 0;
   }
+  for (const row of monthly) {
+    // month_offset 0 = current month → last index (rightmost bar)
+    const idx = 11 - Number(row.month_offset);
+    if (idx < 0 || idx > 11) continue;
+    const r = mReceived.get(row.startup_id);
+    const g = mGiven.get(row.startup_id);
+    const c = mClicks.get(row.startup_id);
+    if (r) r[idx] = Number(row.received) || 0;
+    if (g) g[idx] = Number(row.given) || 0;
+    if (c) c[idx] = Number(row.clicks) || 0;
+  }
 
   const rows: LeaderboardRow[] = (startups ?? []).map((s) => {
     const t = totalsMap.get(s.id);
@@ -130,6 +158,9 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
       hourlyImpressions: hReceived.get(s.id) ?? zeros(24),
       hourlyGiven: hGiven.get(s.id) ?? zeros(24),
       hourlyClicks: hClicks.get(s.id) ?? zeros(24),
+      monthlyImpressions: mReceived.get(s.id) ?? zeros(12),
+      monthlyGiven: mGiven.get(s.id) ?? zeros(12),
+      monthlyClicks: mClicks.get(s.id) ?? zeros(12),
     };
   });
 
