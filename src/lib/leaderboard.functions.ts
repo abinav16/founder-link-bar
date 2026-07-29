@@ -49,13 +49,14 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
 
   const ids = (startups ?? []).map((s) => s.id);
 
-  const [totalsRes, dailyRes, hourlyRes] = await Promise.all([
+  const [totalsRes, dailyRes, hourlyRes, monthlyRes] = await Promise.all([
     supabase.rpc("public_startup_totals" as any, { _ids: ids }),
     supabase.rpc("public_startup_daily_v2" as any, { _ids: ids }),
     supabase.rpc("public_startup_hourly" as any, { _ids: ids }),
     supabase.rpc("public_startup_monthly" as any, { _ids: ids }),
   ]);
 
+  const totals = (totalsRes.data ?? []) as Array<{
     startup_id: string;
     impressions: number;
     clicks: number;
