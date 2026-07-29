@@ -299,14 +299,21 @@ function StartupRow({ s }: { s: Card }) {
         {s.description}
       </p>
 
-      <div className="relative z-10 sm:hidden mt-2 flex items-center gap-4 pointer-events-none">
-        <span className="text-[11px] text-black/40 tabular-nums">{joinedLabel(s.created_at)}</span>
-        <span className="inline-flex items-center gap-1 text-[11px] text-black/40 tabular-nums">
-          <Eye className="h-3 w-3 text-black/30" strokeWidth={2} />
-          {fmt(s.impressions)}
-        </span>
-        <span className="text-[11px] text-black/40 tabular-nums">{fmt(s.clicks)} clicks</span>
+      <div className="relative z-10 sm:hidden mt-3 grid grid-cols-3 rounded-xl border border-black/[0.06] bg-black/[0.015] divide-x divide-black/[0.06] pointer-events-none">
+        <div className="flex flex-col items-center gap-0.5 py-1.5">
+          <span className="text-[9px] uppercase tracking-[0.1em] font-semibold text-black/30">Joined</span>
+          <span className="text-[12px] font-semibold text-black/70 tabular-nums">{joinedLabel(s.created_at)}</span>
+        </div>
+        <div className="flex flex-col items-center gap-0.5 py-1.5">
+          <span className="text-[9px] uppercase tracking-[0.1em] font-semibold text-black/30">Impressions</span>
+          <span className="text-[12px] font-semibold text-black/70 tabular-nums">{fmt(s.impressions)}</span>
+        </div>
+        <div className="flex flex-col items-center gap-0.5 py-1.5">
+          <span className="text-[9px] uppercase tracking-[0.1em] font-semibold text-black/30">Clicks</span>
+          <span className="text-[12px] font-semibold text-black/70 tabular-nums">{fmt(s.clicks)}</span>
+        </div>
       </div>
+
     </div>
   );
 }
