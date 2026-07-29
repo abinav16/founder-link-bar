@@ -593,20 +593,23 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
             <div style={{ width: 14, height: 3, background: "white", borderRadius: 3 }} />
             <span style={{ color: "white", fontSize: 15, fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1 }}>StartupBar</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="px-2 py-1 rounded-full bg-black/70 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-              <PillStat small value={stats ? String(stats.totalStartups) : "—"} label="Startups" />
-            </div>
-            <div className="px-2 py-1 rounded-full bg-black/70 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-              <PillStat small value={stats ? `${stats.ctr}%` : "—"} label="CTR" />
-            </div>
-            <div className="px-2 py-1 rounded-full bg-black/70 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-              <PillStat small value={stats ? fmt(stats.totalImpressions) : "—"} label="Impressions" />
-            </div>
-            <div className="px-2 py-1 rounded-full bg-black/70 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-              <PillStat small value={stats ? fmt(stats.totalClicks) : "—"} label="Clicks" />
+          <div className="w-full px-4 flex justify-center">
+            <div className="flex items-stretch divide-x divide-white/10 rounded-2xl bg-black/70 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden">
+              <div className="px-2.5 py-1.5">
+                <PillStat small value={stats ? String(stats.totalStartups) : "—"} label="Startups" />
+              </div>
+              <div className="px-2.5 py-1.5">
+                <PillStat small value={stats ? `${stats.ctr}%` : "—"} label="CTR" />
+              </div>
+              <div className="px-2.5 py-1.5">
+                <PillStat small value={stats ? fmt(stats.totalImpressions) : "—"} label="Impr" />
+              </div>
+              <div className="px-2.5 py-1.5">
+                <PillStat small value={stats ? fmt(stats.totalClicks) : "—"} label="Clicks" />
+              </div>
             </div>
           </div>
+
         </div>
       </div>
 
