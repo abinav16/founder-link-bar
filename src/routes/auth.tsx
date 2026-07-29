@@ -187,7 +187,7 @@ function AuthPage() {
       if (mode === "signup") {
         const next = typeof window !== "undefined" ? sessionStorage.getItem("startupbar:auth-next") : null;
         const redirectPath = next === "/apply" ? "/apply" : "/dashboard";
-        const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}${redirectPath}`, data: { full_name: name } } });
+        const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectPath)}`, data: { full_name: name } } });
         if (error) throw error;
         // Welcome email fires from the root onAuthStateChange on first
         // SIGNED_IN — signUp() has no session yet when email confirmation
@@ -219,7 +219,7 @@ function AuthPage() {
               setLoading(true);
               const next = typeof window !== "undefined" ? sessionStorage.getItem("startupbar:auth-next") : null;
               const redirectPath = next === "/apply" ? "/apply" : "/dashboard";
-              const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: `${window.location.origin}${redirectPath}` });
+              const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectPath)}` });
               if (result.error) { toast.error(result.error.message); setLoading(false); return; }
               if (result.redirected) return;
               navigate({ to: consumeNext() });

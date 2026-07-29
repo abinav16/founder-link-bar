@@ -1,39 +1,34 @@
-## Problems
+## Short answer: yes, but it's intermittent
 
-1. **Sparkline is always 7 days**, even on All-time and Today — so the graph doesn't match the number next to it.
-2. **Clicks / CTR are always lifetime**, even when Today or This week is selected (currently patched with a "· all" caption). Mixed windows in one row is the core confusion.
-3. **No column headers** — users can't tell whether "Clicks" means clicks the startup received or clicks it sent, or what the bar chart represents.
+Your screenshot actually confirms half of it — your URL is `startupbar.co/dashboard#`, with the stray `#`. That trailing hash only appears because the sign-in return lands directly on `/dashboard` carrying the provider's token fragment, and something strips it back to a bare `#`.
 
-## What to build
+Whether you also get the *blank* page is a timing race, which is why it works for you and not for him:
 
-### 1. Column header row with tooltips
-Add a sticky-ish header row above the list (desktop only; mobile keeps the current inline captions), aligned to the existing columns:
+- Google sign-in is told to return to `https://startupbar.co/dashboard` (`src/routes/auth.tsx` — the Google button passes `redirect_uri: ${origin}${redirectPath}`, where redirectPath is `/dashboard`).
+- `/dashboard` is protected. Its gate (`src/routes/_authenticated/route.tsx`) calls `getUser()` the moment the page loads.
+- If the client has already parsed the token fragment and stored the session (fast machine, warm cache) → dashboard renders, you just see the leftover `#`.
+- If the gate wins the race (slower network, Firefox, cold load — his case) → no session yet, it bounces, the fragment is gone, and you're left on `/dashboard#` with nothing rendered.
 
-`# · Startup · Trend · Impressions · Clicks · CTR` (Most Seen)
-`# · Startup · Trend · Given · Received · Ratio` (Top Contributors)
+Same race applies to the email-confirmation link, which also points at `/dashboard`.
 
-Each header gets an info icon with a tooltip (shadcn `Tooltip`), wording plain-English and window-aware:
-- Impressions — "Times this startup's card was shown inside other founders' widgets."
-- Clicks — "Times a visitor clicked through to this startup from a widget, the network page, or the leaderboard."
-- CTR — "Clicks ÷ impressions."
-- Given — "Impressions this startup delivered to others by running the widget on its own site."
-- Received / Ratio — same treatment.
-- Trend — label changes with the range (see below).
+## The fix
 
-### 2. Range-aware sparkline
-- **Today** → 24 hourly bars for the current IST day, caption "Today · hourly".
-- **This week** → current 7 daily bars, caption "Last 7 days".
-- **All-time** → keep the 7-day bars but caption them honestly as "Last 7 days trend", so it reads as recent momentum rather than a claim about all-time. (Rendering the full history per row isn't meaningful at this bar size and would need a much heavier query.)
+**1. Add a public callback route** — `src/routes/auth.callback.tsx` (`/auth/callback`, `ssr: false`):
+- Shows a brief "Signing you in…" state.
+- Waits for the session to actually exist (auth-state listener plus a short `getSession()` poll, with a timeout) instead of assuming it's there.
+- Reads the intended destination (`/apply` vs `/dashboard`) from a `next` search param, falling back to the existing `startupbar:auth-next` sessionStorage value, then `/dashboard`.
+- Navigates there with `replace: true`, so neither the callback URL nor a leftover `#` stays in history.
+- On timeout, sends the user to `/auth` with a toast rather than a blank screen.
 
-### 3. Make clicks and CTR follow the selected window
-Instead of the "· all" workaround, show clicks and CTR for the same window as the impressions column, and keep the lifetime number as a small muted sub-caption so the big number isn't lost. Podium cards get the same treatment.
+**2. Point auth returns at the callback instead of the protected route** (`src/routes/auth.tsx`):
+- Google: `redirect_uri: ${window.location.origin}/auth/callback?next=${redirectPath}`.
+- Signup: `emailRedirectTo: ${window.location.origin}/auth/callback?next=${redirectPath}`.
+- Password sign-in is unchanged (no fragment involved).
 
-## Technical notes
+**3. Harden the protected gate** (`src/routes/_authenticated/route.tsx`): if the URL still carries an auth fragment (`access_token` / `code` / `error` in the hash), let the session settle before deciding instead of redirecting instantly — this closes the same race for anyone who lands on a protected URL with a token fragment, and stops the bare `#` being left behind.
 
-- One migration adding two read-only functions (same security pattern as the existing `public_startup_daily`: `SECURITY DEFINER`, fixed `search_path`, execute granted only to the roles the server function uses):
-  - `public_startup_hourly(_ids uuid[])` → per startup, hour offset 0–23 within the current IST day, impressions received/given + clicks.
-  - Extend the daily aggregation to also return **clicks per day** (new function `public_startup_daily_v2` or added columns), which is what makes windowed Clicks/CTR possible.
-- `src/lib/leaderboard.functions.ts`: call the new functions, add `hourlyImpressions[24]`, `hourlyGiven[24]`, `dailyClicks[7]`, `hourlyClicks[24]` to `LeaderboardRow`.
-- `src/routes/leaderboard.tsx`: header row + tooltips, range-aware sparkline data/caption, windowed clicks/CTR with lifetime sub-caption.
-- No RLS or table changes; existing pill styling reused, no new design tokens.
-- Verify in a headless browser: toggle all three ranges on both tabs, confirm re-ranking, hourly bars on Today, tooltips open, zero console errors.
+## Verification
+
+Headless run: hit `/auth/callback` with no session (should land on `/auth`, never blank), and confirm normal password sign-in still lands on `/dashboard` with a clean URL. Google's real round-trip can't be driven headlessly, so I'll also assert the constructed `redirect_uri` is exactly `https://startupbar.co/auth/callback?next=/dashboard`. Worth one manual sign-out/sign-in from your side after it ships — ideally in Firefox, since that's where he hits it.
+
+No database, schema, or auth-provider changes needed — `/auth/callback` is same-origin, already covered by the existing redirect allowlist.
