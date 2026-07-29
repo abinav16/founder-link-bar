@@ -818,9 +818,10 @@ function NetworkDashboardPage() {
             </div>
           </div>
 
-          {/* Mobile sort control */}
-          <div className="sm:hidden mb-3 flex items-center gap-2">
+          {/* Sort control (all viewports) */}
+          <div className="mb-3 flex items-center gap-2">
             <span className="text-[10px] uppercase tracking-[0.1em] font-semibold text-black/30">Sort</span>
+
             <select
               value={`${sortKey}:${sortDir}`}
               onChange={(e) => {
