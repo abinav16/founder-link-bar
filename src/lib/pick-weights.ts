@@ -14,9 +14,8 @@ let cache: { at: number; weights: WeightMap } | null = null;
 const TTL_MS = 60_000;
 
 // Loosely typed on purpose: the caller passes a publishable-key client.
-export async function getPickWeights(supabase: {
-  rpc: (fn: string) => Promise<{ data: unknown; error: unknown }>;
-}): Promise<WeightMap> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function getPickWeights(supabase: any): Promise<WeightMap> {
   const now = Date.now();
   if (cache && now - cache.at < TTL_MS) return cache.weights;
 
