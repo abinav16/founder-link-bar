@@ -244,22 +244,33 @@ function StartupRow({ s }: { s: Card }) {
         </div>
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2.5 min-w-0 flex-wrap">
+          <div className="flex min-w-0 items-center gap-2.5">
             <span className="text-sm font-semibold text-black truncate">{s.name}</span>
             <a
               href={visitHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="pointer-events-auto inline-flex items-center gap-1 rounded-full border border-black/10 bg-white px-2.5 py-1 text-[11px] font-medium text-black/60 hover:text-black hover:border-black/30 transition-colors shrink-0"
+              className="pointer-events-auto hidden sm:inline-flex items-center gap-1 rounded-full border border-black/10 bg-white px-2.5 py-1 text-[11px] font-medium text-black/60 hover:text-black hover:border-black/30 transition-colors shrink-0"
             >
               <Globe className="h-3 w-3" strokeWidth={2} />
               Visit site
               <ArrowUpRight className="h-2.5 w-2.5" strokeWidth={2.5} />
             </a>
           </div>
-          <div className="mt-1.5 flex items-center gap-2.5 min-w-0 flex-wrap">
+          <div className="mt-1.5 flex items-center gap-2 min-w-0">
+            <a
+              href={visitHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="pointer-events-auto sm:hidden inline-flex items-center gap-1 rounded-full border border-black/10 bg-white px-2 py-0.5 text-[11px] font-medium text-black/60 active:text-black transition-colors shrink-0"
+            >
+              <Globe className="h-3 w-3" strokeWidth={2} />
+              Visit
+              <ArrowUpRight className="h-2.5 w-2.5" strokeWidth={2.5} />
+            </a>
             <FounderChip s={s} />
           </div>
+
 
         </div>
 
@@ -593,20 +604,23 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
             <div style={{ width: 14, height: 3, background: "white", borderRadius: 3 }} />
             <span style={{ color: "white", fontSize: 15, fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1 }}>StartupBar</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="px-2 py-1 rounded-full bg-black/70 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-              <PillStat small value={stats ? String(stats.totalStartups) : "—"} label="Startups" />
-            </div>
-            <div className="px-2 py-1 rounded-full bg-black/70 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-              <PillStat small value={stats ? `${stats.ctr}%` : "—"} label="CTR" />
-            </div>
-            <div className="px-2 py-1 rounded-full bg-black/70 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-              <PillStat small value={stats ? fmt(stats.totalImpressions) : "—"} label="Impressions" />
-            </div>
-            <div className="px-2 py-1 rounded-full bg-black/70 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-              <PillStat small value={stats ? fmt(stats.totalClicks) : "—"} label="Clicks" />
+          <div className="w-full px-4 flex justify-center">
+            <div className="flex items-stretch divide-x divide-white/10 rounded-2xl bg-black/70 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden">
+              <div className="px-2.5 py-1.5">
+                <PillStat small value={stats ? String(stats.totalStartups) : "—"} label="Startups" />
+              </div>
+              <div className="px-2.5 py-1.5">
+                <PillStat small value={stats ? `${stats.ctr}%` : "—"} label="CTR" />
+              </div>
+              <div className="px-2.5 py-1.5">
+                <PillStat small value={stats ? fmt(stats.totalImpressions) : "—"} label="Impr" />
+              </div>
+              <div className="px-2.5 py-1.5">
+                <PillStat small value={stats ? fmt(stats.totalClicks) : "—"} label="Clicks" />
+              </div>
             </div>
           </div>
+
         </div>
       </div>
 
