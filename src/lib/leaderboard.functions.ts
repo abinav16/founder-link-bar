@@ -29,6 +29,9 @@ export interface LeaderboardRow {
   hourlyImpressions: number[];
   hourlyGiven: number[];
   hourlyClicks: number[];
+  monthlyImpressions: number[];
+  monthlyGiven: number[];
+  monthlyClicks: number[];
 }
 
 const zeros = (n: number) => Array.from({ length: n }, () => 0);
