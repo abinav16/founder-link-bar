@@ -244,22 +244,33 @@ function StartupRow({ s }: { s: Card }) {
         </div>
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2.5 min-w-0 flex-wrap">
+          <div className="flex min-w-0 items-center gap-2.5">
             <span className="text-sm font-semibold text-black truncate">{s.name}</span>
             <a
               href={visitHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="pointer-events-auto inline-flex items-center gap-1 rounded-full border border-black/10 bg-white px-2.5 py-1 text-[11px] font-medium text-black/60 hover:text-black hover:border-black/30 transition-colors shrink-0"
+              className="pointer-events-auto hidden sm:inline-flex items-center gap-1 rounded-full border border-black/10 bg-white px-2.5 py-1 text-[11px] font-medium text-black/60 hover:text-black hover:border-black/30 transition-colors shrink-0"
             >
               <Globe className="h-3 w-3" strokeWidth={2} />
               Visit site
               <ArrowUpRight className="h-2.5 w-2.5" strokeWidth={2.5} />
             </a>
           </div>
-          <div className="mt-1.5 flex items-center gap-2.5 min-w-0 flex-wrap">
+          <div className="mt-1.5 flex items-center gap-2 min-w-0">
+            <a
+              href={visitHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="pointer-events-auto sm:hidden inline-flex items-center gap-1 rounded-full border border-black/10 bg-white px-2 py-0.5 text-[11px] font-medium text-black/60 active:text-black transition-colors shrink-0"
+            >
+              <Globe className="h-3 w-3" strokeWidth={2} />
+              Visit
+              <ArrowUpRight className="h-2.5 w-2.5" strokeWidth={2.5} />
+            </a>
             <FounderChip s={s} />
           </div>
+
 
         </div>
 
