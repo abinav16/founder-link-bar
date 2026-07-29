@@ -78,6 +78,13 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
     given: number;
     clicks: number;
   }>;
+  const monthly = (monthlyRes.data ?? []) as Array<{
+    startup_id: string;
+    month_offset: number;
+    received: number;
+    given: number;
+    clicks: number;
+  }>;
 
   const totalsMap = new Map(totals.map((t) => [t.startup_id, t]));
   const receivedBuckets = new Map<string, number[]>();
