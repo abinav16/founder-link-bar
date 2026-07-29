@@ -183,15 +183,41 @@ const RANGE_CHART_TITLE: Record<RangeKey, string> = {
   "24h": "last 24 hours",
   "7d": "last 7 days",
   "30d": "last 30 days",
-  all: "last 7 days",
+  all: "last 12 months",
 };
+
+const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 // Windowed totals + chart buckets. Counts use head+exact so they aren't
 // capped by PostgREST's default row limit; only the bucket rows are fetched.
 async function loadRangeData(startupId: string, range: RangeKey) {
   if (range === "all") {
-    const base = await loadDashboardData(startupId);
-    return { stats: base.stats, chartData: base.chartData, labels: rollingLabels() };
+    const monthStart = new Date();
+    monthStart.setHours(0, 0, 0, 0);
+    monthStart.setDate(1);
+    monthStart.setMonth(monthStart.getMonth() - 11);
+
+    const [base, monthlyR] = await Promise.all([
+      loadDashboardData(startupId),
+      supabase.from("impressions").select("created_at")
+        .eq("shown_startup_id", startupId).neq("referrer", "dev-simulate")
+        .gte("created_at", monthStart.toISOString())
+        .order("created_at", { ascending: true }).limit(50000),
+    ]);
+
+    const chartData = Array.from({ length: 12 }, () => 0);
+    const labels = Array.from({ length: 12 }, (_, i) => {
+      const d = new Date(monthStart);
+      d.setMonth(monthStart.getMonth() + i);
+      return MONTH_NAMES[d.getMonth()];
+    });
+    ((monthlyR.data ?? []) as { created_at: string }[]).forEach((row) => {
+      const d = new Date(row.created_at);
+      const idx = (d.getFullYear() - monthStart.getFullYear()) * 12 + (d.getMonth() - monthStart.getMonth());
+      if (idx >= 0 && idx < 12) chartData[idx]++;
+    });
+
+    return { stats: base.stats, chartData, labels };
   }
 
   const now = new Date();
