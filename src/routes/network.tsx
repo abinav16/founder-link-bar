@@ -267,10 +267,10 @@ function StartupRow({ s }: { s: Card }) {
           <div className="w-[68px] hidden sm:flex justify-end">
             <Metric value={joinedLabel(s.created_at)} label="Joined" />
           </div>
-          <div className="w-[52px] hidden sm:flex justify-end">
+          <div className="w-[84px] hidden sm:flex justify-end">
             <Metric value={fmt(s.impressions)} label="Impr" />
           </div>
-          <div className="w-[44px] hidden sm:flex justify-end">
+          <div className="w-[56px] hidden sm:flex justify-end">
             <Metric value={fmt(s.clicks)} label="Clicks" />
           </div>
           {s.slug && (
@@ -667,8 +667,8 @@ type SortDir = "asc" | "desc";
 
 const SORT_COLUMNS: { key: SortKey; label: string; hint: string; width: string }[] = [
   { key: "joined", label: "Joined", hint: "How long ago this startup joined the network.", width: "w-[68px]" },
-  { key: "impressions", label: "Impressions", hint: "Total times this startup has been shown across the network.", width: "w-[52px]" },
-  { key: "clicks", label: "Clicks", hint: "Total clicks this startup has received from the network.", width: "w-[44px]" },
+  { key: "impressions", label: "Impressions", hint: "Total times this startup has been shown across the network.", width: "w-[84px]" },
+  { key: "clicks", label: "Clicks", hint: "Total clicks this startup has received from the network.", width: "w-[56px]" },
 ];
 
 function SortHeader({
