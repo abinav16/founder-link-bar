@@ -131,6 +131,17 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
     if (g) g[idx] = Number(row.given) || 0;
     if (c) c[idx] = Number(row.clicks) || 0;
   }
+  for (const row of monthly) {
+    // month_offset 0 = current month → last index (rightmost bar)
+    const idx = 11 - Number(row.month_offset);
+    if (idx < 0 || idx > 11) continue;
+    const r = mReceived.get(row.startup_id);
+    const g = mGiven.get(row.startup_id);
+    const c = mClicks.get(row.startup_id);
+    if (r) r[idx] = Number(row.received) || 0;
+    if (g) g[idx] = Number(row.given) || 0;
+    if (c) c[idx] = Number(row.clicks) || 0;
+  }
 
   const rows: LeaderboardRow[] = (startups ?? []).map((s) => {
     const t = totalsMap.get(s.id);
@@ -147,6 +158,9 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
       hourlyImpressions: hReceived.get(s.id) ?? zeros(24),
       hourlyGiven: hGiven.get(s.id) ?? zeros(24),
       hourlyClicks: hClicks.get(s.id) ?? zeros(24),
+      monthlyImpressions: mReceived.get(s.id) ?? zeros(12),
+      monthlyGiven: mGiven.get(s.id) ?? zeros(12),
+      monthlyClicks: mClicks.get(s.id) ?? zeros(12),
     };
   });
 
