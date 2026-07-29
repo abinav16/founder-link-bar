@@ -805,25 +805,45 @@ function NetworkDashboardPage() {
             </div>
           </div>
 
-          <div className="mb-4 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-            {SORT_OPTIONS.map((opt) => (
-              <button
-                key={opt.key}
-                type="button"
-                onClick={() => setSort(opt.key)}
-                className={`shrink-0 px-3 py-1.5 rounded-full text-[12px] font-medium transition-all border ${
-                  sort === opt.key
-                    ? "bg-black text-white border-black"
-                    : "bg-white text-black/50 border-black/10 hover:text-black hover:border-black/25"
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
+          {/* Mobile sort control */}
+          <div className="sm:hidden mb-3 flex items-center gap-2">
+            <span className="text-[10px] uppercase tracking-[0.1em] font-semibold text-black/30">Sort</span>
+            <select
+              value={`${sortKey}:${sortDir}`}
+              onChange={(e) => {
+                const [k, d] = e.target.value.split(":") as [SortKey, SortDir];
+                setSortKey(k);
+                setSortDir(d);
+              }}
+              className="h-8 rounded-full border border-black/10 bg-white px-3 text-[12px] text-black focus:outline-none focus:border-black/30"
+            >
+              <option value="joined:desc">Newest first</option>
+              <option value="joined:asc">Oldest first</option>
+              <option value="impressions:desc">Most impressions</option>
+              <option value="impressions:asc">Fewest impressions</option>
+              <option value="clicks:desc">Most clicks</option>
+              <option value="clicks:asc">Fewest clicks</option>
+            </select>
           </div>
 
           {filtered.length > 0 ? (
             <div className="rounded-2xl bg-white border border-black/[0.06] px-4 sm:px-6 py-2">
+              {/* Column headers (desktop) */}
+              <div className="hidden sm:flex items-center gap-4 pt-3 pb-2.5 border-b border-black/[0.06]">
+                <div className="flex-1" />
+                <div className="shrink-0 flex items-center gap-4 sm:gap-6">
+                  {SORT_COLUMNS.map((col) => (
+                    <SortHeader
+                      key={col.key}
+                      col={col}
+                      active={sortKey === col.key}
+                      dir={sortDir}
+                      onClick={() => toggleSort(col.key)}
+                    />
+                  ))}
+                  <span className="h-7 w-7 shrink-0" aria-hidden="true" />
+                </div>
+              </div>
               {filtered.map((s) => <StartupRow key={s.id} s={s} />)}
             </div>
           ) : (
@@ -832,7 +852,8 @@ function NetworkDashboardPage() {
               <p className="mt-1.5 text-[13px] text-black/35">Try a shorter word, or browse the full network.</p>
               <button
                 type="button"
-                onClick={() => { setQuery(""); setSort("newest"); }}
+                onClick={() => { setQuery(""); setSortKey("joined"); setSortDir("desc"); }}
+
                 className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-black px-4 py-2 text-[13px] font-medium text-white hover:bg-black/85 transition-colors"
               >
                 <X className="h-3.5 w-3.5" strokeWidth={2.5} />
