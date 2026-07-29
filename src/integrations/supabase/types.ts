@@ -478,6 +478,14 @@ export type Database = {
           twitter_handle: string
         }[]
       }
+      public_founder_info_bulk: {
+        Args: { _user_ids: string[] }
+        Returns: {
+          avatar_url: string
+          full_name: string
+          user_id: string
+        }[]
+      }
       public_network_activity: {
         Args: never
         Returns: {
