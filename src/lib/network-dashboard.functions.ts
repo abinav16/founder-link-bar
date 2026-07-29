@@ -98,6 +98,25 @@ export const getNetworkDashboard = createServerFn({ method: "GET" }).handler(
       clickMap[r.startup_id] = Number(r.clicks) || 0;
     }
 
+    // Founder identity comes from the owner's account (name + avatar), fetched
+    // in one batch RPC instead of one call per startup.
+    const userIds = Array.from(
+      new Set((startups ?? []).map((s: any) => s.user_id).filter(Boolean)),
+    ) as string[];
+    const founderMap: Record<string, { name: string | null; avatar: string | null }> = {};
+    if (userIds.length > 0) {
+      const { data: founders } = await supabase.rpc("public_founder_info_bulk" as any, {
+        _user_ids: userIds,
+      });
+      for (const f of (founders ?? []) as Array<{
+        user_id: string;
+        full_name: string | null;
+        avatar_url: string | null;
+      }>) {
+        founderMap[f.user_id] = { name: f.full_name ?? null, avatar: f.avatar_url ?? null };
+      }
+    }
+
     const cards: StartupCard[] = (startups ?? []).map((s: any) => ({
       id: s.id,
       slug: s.slug ?? null,
@@ -110,6 +129,8 @@ export const getNetworkDashboard = createServerFn({ method: "GET" }).handler(
       clicks_24h: click24hMap[s.id] ?? 0,
       impressions: impMap[s.id] ?? 0,
       clicks: clickMap[s.id] ?? 0,
+      founder_name: founderMap[s.user_id]?.name ?? null,
+      founder_avatar_url: founderMap[s.user_id]?.avatar ?? null,
     }));
 
 
