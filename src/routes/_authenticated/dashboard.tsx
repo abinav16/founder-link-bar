@@ -447,16 +447,11 @@ function DashboardPage() {
   const [breakdown, setBreakdown] = useState<TrafficBreakdown>(loaderData.breakdown);
   const [liveTicker, setLiveTicker] = useState<{ country: string; device: string; ts: number } | null>(null);
   const [isLive, setIsLive] = useState(false);
-  const skipFirstRangeFetch = useRef(true);
 
   useEffect(() => {
     if (!startup) return;
-    if (skipFirstRangeFetch.current && range === "all") {
-      skipFirstRangeFetch.current = false;
-      return;
-    }
-    skipFirstRangeFetch.current = false;
     let cancelled = false;
+
     setRangeLoading(true);
     loadRangeData(startup.id, range)
       .then((r) => {
