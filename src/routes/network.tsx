@@ -662,20 +662,61 @@ function HorizontalCardRail({ items }: { items: Card[] }) {
   );
 }
 
-type NetworkSort = "newest" | "trending" | "clicks" | "impressions";
+type SortKey = "joined" | "impressions" | "clicks";
+type SortDir = "asc" | "desc";
 
-const SORT_OPTIONS: { key: NetworkSort; label: string }[] = [
-  { key: "newest", label: "Newest" },
-  { key: "trending", label: "Trending" },
-  { key: "clicks", label: "Most clicks" },
-  { key: "impressions", label: "Most impressions" },
+const SORT_COLUMNS: { key: SortKey; label: string; hint: string; width: string }[] = [
+  { key: "joined", label: "Joined", hint: "How long ago this startup joined the network.", width: "w-[68px]" },
+  { key: "impressions", label: "Impressions", hint: "Total times this startup has been shown across the network.", width: "w-[52px]" },
+  { key: "clicks", label: "Clicks", hint: "Total clicks this startup has received from the network.", width: "w-[44px]" },
 ];
+
+function SortHeader({
+  col,
+  active,
+  dir,
+  onClick,
+}: {
+  col: (typeof SORT_COLUMNS)[number];
+  active: boolean;
+  dir: SortDir;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={col.hint}
+      className={`${col.width} flex items-center justify-end gap-1 text-[10px] uppercase tracking-[0.1em] font-semibold transition-colors ${
+        active ? "text-black" : "text-black/30 hover:text-black/60"
+      }`}
+    >
+      <span className="truncate">{col.label}</span>
+      {active && (
+        <ArrowRight
+          className={`h-2.5 w-2.5 shrink-0 ${dir === "desc" ? "rotate-90" : "-rotate-90"}`}
+          strokeWidth={3}
+        />
+      )}
+    </button>
+  );
+}
 
 function NetworkDashboardPage() {
   const data = Route.useLoaderData() as NetworkDashboardResult;
   const stats = data?.stats;
   const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<NetworkSort>("newest");
+  const [sortKey, setSortKey] = useState<SortKey>("joined");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
+
+  function toggleSort(key: SortKey) {
+    if (key === sortKey) {
+      setSortDir((d) => (d === "desc" ? "asc" : "desc"));
+    } else {
+      setSortKey(key);
+      setSortDir("desc");
+    }
+  }
 
   const allStartups = data.recentStartups;
   const q = query.trim().toLowerCase();
@@ -687,25 +728,21 @@ function NetworkDashboardPage() {
       : allStartups;
 
     const sorted = [...base];
-    switch (sort) {
-      case "trending":
-        sorted.sort(
-          (a, b) =>
-            (b.clicks_24h ?? 0) - (a.clicks_24h ?? 0) ||
-            (b.impressions_24h ?? 0) - (a.impressions_24h ?? 0),
-        );
-        break;
-      case "clicks":
-        sorted.sort((a, b) => (b.clicks ?? 0) - (a.clicks ?? 0) || (b.impressions ?? 0) - (a.impressions ?? 0));
-        break;
-      case "impressions":
-        sorted.sort((a, b) => (b.impressions ?? 0) - (a.impressions ?? 0) || (b.clicks ?? 0) - (a.clicks ?? 0));
-        break;
-      default:
-        sorted.sort((a, b) => (a.created_at < b.created_at ? 1 : a.created_at > b.created_at ? -1 : 0));
-    }
+    const sign = sortDir === "desc" ? 1 : -1;
+    sorted.sort((a, b) => {
+      switch (sortKey) {
+        case "impressions":
+          return sign * ((b.impressions ?? 0) - (a.impressions ?? 0));
+        case "clicks":
+          return sign * ((b.clicks ?? 0) - (a.clicks ?? 0));
+        default:
+          // "desc" on Joined = newest first
+          return sign * (new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      }
+    });
     return sorted;
-  }, [allStartups, q, sort]);
+  }, [allStartups, q, sortKey, sortDir]);
+
 
   const trending = [...allStartups]
     .filter((s) => (s.clicks_24h ?? 0) > 0)
