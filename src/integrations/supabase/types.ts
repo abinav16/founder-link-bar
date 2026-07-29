@@ -539,6 +539,16 @@ export type Database = {
           startup_id: string
         }[]
       }
+      public_startup_monthly: {
+        Args: { _ids: string[] }
+        Returns: {
+          clicks: number
+          given: number
+          month_offset: number
+          received: number
+          startup_id: string
+        }[]
+      }
       public_startup_pulse: { Args: { _startup_id: string }; Returns: number }
       public_startup_referrers: {
         Args: { _startup_id: string }
