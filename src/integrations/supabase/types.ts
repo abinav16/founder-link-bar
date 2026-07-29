@@ -579,6 +579,13 @@ export type Database = {
           read_ct: number
         }[]
       }
+      widget_pick_weights: {
+        Args: never
+        Returns: {
+          startup_id: string
+          weight: number
+        }[]
+      }
     }
     Enums: {
       startup_status: "pending" | "approved" | "rejected"

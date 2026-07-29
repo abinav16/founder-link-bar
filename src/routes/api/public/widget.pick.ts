@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { parseUA, extractCountry, extractIp, lookupCountry } from "@/lib/ua";
+import { getPickWeights, weightedPick } from "@/lib/pick-weights";
 
 export const Route = createFileRoute("/api/public/widget/pick")({
   server: {
@@ -45,7 +46,11 @@ export const Route = createFileRoute("/api/public/widget/pick")({
           });
         }
 
-        const pick = filtered[Math.floor(Math.random() * filtered.length)];
+        // Reciprocity-weighted delivery: startups that send more impressions
+        // into the network get shown proportionally more often (capped at 4x),
+        // while small/new startups keep a guaranteed 1x baseline.
+        const weights = await getPickWeights(supabase);
+        const pick = weightedPick(filtered, weights);
 
         if (!preview) {
           // Enrich impression with visitor context so the per-startup
