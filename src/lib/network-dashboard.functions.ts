@@ -29,6 +29,8 @@ export interface StartupCard {
   clicks_24h: number;
   impressions: number;
   clicks: number;
+  founder_name: string | null;
+  founder_avatar_url: string | null;
 }
 
 
