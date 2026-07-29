@@ -368,30 +368,41 @@ function rollingLabels(): string[] {
 function Sparkline({ data, labels }: { data: number[]; labels: string[] }) {
   const max = Math.max(...data, 1);
   const [tooltip, setTooltip] = useState<{ idx: number } | null>(null);
+  const TRACK = 80;
   return (
-    <div className="flex h-20 items-end gap-2">
+    <div className="flex gap-1.5 sm:gap-2">
       {data.map((v, i) => (
         <div
           key={i}
-          className="flex flex-1 flex-col items-center gap-1.5 relative"
+          className="relative flex flex-1 flex-col items-center"
           onMouseEnter={() => setTooltip({ idx: i })}
           onMouseLeave={() => setTooltip(null)}
         >
-          {tooltip?.idx === i && (
-            <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-black px-2 py-1 text-[10px] font-medium text-white z-10">
-              {v} impression{v !== 1 ? "s" : ""} · {labels[i]}
-            </div>
-          )}
-          <div
-            className="w-full rounded-t-sm bg-black transition-all duration-500"
-            style={{ height: `${Math.max((v / max) * 64, v > 0 ? 4 : 2)}px`, opacity: v > 0 ? 1 : 0.12 }}
-          />
-          <span className="text-[9px] text-black/25">{labels[i]}</span>
+          {/* fixed-height track so every bar sits on the same baseline */}
+          <div className="flex w-full items-end justify-center" style={{ height: TRACK }}>
+            {tooltip?.idx === i && (
+              <div className="absolute -top-7 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-md bg-black px-2 py-1 text-[10px] font-medium text-white">
+                {v.toLocaleString()} impression{v !== 1 ? "s" : ""} · {labels[i]}
+              </div>
+            )}
+            <div
+              className="w-full rounded-t-sm bg-black transition-all duration-500"
+              style={{
+                height: v > 0 ? `${Math.max((v / max) * TRACK, 4)}px` : "2px",
+                opacity: v > 0 ? 1 : 0.12,
+              }}
+            />
+          </div>
+          {/* fixed-height label row keeps columns aligned even when a label is blank */}
+          <span className="mt-1.5 flex h-3 items-center text-[9px] leading-none text-black/25">
+            {labels[i]}
+          </span>
         </div>
       ))}
     </div>
   );
 }
+
 
 function DashboardPage() {
   const loaderData = Route.useLoaderData();
