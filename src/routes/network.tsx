@@ -181,55 +181,120 @@ function StartupCard({ s }: { s: Card }) {
 }
 
 
+function daysSince(createdAt: string) {
+  const ms = Date.now() - new Date(createdAt).getTime();
+  return Math.max(0, Math.floor(ms / (24 * 60 * 60 * 1000)));
+}
+
+function joinedLabel(createdAt: string) {
+  const d = daysSince(createdAt);
+  if (d === 0) return "Today";
+  if (d === 1) return "1d ago";
+  if (d < 30) return `${d}d ago`;
+  const m = Math.floor(d / 30);
+  if (m < 12) return `${m}mo ago`;
+  return `${Math.floor(m / 12)}y ago`;
+}
+
+function FounderChip({ s }: { s: Card }) {
+  if (!s.founder_name) return null;
+  return (
+    <span className="inline-flex items-center gap-1.5 min-w-0">
+      {s.founder_avatar_url ? (
+        <img
+          src={s.founder_avatar_url}
+          alt=""
+          width={18}
+          height={18}
+          loading="lazy"
+          className="h-[18px] w-[18px] rounded-full object-cover bg-black/[0.06] shrink-0"
+        />
+      ) : (
+        <span className="h-[18px] w-[18px] rounded-full bg-black/[0.06] text-black/45 text-[9px] font-semibold inline-flex items-center justify-center shrink-0">
+          {s.founder_name.trim().charAt(0).toUpperCase()}
+        </span>
+      )}
+      <span className="text-[11px] text-black/45 font-medium truncate">{s.founder_name}</span>
+    </span>
+  );
+}
+
+function Metric({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="flex flex-col items-end leading-tight">
+      <span className="text-[13px] font-semibold text-black tabular-nums">{value}</span>
+      <span className="text-[9px] text-black/30 uppercase tracking-[0.1em] font-semibold sm:hidden">{label}</span>
+    </div>
+  );
+}
+
 function StartupRow({ s }: { s: Card }) {
   const visitHref = `/api/public/widget/click?id=${s.id}&source=dashboard`;
   return (
-    <div className="group relative flex items-center gap-4 py-3.5 border-b border-black/[0.05] last:border-0 transition-colors duration-150">
+    <div className="group relative py-4 border-b border-black/[0.05] last:border-0 transition-colors duration-150">
       {s.slug && (
-        <StartupProfileLink
-          slug={s.slug}
-          className="absolute inset-0 z-0"
-        >
+        <StartupProfileLink slug={s.slug} className="absolute inset-0 z-0">
           <span className="sr-only">View {s.name} profile</span>
         </StartupProfileLink>
       )}
-      <div className="relative z-10 shrink-0 w-9 h-9 rounded-lg overflow-hidden bg-black/[0.03] border border-black/[0.06] flex items-center justify-center pointer-events-none">
-        <StartupFavicon url={s.website_url} name={s.name} logoUrl={s.logo_url} size={32} />
-      </div>
-      <div className="relative z-10 min-w-0 flex-1 pointer-events-none">
-        <div className="flex items-center gap-1.5">
-          <span className="text-sm font-medium text-black truncate">{s.name}</span>
-          <ArrowUpRight className="h-3 w-3 text-black/20 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150" />
+
+      <div className="relative z-10 flex items-start gap-3 sm:gap-4 pointer-events-none">
+        <div className="shrink-0 w-9 h-9 rounded-lg overflow-hidden bg-black/[0.03] border border-black/[0.06] flex items-center justify-center">
+          <StartupFavicon url={s.website_url} name={s.name} logoUrl={s.logo_url} size={32} />
         </div>
-        <p className="text-xs text-black/38 truncate mt-0.5 leading-relaxed">{s.description}</p>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-sm font-semibold text-black truncate">{s.name}</span>
+            <ArrowUpRight className="h-3 w-3 text-black/20 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150" />
+          </div>
+          <div className="mt-1.5 flex items-center gap-2.5 min-w-0 flex-wrap">
+            <a
+              href={visitHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="pointer-events-auto inline-flex items-center gap-1 rounded-full border border-black/10 bg-white px-2.5 py-1 text-[11px] font-medium text-black/60 hover:text-black hover:border-black/30 transition-colors shrink-0"
+            >
+              <Globe className="h-3 w-3" strokeWidth={2} />
+              Visit site
+              <ArrowUpRight className="h-2.5 w-2.5" strokeWidth={2.5} />
+            </a>
+            <FounderChip s={s} />
+          </div>
+        </div>
+
+        <div className="shrink-0 flex items-center gap-4 sm:gap-6">
+          <div className="w-[68px] hidden sm:flex justify-end">
+            <Metric value={joinedLabel(s.created_at)} label="Joined" />
+          </div>
+          <div className="w-[52px] hidden sm:flex justify-end">
+            <Metric value={fmt(s.impressions)} label="Impr" />
+          </div>
+          <div className="w-[44px] hidden sm:flex justify-end">
+            <Metric value={fmt(s.clicks)} label="Clicks" />
+          </div>
+          {s.slug && (
+            <StartupProfileLink
+              slug={s.slug}
+              className="pointer-events-auto inline-flex items-center justify-center h-7 w-7 rounded-full bg-black text-white hover:bg-black/80 transition-colors shrink-0"
+            >
+              <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.25} />
+            </StartupProfileLink>
+          )}
+        </div>
       </div>
-      <div className="relative z-10 shrink-0 text-right flex items-center gap-3">
-        {s.impressions_24h > 0
-          ? (
-            <span className="inline-flex items-center gap-1 text-[11px] text-black/35 font-medium tabular-nums">
-              <Eye className="h-3 w-3 text-black/30" strokeWidth={2} />
-              {s.impressions_24h}
-            </span>
-          )
-          : <span className="text-[11px] text-black/18 tracking-wide">New</span>}
-        <a
-          href={visitHref}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={`Visit ${s.name} website`}
-          title="Visit website"
-          className="pointer-events-auto inline-flex items-center justify-center h-7 w-7 rounded-full border border-black/10 bg-white text-black/60 hover:text-black hover:border-black/30 transition-colors"
-        >
-          <Globe className="h-3.5 w-3.5" strokeWidth={2} />
-        </a>
-        {s.slug && (
-          <StartupProfileLink
-            slug={s.slug}
-            className="pointer-events-auto inline-flex items-center justify-center h-7 w-7 rounded-full bg-black text-white hover:bg-black/80 transition-colors"
-          >
-            <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.25} />
-          </StartupProfileLink>
-        )}
+
+      <p className="relative z-10 mt-2.5 text-xs text-black/45 leading-relaxed pointer-events-none">
+        {s.description}
+      </p>
+
+      <div className="relative z-10 sm:hidden mt-2 flex items-center gap-4 pointer-events-none">
+        <span className="text-[11px] text-black/40 tabular-nums">{joinedLabel(s.created_at)}</span>
+        <span className="inline-flex items-center gap-1 text-[11px] text-black/40 tabular-nums">
+          <Eye className="h-3 w-3 text-black/30" strokeWidth={2} />
+          {fmt(s.impressions)}
+        </span>
+        <span className="text-[11px] text-black/40 tabular-nums">{fmt(s.clicks)} clicks</span>
       </div>
     </div>
   );
