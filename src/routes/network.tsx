@@ -244,11 +244,8 @@ function StartupRow({ s }: { s: Card }) {
         </div>
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5 min-w-0">
+          <div className="flex items-center gap-2.5 min-w-0 flex-wrap">
             <span className="text-sm font-semibold text-black truncate">{s.name}</span>
-            <ArrowUpRight className="h-3 w-3 text-black/20 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150" />
-          </div>
-          <div className="mt-1.5 flex items-center gap-2.5 min-w-0 flex-wrap">
             <a
               href={visitHref}
               target="_blank"
@@ -259,8 +256,11 @@ function StartupRow({ s }: { s: Card }) {
               Visit site
               <ArrowUpRight className="h-2.5 w-2.5" strokeWidth={2.5} />
             </a>
+          </div>
+          <div className="mt-1.5 flex items-center gap-2.5 min-w-0 flex-wrap">
             <FounderChip s={s} />
           </div>
+
         </div>
 
         <div className="shrink-0 flex items-center gap-4 sm:gap-6">
