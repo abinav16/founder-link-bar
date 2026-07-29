@@ -94,6 +94,9 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
   const hReceived = new Map<string, number[]>();
   const hGiven = new Map<string, number[]>();
   const hClicks = new Map<string, number[]>();
+  const mReceived = new Map<string, number[]>();
+  const mGiven = new Map<string, number[]>();
+  const mClicks = new Map<string, number[]>();
   for (const id of ids) {
     receivedBuckets.set(id, zeros(7));
     givenBuckets.set(id, zeros(7));
@@ -102,6 +105,9 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
     hReceived.set(id, zeros(24));
     hGiven.set(id, zeros(24));
     hClicks.set(id, zeros(24));
+    mReceived.set(id, zeros(12));
+    mGiven.set(id, zeros(12));
+    mClicks.set(id, zeros(12));
   }
   for (const row of daily) {
     const idx = 6 - Number(row.day_offset);
