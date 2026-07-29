@@ -50,8 +50,9 @@ export const getNetworkDashboard = createServerFn({ method: "GET" }).handler(
 
     const { data: startups } = await supabase
       .from("startups")
-      .select("id, slug, name, website_url, description, logo_url, created_at")
+      .select("id, slug, name, website_url, description, logo_url, created_at, user_id")
       .eq("status", "approved")
+
 
       .order("created_at", { ascending: false })
       .limit(200);
