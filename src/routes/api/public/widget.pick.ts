@@ -45,7 +45,11 @@ export const Route = createFileRoute("/api/public/widget/pick")({
           });
         }
 
-        const pick = filtered[Math.floor(Math.random() * filtered.length)];
+        // Reciprocity-weighted delivery: startups that send more impressions
+        // into the network get shown proportionally more often (capped at 4x),
+        // while small/new startups keep a guaranteed 1x baseline.
+        const weights = await getPickWeights(supabase);
+        const pick = weightedPick(filtered, weights);
 
         if (!preview) {
           // Enrich impression with visitor context so the per-startup
