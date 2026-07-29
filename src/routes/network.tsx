@@ -843,7 +843,17 @@ function NetworkDashboardPage() {
             <div className="rounded-2xl bg-white border border-black/[0.06] px-4 sm:px-6 py-2">
               {/* Column headers (desktop) */}
               <div className="hidden sm:flex items-center gap-4 pt-3 pb-2.5 border-b border-black/[0.06]">
-                <div className="flex-1" />
+                <div className="flex-1 min-w-0 flex items-baseline gap-2">
+                  <span className="text-[10px] uppercase tracking-[0.1em] font-semibold text-black/30">Startup</span>
+                  <span className="text-[11px] text-black/25 truncate">
+                    Showing {filtered.length} of {allStartups.length} · sorted by{" "}
+                    {SORT_COLUMNS.find((c) => c.key === sortKey)?.label.toLowerCase()}{" "}
+                    {sortKey === "joined"
+                      ? sortDir === "desc" ? "(newest first)" : "(oldest first)"
+                      : sortDir === "desc" ? "(high to low)" : "(low to high)"}
+                  </span>
+                </div>
+
                 <div className="shrink-0 flex items-center gap-4 sm:gap-6">
                   {SORT_COLUMNS.map((col) => (
                     <SortHeader
