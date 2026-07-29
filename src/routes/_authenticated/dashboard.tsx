@@ -590,16 +590,12 @@ function DashboardPage() {
     setStartup(s);
     setStats({ impressions: 0, clicks: 0 });
     setCurrent(null);
-    setChartData([0, 0, 0, 0, 0, 0, 0]);
+    setChartData(chartData.map(() => 0));
     setBreakdown({ countries: [], devices: [], topReferrers: [] });
     checkInstall(s.website_url);
     const extra = await loadDashboardData(s.id);
-    // The range effect owns stats/chart for non-"all" windows — don't clobber it.
-    if (range === "all") {
-      setStats(extra.stats);
-      setChartData(extra.chartData);
-      setChartLabels(rollingLabels());
-    }
+    // The range effect owns stats + chart for every window — don't clobber it here.
+
     setRank(extra.rank);
     setCurrent(extra.current);
     setBreakdown(extra.breakdown);
