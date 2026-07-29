@@ -481,7 +481,9 @@ function LeaderboardPage() {
                   hint={
                     range === "today"
                       ? "Activity hour by hour since today's 5:30 AM IST reset."
-                      : "Daily activity over the last 7 days — most recent day on the right."
+                      : range === "all"
+                        ? "Monthly activity over the last 12 months — most recent month on the right."
+                        : "Daily activity over the last 7 days — most recent day on the right."
                   }
                 />
               </div>
