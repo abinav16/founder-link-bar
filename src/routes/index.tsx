@@ -548,7 +548,7 @@ function Landing() {
   const navigate = useNavigate();
   const [user, setUser] = useState<{ email?: string; name?: string } | null>(null);
   const [authReady, setAuthReady] = useState(false);
-  const [liveStartups, setLiveStartups] = useState<Array<{ name: string; description: string }>>([]);
+  const [liveStartups, setLiveStartups] = useState<Array<{ name: string; description: string; website_url: string; logo_url: string | null }>>([]);
   const [liveIndex, setLiveIndex] = useState(0);
   const [mockInfoOpen, setMockInfoOpen] = useState(false);
   const [mockDismissed, setMockDismissed] = useState(false);
