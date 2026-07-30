@@ -341,15 +341,15 @@ function SlideVisual3() {
     { Icon: TrendingUp,       title: "Mutual Growth",     sub: "More founders = more reach" },
   ];
   return (
-    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+    <div className="grid grid-cols-2 gap-3">
       {cards.map(({ Icon, title, sub }) => (
-        <div key={title} className="group flex items-center gap-3 rounded-xl border border-black/8 bg-white p-3 transition-all duration-200 hover:border-black/20 hover:shadow-[0_4px_16px_-4px_rgba(0,0,0,0.08)]">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-black/8 bg-black/[0.03] transition-colors group-hover:bg-black group-hover:border-black">
+        <div key={title} className="group flex flex-col gap-3 rounded-xl border border-black/8 bg-white p-4 transition-all duration-200 hover:border-black/20 hover:shadow-[0_4px_16px_-4px_rgba(0,0,0,0.08)]">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/8 bg-black/[0.03] transition-colors group-hover:bg-black group-hover:border-black">
             <Icon className="h-4 w-4 text-black/50 transition-colors group-hover:text-white" />
           </div>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-black">{title}</p>
-            <p className="mt-0.5 truncate text-xs text-black/40">{sub}</p>
+          <div>
+            <p className="text-sm font-semibold text-black">{title}</p>
+            <p className="mt-0.5 text-xs text-black/40">{sub}</p>
           </div>
         </div>
       ))}
@@ -425,7 +425,7 @@ function HowItWorks() {
           ))}
         </div>
 
-        <div className="mt-12 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+        <div className="mt-16 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
           <Link
             to="/apply"
             className="group inline-flex items-center gap-2 rounded-lg bg-black px-5 py-3 text-sm font-medium text-white transition-all hover:bg-black/80"
