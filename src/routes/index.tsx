@@ -419,27 +419,29 @@ function HowItWorks() {
                     </li>
                   ))}
                 </ul>
+                {i === STEPS.length - 1 && (
+                  <div className="mt-8 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+                    <Link
+                      to="/apply"
+                      className="group inline-flex items-center gap-2 rounded-lg bg-black px-5 py-3 text-sm font-medium text-white transition-all hover:bg-black/80"
+                    >
+                      Get started free
+                      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                    </Link>
+                    <Link
+                      to="/dashboard"
+                      className="inline-flex items-center gap-2 rounded-lg border border-black/12 px-5 py-3 text-sm font-medium text-black/60 transition-colors hover:border-black/30 hover:text-black"
+                    >
+                      View your dashboard
+                    </Link>
+                  </div>
+                )}
               </div>
               <div className={`min-w-0 overflow-hidden ${i % 2 === 1 ? "md:order-1" : ""}`}>{s.visual}</div>
             </div>
           ))}
         </div>
 
-        <div className="mt-16 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
-          <Link
-            to="/apply"
-            className="group inline-flex items-center gap-2 rounded-lg bg-black px-5 py-3 text-sm font-medium text-white transition-all hover:bg-black/80"
-          >
-            Get started free
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-          </Link>
-          <Link
-            to="/dashboard"
-            className="inline-flex items-center gap-2 rounded-lg border border-black/12 px-5 py-3 text-sm font-medium text-black/60 transition-colors hover:border-black/30 hover:text-black"
-          >
-            View your dashboard
-          </Link>
-        </div>
       </div>
     </section>
   );
