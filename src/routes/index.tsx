@@ -402,7 +402,8 @@ function HowItWorks() {
               key={s.step}
               className="grid items-start gap-10 md:grid-cols-2 md:gap-16"
             >
-              <div className={i % 2 === 1 ? "md:order-2" : undefined}>
+              <div className={`min-w-0 md:pt-1 ${i % 2 === 1 ? "md:order-2" : ""}`}>
+                <span className="block text-xs font-semibold uppercase tracking-[0.18em] text-black/25">STEP {s.step}</span>
                 <span className="text-xs font-semibold tracking-[0.18em] text-black/25">STEP {s.step}</span>
                 <h2
                   className="mt-3 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl md:text-[2.75rem]"
