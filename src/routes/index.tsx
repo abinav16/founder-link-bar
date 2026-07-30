@@ -769,7 +769,7 @@ function Landing() {
                         size={14}
                         className="shrink-0 rounded-sm"
                       />
-                      <span className="inline-block w-[110px] shrink-0 truncate font-medium">{liveStartup?.name ?? "Acme AI"}</span>
+                      <span className="max-w-[160px] shrink-0 truncate font-medium">{liveStartup?.name ?? "Acme AI"}</span>
                       <span className="hidden min-w-0 flex-1 truncate text-black/40 sm:block">
                         {liveStartup ? `— ${liveStartup.description}` : "— turn meeting notes into action items, automatically"}
                       </span>
