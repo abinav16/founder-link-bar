@@ -400,10 +400,11 @@ function HowItWorks() {
           {STEPS.map((s, i) => (
             <div
               key={s.step}
-              className="grid items-center gap-10 md:grid-cols-2 md:gap-20"
+              className="grid items-start gap-10 md:grid-cols-2 md:gap-16"
             >
-              <div className={i % 2 === 1 ? "md:order-2" : undefined}>
-                <span className="text-xs font-semibold tracking-[0.18em] text-black/25">STEP {s.step}</span>
+              <div className={`min-w-0 md:pt-1 ${i % 2 === 1 ? "md:order-2" : ""}`}>
+                <span className="block text-xs font-semibold uppercase tracking-[0.18em] text-black/25">STEP {s.step}</span>
+                
                 <h2
                   className="mt-3 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl md:text-[2.75rem]"
                   style={{ fontFamily: "var(--font-display)", whiteSpace: "pre-line" }}
