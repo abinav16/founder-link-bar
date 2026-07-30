@@ -425,7 +425,7 @@ function HowItWorks() {
           ))}
         </div>
 
-        <div className="mt-16 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+        <div className="mt-12 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
           <Link
             to="/apply"
             className="group inline-flex items-center gap-2 rounded-lg bg-black px-5 py-3 text-sm font-medium text-white transition-all hover:bg-black/80"
