@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { LiveVisitorMap } from "@/components/LiveVisitorMap";
+import { StartupFavicon } from "@/components/StartupFavicon";
 import { ArrowRight, Settings, LogOut, LayoutDashboard, Eye, MousePointerClick, Globe, BarChart2, Users, TrendingUp, Info, X, Trophy } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -548,7 +549,7 @@ function Landing() {
   const navigate = useNavigate();
   const [user, setUser] = useState<{ email?: string; name?: string } | null>(null);
   const [authReady, setAuthReady] = useState(false);
-  const [liveStartups, setLiveStartups] = useState<Array<{ name: string; description: string }>>([]);
+  const [liveStartups, setLiveStartups] = useState<Array<{ name: string; description: string; website_url: string; logo_url: string | null }>>([]);
   const [liveIndex, setLiveIndex] = useState(0);
   const [mockInfoOpen, setMockInfoOpen] = useState(false);
   const [mockDismissed, setMockDismissed] = useState(false);
@@ -564,7 +565,7 @@ function Landing() {
   }, []);
 
   useEffect(() => {
-    supabase.from("startups").select("name, description").eq("status", "approved").then(({ data }) => {
+    supabase.from("startups").select("name, description, website_url, logo_url").eq("status", "approved").then(({ data }) => {
       if (data && data.length > 0) {
         const shuffled = [...data].sort(() => Math.random() - 0.5);
         setLiveStartups(shuffled);
@@ -761,6 +762,13 @@ function Landing() {
                     </button>
                     <div className="flex min-w-0 flex-1 items-center gap-2 px-1">
                       <span className="shrink-0 rounded-sm bg-black px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-white">STARTUPBAR</span>
+                      <StartupFavicon
+                        url={liveStartup?.website_url ?? "acme.ai"}
+                        name={liveStartup?.name ?? "Acme AI"}
+                        logoUrl={liveStartup?.logo_url ?? null}
+                        size={14}
+                        className="shrink-0 rounded-sm"
+                      />
                       <span className="inline-block w-[110px] shrink-0 truncate font-medium">{liveStartup?.name ?? "Acme AI"}</span>
                       <span className="hidden min-w-0 flex-1 truncate text-black/40 sm:block">
                         {liveStartup ? `— ${liveStartup.description}` : "— turn meeting notes into action items, automatically"}
