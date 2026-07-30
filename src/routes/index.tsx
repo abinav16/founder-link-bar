@@ -564,7 +564,7 @@ function Landing() {
   }, []);
 
   useEffect(() => {
-    supabase.from("startups").select("name, description").eq("status", "approved").then(({ data }) => {
+    supabase.from("startups").select("name, description, website_url, logo_url").eq("status", "approved").then(({ data }) => {
       if (data && data.length > 0) {
         const shuffled = [...data].sort(() => Math.random() - 0.5);
         setLiveStartups(shuffled);
