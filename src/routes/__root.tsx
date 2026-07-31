@@ -107,6 +107,17 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
 
+  // Send GA pageviews after each navigation settles, so document.title (set by
+  // the route's head()) is already applied — otherwise GA logs "(not set)".
+  useEffect(() => {
+    const send = () => window.setTimeout(trackPageView, 0);
+    send();
+    const unsub = router.subscribe("onResolved", send);
+    return unsub;
+  }, [router]);
+
+
+
   // Inject the StartupBar widget after full hydration + a paint tick so its
   // DOM mutations (shifting fixed/sticky elements down by 36px, adding
   // scroll-padding to <html>, padding-top to <body>) don't race React's
