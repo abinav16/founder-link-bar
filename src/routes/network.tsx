@@ -493,7 +493,7 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
       const SLOP = 0.5;
       const CORRECTION = 0.65;
       const ITER = 4;
-      const supported = nodes.map(() => false);
+      const contacts: { nx: number; ny: number; other: number }[][] = nodes.map(() => []);
       for (let it = 0; it < ITER; it++) {
         for (let i = 0; i < nodes.length; i++) {
           for (let j = i + 1; j < nodes.length; j++) {
