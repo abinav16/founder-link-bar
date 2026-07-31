@@ -610,6 +610,13 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
       canvas.style.height = `${nh}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       sizeRef.current = { w: nw, h: nh };
+      // layout changed: refresh the floor and wake every body so the pile re-settles
+      stateRef.current.forEach((node) => {
+        node.homeY = nh - (node.size / 2 + 3) - 2;
+        node.asleep = false;
+        node.sleepT = 0;
+      });
+
     });
 
     ro.observe(container);
