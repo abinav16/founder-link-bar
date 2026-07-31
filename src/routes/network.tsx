@@ -541,17 +541,36 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
         nodes.forEach(solveBounds);
       }
 
-      // ---- 5. resting contacts, friction, rolling, sleep ----
+      // ---- 5. support chain: only bodies whose support traces down to the floor can rest ----
+      const onFloorArr = nodes.map((node) => node.y >= node.homeY - 0.75);
+      const grounded = onFloorArr.slice();
+      for (let pass = 0; pass < 6; pass++) {
+        let changed = false;
+        for (let i = 0; i < nodes.length; i++) {
+          if (grounded[i]) continue;
+          const cs = contacts[i].filter((c) => grounded[c.other]);
+          if (cs.length === 0) continue;
+          // stable if propped from almost directly below, or wedged between two supports
+          const steep = cs.some((c) => c.ny > 0.88);
+          const wedged = cs.some((c) => c.nx > 0.15) && cs.some((c) => c.nx < -0.15);
+          if (steep || wedged) { grounded[i] = true; changed = true; }
+        }
+        if (!changed) break;
+      }
+
+      // ---- 6. friction, rolling, sleep ----
       nodes.forEach((node, i) => {
         const r = node.size / 2;
-        const onFloor = node.y >= node.homeY - 0.75;
-        node.resting = onFloor || supported[i];
+        node.resting = grounded[i];
 
         if (node.resting) {
           if (node.vy > 0) node.vy = 0;
           node.av = node.vx / r;
           node.vx *= Math.pow(GROUND_FRICTION, dt);
           if (Math.abs(node.vx) < 0.03) { node.vx = 0; node.av = 0; }
+        } else {
+          // unsupported or perched on a slope: let gravity keep working, roll off naturally
+          node.av += (node.vx / r - node.av) * 0.1 * dt;
         }
 
         node.angle += node.av * dt;
@@ -565,6 +584,7 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
           if (speed > 0.12) node.asleep = false;
         }
       });
+
 
       // ---- 6. cursor threads ----
       if (mouseActive) {
