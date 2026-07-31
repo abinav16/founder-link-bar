@@ -581,8 +581,9 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
           if (node.sleepT > 20) { node.asleep = true; node.vx = 0; node.vy = 0; node.av = 0; }
         } else {
           node.sleepT = 0;
-          if (speed > 0.12) node.asleep = false;
+          node.asleep = false;
         }
+
       });
 
 
