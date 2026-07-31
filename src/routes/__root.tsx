@@ -87,7 +87,7 @@ function RootShell({ children }: { children: ReactNode }) {
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
-              gtag('config', 'G-EKLMW549YK');
+              gtag('config', 'G-EKLMW549YK', { send_page_view: false });
             `,
           }}
         />
