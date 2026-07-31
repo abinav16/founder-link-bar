@@ -493,7 +493,7 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
       const SLOP = 0.5;
       const CORRECTION = 0.65;
       const ITER = 4;
-      const supported = nodes.map(() => false);
+      const contacts: { nx: number; ny: number; other: number }[][] = nodes.map(() => []);
       for (let it = 0; it < ITER; it++) {
         for (let i = 0; i < nodes.length; i++) {
           for (let j = i + 1; j < nodes.length; j++) {
@@ -507,11 +507,12 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
             const nx = dx / dist, ny = dy / dist;
             const penetration = minDist - dist;
 
-            // contact bookkeeping: y grows downward, so ny > 0 means b sits below a → a rests on b
+            // contact bookkeeping: y grows downward, so ny > 0 means b sits below a → b may support a
             if (it === 0) {
-              if (ny > 0.5) supported[i] = true;
-              if (ny < -0.5) supported[j] = true;
+              if (ny > 0.35) contacts[i].push({ nx, ny, other: j });
+              if (ny < -0.35) contacts[j].push({ nx: -nx, ny: -ny, other: i });
             }
+
 
             if (penetration > SLOP) {
               const total = (penetration - SLOP) * CORRECTION;
@@ -540,17 +541,36 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
         nodes.forEach(solveBounds);
       }
 
-      // ---- 5. resting contacts, friction, rolling, sleep ----
+      // ---- 5. support chain: only bodies whose support traces down to the floor can rest ----
+      const onFloorArr = nodes.map((node) => node.y >= node.homeY - 0.75);
+      const grounded = onFloorArr.slice();
+      for (let pass = 0; pass < 6; pass++) {
+        let changed = false;
+        for (let i = 0; i < nodes.length; i++) {
+          if (grounded[i]) continue;
+          const cs = contacts[i].filter((c) => grounded[c.other]);
+          if (cs.length === 0) continue;
+          // stable if propped from almost directly below, or wedged between two supports
+          const steep = cs.some((c) => c.ny > 0.88);
+          const wedged = cs.some((c) => c.nx > 0.15) && cs.some((c) => c.nx < -0.15);
+          if (steep || wedged) { grounded[i] = true; changed = true; }
+        }
+        if (!changed) break;
+      }
+
+      // ---- 6. friction, rolling, sleep ----
       nodes.forEach((node, i) => {
         const r = node.size / 2;
-        const onFloor = node.y >= node.homeY - 0.75;
-        node.resting = onFloor || supported[i];
+        node.resting = grounded[i];
 
         if (node.resting) {
           if (node.vy > 0) node.vy = 0;
           node.av = node.vx / r;
           node.vx *= Math.pow(GROUND_FRICTION, dt);
           if (Math.abs(node.vx) < 0.03) { node.vx = 0; node.av = 0; }
+        } else {
+          // unsupported or perched on a slope: let gravity keep working, roll off naturally
+          node.av += (node.vx / r - node.av) * 0.1 * dt;
         }
 
         node.angle += node.av * dt;
@@ -561,9 +581,11 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
           if (node.sleepT > 20) { node.asleep = true; node.vx = 0; node.vy = 0; node.av = 0; }
         } else {
           node.sleepT = 0;
-          if (speed > 0.12) node.asleep = false;
+          node.asleep = false;
         }
+
       });
+
 
       // ---- 6. cursor threads ----
       if (mouseActive) {
