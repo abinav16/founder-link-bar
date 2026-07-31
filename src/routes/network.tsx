@@ -337,7 +337,7 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const nodeRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const stateRef = useRef<{ x: number; y: number; vx: number; vy: number; angle: number; av: number; homeY: number; size: number; snapped: boolean; snapCooldown: number }[]>([]);
+  const stateRef = useRef<{ x: number; y: number; vx: number; vy: number; angle: number; av: number; homeY: number; size: number; snapped: boolean; snapCooldown: number; resting: boolean; sleepT: number; asleep: boolean }[]>([]);
   const mouseRef = useRef({ x: -9999, y: -9999 });
   const rafRef = useRef<number>(0);
   const sizeRef = useRef({ w: 0, h: 0 });
@@ -385,7 +385,7 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
       const x = logoR + Math.random() * (w - 2 * logoR);
       const y = logoR + Math.random() * (h * 0.35);
       const vx = (Math.random() - 0.5) * 1.5;
-      return { x, y, vx, vy: 0, angle: 0, av: 0, homeY, size: NODE_SIZE, snapped: false, snapCooldown: 0 };
+      return { x, y, vx, vy: 0, angle: 0, av: 0, homeY, size: NODE_SIZE, snapped: false, snapCooldown: 0, resting: false, sleepT: 0, asleep: false };
     });
     stateRef.current = nodes;
 
@@ -404,9 +404,20 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
 
       ctx.clearRect(0, 0, w, h);
       const mouseActive = mouse.x > 0 && mouse.x < w && mouse.y > 0 && mouse.y < h;
+      const { w: sw, h: sh } = sizeRef.current;
+      const pillR = sh / 2;
 
+      // ---- 1. wake bodies the cursor comes near ----
+      if (mouseActive) {
+        nodes.forEach((node) => {
+          const dx = mouse.x - node.x, dy = mouse.y - node.y;
+          if (dx * dx + dy * dy < ATTRACT_RADIUS * ATTRACT_RADIUS) { node.asleep = false; node.sleepT = 0; }
+        });
+      }
 
+      // ---- 2. integrate forces ----
       nodes.forEach((node) => {
+        if (node.asleep) return;
         const r = node.size / 2;
 
         if (node.snapped) {
@@ -432,28 +443,24 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
         }
 
         node.vy += GRAVITY * dt;
+        node.vx *= Math.pow(AIR_DAMPING, dt);
+        node.vy *= Math.pow(AIR_DAMPING, dt);
+        node.av *= Math.pow(0.98, dt);
         node.x += node.vx * dt;
         node.y += node.vy * dt;
+        void r;
+      });
 
-        const { w: sw, h: sh } = sizeRef.current;
-        const pillR = sh / 2;
+      // ---- 3. boundary constraints (floor, ceiling, rounded pill ends) ----
+      function solveBounds(node: typeof nodes[number]) {
+        const r = node.size / 2;
         const margin = r + r;
 
-        const onGround = node.y >= node.homeY;
-        if (onGround) {
+        if (node.y > node.homeY) {
           node.y = node.homeY;
-          node.vy = 0;
-          node.av = node.vx / r;
-          node.vx *= Math.pow(GROUND_FRICTION, dt);
-          // kill jitter: stop tiny residual motion
-          if (Math.abs(node.vx) < 0.03) { node.vx = 0; node.av = 0; }
-        } else {
-          node.vx *= Math.pow(AIR_DAMPING, dt);
-          node.vy *= Math.pow(AIR_DAMPING, dt);
-          node.av *= Math.pow(0.98, dt);
+          if (node.vy > 0) node.vy = 0;
         }
-
-        if (node.y < margin) { node.y = margin; node.vy = Math.abs(node.vy) * 0.5; node.av *= -0.5; }
+        if (node.y < margin) { node.y = margin; if (node.vy < 0) node.vy = Math.abs(node.vy) * 0.5; node.av *= -0.5; }
 
         if (node.x < pillR) {
           const cdx = node.x - pillR, cdy = node.y - sh / 2;
@@ -478,11 +485,87 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
             node.av = -node.vx / r;
           }
         }
+      }
+
+      nodes.forEach(solveBounds);
+
+      // ---- 4. iterative soft separation with penetration slop ----
+      const SLOP = 0.5;
+      const CORRECTION = 0.65;
+      const ITER = 4;
+      const supported = nodes.map(() => false);
+      for (let it = 0; it < ITER; it++) {
+        for (let i = 0; i < nodes.length; i++) {
+          for (let j = i + 1; j < nodes.length; j++) {
+            const a = nodes[i], b = nodes[j];
+            const minDist = (a.size + b.size) / 2 + 2;
+            const dx = b.x - a.x;
+            const dy = b.y - a.y;
+            const dist = Math.sqrt(dx * dx + dy * dy) || 0.01;
+            if (dist >= minDist) continue;
+
+            const nx = dx / dist, ny = dy / dist;
+            const penetration = minDist - dist;
+
+            // contact bookkeeping: y grows downward, so ny > 0 means b sits below a → a rests on b
+            if (it === 0) {
+              if (ny > 0.5) supported[i] = true;
+              if (ny < -0.5) supported[j] = true;
+            }
+
+            if (penetration > SLOP) {
+              const total = (penetration - SLOP) * CORRECTION;
+              const aFree = !a.asleep, bFree = !b.asleep;
+              if (aFree && bFree) {
+                a.x -= nx * total * 0.5; a.y -= ny * total * 0.5;
+                b.x += nx * total * 0.5; b.y += ny * total * 0.5;
+              } else if (aFree) {
+                a.x -= nx * total; a.y -= ny * total;
+              } else if (bFree) {
+                b.x += nx * total; b.y += ny * total;
+              }
+            }
+
+
+            if (it === 0) {
+              const dot = (a.vx - b.vx) * nx + (a.vy - b.vy) * ny;
+              if (dot > 0) {
+                if (!a.asleep) { a.vx -= dot * nx * 0.45; a.vy -= dot * ny * 0.45; }
+                if (!b.asleep) { b.vx += dot * nx * 0.45; b.vy += dot * ny * 0.45; }
+                if (dot > 0.6) { a.asleep = false; b.asleep = false; a.sleepT = 0; b.sleepT = 0; }
+              }
+            }
+          }
+        }
+        nodes.forEach(solveBounds);
+      }
+
+      // ---- 5. resting contacts, friction, rolling, sleep ----
+      nodes.forEach((node, i) => {
+        const r = node.size / 2;
+        const onFloor = node.y >= node.homeY - 0.75;
+        node.resting = onFloor || supported[i];
+
+        if (node.resting) {
+          if (node.vy > 0) node.vy = 0;
+          node.av = node.vx / r;
+          node.vx *= Math.pow(GROUND_FRICTION, dt);
+          if (Math.abs(node.vx) < 0.03) { node.vx = 0; node.av = 0; }
+        }
 
         node.angle += node.av * dt;
+
+        const speed = Math.abs(node.vx) + Math.abs(node.vy);
+        if (node.resting && speed < 0.05 && !node.snapped) {
+          node.sleepT += dt;
+          if (node.sleepT > 20) { node.asleep = true; node.vx = 0; node.vy = 0; node.av = 0; }
+        } else {
+          node.sleepT = 0;
+          if (speed > 0.12) node.asleep = false;
+        }
       });
 
-
+      // ---- 6. cursor threads ----
       if (mouseActive) {
         nodes.forEach((node) => {
           if (node.snapped) return;
@@ -507,36 +590,11 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
         });
       }
 
-      for (let i = 0; i < nodes.length; i++) {
-        for (let j = i + 1; j < nodes.length; j++) {
-          const a = nodes[i], b = nodes[j];
-          const minDist = (a.size + b.size) / 2 + 2;
-          const dx = b.x - a.x;
-          const dy = b.y - a.y;
-          const dist = Math.sqrt(dx * dx + dy * dy) || 0.01;
-          if (dist < minDist) {
-            const overlap = (minDist - dist) / 2;
-            const nx = dx / dist, ny = dy / dist;
-            a.x -= nx * overlap; a.y -= ny * overlap;
-            b.x += nx * overlap; b.y += ny * overlap;
-            const dot = (a.vx - b.vx) * nx + (a.vy - b.vy) * ny;
-            if (dot > 0) {
-              a.vx -= dot * nx * 0.65; a.vy -= dot * ny * 0.65;
-              b.vx += dot * nx * 0.65; b.vy += dot * ny * 0.65;
-            }
-          }
-        }
-      }
-
-      // post-collision clamp: keep resting nodes glued to the ground so they don't jitter
-      nodes.forEach((node) => {
-        if (node.y > node.homeY) { node.y = node.homeY; node.vy = 0; }
-      });
-
       nodes.forEach((node, i) => {
         const el = nodeRefs.current[i];
-        if (el) el.style.transform = `translate(${Math.round(node.x - node.size / 2)}px, ${Math.round(node.y - node.size / 2)}px) rotate(${node.angle}rad)`;
+        if (el) el.style.transform = `translate(${(node.x - node.size / 2).toFixed(2)}px, ${(node.y - node.size / 2).toFixed(2)}px) rotate(${node.angle.toFixed(4)}rad)`;
       });
+
 
       rafRef.current = requestAnimationFrame(tick);
     }
@@ -552,6 +610,13 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
       canvas.style.height = `${nh}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       sizeRef.current = { w: nw, h: nh };
+      // layout changed: refresh the floor and wake every body so the pile re-settles
+      stateRef.current.forEach((node) => {
+        node.homeY = nh - (node.size / 2 + 3) - 2;
+        node.asleep = false;
+        node.sleepT = 0;
+      });
+
     });
 
     ro.observe(container);
