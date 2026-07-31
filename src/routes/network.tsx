@@ -385,7 +385,7 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
       const x = logoR + Math.random() * (w - 2 * logoR);
       const y = logoR + Math.random() * (h * 0.35);
       const vx = (Math.random() - 0.5) * 1.5;
-      return { x, y, vx, vy: 0, angle: 0, av: 0, homeY, size: NODE_SIZE, snapped: false, snapCooldown: 0 };
+      return { x, y, vx, vy: 0, angle: 0, av: 0, homeY, size: NODE_SIZE, snapped: false, snapCooldown: 0, resting: false, sleepT: 0, asleep: false };
     });
     stateRef.current = nodes;
 
