@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { trackPageView } from "@/lib/analytics";
 
 function NotFoundComponent() {
   return (
@@ -87,7 +88,7 @@ function RootShell({ children }: { children: ReactNode }) {
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
-              gtag('config', 'G-EKLMW549YK');
+              gtag('config', 'G-EKLMW549YK', { send_page_view: false });
             `,
           }}
         />
@@ -105,6 +106,17 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
+
+  // Send GA pageviews after each navigation settles, so document.title (set by
+  // the route's head()) is already applied — otherwise GA logs "(not set)".
+  useEffect(() => {
+    const send = () => window.setTimeout(trackPageView, 0);
+    send();
+    const unsub = router.subscribe("onResolved", send);
+    return unsub;
+  }, [router]);
+
+
 
   // Inject the StartupBar widget after full hydration + a paint tick so its
   // DOM mutations (shifting fixed/sticky elements down by 36px, adding
