@@ -507,20 +507,25 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
             const nx = dx / dist, ny = dy / dist;
             const penetration = minDist - dist;
 
-            // contact bookkeeping: who is resting on whom (normal roughly vertical)
+            // contact bookkeeping: y grows downward, so ny > 0 means b sits below a → a rests on b
             if (it === 0) {
-              if (ny > 0.5) supported[j] = true;      // b sits above a? ny>0 means b is below a in screen coords
-              if (ny < -0.5) supported[i] = true;
+              if (ny > 0.5) supported[i] = true;
+              if (ny < -0.5) supported[j] = true;
             }
 
             if (penetration > SLOP) {
-              const push = (penetration - SLOP) * CORRECTION * 0.5;
+              const total = (penetration - SLOP) * CORRECTION;
               const aFree = !a.asleep, bFree = !b.asleep;
-              if (aFree) { a.x -= nx * push; a.y -= ny * push; }
-              if (bFree) { b.x += nx * push; b.y += ny * push; }
-              if (aFree && !bFree) { a.x -= nx * push; a.y -= ny * push; }
-              if (bFree && !aFree) { b.x += nx * push; b.y += ny * push; }
+              if (aFree && bFree) {
+                a.x -= nx * total * 0.5; a.y -= ny * total * 0.5;
+                b.x += nx * total * 0.5; b.y += ny * total * 0.5;
+              } else if (aFree) {
+                a.x -= nx * total; a.y -= ny * total;
+              } else if (bFree) {
+                b.x += nx * total; b.y += ny * total;
+              }
             }
+
 
             if (it === 0) {
               const dot = (a.vx - b.vx) * nx + (a.vy - b.vy) * ny;
