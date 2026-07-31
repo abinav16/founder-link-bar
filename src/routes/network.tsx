@@ -507,11 +507,12 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
             const nx = dx / dist, ny = dy / dist;
             const penetration = minDist - dist;
 
-            // contact bookkeeping: y grows downward, so ny > 0 means b sits below a → a rests on b
+            // contact bookkeeping: y grows downward, so ny > 0 means b sits below a → b may support a
             if (it === 0) {
-              if (ny > 0.5) supported[i] = true;
-              if (ny < -0.5) supported[j] = true;
+              if (ny > 0.35) contacts[i].push({ nx, ny, other: j });
+              if (ny < -0.35) contacts[j].push({ nx: -nx, ny: -ny, other: i });
             }
+
 
             if (penetration > SLOP) {
               const total = (penetration - SLOP) * CORRECTION;
