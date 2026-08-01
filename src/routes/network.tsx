@@ -149,7 +149,7 @@ function StartupCard({ s }: { s: Card }) {
       <div className="relative z-10 hidden sm:flex items-center justify-between border-t border-black/[0.05] pt-4 pointer-events-none">
         {s.impressions_24h > 0 ? (
           <div className="flex items-center gap-2">
-            <span className="text-[11px] text-black/35 font-medium tabular-nums">{s.impressions_24h} impressions today</span>
+            <span className="text-[11px] text-black/35 font-medium tabular-nums">{s.impressions_24h} impressions · last 24h</span>
             {s.clicks_24h > 0 && <span className="text-[11px] text-black/20">· {s.clicks_24h} clicks</span>}
           </div>
         ) : (
