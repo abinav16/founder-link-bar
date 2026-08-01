@@ -844,10 +844,17 @@ function NetworkDashboardPage() {
   }, [allStartups, q, sortKey, sortDir]);
 
 
-  const trending = [...allStartups]
-    .filter((s) => (s.clicks_24h ?? 0) > 0)
-    .sort((a, b) => (b.clicks_24h ?? 0) - (a.clicks_24h ?? 0) || (b.impressions_24h ?? 0) - (a.impressions_24h ?? 0))
-    .slice(0, 3);
+  const trending = (() => {
+    const active = allStartups.filter(
+      (s) => (s.clicks_24h ?? 0) > 0 || (s.impressions_24h ?? 0) > 0,
+    );
+    const sorted = [...active].sort(
+      (a, b) =>
+        (b.clicks_24h ?? 0) - (a.clicks_24h ?? 0) ||
+        (b.impressions_24h ?? 0) - (a.impressions_24h ?? 0),
+    );
+    return sorted.slice(0, 3);
+  })();
 
   return (
     <DashboardLayout>
@@ -856,9 +863,9 @@ function NetworkDashboardPage() {
           <MagneticField startups={data.recentStartups} stats={stats} />
         )}
 
-        {trending.length > 0 && (
+        {trending.length > 1 && (
           <div>
-            <SectionLabel title="Trending Today" />
+            <SectionLabel title="Trending — last 24h" />
             <div className="sm:hidden rounded-2xl bg-white border border-black/[0.06] px-4 py-2">
               {trending.map((s) => <StartupRow key={s.id} s={s} />)}
             </div>
