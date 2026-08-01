@@ -424,8 +424,8 @@ function AccountPage() {
     const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
     const bustedUrl = `${publicUrl}?v=${Date.now()}`;
 
-    const { error: metaErr } = await supabase.auth.updateUser({ data: { avatar_url: bustedUrl } });
-    if (metaErr) { toast.error(metaErr.message); setUploadingAvatar(false); return; }
+    const err = await persistProfile({ avatar_url: bustedUrl });
+    if (err) { toast.error(err); setUploadingAvatar(false); return; }
 
     setAvatarUrl(bustedUrl);
     toast.success("Profile picture updated");
@@ -433,8 +433,8 @@ function AccountPage() {
   }
 
   async function removeAvatar() {
-    const { error } = await supabase.auth.updateUser({ data: { avatar_url: null } });
-    if (error) { toast.error(error.message); return; }
+    const err = await persistProfile({ avatar_url: null });
+    if (err) { toast.error(err); return; }
     setAvatarUrl(null);
     toast.success("Profile picture removed");
   }
