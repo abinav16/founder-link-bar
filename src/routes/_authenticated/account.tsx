@@ -363,9 +363,14 @@ function AccountPage() {
       if (!u.user) return;
       setUserId(u.user.id);
       setEmail(u.user.email ?? "");
-      setName(u.user.user_metadata?.full_name ?? "");
-      setTwitter(u.user.user_metadata?.twitter_handle ?? "");
-      setAvatarUrl(u.user.user_metadata?.avatar_url ?? u.user.user_metadata?.picture ?? null);
+
+      // Profile fields live in public.profiles (auth metadata gets overwritten
+      // by Google on every sign-in), falling back to metadata when unset.
+      const { data: prof } = await supabase.rpc("get_my_profile");
+      const p = Array.isArray(prof) ? prof[0] : null;
+      setName(p?.full_name ?? u.user.user_metadata?.full_name ?? "");
+      setTwitter(p?.twitter_handle ?? u.user.user_metadata?.twitter_handle ?? "");
+      setAvatarUrl(p?.avatar_url ?? u.user.user_metadata?.avatar_url ?? u.user.user_metadata?.picture ?? null);
 
       const { data } = await supabase
         .from("startups").select("id, name, website_url, description, status, logo_url, user_id, slug, founder_name, founder_quote, founder_avatar_url").eq("user_id", u.user.id).order("created_at", { ascending: true });
@@ -377,15 +382,25 @@ function AccountPage() {
     return input.trim().replace(/^https?:\/\/(www\.)?(x|twitter)\.com\//i, "").replace(/^@/, "").replace(/\/.*$/, "").trim();
   }
 
+  async function persistProfile(fields: { full_name?: string | null; avatar_url?: string | null; twitter_handle?: string | null }) {
+    if (!userId) return "Please sign in again";
+    const { error } = await supabase.from("profiles").upsert({ id: userId, ...fields }, { onConflict: "id" });
+    if (error) return error.message;
+    // Keep auth metadata roughly in sync for greetings/emails (best effort).
+    await supabase.auth.updateUser({ data: fields }).catch(() => {});
+    return null;
+  }
+
   async function saveProfile(e: React.FormEvent) {
     e.preventDefault();
     setSavingProfile(true);
     const handle = normalizeTwitter(twitter);
-    const { error } = await supabase.auth.updateUser({ data: { full_name: name, twitter_handle: handle || null } });
+    const err = await persistProfile({ full_name: name, twitter_handle: handle || null });
     setSavingProfile(false);
-    if (error) toast.error(error.message);
+    if (err) toast.error(err);
     else { setTwitter(handle); toast.success("Profile updated"); }
   }
+
 
   function handleAvatarPick(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -409,8 +424,8 @@ function AccountPage() {
     const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
     const bustedUrl = `${publicUrl}?v=${Date.now()}`;
 
-    const { error: metaErr } = await supabase.auth.updateUser({ data: { avatar_url: bustedUrl } });
-    if (metaErr) { toast.error(metaErr.message); setUploadingAvatar(false); return; }
+    const err = await persistProfile({ avatar_url: bustedUrl });
+    if (err) { toast.error(err); setUploadingAvatar(false); return; }
 
     setAvatarUrl(bustedUrl);
     toast.success("Profile picture updated");
@@ -418,8 +433,8 @@ function AccountPage() {
   }
 
   async function removeAvatar() {
-    const { error } = await supabase.auth.updateUser({ data: { avatar_url: null } });
-    if (error) { toast.error(error.message); return; }
+    const err = await persistProfile({ avatar_url: null });
+    if (err) { toast.error(err); return; }
     setAvatarUrl(null);
     toast.success("Profile picture removed");
   }

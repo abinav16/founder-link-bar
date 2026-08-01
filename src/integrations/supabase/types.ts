@@ -254,6 +254,33 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          twitter_handle: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          twitter_handle?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          twitter_handle?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       startups: {
         Row: {
           banned: boolean
@@ -425,6 +452,14 @@ export type Database = {
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
+      }
+      get_my_profile: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          full_name: string
+          twitter_handle: string
+        }[]
       }
       get_my_startups: {
         Args: never
