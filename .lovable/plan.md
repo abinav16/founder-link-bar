@@ -1,24 +1,26 @@
-## Problem
+## Why only one startup shows
 
-`public/widget/loader.js` reserves space for the bar in three ways when it injects:
+"Trending Today" = top 3 approved startups by clicks, filtered to `clicks_24h > 0`.
 
-1. `document.body.style.paddingTop = existingPad + 36px`
-2. `document.documentElement.style.scrollPaddingTop = '36px'`
-3. `sweepFixedElements()` pushes every `position: fixed/sticky; top: 0` element down to `top: 36px`
+Despite the name, `clicks_24h` is **not** a rolling 24 hours. The `public_startup_24h` database function counts from `date_trunc('day', now() AT TIME ZONE 'UTC')` — i.e. since UTC midnight.
 
-When a user clicks the X, `src/routes/widget.bar.tsx` posts `{ type: 'startupbar:resize', height: 0 }`. The loader's message handler only sets `iframe.style.height = '0px'` — the body padding, scroll padding, and shifted fixed elements all stay in place. Result: a 36px empty gap at the top after closing.
+Verified against live data at 03:13 UTC:
+- Since UTC midnight: exactly 1 startup has a click (Blubber OS, 1).
+- Rolling last 24 hours: 20+ startups with clicks (StartupBar 10, Blubber OS 4, park.fan 4, Securelint 3, StopBurnout 3, VerifiedMRR 3, ...).
+
+So the section collapses to 1-2 cards every night after UTC midnight and only fills up late in the UTC day. It also causes an ugly 1-card grid in a 3-column layout.
 
 ## Fix
 
-In `public/widget/loader.js`:
+1. Change `public.public_startup_24h` (new migration, `CREATE OR REPLACE`) to use a true rolling window: `created_at >= now() - interval '24 hours'` for both impressions and clicks. Keep the `referrer IS DISTINCT FROM 'dev-simulate'` filter, `SECURITY DEFINER`, and `SET search_path = public` as-is.
+2. In `src/routes/network.tsx`, make the trending block resilient:
+   - Keep top 3 by `clicks_24h`, tie-broken by `impressions_24h`.
+   - If fewer than 3 startups have clicks, backfill the remaining slots with the highest `impressions_24h` startups (still excluding zero-activity ones) so the row rarely renders as a lone card.
+   - Only render the section when there are at least 2 entries; otherwise hide it.
+3. Relabel to "Trending — last 24h" so the window matches the wording.
 
-- Record the body's original `padding-top` inline value at inject time (alongside the existing `data-startupbar-originalTop` pattern used for fixed elements).
-- Add an `unshiftFixedElements()` helper that walks elements marked `data-startupbar-shifted="1"`, restores `el.style.top` from `data-startupbar-original-top`, and clears the markers.
-- In the resize message handler, when height is `0`: restore body padding-top, clear `scrollPaddingTop`, call `unshiftFixedElements()`, hide the iframe (`display: none`), and stop the resweep/heartbeat side effects from re-applying the offset (guard `sweepFixedElements` and the resize handler with a `dismissed` flag).
-- When height goes back above 0 (info panel expand/collapse still uses this path), keep current behaviour — only the explicit `0` height triggers teardown.
-
-Also persist dismissal so the bar doesn't reappear with the gap on the next page view within the session — set a `sessionStorage` flag on dismiss and skip injection entirely when it's present (this also avoids re-adding padding on SPA navigations).
+Note: this also affects any other place reading `impressions_24h` / `clicks_24h` from the network dashboard (the network card metrics), which will now show rolling-24h numbers instead of since-midnight — that's the more intuitive reading of "today" for those labels too, and card copy saying "impressions today" will be updated to "last 24h".
 
 ## Verification
 
-Load a local test page with the loader script, click the X, and confirm via computed styles that `body { padding-top }` returns to its original value, the fixed header returns to `top: 0`, and no visual gap remains.
+Re-run the aggregation query after the migration and confirm the RPC returns the rolling-24h counts, then check `/network` renders three trending cards.
