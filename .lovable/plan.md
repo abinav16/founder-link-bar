@@ -1,26 +1,26 @@
-## Why only one startup shows
+## What's wrong
 
-"Trending Today" = top 3 approved startups by clicks, filtered to `clicks_24h > 0`.
+When profile fields were moved into their own `profiles` table, the table was created with row-level security policies but **no table-level permissions were granted** to signed-in users. Confirmed: `public.profiles` currently has zero grants for any role.
 
-Despite the name, `clicks_24h` is **not** a rolling 24 hours. The `public_startup_24h` database function counts from `date_trunc('day', now() AT TIME ZONE 'UTC')` — i.e. since UTC midnight.
+Effect:
+- Reading the profile still works, because the account page loads it through a `get_my_profile` function that runs with elevated rights.
+- **Saving** goes straight to the table, so every save — display name, X handle, and profile picture — is rejected. That's the "new row violates row-level security policy" toast Silford hit. This affects every user, not just him.
 
-Verified against live data at 03:13 UTC:
-- Since UTC midnight: exactly 1 startup has a click (Blubber OS, 1).
-- Rolling last 24 hours: 20+ startups with clicks (StartupBar 10, Blubber OS 4, park.fan 4, Securelint 3, StopBurnout 3, VerifiedMRR 3, ...).
+Second, smaller issue: the `avatars` storage bucket has insert/update/delete rules but **no read rule for the owner**. Replacing an existing photo (an upsert) can be rejected for that reason, so the first upload works and later replacements fail.
 
-So the section collapses to 1-2 cards every night after UTC midnight and only fills up late in the UTC day. It also causes an ugly 1-card grid in a 3-column layout.
+## The fix
 
-## Fix
-
-1. Change `public.public_startup_24h` (new migration, `CREATE OR REPLACE`) to use a true rolling window: `created_at >= now() - interval '24 hours'` for both impressions and clicks. Keep the `referrer IS DISTINCT FROM 'dev-simulate'` filter, `SECURITY DEFINER`, and `SET search_path = public` as-is.
-2. In `src/routes/network.tsx`, make the trending block resilient:
-   - Keep top 3 by `clicks_24h`, tie-broken by `impressions_24h`.
-   - If fewer than 3 startups have clicks, backfill the remaining slots with the highest `impressions_24h` startups (still excluding zero-activity ones) so the row rarely renders as a lone card.
-   - Only render the section when there are at least 2 entries; otherwise hide it.
-3. Relabel to "Trending — last 24h" so the window matches the wording.
-
-Note: this also affects any other place reading `impressions_24h` / `clicks_24h` from the network dashboard (the network card metrics), which will now show rolling-24h numbers instead of since-midnight — that's the more intuitive reading of "today" for those labels too, and card copy saying "impressions today" will be updated to "last 24h".
+1. Database migration:
+   - Grant signed-in users the ability to read/insert/update their own rows on `public.profiles`, plus full access for internal server operations. RLS policies already restrict each user to their own row, so this doesn't widen access.
+   - Add an owner read policy on avatar files in storage so replacing a photo works.
+2. No frontend changes needed — the account page code is already correct.
 
 ## Verification
 
-Re-run the aggregation query after the migration and confirm the RPC returns the rolling-24h counts, then check `/network` renders three trending cards.
+- Confirm grants exist on `profiles`.
+- Sign in and save a display name, X handle, and a new profile picture end-to-end, confirming the row updates and the founder name/photo shows on the public startup page.
+- Re-run the security linter to make sure nothing was over-granted.
+
+## Follow-up
+
+Once verified, you can reply to Silford that it's fixed and he can re-save his photo.
