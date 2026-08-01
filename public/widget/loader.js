@@ -240,7 +240,10 @@
 
     function inject() {
       if (document.documentElement && document.documentElement.getAttribute('data-startupbar-injected') === '1') return;
+      try { if (sessionStorage.getItem('startupbar:dismissed') === '1') { dismissed = true; return; } } catch (e) {}
       var html = document.documentElement;
+      if (html) originalScrollPaddingTop = html.style.scrollPaddingTop || '';
+      if (document.body) originalBodyPaddingTop = document.body.style.paddingTop || '';
       if (isIphoneSafari) {
         if (document.body) {
           if (document.body.firstChild) {
