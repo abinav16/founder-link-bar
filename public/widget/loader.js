@@ -71,9 +71,46 @@
     }
 
     var currentHeight = 36;
+    var dismissed = false;
+    var originalBodyPaddingTop = null;
+    var originalScrollPaddingTop = null;
+
+    function unshiftFixedElements() {
+      try {
+        var nodes = document.querySelectorAll('[data-startupbar-shifted="1"]');
+        for (var i = 0; i < nodes.length; i++) {
+          var el = nodes[i];
+          try {
+            el.style.top = el.dataset.startupbarOriginalTop || '';
+            delete el.dataset.startupbarOriginalTop;
+            delete el.dataset.startupbarShifted;
+          } catch (e) {}
+        }
+      } catch (e) {}
+    }
+
+    function teardown() {
+      if (dismissed) return;
+      dismissed = true;
+      try {
+        if (document.body && originalBodyPaddingTop !== null) {
+          document.body.style.paddingTop = originalBodyPaddingTop;
+        }
+        if (document.documentElement) {
+          document.documentElement.style.scrollPaddingTop = originalScrollPaddingTop || '';
+        }
+        unshiftFixedElements();
+        iframe.style.display = 'none';
+        iframe.style.height = '0px';
+      } catch (e) {}
+      try { sessionStorage.setItem('startupbar:dismissed', '1'); } catch (e) {}
+    }
+
     window.addEventListener('message', function(e) {
       if (e.data && e.data.type === 'startupbar:resize') {
         var next = Math.round(e.data.height);
+        if (next === 0) { teardown(); return; }
+        if (dismissed) return;
         if (next === currentHeight) return;
         currentHeight = next;
         iframe.style.height = next + 'px';
@@ -100,6 +137,7 @@
     }
 
     function sweepFixedElements(root) {
+      if (dismissed) return;
       try {
         var nodes = (root || document).querySelectorAll('*');
         for (var i = 0; i < nodes.length; i++) shiftFixedElement(nodes[i]);
@@ -164,6 +202,7 @@
     var lastSample = null;
     function sendHeartbeat() {
       try {
+        if (dismissed) return;
         if (document.visibilityState && document.visibilityState !== 'visible') return;
         var sample = isWidgetVisible();
         var report;
@@ -202,7 +241,10 @@
 
     function inject() {
       if (document.documentElement && document.documentElement.getAttribute('data-startupbar-injected') === '1') return;
+      try { if (sessionStorage.getItem('startupbar:dismissed') === '1') { dismissed = true; return; } } catch (e) {}
       var html = document.documentElement;
+      if (html) originalScrollPaddingTop = html.style.scrollPaddingTop || '';
+      if (document.body) originalBodyPaddingTop = document.body.style.paddingTop || '';
       if (isIphoneSafari) {
         if (document.body) {
           if (document.body.firstChild) {
