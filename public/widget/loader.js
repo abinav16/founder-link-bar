@@ -202,6 +202,7 @@
     var lastSample = null;
     function sendHeartbeat() {
       try {
+        if (dismissed) return;
         if (document.visibilityState && document.visibilityState !== 'visible') return;
         var sample = isWidgetVisible();
         var report;
