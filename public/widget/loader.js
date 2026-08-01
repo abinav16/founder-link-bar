@@ -137,6 +137,7 @@
     }
 
     function sweepFixedElements(root) {
+      if (dismissed) return;
       try {
         var nodes = (root || document).querySelectorAll('*');
         for (var i = 0; i < nodes.length; i++) shiftFixedElement(nodes[i]);
