@@ -360,10 +360,18 @@ function AdminPage() {
                           </a>
                         </div>
                         <div className="mt-0.5 max-w-[160px] truncate text-xs text-black/35 sm:max-w-none">{s.website_url}</div>
+                        {/* Mobile: founder shown inline since the column is hidden below md */}
+                        <div className="mt-1 md:hidden">
+                          <FounderCell founder={founders[s.user_id]} compact />
+                        </div>
                       </td>
-                      <td className="hidden max-w-xs px-5 py-4 md:table-cell">
+                      <td className="hidden px-5 py-4 md:table-cell">
+                        <FounderCell founder={founders[s.user_id]} />
+                      </td>
+                      <td className="hidden max-w-xs px-5 py-4 lg:table-cell">
                         <p className="line-clamp-2 text-sm text-black/60">{s.description}</p>
                       </td>
+
                       <td className="px-4 py-4 sm:px-5">
                         <div className="flex flex-col items-start gap-1">
                           <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${STATUS_STYLES[s.status]}`}>
