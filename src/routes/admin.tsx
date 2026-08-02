@@ -93,6 +93,7 @@ function AdminPage() {
   const [rejectTarget, setRejectTarget] = useState<Startup | null>(null);
   const [rejectReason, setRejectReason] = useState<string>("not_allowed_type");
   const [rejectNote, setRejectNote] = useState<string>("");
+  const [founders, setFounders] = useState<Record<string, FounderInfo>>({});
 
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 60_000);
