@@ -57,6 +57,16 @@ interface Startup {
   banned: boolean;
 }
 
+/** Founder identity for the admin table. Email comes from an admin-only,
+ *  email-gated database function — it is never exposed on any public path. */
+interface FounderInfo {
+  user_id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  email: string | null;
+}
+
+
 type EmbedState =
   | { state: "idle" }
   | { state: "checking" }
