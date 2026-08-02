@@ -66,6 +66,42 @@ interface FounderInfo {
   email: string | null;
 }
 
+function FounderCell({ founder, compact = false }: { founder?: FounderInfo; compact?: boolean }) {
+  if (!founder) return <span className="text-xs text-black/25">—</span>;
+  const name = founder.full_name?.trim() || "Unnamed founder";
+  const initial = name.charAt(0).toUpperCase();
+  return (
+    <div className="flex items-center gap-2">
+      {founder.avatar_url ? (
+        <img
+          src={founder.avatar_url}
+          alt=""
+          referrerPolicy="no-referrer"
+          className={`${compact ? "h-5 w-5" : "h-7 w-7"} shrink-0 rounded-full object-cover ring-1 ring-black/10`}
+        />
+      ) : (
+        <span className={`${compact ? "h-5 w-5 text-[9px]" : "h-7 w-7 text-[11px]"} flex shrink-0 items-center justify-center rounded-full bg-black/5 font-semibold text-black/40`}>
+          {initial}
+        </span>
+      )}
+      <div className="min-w-0">
+        <div className={`truncate font-medium text-black/80 ${compact ? "text-xs" : "text-sm"}`}>{name}</div>
+        {founder.email && (
+          <button
+            type="button"
+            onClick={() => { navigator.clipboard.writeText(founder.email!); toast.success("Email copied"); }}
+            title="Copy email"
+            className="max-w-[180px] truncate text-[11px] text-black/40 underline decoration-black/15 underline-offset-2 transition-colors hover:text-black"
+          >
+            {founder.email}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
 
 type EmbedState =
   | { state: "idle" }
