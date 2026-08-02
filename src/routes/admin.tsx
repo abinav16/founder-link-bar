@@ -57,6 +57,52 @@ interface Startup {
   banned: boolean;
 }
 
+/** Founder identity for the admin table. Email comes from an admin-only,
+ *  email-gated database function — it is never exposed on any public path. */
+interface FounderInfo {
+  user_id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  email: string | null;
+}
+
+function FounderCell({ founder, compact = false }: { founder?: FounderInfo; compact?: boolean }) {
+  if (!founder) return <span className="text-xs text-black/25">—</span>;
+  const name = founder.full_name?.trim() || "Unnamed founder";
+  const initial = name.charAt(0).toUpperCase();
+  return (
+    <div className="flex items-center gap-2">
+      {founder.avatar_url ? (
+        <img
+          src={founder.avatar_url}
+          alt=""
+          referrerPolicy="no-referrer"
+          className={`${compact ? "h-5 w-5" : "h-7 w-7"} shrink-0 rounded-full object-cover ring-1 ring-black/10`}
+        />
+      ) : (
+        <span className={`${compact ? "h-5 w-5 text-[9px]" : "h-7 w-7 text-[11px]"} flex shrink-0 items-center justify-center rounded-full bg-black/5 font-semibold text-black/40`}>
+          {initial}
+        </span>
+      )}
+      <div className="min-w-0">
+        <div className={`truncate font-medium text-black/80 ${compact ? "text-xs" : "text-sm"}`}>{name}</div>
+        {founder.email && (
+          <button
+            type="button"
+            onClick={() => { navigator.clipboard.writeText(founder.email!); toast.success("Email copied"); }}
+            title="Copy email"
+            className="max-w-[180px] truncate text-[11px] text-black/40 underline decoration-black/15 underline-offset-2 transition-colors hover:text-black"
+          >
+            {founder.email}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
+
 type EmbedState =
   | { state: "idle" }
   | { state: "checking" }
@@ -93,6 +139,7 @@ function AdminPage() {
   const [rejectTarget, setRejectTarget] = useState<Startup | null>(null);
   const [rejectReason, setRejectReason] = useState<string>("not_allowed_type");
   const [rejectNote, setRejectNote] = useState<string>("");
+  const [founders, setFounders] = useState<Record<string, FounderInfo>>({});
 
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 60_000);
@@ -141,9 +188,18 @@ function AdminPage() {
     const list = (data as unknown as Startup[] | null) ?? [];
     setStartups(list);
     setLoading(false);
+    // Founder identity (incl. email) also comes from an admin-only gated
+    // function; a non-admin caller gets "Forbidden" and no rows.
+    const ownerIds = Array.from(new Set(list.map((s) => s.user_id).filter(Boolean)));
+    if (ownerIds.length) {
+      const { data: f } = await supabase.rpc("admin_founder_info" as never, { _user_ids: ownerIds } as never);
+      const rows = (f as unknown as FounderInfo[] | null) ?? [];
+      setFounders(Object.fromEntries(rows.map((r) => [r.user_id, r])));
+    }
     // Check embed for any startup with a website (including pending — that's the point)
     list.filter((s) => s.website_url && s.status !== "rejected").forEach((s) => checkEmbed(s.id, s.website_url));
   }
+
 
 
   useEffect(() => { load(); }, []);
@@ -290,7 +346,8 @@ function AdminPage() {
                 <thead>
                   <tr className="border-b border-black/6 bg-black/[0.02]">
                     <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 sm:px-5">Startup</th>
-                    <th className="hidden px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 md:table-cell">One-liner</th>
+                    <th className="hidden px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 md:table-cell">Founder</th>
+                    <th className="hidden px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 lg:table-cell">One-liner</th>
                     <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 sm:px-5">Status</th>
                     <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 sm:px-5">Embed</th>
                     <th className="hidden px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 lg:table-cell">Widget Health</th>
@@ -339,10 +396,18 @@ function AdminPage() {
                           </a>
                         </div>
                         <div className="mt-0.5 max-w-[160px] truncate text-xs text-black/35 sm:max-w-none">{s.website_url}</div>
+                        {/* Mobile: founder shown inline since the column is hidden below md */}
+                        <div className="mt-1 md:hidden">
+                          <FounderCell founder={founders[s.user_id]} compact />
+                        </div>
                       </td>
-                      <td className="hidden max-w-xs px-5 py-4 md:table-cell">
+                      <td className="hidden px-5 py-4 md:table-cell">
+                        <FounderCell founder={founders[s.user_id]} />
+                      </td>
+                      <td className="hidden max-w-xs px-5 py-4 lg:table-cell">
                         <p className="line-clamp-2 text-sm text-black/60">{s.description}</p>
                       </td>
+
                       <td className="px-4 py-4 sm:px-5">
                         <div className="flex flex-col items-start gap-1">
                           <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${STATUS_STYLES[s.status]}`}>

@@ -422,6 +422,15 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      admin_founder_info: {
+        Args: { _user_ids: string[] }
+        Returns: {
+          avatar_url: string
+          email: string
+          full_name: string
+          user_id: string
+        }[]
+      }
       admin_orphan_payments: {
         Args: { _older_than_minutes?: number }
         Returns: {
