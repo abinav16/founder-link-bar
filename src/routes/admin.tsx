@@ -310,7 +310,8 @@ function AdminPage() {
                 <thead>
                   <tr className="border-b border-black/6 bg-black/[0.02]">
                     <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 sm:px-5">Startup</th>
-                    <th className="hidden px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 md:table-cell">One-liner</th>
+                    <th className="hidden px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 md:table-cell">Founder</th>
+                    <th className="hidden px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 lg:table-cell">One-liner</th>
                     <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 sm:px-5">Status</th>
                     <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 sm:px-5">Embed</th>
                     <th className="hidden px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-black/35 lg:table-cell">Widget Health</th>
