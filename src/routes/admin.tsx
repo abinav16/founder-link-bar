@@ -152,9 +152,18 @@ function AdminPage() {
     const list = (data as unknown as Startup[] | null) ?? [];
     setStartups(list);
     setLoading(false);
+    // Founder identity (incl. email) also comes from an admin-only gated
+    // function; a non-admin caller gets "Forbidden" and no rows.
+    const ownerIds = Array.from(new Set(list.map((s) => s.user_id).filter(Boolean)));
+    if (ownerIds.length) {
+      const { data: f } = await supabase.rpc("admin_founder_info" as never, { _user_ids: ownerIds } as never);
+      const rows = (f as unknown as FounderInfo[] | null) ?? [];
+      setFounders(Object.fromEntries(rows.map((r) => [r.user_id, r])));
+    }
     // Check embed for any startup with a website (including pending — that's the point)
     list.filter((s) => s.website_url && s.status !== "rejected").forEach((s) => checkEmbed(s.id, s.website_url));
   }
+
 
 
   useEffect(() => { load(); }, []);
