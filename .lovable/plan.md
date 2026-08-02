@@ -1,26 +1,24 @@
-## What's wrong
+## Goal
 
-When profile fields were moved into their own `profiles` table, the table was created with row-level security policies but **no table-level permissions were granted** to signed-in users. Confirmed: `public.profiles` currently has zero grants for any role.
+Show the founder's name, profile picture, and email address for each application in the admin panel — visible to the admin only, never readable by any other signed-in or anonymous user.
 
-Effect:
-- Reading the profile still works, because the account page loads it through a `get_my_profile` function that runs with elevated rights.
-- **Saving** goes straight to the table, so every save — display name, X handle, and profile picture — is rejected. That's the "new row violates row-level security policy" toast Silford hit. This affects every user, not just him.
+## What exists today
 
-Second, smaller issue: the `avatars` storage bucket has insert/update/delete rules but **no read rule for the owner**. Replacing an existing photo (an upsert) can be rejected for that reason, so the first upload works and later replacements fail.
+- The admin applications table is fed by `admin_all_startups()`, a privileged function that already refuses to run unless the caller's verified email is the admin's. It returns startup rows only — no founder identity.
+- Founder name/photo live in `profiles` (with fallback to the account's login metadata); the email lives only in the accounts table, which app users can never query directly.
+- The existing public founder lookup deliberately returns name + photo only, never email. That stays untouched.
 
-## The fix
+## The change
 
-1. Database migration:
-   - Grant signed-in users the ability to read/insert/update their own rows on `public.profiles`, plus full access for internal server operations. RLS policies already restrict each user to their own row, so this doesn't widen access.
-   - Add an owner read policy on avatar files in storage so replacing a photo works.
-2. No frontend changes needed — the account page code is already correct.
+1. **New admin-only database function** `admin_founder_info(_user_ids uuid[])` returning user id, full name, avatar URL, and email.
+   - Same email gate as the other admin functions: raises "Forbidden" for anyone else.
+   - Execute permission revoked from anonymous and public; granted only to signed-in callers, where the in-function gate does the real check.
+   - No new table permissions, no new read policies — nothing becomes readable by ordinary users.
 
-## Verification
+2. **Admin page**: after loading applications, fetch founder info for the listed owners in one call and render a new "Founder" column — small round avatar (initial fallback), name, and email below it with a click-to-copy shortcut, matching the copy behaviour already used in the "Recently removed" panel. Column collapses sensibly on mobile (hidden below `md`, founder shown inline under the startup name instead).
 
-- Confirm grants exist on `profiles`.
-- Sign in and save a display name, X handle, and a new profile picture end-to-end, confirming the row updates and the founder name/photo shows on the public startup page.
-- Re-run the security linter to make sure nothing was over-granted.
+## Security notes
 
-## Follow-up
-
-Once verified, you can reply to Silford that it's fixed and he can re-save his photo.
+- Email is never exposed through any public route, policy, or the existing public founder function.
+- The founder call is gated identically to the existing admin data path, so a non-admin who forces the admin page open still gets "Forbidden" and no rows.
+- After the migration, re-run the database security linter to confirm nothing was over-granted.
