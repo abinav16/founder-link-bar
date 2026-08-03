@@ -11,6 +11,7 @@ const search = z.object({
   path: z.string().optional(),
   sbref: z.string().optional(),
   pref: z.string().optional(),
+  sid: z.string().optional(),
   mobile: z.coerce.number().optional(),
 });
 
