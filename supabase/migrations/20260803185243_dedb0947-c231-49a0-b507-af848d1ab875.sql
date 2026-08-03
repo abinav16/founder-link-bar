@@ -1,0 +1,2 @@
+ALTER TABLE public.impressions ADD COLUMN IF NOT EXISTS session_id text;
+CREATE INDEX IF NOT EXISTS idx_impressions_session_shown ON public.impressions (session_id, shown_startup_id, created_at DESC) WHERE session_id IS NOT NULL;
