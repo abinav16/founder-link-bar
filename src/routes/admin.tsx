@@ -465,6 +465,8 @@ function AdminPage() {
                               ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
                               : badge === "installed-unseen"
                               ? "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
+                              : badge === "removed"
+                              ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
                               : badge === "missing"
                               ? "border-red-200 bg-red-50 text-red-600 hover:bg-red-100"
                               : badge === "error"
