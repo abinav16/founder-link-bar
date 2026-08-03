@@ -1,24 +1,29 @@
-## Goal
+# Why GrandPrixPicks shows "Live" but the bar isn't on their site
 
-Show the founder's name, profile picture, and email address for each application in the admin panel — visible to the admin only, never readable by any other signed-in or anonymous user.
+## What I checked
 
-## What exists today
+- Fetched `https://grandprixpicks.com` HTML: **no** `startupbar` script, no `data-startup-id`.
+- Loaded the page in a real browser: **zero** requests to startupbar.co, no widget iframe.
+- Database row: last heartbeat `2026-08-03 10:36 UTC` (04:06 pm IST), `widget_currently_visible = true`.
 
-- The admin applications table is fed by `admin_all_startups()`, a privileged function that already refuses to run unless the caller's verified email is the admin's. It returns startup rows only — no founder identity.
-- Founder name/photo live in `profiles` (with fallback to the account's login metadata); the email lives only in the accounts table, which app users can never query directly.
-- The existing public founder lookup deliberately returns name + photo only, never email. That stays untouched.
+So they did install it, the widget pinged us at 04:06 pm, and then the script was removed. The site is clean now.
 
-## The change
+## Why the badge still says "Live"
 
-1. **New admin-only database function** `admin_founder_info(_user_ids uuid[])` returning user id, full name, avatar URL, and email.
-   - Same email gate as the other admin functions: raises "Forbidden" for anyone else.
-   - Execute permission revoked from anonymous and public; granted only to signed-in callers, where the in-function gate does the real check.
-   - No new table permissions, no new read policies — nothing becomes readable by ordinary users.
+In the admin table the badge is decided in this order, and the heartbeat wins over the live HTML check:
 
-2. **Admin page**: after loading applications, fetch founder info for the listed owners in one call and render a new "Founder" column — small round avatar (initial fallback), name, and email below it with a click-to-copy shortcut, matching the copy behaviour already used in the "Recently removed" panel. Column collapses sensibly on mobile (hidden below `md`, founder shown inline under the startup name instead).
+```text
+wrong-id > csp-blocked > heartbeat visible (last 24h) > hidden > script installed > missing
+```
 
-## Security notes
+Because a heartbeat within **24 hours** marks a row "Live", a startup that removes the script keeps a green "Live" badge for a full day — even though the same check already knows the script is gone ("Not installed"). That is exactly this case: the Widget Health column correctly says "Stale", but the Embed column contradicts it.
 
-- Email is never exposed through any public route, policy, or the existing public founder function.
-- The founder call is gated identically to the existing admin data path, so a non-admin who forces the admin page open still gets "Forbidden" and no rows.
-- After the migration, re-run the database security linter to confirm nothing was over-granted.
+## Fix
+
+In `src/routes/admin.tsx`:
+
+1. Only allow "Live" when the current page scan **also** finds the script. If the scan says `missing`, show "Removed" (red) instead of "Live", with the last-seen timestamp in the tooltip so it is obvious the widget used to work and was taken down.
+2. Tighten the heartbeat freshness used for "Live" from 24h to a shorter window (keep 24h only as a "seen today" hint in Widget Health), so a stale ping can never present as currently live.
+3. Add a `Removed` state to the badge union, its label/color, and tooltip text ("Script was installed and pinged at <time>, but is no longer present in the page HTML").
+
+No backend or database change is needed — the data is already correct; only the admin badge logic is misleading.
