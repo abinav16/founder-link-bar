@@ -449,6 +449,7 @@ function AdminPage() {
                                 ? "Script is wrapped in a hidden element (display:none / visibility:hidden / height:0)"
                                 : "Script installed but widget reports as hidden on the page")
                             : badge === "installed-unseen" ? "Script tag detected, but no recent visibility ping. The page may not have been loaded yet."
+                            : badge === "removed" ? `Script was installed and last pinged${hbSeenAt ? ` at ${hbSeenAt}` : ""}, but is no longer present in the page HTML — the founder removed it.`
                             : badge === "missing" ? "Loader script not found in page HTML"
                             : badge === "error" ? "Could not reach the site"
                             : "Click to re-check"
