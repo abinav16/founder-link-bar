@@ -74,16 +74,34 @@ export const Route = createFileRoute("/api/public/widget/pick")({
             ? pathParam.slice(0, 200)
             : null;
 
-          await supabase.from("impressions").insert({
-            shown_startup_id: pick.id,
-            host_startup_id: host ?? null,
-            referrer,
-            country: country ? country.toUpperCase() : null,
-            device,
-            os,
-            browser,
-            path,
-          });
+          // Dedupe: one impression per visitor session per shown startup.
+          // Repeat pageviews still render the bar, they just don't inflate
+          // the impression count (which was crushing reported CTR).
+          const sid = url.searchParams.get("sid");
+          let alreadyCounted = false;
+          if (sid) {
+            const { data: existing } = await supabase
+              .from("impressions")
+              .select("id")
+              .eq("session_id", sid.slice(0, 64))
+              .eq("shown_startup_id", pick.id)
+              .limit(1);
+            alreadyCounted = !!existing && existing.length > 0;
+          }
+
+          if (!alreadyCounted) {
+            await supabase.from("impressions").insert({
+              shown_startup_id: pick.id,
+              host_startup_id: host ?? null,
+              referrer,
+              country: country ? country.toUpperCase() : null,
+              device,
+              os,
+              browser,
+              path,
+              session_id: sid ? sid.slice(0, 64) : null,
+            });
+          }
         }
 
         return Response.json(pick, {
