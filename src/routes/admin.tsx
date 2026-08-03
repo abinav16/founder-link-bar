@@ -486,6 +486,8 @@ function AdminPage() {
                             <><EyeOff className="h-3 w-3" /> {scriptSuspicious ? "Hidden (CSS)" : "Hidden"}</>
                           ) : badge === "installed-unseen" ? (
                             <><Eye className="h-3 w-3" /> Installed · not seen</>
+                          ) : badge === "removed" ? (
+                            <><EyeOff className="h-3 w-3" /> Removed</>
                           ) : badge === "missing" ? (
                             <><CircleSlash className="h-3 w-3" /> Not installed</>
                           ) : badge === "error" ? (
