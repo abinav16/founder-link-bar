@@ -61,6 +61,16 @@
         iframeSrc += '&sbref=' + encodeURIComponent('startupbar' + (sbvia ? ':' + sbvia : ''));
       }
     } catch (e) {}
+    // Per-visit session id so repeat pageviews by the same visitor don't
+    // inflate impression counts (one impression per session per startup).
+    try {
+      var sid = sessionStorage.getItem('startupbar:sid');
+      if (!sid) {
+        sid = (Date.now().toString(36) + Math.random().toString(36).slice(2, 10));
+        sessionStorage.setItem('startupbar:sid', sid);
+      }
+      iframeSrc += '&sid=' + encodeURIComponent(sid);
+    } catch (e) {}
     iframe.src = iframeSrc;
     iframe.setAttribute('title', 'StartupBar');
     iframe.setAttribute('scrolling', 'no');

@@ -184,6 +184,7 @@ export type Database = {
           os: string | null
           path: string | null
           referrer: string | null
+          session_id: string | null
           shown_startup_id: string | null
         }
         Insert: {
@@ -196,6 +197,7 @@ export type Database = {
           os?: string | null
           path?: string | null
           referrer?: string | null
+          session_id?: string | null
           shown_startup_id?: string | null
         }
         Update: {
@@ -208,6 +210,7 @@ export type Database = {
           os?: string | null
           path?: string | null
           referrer?: string | null
+          session_id?: string | null
           shown_startup_id?: string | null
         }
         Relationships: [
