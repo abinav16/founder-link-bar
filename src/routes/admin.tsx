@@ -363,24 +363,33 @@ function AdminPage() {
                     const scriptCspBlocked = e.state === "installed" && e.cspBlocked;
                     const scriptIdMismatch = e.state === "installed" && e.idMismatch;
                     const installedIdValue = e.state === "installed" ? e.installedId : null;
-                    // Heartbeat freshness: any ping in the last 24h counts as
-                    // "Live" (proves the widget rendered on a real visit).
+                    // Heartbeat freshness: a ping in the last 6h is "recent
+                    // enough to trust as currently live" — but only when the
+                    // page scan ALSO still finds the script (a founder can
+                    // remove the snippet minutes after a valid ping).
                     // A tighter 30-min window drives the "Stale" label so the
                     // health column can show a recent-visit signal separately.
                     const hbAgeMs = s.widget_last_heartbeat_at ? now - new Date(s.widget_last_heartbeat_at).getTime() : null;
-                    const hbFresh = hbAgeMs !== null && hbAgeMs < 24 * 60 * 60_000;
+                    const hbFresh = hbAgeMs !== null && hbAgeMs < 6 * 60 * 60_000;
                     const hbStale = hbAgeMs !== null && hbAgeMs >= 30 * 60_000;
                     const hbVisible = hbFresh && s.widget_currently_visible === true;
                     const hbHidden = hbFresh && s.widget_currently_visible === false;
+                    // Script pinged us at some point but is gone from the HTML
+                    // now → the founder took it down after installing.
+                    const scriptRemoved = e.state === "missing" && !!s.widget_last_heartbeat_at;
+                    const hbSeenAt = s.widget_last_heartbeat_at
+                      ? new Date(s.widget_last_heartbeat_at).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
+                      : null;
                     // Wrong-ID takes top priority: the loader is pinging a
                     // different startup, so our heartbeats will never match
                     // this row no matter what the site looks like.
-                    const badge: "checking" | "live" | "hidden" | "csp-blocked" | "wrong-id" | "installed-unseen" | "missing" | "error" | "idle" =
+                    const badge: "checking" | "live" | "hidden" | "csp-blocked" | "wrong-id" | "installed-unseen" | "removed" | "missing" | "error" | "idle" =
                       e.state === "checking" ? "checking"
                       : scriptIdMismatch ? "wrong-id"
                       : scriptCspBlocked ? "csp-blocked"
-                      : hbVisible && !scriptSuspicious ? "live"
-                      : hbHidden || scriptSuspicious ? "hidden"
+                      : scriptRemoved ? "removed"
+                      : scriptInstalled && hbVisible && !scriptSuspicious ? "live"
+                      : scriptInstalled && (hbHidden || scriptSuspicious) ? "hidden"
                       : scriptInstalled ? "installed-unseen"
                       : e.state === "error" ? "error"
                       : e.state === "missing" ? "missing"
@@ -440,6 +449,7 @@ function AdminPage() {
                                 ? "Script is wrapped in a hidden element (display:none / visibility:hidden / height:0)"
                                 : "Script installed but widget reports as hidden on the page")
                             : badge === "installed-unseen" ? "Script tag detected, but no recent visibility ping. The page may not have been loaded yet."
+                            : badge === "removed" ? `Script was installed and last pinged${hbSeenAt ? ` at ${hbSeenAt}` : ""}, but is no longer present in the page HTML — the founder removed it.`
                             : badge === "missing" ? "Loader script not found in page HTML"
                             : badge === "error" ? "Could not reach the site"
                             : "Click to re-check"
@@ -455,6 +465,8 @@ function AdminPage() {
                               ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
                               : badge === "installed-unseen"
                               ? "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
+                              : badge === "removed"
+                              ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
                               : badge === "missing"
                               ? "border-red-200 bg-red-50 text-red-600 hover:bg-red-100"
                               : badge === "error"
@@ -474,6 +486,8 @@ function AdminPage() {
                             <><EyeOff className="h-3 w-3" /> {scriptSuspicious ? "Hidden (CSS)" : "Hidden"}</>
                           ) : badge === "installed-unseen" ? (
                             <><Eye className="h-3 w-3" /> Installed · not seen</>
+                          ) : badge === "removed" ? (
+                            <><EyeOff className="h-3 w-3" /> Removed</>
                           ) : badge === "missing" ? (
                             <><CircleSlash className="h-3 w-3" /> Not installed</>
                           ) : badge === "error" ? (
