@@ -238,18 +238,26 @@ function WidgetBar() {
           .sb-marquee-item { padding-right: 2.5rem; white-space: nowrap; }
         `}</style>
       )}
-      <div style={barStyle}>
+      <div
+        style={{ ...barStyle, cursor: loaded && startup ? "pointer" : undefined }}
+        onClick={() => {
+          if (!loaded || !startup) return;
+          const url = `/api/public/widget/click?id=${startup.id}${host ? `&host=${host}` : ""}${domain ? `&via=${encodeURIComponent(domain)}` : ""}`;
+          window.open(url, "_blank", "noopener,noreferrer");
+        }}
+      >
         {/* Info button — always visible */}
-        <button onClick={() => setShowInfo(v => !v)} aria-label="About StartupBar" style={iconBtnStyle}>
+        <button onClick={(e) => { e.stopPropagation(); setShowInfo(v => !v); }} aria-label="About StartupBar" style={iconBtnStyle}>
           <Info size={12} />
         </button>
 
         {/* STARTUPBAR badge — hidden on mobile to save space */}
         {!isMobile && (
-          <a href={`/api/public/widget/click?source=badge${host ? `&host=${host}` : ""}${domain ? `&via=${encodeURIComponent(domain)}` : ""}`} target="_blank" rel="noopener noreferrer" style={labelStyle}>
+          <a onClick={(e) => e.stopPropagation()} href={`/api/public/widget/click?source=badge${host ? `&host=${host}` : ""}${domain ? `&via=${encodeURIComponent(domain)}` : ""}`} target="_blank" rel="noopener noreferrer" style={labelStyle}>
             STARTUPBAR
           </a>
         )}
+
 
         {loaded && startup ? (
           <div
