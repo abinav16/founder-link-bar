@@ -252,7 +252,17 @@ function WidgetBar() {
         )}
 
         {loaded && startup ? (
-          <>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              flex: 1,
+              minWidth: 0,
+              opacity: fadeIn ? 1 : 0,
+              transition: "opacity 500ms ease-in-out",
+            }}
+          >
             <StartupFavicon
               url={startup.website_url}
               name={startup.name}
@@ -266,14 +276,14 @@ function WidgetBar() {
             {isMobile ? (
               <span style={{ flex: 1, overflow: "hidden", position: "relative", minWidth: 0 }}>
                 <span className="sb-marquee-track" style={{ color: tokens.textMuted }}>
-                  <span className="sb-marquee-item">— {startup.description}</span>
-                  <span className="sb-marquee-item" aria-hidden="true">— {startup.description}</span>
+                  <span className="sb-marquee-item">· {startup.description}</span>
+                  <span className="sb-marquee-item" aria-hidden="true">· {startup.description}</span>
                 </span>
               </span>
 
             ) : (
               <span style={{ color: tokens.textMuted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
-                &nbsp;— {startup.description}
+                &nbsp;· {startup.description}
               </span>
             )}
 
@@ -285,8 +295,9 @@ function WidgetBar() {
             >
               Visit →
             </a>
-          </>
+          </div>
         ) : (
+
           <>
             <span style={{ color: tokens.textMuted, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               Discover founder-built tools — join the free traffic exchange
