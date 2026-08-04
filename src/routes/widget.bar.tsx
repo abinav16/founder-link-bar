@@ -296,6 +296,7 @@ function WidgetBar() {
             )}
 
             <a
+              onClick={(e) => e.stopPropagation()}
               href={`/api/public/widget/click?id=${startup.id}${host ? `&host=${host}` : ""}${domain ? `&via=${encodeURIComponent(domain)}` : ""}`}
               target="_blank"
               rel="noopener noreferrer"
