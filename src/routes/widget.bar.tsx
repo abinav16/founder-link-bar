@@ -324,7 +324,8 @@ function WidgetBar() {
 
         {/* X button — desktop only */}
         {!isMobile && (
-          <button onClick={() => {
+          <button onClick={(e) => {
+            e.stopPropagation();
             window.parent.postMessage({ type: "startupbar:resize", height: 0 }, "*");
             setDismissed(true);
           }} aria-label="Dismiss" style={iconBtnStyle}>
