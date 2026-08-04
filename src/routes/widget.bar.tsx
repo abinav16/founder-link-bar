@@ -68,6 +68,13 @@ function WidgetBar() {
   const [dismissed, setDismissed] = useState(false);
   const isMobile = mobile === 1;
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const startupRef = useRef<Startup | null>(null);
+  const showInfoRef = useRef(false);
+  const dismissedRef = useRef(false);
+  startupRef.current = startup;
+  showInfoRef.current = showInfo;
+  dismissedRef.current = dismissed;
+
 
   useEffect(() => {
     function onMessage(e: MessageEvent) {
