@@ -4,6 +4,39 @@
 
 StartupBar lets software founders grow together by embedding a lightweight widget on their site. The widget shows a rotating startup from the network, and in return your startup appears on other members' sites. All impressions and clicks are tracked, and founders get a dashboard with analytics, network rank, and click-through stats.
 
+## Integration
+
+To embed the widget, add this script tag to your site's `<head>` (or anywhere in the page). Replace `YOUR_STARTUP_ID` with the ID shown on your dashboard after approval:
+
+```html
+<script async src="https://startupbar.co/widget/loader.js" data-startup-id="YOUR_STARTUP_ID"></script>
+```
+
+Notes:
+
+- The bar renders in a sandboxed iframe at the top of the page (36px tall) and never blocks page content.
+- Theme is auto-detected (light/dark) from your site. Force it with `data-theme="dark"` or `data-theme="light"`.
+- Visitors can dismiss the bar for their session; nothing is stored beyond a per-session ID used to de-duplicate impressions.
+- Works on any site or framework — plain HTML, React, Next.js, Webflow, Framer, etc. No npm package needed.
+- Installation is verified automatically; the dashboard shows whether the widget is detected and last seen.
+
+## How it works
+
+1. Apply with your startup name, URL, and one-liner.
+2. Once approved, copy your script tag from the dashboard and install it.
+3. Your site displays other members' startups; the network displays yours in return.
+4. Delivery is reciprocity-weighted: the more impressions your site contributes, the more exposure your startup receives.
+
+## Eligibility
+
+Accepted: live software products, SaaS, developer tools, AI apps, and indie/founder-built web products with a working public website and a real landing page.
+
+Rejected: sites that are not live yet, parked or placeholder pages, adult content, gambling, crypto pump/airdrop schemes, scams or MLM, link farms, pirated content, and anything illegal or unsafe. Sites that remove the widget after joining are removed from the network.
+
+## Dashboard
+
+After approval, founders get a dashboard at [startupbar.co/dashboard](/dashboard) with impressions served, impressions contributed, clicks, click-through rate, network rank, and 12-month trends.
+
 ## Pages
 
 - [Home](/): Overview of the traffic-exchange network, how the widget works, and how to join.
