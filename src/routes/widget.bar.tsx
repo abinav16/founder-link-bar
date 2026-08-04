@@ -81,8 +81,12 @@ function WidgetBar() {
     return () => window.removeEventListener("message", onMessage);
   }, []);
 
+  const [fadeIn, setFadeIn] = useState(true);
+
   useEffect(() => {
-    (async () => {
+    let cancelled = false;
+
+    async function fetchStartup(): Promise<Startup | null> {
       try {
         const params = new URLSearchParams();
         if (host) params.set("host", host);
@@ -94,15 +98,44 @@ function WidgetBar() {
         const res = await fetch(`/api/public/widget/pick?${params.toString()}`);
         if (res.ok) {
           const data = (await res.json()) as Startup | null;
-          if (data?.id) {
-            setStartup(data);
-          }
+          if (data?.id) return data;
         }
-      } finally {
-        setLoaded(true);
+      } catch {
+        /* ignore */
       }
+      return null;
+    }
+
+    (async () => {
+      const first = await fetchStartup();
+      if (cancelled) return;
+      if (first) setStartup(first);
+      setLoaded(true);
     })();
+
+    let fadeTimer: ReturnType<typeof setTimeout> | undefined;
+    const interval = setInterval(async () => {
+      if (cancelled) return;
+      if (dismissedRef.current || showInfoRef.current) return;
+      if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
+      const next = await fetchStartup();
+      if (cancelled || !next) return;
+      if (next.id === startupRef.current?.id) return;
+      setFadeIn(false);
+      fadeTimer = setTimeout(() => {
+        if (cancelled) return;
+        setStartup(next);
+        setFadeIn(true);
+      }, 500);
+    }, 30000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      if (fadeTimer) clearTimeout(fadeTimer);
+    };
   }, [host]);
+
 
   const lastSentHeight = useRef<number>(-1);
   useEffect(() => {
