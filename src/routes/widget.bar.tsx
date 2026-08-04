@@ -68,6 +68,13 @@ function WidgetBar() {
   const [dismissed, setDismissed] = useState(false);
   const isMobile = mobile === 1;
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const startupRef = useRef<Startup | null>(null);
+  const showInfoRef = useRef(false);
+  const dismissedRef = useRef(false);
+  startupRef.current = startup;
+  showInfoRef.current = showInfo;
+  dismissedRef.current = dismissed;
+
 
   useEffect(() => {
     function onMessage(e: MessageEvent) {
@@ -81,8 +88,12 @@ function WidgetBar() {
     return () => window.removeEventListener("message", onMessage);
   }, []);
 
+  const [fadeIn, setFadeIn] = useState(true);
+
   useEffect(() => {
-    (async () => {
+    let cancelled = false;
+
+    async function fetchStartup(): Promise<Startup | null> {
       try {
         const params = new URLSearchParams();
         if (host) params.set("host", host);
@@ -94,15 +105,44 @@ function WidgetBar() {
         const res = await fetch(`/api/public/widget/pick?${params.toString()}`);
         if (res.ok) {
           const data = (await res.json()) as Startup | null;
-          if (data?.id) {
-            setStartup(data);
-          }
+          if (data?.id) return data;
         }
-      } finally {
-        setLoaded(true);
+      } catch {
+        /* ignore */
       }
+      return null;
+    }
+
+    (async () => {
+      const first = await fetchStartup();
+      if (cancelled) return;
+      if (first) setStartup(first);
+      setLoaded(true);
     })();
+
+    let fadeTimer: ReturnType<typeof setTimeout> | undefined;
+    const interval = setInterval(async () => {
+      if (cancelled) return;
+      if (dismissedRef.current || showInfoRef.current) return;
+      if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
+      const next = await fetchStartup();
+      if (cancelled || !next) return;
+      if (next.id === startupRef.current?.id) return;
+      setFadeIn(false);
+      fadeTimer = setTimeout(() => {
+        if (cancelled) return;
+        setStartup(next);
+        setFadeIn(true);
+      }, 500);
+    }, 30000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      if (fadeTimer) clearTimeout(fadeTimer);
+    };
   }, [host]);
+
 
   const lastSentHeight = useRef<number>(-1);
   useEffect(() => {
@@ -212,7 +252,17 @@ function WidgetBar() {
         )}
 
         {loaded && startup ? (
-          <>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              flex: 1,
+              minWidth: 0,
+              opacity: fadeIn ? 1 : 0,
+              transition: "opacity 500ms ease-in-out",
+            }}
+          >
             <StartupFavicon
               url={startup.website_url}
               name={startup.name}
@@ -226,14 +276,14 @@ function WidgetBar() {
             {isMobile ? (
               <span style={{ flex: 1, overflow: "hidden", position: "relative", minWidth: 0 }}>
                 <span className="sb-marquee-track" style={{ color: tokens.textMuted }}>
-                  <span className="sb-marquee-item">— {startup.description}</span>
-                  <span className="sb-marquee-item" aria-hidden="true">— {startup.description}</span>
+                  <span className="sb-marquee-item">· {startup.description}</span>
+                  <span className="sb-marquee-item" aria-hidden="true">· {startup.description}</span>
                 </span>
               </span>
 
             ) : (
               <span style={{ color: tokens.textMuted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
-                &nbsp;— {startup.description}
+                &nbsp;· {startup.description}
               </span>
             )}
 
@@ -245,8 +295,9 @@ function WidgetBar() {
             >
               Visit →
             </a>
-          </>
+          </div>
         ) : (
+
           <>
             <span style={{ color: tokens.textMuted, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               Discover founder-built tools — join the free traffic exchange
