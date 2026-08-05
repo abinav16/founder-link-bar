@@ -23,6 +23,15 @@ export const Route = createFileRoute("/api/public/widget/pick")({
           { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } }
         );
 
+        // Only approved, non-banned members get served (and counted). A
+        // rejected/pending site with the script still installed gets nothing.
+        if (!preview && !(await isApprovedHost(supabase, host))) {
+          return Response.json(null, {
+            headers: { "Cache-Control": "no-store", "Access-Control-Allow-Origin": "*" },
+          });
+        }
+
+
         let query = supabase
           .from("startups")
           .select("id, name, website_url, description, logo_url")
