@@ -16,11 +16,19 @@ export const Route = createFileRoute("/api/public/widget/click")({
         const via = url.searchParams.get("via");
         const supabase = createClient<Database>(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } });
 
+        // Clicks only count when the host site is an approved member (or the
+        // click came from StartupBar's own pages, where there is no host id).
+        const hostOk = await isApprovedHost(supabase, host);
+        const hostId = hostOk ? (host ?? null) : null;
+
         // Badge click: not tied to a specific promoted startup — record against
         // the StartupBar site itself so it shows up as widget-sourced traffic.
         if (source === "badge") {
-          await supabase.from("clicks").insert({ shown_startup_id: STARTUPBAR_SITE_ID, host_startup_id: host ?? null });
+          if (hostOk) {
+            await supabase.from("clicks").insert({ shown_startup_id: STARTUPBAR_SITE_ID, host_startup_id: hostId });
+          }
           const dest = new URL("https://startupbar.co/");
+
           dest.searchParams.set("utm_source", "startupbar");
           dest.searchParams.set("utm_medium", "badge");
           dest.searchParams.set("utm_campaign", "network");
