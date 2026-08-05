@@ -5,6 +5,9 @@ import { parseUA, extractCountry, extractIp, lookupCountry } from "@/lib/ua";
 import { getPickWeights, weightedPick } from "@/lib/pick-weights";
 import { isApprovedHost } from "@/lib/host-check";
 
+const STARTUPBAR_SITE_ID = "0d2db708-f4e9-4b77-bd83-c446826c76b1";
+
+
 export const Route = createFileRoute("/api/public/widget/pick")({
   server: {
     handlers: {
@@ -23,13 +26,21 @@ export const Route = createFileRoute("/api/public/widget/pick")({
           { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } }
         );
 
-        // Only approved, non-banned members get served (and counted). A
-        // rejected/pending site with the script still installed gets nothing.
+        // Non-members (rejected/pending/banned) with the script still installed
+        // get StartupBar's own listing instead of the generic banner — shown,
+        // but never counted as an impression.
         if (!preview && !(await isApprovedHost(supabase, host))) {
-          return Response.json(null, {
+          const { data: self } = await supabase
+            .from("startups")
+            .select("id, name, website_url, description, logo_url")
+            .eq("id", STARTUPBAR_SITE_ID)
+            .eq("status", "approved")
+            .maybeSingle();
+          return Response.json(self ?? null, {
             headers: { "Cache-Control": "no-store", "Access-Control-Allow-Origin": "*" },
           });
         }
+
 
 
         let query = supabase
