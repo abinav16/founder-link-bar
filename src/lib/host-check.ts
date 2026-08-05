@@ -24,16 +24,16 @@ export async function isApprovedHost(supabase: any, host: string | null): Promis
   if (cached && now - cached.at < TTL_MS) return cached.ok;
 
   try {
-    const { data, error } = await supabase
-      .from("startups")
-      .select("status, banned")
-      .eq("id", host)
-      .maybeSingle();
-    if (error) return cached?.ok ?? false;
-    const ok = !!data && data.status === "approved" && data.banned !== true;
+    // Uses a security-definer RPC: the `banned` column is not readable with
+    // the publishable key, so a direct select here fails with a permission
+    // error and would silently block the whole network.
+    const { data, error } = await supabase.rpc("is_approved_host", { _id: host });
+    if (error) return cached?.ok ?? true;
+    const ok = data === true;
     cache.set(host, { at: now, ok });
     return ok;
   } catch {
-    return cached?.ok ?? false;
+    // Fail open: a transient database issue must not kill the bar everywhere.
+    return cached?.ok ?? true;
   }
 }

@@ -508,6 +508,7 @@ export type Database = {
         }
       }
       get_startup_rank: { Args: { _startup_id: string }; Returns: number }
+      is_approved_host: { Args: { _id: string }; Returns: boolean }
       move_to_dlq: {
         Args: {
           dlq_name: string
