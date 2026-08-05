@@ -44,9 +44,10 @@ export const Route = createFileRoute("/api/public/widget/click")({
         try { dest = new URL(s.website_url); } catch { return new Response("Invalid destination", { status: 400 }); }
         if (dest.protocol !== "https:" && dest.protocol !== "http:") return new Response("Invalid destination", { status: 400 });
 
-        if (source !== "preview") {
-          await supabase.from("clicks").insert({ shown_startup_id: id, host_startup_id: host ?? null });
+        if (source !== "preview" && hostOk) {
+          await supabase.from("clicks").insert({ shown_startup_id: id, host_startup_id: hostId });
         }
+
 
         dest.searchParams.set("utm_source", "startupbar");
         const medium = source === "dashboard" ? "dashboard" : source === "profile" ? "profile" : source === "preview" ? "preview" : "bar";
