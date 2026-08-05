@@ -672,19 +672,32 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
 
       <div className="absolute inset-x-0 pointer-events-none" style={{ top: "50%", left: 0, right: 0, transform: "translateY(-50%)", zIndex: 6 }}>
         <div className="hidden sm:grid w-full items-center px-14" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
-          <div className="flex items-center gap-10 justify-center">
-            <PillStat value={stats ? String(stats.totalStartups) : "—"} label="Startups" />
-            <PillStat value={stats ? `${stats.ctr}%` : "—"} label="Network CTR" />
+          <div className="flex justify-center">
+            <div className="flex items-stretch divide-x divide-white/10 rounded-2xl bg-black/70 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden">
+              <div className="px-5 py-2.5">
+                <PillStat value={stats ? String(stats.totalStartups) : "—"} label="Startups" />
+              </div>
+              <div className="px-5 py-2.5">
+                <PillStat value={stats ? `${stats.ctr}%` : "—"} label="Network CTR" />
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 px-4 py-2 mx-4 rounded-full bg-black/70 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
             <div style={{ width: 22, height: 5, background: "white", borderRadius: 3 }} />
             <span style={{ color: "white", fontSize: 18, fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1 }}>StartupBar</span>
           </div>
-          <div className="flex items-center gap-10 justify-center">
-            <PillStat value={stats ? fmt(stats.totalImpressions) : "—"} label="Impressions" />
-            <PillStat value={stats ? fmt(stats.totalClicks) : "—"} label="Total Clicks" />
+          <div className="flex justify-center">
+            <div className="flex items-stretch divide-x divide-white/10 rounded-2xl bg-black/70 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden">
+              <div className="px-5 py-2.5">
+                <PillStat value={stats ? fmt(stats.totalImpressions) : "—"} label="Impressions" />
+              </div>
+              <div className="px-5 py-2.5">
+                <PillStat value={stats ? fmt(stats.totalClicks) : "—"} label="Total Clicks" />
+              </div>
+            </div>
           </div>
         </div>
+
         <div className="sm:hidden flex flex-col items-center gap-2">
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/70 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
             <div style={{ width: 14, height: 3, background: "white", borderRadius: 3 }} />
