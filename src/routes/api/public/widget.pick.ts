@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { parseUA, extractCountry, extractIp, lookupCountry } from "@/lib/ua";
 import { getPickWeights, weightedPick } from "@/lib/pick-weights";
+import { isApprovedHost } from "@/lib/host-check";
 
 export const Route = createFileRoute("/api/public/widget/pick")({
   server: {
@@ -21,6 +22,15 @@ export const Route = createFileRoute("/api/public/widget/pick")({
           process.env.SUPABASE_PUBLISHABLE_KEY!,
           { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } }
         );
+
+        // Only approved, non-banned members get served (and counted). A
+        // rejected/pending site with the script still installed gets nothing.
+        if (!preview && !(await isApprovedHost(supabase, host))) {
+          return Response.json(null, {
+            headers: { "Cache-Control": "no-store", "Access-Control-Allow-Origin": "*" },
+          });
+        }
+
 
         let query = supabase
           .from("startups")
