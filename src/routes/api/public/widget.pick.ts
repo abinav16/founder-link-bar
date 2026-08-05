@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { parseUA, extractCountry, extractIp, lookupCountry } from "@/lib/ua";
 import { getPickWeights, weightedPick } from "@/lib/pick-weights";
+import { isApprovedHost } from "@/lib/host-check";
 
 export const Route = createFileRoute("/api/public/widget/pick")({
   server: {
