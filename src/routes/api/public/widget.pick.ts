@@ -23,13 +23,21 @@ export const Route = createFileRoute("/api/public/widget/pick")({
           { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } }
         );
 
-        // Only approved, non-banned members get served (and counted). A
-        // rejected/pending site with the script still installed gets nothing.
+        // Non-members (rejected/pending/banned) with the script still installed
+        // get StartupBar's own listing instead of the generic banner — shown,
+        // but never counted as an impression.
         if (!preview && !(await isApprovedHost(supabase, host))) {
-          return Response.json(null, {
+          const { data: self } = await supabase
+            .from("startups")
+            .select("id, name, website_url, description, logo_url")
+            .eq("id", STARTUPBAR_SITE_ID)
+            .eq("status", "approved")
+            .maybeSingle();
+          return Response.json(self ?? null, {
             headers: { "Cache-Control": "no-store", "Access-Control-Allow-Origin": "*" },
           });
         }
+
 
 
         let query = supabase
