@@ -199,8 +199,9 @@ function Apply() {
   const [desc, setDesc] = useState(initial.desc);
   const [quote, setQuote] = useState(() => {
     if (typeof window === "undefined") return "";
-    try { return JSON.parse(sessionStorage.getItem(DRAFT_KEY) ?? "{}")?.quote ?? ""; } catch { return ""; }
+    try { return JSON.parse(readRawDraft() ?? "{}")?.quote ?? ""; } catch { return ""; }
   });
+
   const [resubmitId, setResubmitId] = useState<string>(initial.resubmitId);
   const [startupId, setStartupId] = useState<string>(() => initial.resubmitId || initial.startupId || crypto.randomUUID());
   const [copied, setCopied] = useState(false);
