@@ -49,12 +49,29 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
 
   const ids = (startups ?? []).map((s) => s.id);
 
-  const [totalsRes, dailyRes, hourlyRes, monthlyRes] = await Promise.all([
+  // PostgREST caps every response at 1000 rows. These RPCs return N rows per
+  // startup (24 hourly, 12 monthly, 7 daily), so the id list is chunked to stay
+  // under the cap — otherwise later startups silently come back as flat zeros.
+  const chunk = <T,>(arr: T[], size: number): T[][] => {
+    const out: T[][] = [];
+    for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+    return out.length ? out : [[]];
+  };
+  const rpcChunked = async (fn: string, rowsPerStartup: number) => {
+    const size = Math.max(1, Math.floor(900 / rowsPerStartup));
+    const parts = await Promise.all(
+      chunk(ids, size).map((slice) => supabase.rpc(fn as any, { _ids: slice }))
+    );
+    return parts.flatMap((p) => (p.data ?? []) as any[]);
+  };
+
+  const [totalsRes, daily, hourly, monthly] = await Promise.all([
     supabase.rpc("public_startup_totals" as any, { _ids: ids }),
-    supabase.rpc("public_startup_daily_v2" as any, { _ids: ids }),
-    supabase.rpc("public_startup_hourly" as any, { _ids: ids }),
-    supabase.rpc("public_startup_monthly" as any, { _ids: ids }),
+    rpcChunked("public_startup_daily_v2", 7),
+    rpcChunked("public_startup_hourly", 24),
+    rpcChunked("public_startup_monthly", 12),
   ]);
+
 
   const totals = (totalsRes.data ?? []) as Array<{
     startup_id: string;
@@ -63,28 +80,8 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
     impressions_given: number;
     clicks_given: number;
   }>;
-  const daily = (dailyRes.data ?? []) as Array<{
-    startup_id: string;
-    day_offset: number;
-    received: number;
-    given: number;
-    clicks: number;
-    clicks_given: number;
-  }>;
-  const hourly = (hourlyRes.data ?? []) as Array<{
-    startup_id: string;
-    hour_offset: number;
-    received: number;
-    given: number;
-    clicks: number;
-  }>;
-  const monthly = (monthlyRes.data ?? []) as Array<{
-    startup_id: string;
-    month_offset: number;
-    received: number;
-    given: number;
-    clicks: number;
-  }>;
+
+
 
   const totalsMap = new Map(totals.map((t) => [t.startup_id, t]));
   const receivedBuckets = new Map<string, number[]>();
