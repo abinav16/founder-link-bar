@@ -468,57 +468,71 @@ function Apply() {
 
   async function onSubmit() {
     setLoading(true);
-    const { data: userData } = await supabase.auth.getUser();
-    const user_id = userData.user?.id;
-    if (!user_id) { navigate({ to: "/auth" }); return; }
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const user_id = userData.user?.id;
+      if (!user_id) { setLoading(false); navigate({ to: "/auth" }); return; }
 
-    const parsed = schema.parse({ name, website_url: url, description: desc, founder_quote: quote });
-    const payload = { ...parsed, founder_quote: quote.trim() || null };
+      const validated = schema.safeParse({ name, website_url: url, description: desc, founder_quote: quote });
+      if (!validated.success) {
+        setLoading(false);
+        setStep(1);
+        toast.error(validated.error.issues[0]?.message ?? "Please fill in your startup details.");
+        return;
+      }
+      const parsed = validated.data;
+      const payload = { ...parsed, founder_quote: quote.trim() || null };
 
-    // Resubmit path: update the existing rejected row back to pending — no new row, no payment gate.
-    if (resubmitId) {
-      const { error: updErr } = await supabase
-        .from("startups")
-        .update({ ...payload, status: "pending", rejection_reason: null })
-        .eq("id", resubmitId)
-        .eq("user_id", user_id);
-      setLoading(false);
-      if (updErr) { toast.error(updErr.message); return; }
-    } else {
-      // If this is a paid additional listing, atomically consume one prepaid slot first.
-      if (existingCount >= 1) {
-        const { data: consumedId, error: consumeErr } = await supabase.rpc(
-          "consume_prepaid_listing",
-          { _user_id: user_id },
-        );
-        if (consumeErr || !consumedId) {
-          setLoading(false);
-          toast.error("No prepaid listing available. Please complete payment.");
-          return;
+      // Resubmit path: update the existing rejected row back to pending — no new row, no payment gate.
+      if (resubmitId) {
+        const { error: updErr } = await supabase
+          .from("startups")
+          .update({ ...payload, status: "pending", rejection_reason: null })
+          .eq("id", resubmitId)
+          .eq("user_id", user_id);
+        setLoading(false);
+        if (updErr) { toast.error(updErr.message); return; }
+      } else {
+        // If this is a paid additional listing, atomically consume one prepaid slot first.
+        if (existingCount >= 1) {
+          const { data: consumedId, error: consumeErr } = await supabase.rpc(
+            "consume_prepaid_listing",
+            { _user_id: user_id },
+          );
+          if (consumeErr || !consumedId) {
+            setLoading(false);
+            toast.error("No prepaid listing available. Please complete payment.");
+            return;
+          }
         }
+
+        const { error } = await supabase.from("startups").insert(
+          { id: startupId, user_id, ...payload }
+        );
+        setLoading(false);
+        if (error) { toast.error(error.message); return; }
       }
 
-      const { error } = await supabase.from("startups").insert(
-        { id: startupId, user_id, ...payload }
-      );
+      supabase.functions.invoke("send-email", { body: { type: "startup-submitted", data: { email: userData.user!.email, name: userData.user!.user_metadata?.full_name ?? "", startupName: parsed.name } } }).catch(() => {});
+      supabase.functions.invoke("send-email", { body: { type: "admin-new-application", data: { startupName: parsed.name, startupUrl: parsed.website_url, description: parsed.description, applicantEmail: userData.user!.email } } }).catch(() => {});
+
+      clearDraft();
+      setPaidNeedsForm(false);
+      toast.success("Application submitted!", {
+        description: "We review every application within 24 hours. You'll get an email once you're approved.",
+        duration: 6000,
+        action: {
+          label: "Go to dashboard",
+          onClick: () => navigate({ to: "/dashboard" }),
+        },
+      });
+      navigate({ to: "/dashboard" });
+    } catch (err) {
       setLoading(false);
-      if (error) { toast.error(error.message); return; }
+      toast.error(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     }
-
-    supabase.functions.invoke("send-email", { body: { type: "startup-submitted", data: { email: userData.user!.email, name: userData.user!.user_metadata?.full_name ?? "", startupName: parsed.name } } }).catch(() => {});
-    supabase.functions.invoke("send-email", { body: { type: "admin-new-application", data: { startupName: parsed.name, startupUrl: parsed.website_url, description: parsed.description, applicantEmail: userData.user!.email } } }).catch(() => {});
-
-    sessionStorage.removeItem(DRAFT_KEY);
-    toast.success("Application submitted!", {
-      description: "We review every application within 24 hours. You'll get an email once you're approved.",
-      duration: 6000,
-      action: {
-        label: "Go to dashboard",
-        onClick: () => navigate({ to: "/dashboard" }),
-      },
-    });
-    navigate({ to: "/dashboard" });
   }
+
 
   return (
     <div className="min-h-dvh bg-white text-black">
