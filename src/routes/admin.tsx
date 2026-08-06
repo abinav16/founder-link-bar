@@ -1102,7 +1102,9 @@ function OrphanPaymentsPanel() {
     setLoading(false);
   }
 
-  useEffect(() => { if (open) load(); }, [open]);
+  // Load on mount so the count badge is visible without expanding the panel.
+  useEffect(() => { load(); }, []);
+
 
   function mailto(r: OrphanPayment): string {
     const subject = encodeURIComponent(`Your StartupBar payment — let me help finish setup`);
