@@ -214,6 +214,9 @@ function Apply() {
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [verifyingPayment, setVerifyingPayment] = useState(initial.paid && !!initial.paymentId);
   const [autoSubmitPending, setAutoSubmitPending] = useState(false);
+  // True when a payment came back verified but we have no usable draft to submit.
+  const [paidNeedsForm, setPaidNeedsForm] = useState(false);
+
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setAuthed(!!data.user));
