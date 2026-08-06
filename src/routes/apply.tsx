@@ -119,10 +119,31 @@ const DRAFT_KEY = "startupbar:apply-draft";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+// The draft lives in localStorage so it survives the Dodo payment round-trip
+// (new tab, restored session, coming back later). sessionStorage is still read
+// as a fallback for anyone mid-flow when this shipped.
+function readRawDraft(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem(DRAFT_KEY) ?? sessionStorage.getItem(DRAFT_KEY);
+  } catch { return null; }
+}
+
+function writeDraft(value: Record<string, unknown>) {
+  if (typeof window === "undefined") return;
+  try { localStorage.setItem(DRAFT_KEY, JSON.stringify(value)); } catch { /* ignore */ }
+}
+
+function clearDraft() {
+  if (typeof window === "undefined") return;
+  try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
+  try { sessionStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
+}
+
 function readDraft(): { step: 1 | 2; name: string; url: string; desc: string; startupId: string } | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = sessionStorage.getItem(DRAFT_KEY);
+    const raw = readRawDraft();
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     const sid = typeof parsed.startupId === "string" && UUID_RE.test(parsed.startupId) ? parsed.startupId : "";
@@ -135,6 +156,7 @@ function readDraft(): { step: 1 | 2; name: string; url: string; desc: string; st
     };
   } catch { return null; }
 }
+
 
 function readInitialFromUrl() {
   if (typeof window === "undefined") return { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "", resubmitId: "", startupId: "" };
@@ -177,8 +199,9 @@ function Apply() {
   const [desc, setDesc] = useState(initial.desc);
   const [quote, setQuote] = useState(() => {
     if (typeof window === "undefined") return "";
-    try { return JSON.parse(sessionStorage.getItem(DRAFT_KEY) ?? "{}")?.quote ?? ""; } catch { return ""; }
+    try { return JSON.parse(readRawDraft() ?? "{}")?.quote ?? ""; } catch { return ""; }
   });
+
   const [resubmitId, setResubmitId] = useState<string>(initial.resubmitId);
   const [startupId, setStartupId] = useState<string>(() => initial.resubmitId || initial.startupId || crypto.randomUUID());
   const [copied, setCopied] = useState(false);
@@ -191,6 +214,9 @@ function Apply() {
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [verifyingPayment, setVerifyingPayment] = useState(initial.paid && !!initial.paymentId);
   const [autoSubmitPending, setAutoSubmitPending] = useState(false);
+  // True when a payment came back verified but we have no usable draft to submit.
+  const [paidNeedsForm, setPaidNeedsForm] = useState(false);
+
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setAuthed(!!data.user));
@@ -276,41 +302,72 @@ function Apply() {
         await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
       }
       if (cancelled) return;
-      if (!ok) {
-        toast.info(
-          "Payment received — it may take a minute to appear. Refresh this page or your dashboard shortly.",
-          { duration: 8000 },
-        );
-        setVerifyingPayment(false);
-        window.history.replaceState({}, "", "/apply");
-        return;
-      }
+      // Even when our own verification didn't confirm in time, the Dodo webhook
+      // may have already recorded the payment — refresh and let the auto-submit
+      // path (which polls for the credit) decide.
       const { data: u } = await supabase.auth.getUser();
-      if (u.user) await refreshGateData(u.user.id);
+      if (u.user) await refreshGateData(u.user.id).catch(() => {});
       window.history.replaceState({}, "", "/apply");
       setVerifyingPayment(false);
+      if (!ok) {
+        toast.info(
+          "Payment received — finishing your listing. This can take a few seconds.",
+          { duration: 6000 },
+        );
+      }
       setAutoSubmitPending(true);
     })();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // After payment is verified and gate data refreshed, auto-submit the application.
+  // After payment is verified, auto-submit — but never fail silently.
   useEffect(() => {
     if (!autoSubmitPending) return;
-    if (!hasPrepaid) return;
     if (loading) return;
-    setAutoSubmitPending(false);
-    onSubmit();
+
+    // No usable draft (lost across the payment round-trip) — don't attempt a
+    // doomed submit; send them back to step 1 with a recovery banner.
+    if (!name.trim() || !url.trim() || !desc.trim()) {
+      setAutoSubmitPending(false);
+      setPaidNeedsForm(true);
+      setStep(1);
+      return;
+    }
+
+    if (hasPrepaid) {
+      setAutoSubmitPending(false);
+      onSubmit();
+      return;
+    }
+
+    // Credit not visible yet (webhook race) — poll briefly, then stop with a
+    // clear message instead of waiting forever.
+    let stopped = false;
+    const poll = setInterval(async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!stopped && u.user) await refreshGateData(u.user.id).catch(() => {});
+    }, 3000);
+    const timeout = setTimeout(() => {
+      stopped = true;
+      clearInterval(poll);
+      setAutoSubmitPending(false);
+      setPaidNeedsForm(true);
+      toast.info("Payment received. Hit Submit to finish — you won't be charged again.", {
+        duration: 10000,
+      });
+    }, 18000);
+    return () => { stopped = true; clearInterval(poll); clearTimeout(timeout); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoSubmitPending, hasPrepaid]);
+  }, [autoSubmitPending, hasPrepaid, loading, name, url, desc]);
+
 
   // Persist draft so the form survives the sign-in round-trip.
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (resubmitId) return; // resubmits are URL-driven — don't overwrite the fresh-apply draft
     if (!name && !url && !desc && !quote) return;
-    sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ step, name, url, desc, quote, startupId }));
+    writeDraft({ step, name, url, desc, quote, startupId });
   }, [step, name, url, desc, quote, resubmitId]);
 
   const snippet = `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}"></script>`;
@@ -330,7 +387,7 @@ function Apply() {
     }
     if (!authed) {
       // Save draft at step 1 — user must sign in before reaching the install step.
-      sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ step: 1, name, url, desc, quote, startupId }));
+      writeDraft({ step: 1, name, url, desc, quote, startupId });
       sessionStorage.setItem("startupbar:auth-next", "/apply");
       navigate({ to: "/auth" });
       return;
@@ -343,12 +400,8 @@ function Apply() {
     setPaymentLoading(true);
     // Persist the draft so we can restore state after Dodo redirects back —
     // we deliberately keep the return URL tiny (no PII in query string).
-    try {
-      sessionStorage.setItem(
-        DRAFT_KEY,
-        JSON.stringify({ step: 2, name, url, desc, quote, startupId }),
-      );
-    } catch { /* ignore */ }
+    writeDraft({ step: 2, name, url, desc, quote, startupId });
+
     const { data: u } = await supabase.auth.getUser();
     const returnUrl = `${window.location.origin}/apply?paid=true&sid=${encodeURIComponent(startupId)}`;
     const { data, error } = await supabase.functions.invoke("create-dodo-checkout", {
@@ -415,57 +468,71 @@ function Apply() {
 
   async function onSubmit() {
     setLoading(true);
-    const { data: userData } = await supabase.auth.getUser();
-    const user_id = userData.user?.id;
-    if (!user_id) { navigate({ to: "/auth" }); return; }
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const user_id = userData.user?.id;
+      if (!user_id) { setLoading(false); navigate({ to: "/auth" }); return; }
 
-    const parsed = schema.parse({ name, website_url: url, description: desc, founder_quote: quote });
-    const payload = { ...parsed, founder_quote: quote.trim() || null };
+      const validated = schema.safeParse({ name, website_url: url, description: desc, founder_quote: quote });
+      if (!validated.success) {
+        setLoading(false);
+        setStep(1);
+        toast.error(validated.error.issues[0]?.message ?? "Please fill in your startup details.");
+        return;
+      }
+      const parsed = validated.data;
+      const payload = { ...parsed, founder_quote: quote.trim() || null };
 
-    // Resubmit path: update the existing rejected row back to pending — no new row, no payment gate.
-    if (resubmitId) {
-      const { error: updErr } = await supabase
-        .from("startups")
-        .update({ ...payload, status: "pending", rejection_reason: null })
-        .eq("id", resubmitId)
-        .eq("user_id", user_id);
-      setLoading(false);
-      if (updErr) { toast.error(updErr.message); return; }
-    } else {
-      // If this is a paid additional listing, atomically consume one prepaid slot first.
-      if (existingCount >= 1) {
-        const { data: consumedId, error: consumeErr } = await supabase.rpc(
-          "consume_prepaid_listing",
-          { _user_id: user_id },
-        );
-        if (consumeErr || !consumedId) {
-          setLoading(false);
-          toast.error("No prepaid listing available. Please complete payment.");
-          return;
+      // Resubmit path: update the existing rejected row back to pending — no new row, no payment gate.
+      if (resubmitId) {
+        const { error: updErr } = await supabase
+          .from("startups")
+          .update({ ...payload, status: "pending", rejection_reason: null })
+          .eq("id", resubmitId)
+          .eq("user_id", user_id);
+        setLoading(false);
+        if (updErr) { toast.error(updErr.message); return; }
+      } else {
+        // If this is a paid additional listing, atomically consume one prepaid slot first.
+        if (existingCount >= 1) {
+          const { data: consumedId, error: consumeErr } = await supabase.rpc(
+            "consume_prepaid_listing",
+            { _user_id: user_id },
+          );
+          if (consumeErr || !consumedId) {
+            setLoading(false);
+            toast.error("No prepaid listing available. Please complete payment.");
+            return;
+          }
         }
+
+        const { error } = await supabase.from("startups").insert(
+          { id: startupId, user_id, ...payload }
+        );
+        setLoading(false);
+        if (error) { toast.error(error.message); return; }
       }
 
-      const { error } = await supabase.from("startups").insert(
-        { id: startupId, user_id, ...payload }
-      );
+      supabase.functions.invoke("send-email", { body: { type: "startup-submitted", data: { email: userData.user!.email, name: userData.user!.user_metadata?.full_name ?? "", startupName: parsed.name } } }).catch(() => {});
+      supabase.functions.invoke("send-email", { body: { type: "admin-new-application", data: { startupName: parsed.name, startupUrl: parsed.website_url, description: parsed.description, applicantEmail: userData.user!.email } } }).catch(() => {});
+
+      clearDraft();
+      setPaidNeedsForm(false);
+      toast.success("Application submitted!", {
+        description: "We review every application within 24 hours. You'll get an email once you're approved.",
+        duration: 6000,
+        action: {
+          label: "Go to dashboard",
+          onClick: () => navigate({ to: "/dashboard" }),
+        },
+      });
+      navigate({ to: "/dashboard" });
+    } catch (err) {
       setLoading(false);
-      if (error) { toast.error(error.message); return; }
+      toast.error(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     }
-
-    supabase.functions.invoke("send-email", { body: { type: "startup-submitted", data: { email: userData.user!.email, name: userData.user!.user_metadata?.full_name ?? "", startupName: parsed.name } } }).catch(() => {});
-    supabase.functions.invoke("send-email", { body: { type: "admin-new-application", data: { startupName: parsed.name, startupUrl: parsed.website_url, description: parsed.description, applicantEmail: userData.user!.email } } }).catch(() => {});
-
-    sessionStorage.removeItem(DRAFT_KEY);
-    toast.success("Application submitted!", {
-      description: "We review every application within 24 hours. You'll get an email once you're approved.",
-      duration: 6000,
-      action: {
-        label: "Go to dashboard",
-        onClick: () => navigate({ to: "/dashboard" }),
-      },
-    });
-    navigate({ to: "/dashboard" });
   }
+
 
   return (
     <div className="min-h-dvh bg-white text-black">
@@ -493,6 +560,18 @@ function Apply() {
 
 
       <main>
+      {(hasPrepaid || paidNeedsForm) && !resubmitId && (
+        <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-6">
+          <div className="flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+            <p className="text-sm leading-relaxed text-emerald-900">
+              <span className="font-medium">Your payment went through.</span>{" "}
+              Finish your listing below to use it — you won't be charged again.
+            </p>
+          </div>
+        </div>
+      )}
+
       {step === 1 && (
 
         <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 md:py-14">
