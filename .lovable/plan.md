@@ -1,27 +1,40 @@
-# Track paid-but-unsubmitted listings
+# Fix: payment taken, application never submitted
 
-## What happened with today's payment
+## You're right about the flow
 
-Nothing is broken. The Dodo payment from **jared@pypes.dev** (19:09 UTC today) was recorded correctly and is still **unconsumed** — meaning the paid listing credit is sitting on his account, waiting for him to finish the application form. He already has one approved listing (Career Jumpship), so this is a payment for a second one. When he submits the form, the credit is redeemed automatically and he is not charged again.
+The apply flow is: fill the form → install the script → pay → Dodo redirects back to `/apply?paid=true` → the page verifies the payment → **auto-submits the application**. So a payment with no application means the auto-submit step failed silently.
 
-The one weak spot: his half-typed draft lives in the browser session, so switching browser/device loses the typed text (never the credit), and today you had no way to see "someone paid but never submitted" without querying the database.
+## What actually happened
 
-## What to build
+The payment from **jared@pypes.dev** (19:09 UTC today) is recorded as succeeded, but its `consumed_at` is still empty — the prepaid credit was never redeemed. That pinpoints where it broke: the failure happened *before* the credit-consuming step in the submit function.
 
-Add a **"Paid, no listing yet"** panel to the admin dashboard so these never go unnoticed.
+The most likely cause is the form draft being lost across the Dodo redirect. The draft is stored in **sessionStorage**, which does not survive if the payment page opens in a new tab/window, the browser is switched, or the tab is restored. On return, the page verifies the payment fine, then calls submit with an empty name/URL/description — the validation call throws, and because it is not wrapped in error handling, the whole submit dies with **no toast, no error, and the spinner stuck on**. From the founder's side: he paid and nothing happened.
 
-For each unconsumed successful payment older than ~10 minutes, show:
-- Founder email and name (and avatar if available)
-- Amount context: payment ID and time since payment
-- How many listings they already have
-- A copy-email button so you can nudge them manually
+Two smaller contributors:
+- If the payment verification retries all fail, the page shows an info toast and just stops — the credit is stranded with no next step offered.
+- Nothing anywhere surfaces "this person paid and never listed", so it went unnoticed until you checked.
 
-The panel is empty in the normal case, so it only appears when there is something to act on.
+Good news: the money and the credit are safe. `consume_prepaid_listing` picks up the oldest unconsumed payment, so when he completes the form he will not be charged twice.
+
+## The fix
+
+**1. Make the draft survive the payment round-trip**
+Store the apply draft in localStorage instead of sessionStorage (cleared on successful submit, as today). It then survives new tabs, restored sessions, and returning hours later on the same browser.
+
+**2. Never fail silently on return from payment**
+Wrap the submit path in proper error handling: validation failures and insert errors show a clear toast and always clear the loading state. If the draft is missing when the payment comes back verified, do not attempt a doomed submit — instead land the user on step 1 with a visible banner: *"Your payment went through. Re-enter your startup details to finish — you won't be charged again."*
+
+**3. Show the pending credit whenever they open /apply**
+If the signed-in user has an unconsumed successful payment, show that same banner at the top of the apply page regardless of how they arrived. Anyone in this situation can self-recover by just visiting /apply.
+
+**4. Admin visibility**
+Add a "Paid, no listing yet" panel to the admin dashboard listing unconsumed successful payments older than ~10 minutes, with founder email, time since payment, and payment ID, so you can nudge them. The admin-only RPC for this already exists.
+
+**5. Recover today's payment**
+No data change needed — jared@pypes.dev will see the banner and can submit without paying again. Optionally send him a short note pointing him back to /apply.
 
 ## Technical notes
 
-- An admin-only RPC `admin_orphan_payments(_older_than_minutes)` already exists and returns exactly these rows (payment id, user id, dodo payment id, created_at, email), gated to your admin email. No new migration needed unless we want the listing count, which can be joined client-side against the startups already loaded in Admin.
-- Add a section in `src/routes/admin.tsx` that calls this RPC through the existing admin server-function path, rendered alongside the "Recently removed" panel and following the same card styling.
-- No changes to the payment or checkout flow — the credit mechanics already work correctly.
-
-No automatic reminder emails in this pass; the admin panel first, so you can see the volume before automating outreach.
+- `src/routes/apply.tsx`: swap `sessionStorage` for `localStorage` on `DRAFT_KEY`; guard `schema.parse` in `onSubmit` with try/catch plus `setLoading(false)`; gate `autoSubmitPending` on the draft actually having name/url/description; add the prepaid-credit banner driven by the existing `hasPrepaid` gate data.
+- `src/routes/admin.tsx`: new panel calling `admin_orphan_payments(10)` through the existing admin server-function path, styled like the "Recently removed" card.
+- No changes to checkout, the webhook, or `consume_prepaid_listing` — those all behaved correctly.
