@@ -387,7 +387,7 @@ function Apply() {
     }
     if (!authed) {
       // Save draft at step 1 — user must sign in before reaching the install step.
-      sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ step: 1, name, url, desc, quote, startupId }));
+      writeDraft({ step: 1, name, url, desc, quote, startupId });
       sessionStorage.setItem("startupbar:auth-next", "/apply");
       navigate({ to: "/auth" });
       return;
