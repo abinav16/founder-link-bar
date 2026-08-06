@@ -119,10 +119,31 @@ const DRAFT_KEY = "startupbar:apply-draft";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+// The draft lives in localStorage so it survives the Dodo payment round-trip
+// (new tab, restored session, coming back later). sessionStorage is still read
+// as a fallback for anyone mid-flow when this shipped.
+function readRawDraft(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem(DRAFT_KEY) ?? sessionStorage.getItem(DRAFT_KEY);
+  } catch { return null; }
+}
+
+function writeDraft(value: Record<string, unknown>) {
+  if (typeof window === "undefined") return;
+  try { localStorage.setItem(DRAFT_KEY, JSON.stringify(value)); } catch { /* ignore */ }
+}
+
+function clearDraft() {
+  if (typeof window === "undefined") return;
+  try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
+  try { sessionStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
+}
+
 function readDraft(): { step: 1 | 2; name: string; url: string; desc: string; startupId: string } | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = sessionStorage.getItem(DRAFT_KEY);
+    const raw = readRawDraft();
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     const sid = typeof parsed.startupId === "string" && UUID_RE.test(parsed.startupId) ? parsed.startupId : "";
@@ -135,6 +156,7 @@ function readDraft(): { step: 1 | 2; name: string; url: string; desc: string; st
     };
   } catch { return null; }
 }
+
 
 function readInitialFromUrl() {
   if (typeof window === "undefined") return { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "", resubmitId: "", startupId: "" };
