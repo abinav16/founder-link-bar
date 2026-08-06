@@ -560,6 +560,18 @@ function Apply() {
 
 
       <main>
+      {(hasPrepaid || paidNeedsForm) && !resubmitId && (
+        <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-6">
+          <div className="flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+            <p className="text-sm leading-relaxed text-emerald-900">
+              <span className="font-medium">Your payment went through.</span>{" "}
+              Finish your listing below to use it — you won't be charged again.
+            </p>
+          </div>
+        </div>
+      )}
+
       {step === 1 && (
 
         <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 md:py-14">
