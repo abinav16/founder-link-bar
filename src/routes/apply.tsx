@@ -400,12 +400,8 @@ function Apply() {
     setPaymentLoading(true);
     // Persist the draft so we can restore state after Dodo redirects back —
     // we deliberately keep the return URL tiny (no PII in query string).
-    try {
-      sessionStorage.setItem(
-        DRAFT_KEY,
-        JSON.stringify({ step: 2, name, url, desc, quote, startupId }),
-      );
-    } catch { /* ignore */ }
+    writeDraft({ step: 2, name, url, desc, quote, startupId });
+
     const { data: u } = await supabase.auth.getUser();
     const returnUrl = `${window.location.origin}/apply?paid=true&sid=${encodeURIComponent(startupId)}`;
     const { data, error } = await supabase.functions.invoke("create-dodo-checkout", {
