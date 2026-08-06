@@ -302,34 +302,65 @@ function Apply() {
         await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
       }
       if (cancelled) return;
-      if (!ok) {
-        toast.info(
-          "Payment received — it may take a minute to appear. Refresh this page or your dashboard shortly.",
-          { duration: 8000 },
-        );
-        setVerifyingPayment(false);
-        window.history.replaceState({}, "", "/apply");
-        return;
-      }
+      // Even when our own verification didn't confirm in time, the Dodo webhook
+      // may have already recorded the payment — refresh and let the auto-submit
+      // path (which polls for the credit) decide.
       const { data: u } = await supabase.auth.getUser();
-      if (u.user) await refreshGateData(u.user.id);
+      if (u.user) await refreshGateData(u.user.id).catch(() => {});
       window.history.replaceState({}, "", "/apply");
       setVerifyingPayment(false);
+      if (!ok) {
+        toast.info(
+          "Payment received — finishing your listing. This can take a few seconds.",
+          { duration: 6000 },
+        );
+      }
       setAutoSubmitPending(true);
     })();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // After payment is verified and gate data refreshed, auto-submit the application.
+  // After payment is verified, auto-submit — but never fail silently.
   useEffect(() => {
     if (!autoSubmitPending) return;
-    if (!hasPrepaid) return;
     if (loading) return;
-    setAutoSubmitPending(false);
-    onSubmit();
+
+    // No usable draft (lost across the payment round-trip) — don't attempt a
+    // doomed submit; send them back to step 1 with a recovery banner.
+    if (!name.trim() || !url.trim() || !desc.trim()) {
+      setAutoSubmitPending(false);
+      setPaidNeedsForm(true);
+      setStep(1);
+      return;
+    }
+
+    if (hasPrepaid) {
+      setAutoSubmitPending(false);
+      onSubmit();
+      return;
+    }
+
+    // Credit not visible yet (webhook race) — poll briefly, then stop with a
+    // clear message instead of waiting forever.
+    let stopped = false;
+    const poll = setInterval(async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!stopped && u.user) await refreshGateData(u.user.id).catch(() => {});
+    }, 3000);
+    const timeout = setTimeout(() => {
+      stopped = true;
+      clearInterval(poll);
+      setAutoSubmitPending(false);
+      setPaidNeedsForm(true);
+      toast.info("Payment received. Hit Submit to finish — you won't be charged again.", {
+        duration: 10000,
+      });
+    }, 18000);
+    return () => { stopped = true; clearInterval(poll); clearTimeout(timeout); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoSubmitPending, hasPrepaid]);
+  }, [autoSubmitPending, hasPrepaid, loading, name, url, desc]);
+
 
   // Persist draft so the form survives the sign-in round-trip.
   useEffect(() => {
