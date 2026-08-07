@@ -277,7 +277,19 @@ export const Route = createFileRoute("/api/public/verify-install")({
           }
 
           return Response.json(
-            { installed, suspicious, cspBlocked, cspFrameBlocked, cspImgBlocked, installedId, idMismatch },
+            {
+              installed,
+              suspicious,
+              cspBlocked,
+              cspFrameBlocked,
+              cspImgBlocked,
+              installedId,
+              idMismatch,
+              consentBlocked,
+              consentVendor,
+              conditionalInstall,
+            },
+
             { headers: NO_STORE },
           );
         } catch (err: unknown) {
