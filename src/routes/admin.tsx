@@ -171,12 +171,29 @@ function AdminPage() {
 
       const j = await r.json();
       const next: EmbedState = j.installed
-        ? { state: "installed", suspicious: !!j.suspicious, cspBlocked: !!j.cspBlocked, idMismatch: !!j.idMismatch, installedId: j.installedId ?? null }
+        ? {
+            state: "installed",
+            suspicious: !!j.suspicious,
+            cspBlocked: !!j.cspBlocked,
+            idMismatch: !!j.idMismatch,
+            installedId: j.installedId ?? null,
+            consentBlocked: !!j.consentBlocked,
+            consentVendor: j.consentVendor ?? null,
+            conditionalInstall: !!j.conditionalInstall,
+          }
         : j.error
           ? { state: "error" }
           : { state: "missing" };
       setEmbed((p) => ({ ...p, [id]: next }));
-      if (next.state === "installed" && !next.suspicious && !next.cspBlocked && !next.idMismatch) {
+      if (
+        next.state === "installed" &&
+        !next.suspicious &&
+        !next.cspBlocked &&
+        !next.idMismatch &&
+        !next.consentBlocked &&
+        !next.conditionalInstall
+      ) {
+
         const s = startups.find((x) => x.id === id);
         if (s?.warn_expires_at) {
           await supabase.from("startups").update({ warned_at: null, warn_expires_at: null }).eq("id", id);
