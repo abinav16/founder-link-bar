@@ -1,0 +1,48 @@
+# FAQ page
+
+A standalone `/faq` page styled exactly like Terms and Privacy (same header with logo + "← Back", same max-width body, same footer), linked from the footers.
+
+## Layout
+
+Searchable accordion:
+- Search box at the top that filters questions/answers live as you type.
+- Category chips (All, Getting started, Widget & install, Membership & approval, Billing, Traffic & delivery, Rules) to jump/filter.
+- Questions grouped by category in collapsible accordion items; one click opens an answer. Deep links via `#question-slug` so answers can be shared and open automatically.
+- Empty state when a search returns nothing, with a "email support" fallback.
+- FAQPage JSON-LD structured data so the questions can surface in Google results, plus route `head()` metadata (title, description, og tags, canonical).
+
+## Content
+
+**Getting started**
+- What StartupBar is, how the exchange works, is it free.
+
+**Widget & install**
+- How to embed (copy-paste script snippet, same as install instructions).
+- Where the bar appears, mobile behaviour, dismissal.
+- Why the widget isn't showing: consent/cookie blockers (Termly, Cookiebot, OneTrust, CookieYes), script only on some pages, wrong startup ID.
+- How to verify the install (heartbeat, admin sees it as Live).
+- Widget must stay on every page to remain in the network; removing or hiding it means removal.
+
+**Membership & approval**
+- Free listing vs paid additional listing.
+- Approval process and timeline, why applications get rejected.
+- Site types allowed: real, live SaaS / indie software / tools with a working product page.
+- Not allowed: ad-monetised or ad-heavy sites, link farms/directories built for traffic, adult, gambling, crypto-pump, scraped or AI-spam content, sites behind login-only walls, parked or placeholder pages.
+- Site must not display ads on pages where the widget runs.
+
+**Billing**
+- Payments are handled by Dodo Payments; what the paid listing includes.
+- **No refunds** — all payments are final once a listing is submitted or approved.
+- What to do if a payment went through but the listing didn't appear (recovery banner / email support).
+
+**Traffic & delivery**
+- How impressions are delivered: one bar shown per visitor session, rotation every 30 seconds, impressions deduplicated once per session per startup.
+- Reciprocity weighting — the more impressions you deliver over the last 7 days, the more you receive (up to 4x weight).
+- Why counts differ from Google Analytics (bots, blockers, session-scoped dedupe, referrer stripping).
+- Non-member or removed sites see the StartupBar house listing instead, which doesn't count.
+
+## Technical notes
+
+- New file `src/routes/faq.tsx` with `createFileRoute("/faq")`, static content array, local `useState` for search + open items, no backend calls.
+- Add `Link to="/faq"` in the footers of `index.tsx`, `terms.tsx`, and `privacy.tsx` next to Support / Terms / Privacy.
+- Add `/faq` to `src/routes/sitemap[.]xml.tsx`.
