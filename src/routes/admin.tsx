@@ -106,7 +106,17 @@ function FounderCell({ founder, compact = false }: { founder?: FounderInfo; comp
 type EmbedState =
   | { state: "idle" }
   | { state: "checking" }
-  | { state: "installed"; suspicious: boolean; cspBlocked: boolean; idMismatch: boolean; installedId: string | null }
+  | {
+      state: "installed";
+      suspicious: boolean;
+      cspBlocked: boolean;
+      idMismatch: boolean;
+      installedId: string | null;
+      consentBlocked: boolean;
+      consentVendor: string | null;
+      conditionalInstall: boolean;
+    }
+
   | { state: "missing" }
   | { state: "error" };
 
