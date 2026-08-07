@@ -54,6 +54,7 @@ function PrivacyPage() {
           <span>© {new Date().getFullYear()} StartupBar</span>
           <div className="flex flex-wrap items-center gap-4">
             <a href="mailto:hello@startupbar.co" className="hover:text-black transition-colors">Support</a>
+            <Link to="/faq" className="hover:text-black transition-colors">FAQ</Link>
             <Link to="/terms" className="hover:text-black transition-colors">Terms of Service</Link>
             <a
               href="https://x.com/danielabinav16"
