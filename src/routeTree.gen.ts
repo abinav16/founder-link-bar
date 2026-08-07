@@ -14,6 +14,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as NetworkRouteImport } from './routes/network'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
+import { Route as FaqRouteImport } from './routes/faq'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ApplyRouteImport } from './routes/apply'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -57,6 +58,11 @@ const NetworkRoute = NetworkRouteImport.update({
 const LeaderboardRoute = LeaderboardRouteImport.update({
   id: '/leaderboard',
   path: '/leaderboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -161,6 +167,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/apply': typeof ApplyRoute
   '/auth': typeof AuthRoute
+  '/faq': typeof FaqRoute
   '/leaderboard': typeof LeaderboardRoute
   '/network': typeof NetworkRoute
   '/privacy': typeof PrivacyRoute
@@ -186,6 +193,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/apply': typeof ApplyRoute
   '/auth': typeof AuthRoute
+  '/faq': typeof FaqRoute
   '/leaderboard': typeof LeaderboardRoute
   '/network': typeof NetworkRoute
   '/privacy': typeof PrivacyRoute
@@ -213,6 +221,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/apply': typeof ApplyRoute
   '/auth': typeof AuthRoute
+  '/faq': typeof FaqRoute
   '/leaderboard': typeof LeaderboardRoute
   '/network': typeof NetworkRoute
   '/privacy': typeof PrivacyRoute
@@ -240,6 +249,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/apply'
     | '/auth'
+    | '/faq'
     | '/leaderboard'
     | '/network'
     | '/privacy'
@@ -265,6 +275,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/apply'
     | '/auth'
+    | '/faq'
     | '/leaderboard'
     | '/network'
     | '/privacy'
@@ -291,6 +302,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/apply'
     | '/auth'
+    | '/faq'
     | '/leaderboard'
     | '/network'
     | '/privacy'
@@ -318,6 +330,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   ApplyRoute: typeof ApplyRoute
   AuthRoute: typeof AuthRoute
+  FaqRoute: typeof FaqRoute
   LeaderboardRoute: typeof LeaderboardRoute
   NetworkRoute: typeof NetworkRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -372,6 +385,13 @@ declare module '@tanstack/react-router' {
       path: '/leaderboard'
       fullPath: '/leaderboard'
       preLoaderRoute: typeof LeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -529,6 +549,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   ApplyRoute: ApplyRoute,
   AuthRoute: AuthRoute,
+  FaqRoute: FaqRoute,
   LeaderboardRoute: LeaderboardRoute,
   NetworkRoute: NetworkRoute,
   PrivacyRoute: PrivacyRoute,
@@ -550,13 +571,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
