@@ -140,6 +140,40 @@ function clearDraft() {
   try { sessionStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
 }
 
+// Install IDs are pinned per site host and survive draft clears / failed
+// attempts. Without this, a second attempt generated a fresh UUID while the
+// founder's site still had the first snippet installed -> "Wrong ID" in admin.
+const INSTALL_IDS_KEY = "startupbar:install-ids";
+
+function hostKey(rawUrl: string): string {
+  const t = rawUrl.trim();
+  if (!t) return "";
+  try {
+    const u = new URL(t.startsWith("http") ? t : `https://${t}`);
+    return u.hostname.replace(/^www\./i, "").toLowerCase();
+  } catch { return ""; }
+}
+
+function readInstallIds(): Record<string, string> {
+  if (typeof window === "undefined") return {};
+  try {
+    const parsed = JSON.parse(localStorage.getItem(INSTALL_IDS_KEY) ?? "{}");
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch { return {}; }
+}
+
+// Returns the pinned install ID for this host, creating (and persisting) one
+// the first time. Falls back to `fallback` when the URL isn't parseable yet.
+function pinnedInstallId(rawUrl: string, fallback: string): string {
+  const key = hostKey(rawUrl);
+  if (!key) return fallback;
+  const map = readInstallIds();
+  if (map[key] && UUID_RE.test(map[key])) return map[key];
+  map[key] = fallback;
+  try { localStorage.setItem(INSTALL_IDS_KEY, JSON.stringify(map)); } catch { /* ignore */ }
+  return fallback;
+}
+
 function readDraft(): { step: 1 | 2; name: string; url: string; desc: string; startupId: string } | null {
   if (typeof window === "undefined") return null;
   try {
@@ -216,6 +250,14 @@ function Apply() {
   const [autoSubmitPending, setAutoSubmitPending] = useState(false);
   // True when a payment came back verified but we have no usable draft to submit.
   const [paidNeedsForm, setPaidNeedsForm] = useState(false);
+
+  // Reuse the same install ID for a given site across attempts/sessions, so the
+  // snippet the founder already pasted keeps matching their listing.
+  useEffect(() => {
+    if (resubmitId) return;
+    const pinned = pinnedInstallId(url, startupId);
+    if (pinned !== startupId) setStartupId(pinned);
+  }, [url, resubmitId, startupId]);
 
 
   useEffect(() => {
