@@ -524,8 +524,13 @@ function AdminPage() {
                             <><ShieldOff className="h-3 w-3" /> CSP blocked</>
                           ) : badge === "wrong-id" ? (
                             <><CircleSlash className="h-3 w-3" /> Wrong ID</>
+                          ) : badge === "consent-blocked" ? (
+                            <><ShieldOff className="h-3 w-3" /> Consent blocked{consentVendorName ? ` · ${consentVendorName}` : ""}</>
+                          ) : badge === "conditional" ? (
+                            <><Eye className="h-3 w-3" /> Partial install</>
                           ) : badge === "hidden" ? (
                             <><EyeOff className="h-3 w-3" /> {scriptSuspicious ? "Hidden (CSS)" : "Hidden"}</>
+
                           ) : badge === "installed-unseen" ? (
                             <><Eye className="h-3 w-3" /> Installed · not seen</>
                           ) : badge === "removed" ? (
