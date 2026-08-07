@@ -106,7 +106,17 @@ function FounderCell({ founder, compact = false }: { founder?: FounderInfo; comp
 type EmbedState =
   | { state: "idle" }
   | { state: "checking" }
-  | { state: "installed"; suspicious: boolean; cspBlocked: boolean; idMismatch: boolean; installedId: string | null }
+  | {
+      state: "installed";
+      suspicious: boolean;
+      cspBlocked: boolean;
+      idMismatch: boolean;
+      installedId: string | null;
+      consentBlocked: boolean;
+      consentVendor: string | null;
+      conditionalInstall: boolean;
+    }
+
   | { state: "missing" }
   | { state: "error" };
 
@@ -161,12 +171,29 @@ function AdminPage() {
 
       const j = await r.json();
       const next: EmbedState = j.installed
-        ? { state: "installed", suspicious: !!j.suspicious, cspBlocked: !!j.cspBlocked, idMismatch: !!j.idMismatch, installedId: j.installedId ?? null }
+        ? {
+            state: "installed",
+            suspicious: !!j.suspicious,
+            cspBlocked: !!j.cspBlocked,
+            idMismatch: !!j.idMismatch,
+            installedId: j.installedId ?? null,
+            consentBlocked: !!j.consentBlocked,
+            consentVendor: j.consentVendor ?? null,
+            conditionalInstall: !!j.conditionalInstall,
+          }
         : j.error
           ? { state: "error" }
           : { state: "missing" };
       setEmbed((p) => ({ ...p, [id]: next }));
-      if (next.state === "installed" && !next.suspicious && !next.cspBlocked && !next.idMismatch) {
+      if (
+        next.state === "installed" &&
+        !next.suspicious &&
+        !next.cspBlocked &&
+        !next.idMismatch &&
+        !next.consentBlocked &&
+        !next.conditionalInstall
+      ) {
+
         const s = startups.find((x) => x.id === id);
         if (s?.warn_expires_at) {
           await supabase.from("startups").update({ warned_at: null, warn_expires_at: null }).eq("id", id);
@@ -363,6 +390,10 @@ function AdminPage() {
                     const scriptCspBlocked = e.state === "installed" && e.cspBlocked;
                     const scriptIdMismatch = e.state === "installed" && e.idMismatch;
                     const installedIdValue = e.state === "installed" ? e.installedId : null;
+                    const scriptConsentBlocked = e.state === "installed" && e.consentBlocked;
+                    const consentVendorName = e.state === "installed" ? e.consentVendor : null;
+                    const scriptConditional = e.state === "installed" && e.conditionalInstall;
+
                     // Heartbeat freshness: a ping in the last 6h is "recent
                     // enough to trust as currently live" — but only when the
                     // page scan ALSO still finds the script (a founder can
@@ -383,14 +414,17 @@ function AdminPage() {
                     // Wrong-ID takes top priority: the loader is pinging a
                     // different startup, so our heartbeats will never match
                     // this row no matter what the site looks like.
-                    const badge: "checking" | "live" | "hidden" | "csp-blocked" | "wrong-id" | "installed-unseen" | "removed" | "missing" | "error" | "idle" =
+                    const badge: "checking" | "live" | "hidden" | "csp-blocked" | "wrong-id" | "consent-blocked" | "conditional" | "installed-unseen" | "removed" | "missing" | "error" | "idle" =
                       e.state === "checking" ? "checking"
                       : scriptIdMismatch ? "wrong-id"
                       : scriptCspBlocked ? "csp-blocked"
+                      : scriptConsentBlocked ? "consent-blocked"
                       : scriptRemoved ? "removed"
-                      : scriptInstalled && hbVisible && !scriptSuspicious ? "live"
+                      : scriptInstalled && hbVisible && !scriptSuspicious && !scriptConditional ? "live"
                       : scriptInstalled && (hbHidden || scriptSuspicious) ? "hidden"
+                      : scriptConditional ? "conditional"
                       : scriptInstalled ? "installed-unseen"
+
                       : e.state === "error" ? "error"
                       : e.state === "missing" ? "missing"
                       : "idle";
@@ -445,7 +479,10 @@ function AdminPage() {
                             badge === "live" ? "Script installed and widget visible to visitors"
                             : badge === "csp-blocked" ? "Site's Content Security Policy blocks startupbar.co/widget/loader.js. Ask the founder to add https://startupbar.co to their script-src directive."
                             : badge === "wrong-id" ? `Loader is installed with a different data-startup-id${installedIdValue ? ` (${installedIdValue})` : ""}. Heartbeats will never match this startup — ask the founder to re-copy their snippet.`
+                            : badge === "consent-blocked" ? `${consentVendorName ?? "A cookie-consent"} auto-blocker on this site stops third-party scripts, so the widget never loads until a visitor accepts cookies. Ask the founder to allowlist startupbar.co in their consent tool.`
+                            : badge === "conditional" ? "Loader is injected by inline JS and/or hidden by a conditional CSS rule, so it only runs on some pages. Ask the founder to install it site-wide."
                             : badge === "hidden" ? (scriptSuspicious
+
                                 ? "Script is wrapped in a hidden element (display:none / visibility:hidden / height:0)"
                                 : "Script installed but widget reports as hidden on the page")
                             : badge === "installed-unseen" ? "Script tag detected, but no recent visibility ping. The page may not have been loaded yet."
@@ -461,9 +498,14 @@ function AdminPage() {
                               ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
                               : badge === "wrong-id"
                               ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
+                              : badge === "consent-blocked"
+                              ? "border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100"
+                              : badge === "conditional"
+                              ? "border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100"
                               : badge === "hidden"
                               ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
                               : badge === "installed-unseen"
+
                               ? "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
                               : badge === "removed"
                               ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
@@ -482,8 +524,13 @@ function AdminPage() {
                             <><ShieldOff className="h-3 w-3" /> CSP blocked</>
                           ) : badge === "wrong-id" ? (
                             <><CircleSlash className="h-3 w-3" /> Wrong ID</>
+                          ) : badge === "consent-blocked" ? (
+                            <><ShieldOff className="h-3 w-3" /> Consent blocked{consentVendorName ? ` · ${consentVendorName}` : ""}</>
+                          ) : badge === "conditional" ? (
+                            <><Eye className="h-3 w-3" /> Partial install</>
                           ) : badge === "hidden" ? (
                             <><EyeOff className="h-3 w-3" /> {scriptSuspicious ? "Hidden (CSS)" : "Hidden"}</>
+
                           ) : badge === "installed-unseen" ? (
                             <><Eye className="h-3 w-3" /> Installed · not seen</>
                           ) : badge === "removed" ? (

@@ -122,10 +122,83 @@ export const Route = createFileRoute("/api/public/verify-install")({
             const idRe = /<script[^>]*data-startup-id=["']([^"']+)["'][^>]*>/i;
             const idMatch = html.match(idRe);
             if (idMatch) installedId = idMatch[1];
+            // Sites that inject the loader from inline JS never have a static
+            // script tag, so also look for the id passed to the injector.
+            if (!installedId) {
+              const inlineIdRe =
+                /(?:setAttribute\(\s*['"]data-startup-id['"]\s*,\s*['"]([0-9a-f-]{36})['"]|loader\.js['"]\s*,\s*['"]([0-9a-f-]{36})['"])/i;
+              const inlineMatch = html.match(inlineIdRe);
+              if (inlineMatch) installedId = inlineMatch[1] ?? inlineMatch[2] ?? null;
+            }
             if (expectedId && installedId && installedId !== expectedId) {
               idMismatch = true;
             }
           }
+
+          // A cookie-consent auto-blocker on the page will stop third-party
+          // scripts (ours included) from loading until the visitor accepts
+          // cookies — the snippet is present but never executes.
+          let consentBlocked = false;
+          let consentVendor: string | null = null;
+          if (installed) {
+            const vendors: Array<[RegExp, string]> = [
+              [/app\.termly\.io\/resource-blocker[^"']*autoBlock=on/i, "Termly"],
+              [/consent\.cookiebot\.com[\s\S]{0,300}?data-blockingmode\s*=\s*["']auto["']/i, "Cookiebot"],
+              [/data-blockingmode\s*=\s*["']auto["'][\s\S]{0,300}?cookiebot/i, "Cookiebot"],
+              [/otSDKStub\.js|cdn\.cookielaw\.org/i, "OneTrust"],
+              [/cdn-cookieyes\.com|cookieyes\.com\/client_data/i, "CookieYes"],
+              [/cookieconsent\.js[\s\S]{0,200}?type=["']text\/plain["']/i, "Cookie Consent"],
+            ];
+            for (const [re, name] of vendors) {
+              if (re.test(html)) {
+                consentBlocked = true;
+                consentVendor = name;
+                break;
+              }
+            }
+          }
+
+          // The loader may be installed, but only conditionally: injected from
+          // inline JS (so it can be skipped on some routes) and/or hidden by a
+          // CSS rule keyed on a state attribute. Either way, visitors on many
+          // pages will never see the bar.
+          let conditionalInstall = false;
+          if (installed) {
+            const staticTagRe =
+              /<script[^>]+src=["'][^"']*(?:startupbar\.co\/widget|widget\/loader\.js)[^"']*["'][^>]*>/i;
+            const hasStaticTag = staticTagRe.test(html);
+            const inlineInjectRe =
+              /(?:createElement\(\s*['"]script['"]\s*\)[\s\S]{0,400}?(?:startupbar\.co\/widget|widget\/loader\.js))|(?:load\(\s*['"][^'"]*(?:startupbar\.co\/widget|widget\/loader\.js))/i;
+            if (!hasStaticTag && inlineInjectRe.test(html)) conditionalInstall = true;
+
+            // Conditional hide rule, e.g.
+            //   html[data-sb-off] iframe[src*='startupbar.co'] { display:none }
+            if (!conditionalInstall) {
+              const styleBlockRe = /<style\b[^>]*>([\s\S]*?)<\/style>/gi;
+              let sb2: RegExpExecArray | null;
+              while (!conditionalInstall && (sb2 = styleBlockRe.exec(html)) !== null) {
+                for (const rule of sb2[1].split("}")) {
+                  const brace = rule.indexOf("{");
+                  if (brace === -1) continue;
+                  const selector = rule.slice(0, brace);
+                  const decls = rule.slice(brace + 1);
+                  const targetsWidget = /startupbar|data-startup-id/i.test(selector);
+                  const isConditional = /\[[^\]]+\]\s*[\s>+~]/.test(selector) || /^\s*\w*\[[^\]]+\]\s+/.test(selector);
+                  if (targetsWidget && isConditional && /display\s*:\s*none|visibility\s*:\s*hidden/i.test(decls)) {
+                    conditionalInstall = true;
+                    break;
+                  }
+                }
+              }
+            }
+          }
+
+          // A conditional hide rule is a routing choice, not a cloaked embed —
+          // don't double-report it as "Hidden (CSS)".
+          if (conditionalInstall) suspicious = false;
+
+
+
 
 
           // Detect Content-Security-Policy that blocks the widget script,
@@ -204,7 +277,19 @@ export const Route = createFileRoute("/api/public/verify-install")({
           }
 
           return Response.json(
-            { installed, suspicious, cspBlocked, cspFrameBlocked, cspImgBlocked, installedId, idMismatch },
+            {
+              installed,
+              suspicious,
+              cspBlocked,
+              cspFrameBlocked,
+              cspImgBlocked,
+              installedId,
+              idMismatch,
+              consentBlocked,
+              consentVendor,
+              conditionalInstall,
+            },
+
             { headers: NO_STORE },
           );
         } catch (err: unknown) {
