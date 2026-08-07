@@ -1,39 +1,32 @@
-# Jared / lamboapp.com — recovery
+# Increase circling startup logos to ~100
 
-## What the data shows
+## What changes
 
-- Payment `pay_0NkpAVbjBt02FM9GRG1l0` ($9.99, Aug 6 19:09 UTC) — **succeeded, not consumed**. No money lost, credit still valid.
-- Startups table: only `Career Jumpship` under his account. No lamboapp.com row.
-- Application events: no record for lamboapp.com — meaning the submit never reached the server.
+Increase the number of circling startup logos in the homepage hero from the current **56** to **~100** while keeping the same 4-ring layout.
 
-So **no, we do not have the details he typed**. The form draft lives only in the browser (localStorage/sessionStorage); nothing is sent to us until Submit succeeds. All we know from the email is the URL: `lamboapp.com`.
+```text
+Before:  8 + 12 + 16 + 20 = 56 logos
+After:  16 + 20 + 28 + 36 = 100 logos
+```
 
-## Options to close this out
+This gives each approved startup a higher chance of appearing in the orbit animation and fills the hero rings more densely without adding new rings.
 
-**A. Create it for him from the live site (recommended)**
-Pull the startup name, tagline and logo from lamboapp.com, insert the listing under his account as `pending`, mark his payment consumed, and tell him it's in review and he can edit the wording from his dashboard.
+## Where
 
-**B. Ask him for the details**
-Reply asking for the display name and one-line description, then create it manually.
+`src/routes/index.tsx` — the `HeroCanvas` component:
 
-## Draft reply (works for either option)
+- Update `TOTAL_DOTS` constant.
+- Update the per-ring dot count formula (`count = 8 + ri * 4`).
+- Optionally fine-tune ring radii or logo size if the preview looks too crowded.
 
-> Hi Jared,
->
-> Sorry about that — I checked and your $9.99 payment went through fine, but the listing form didn't submit after the redirect back from checkout, so lamboapp.com never got created. That bug is fixed now.
->
-> I've gone ahead and created the lamboapp.com listing on your account using the details from your site — it's in review and you can edit the name/description any time from your dashboard at startupbar.co/dashboard. You won't be charged again.
->
-> Thanks for flagging it,
-> Daniel
+## Technical notes
 
-(If you prefer option B, swap the middle paragraph for: "Send me the name and a one-line description you'd like shown and I'll create it for you right away — your payment credit is still on your account.")
+- The ring count stays 4, only the number of dots per ring increases.
+- The current logo-slotting logic (`step = Math.floor(TOTAL_DOTS / shuffled.length)`) continues to spread startups evenly across available slots.
+- No database or widget changes are needed.
+- After the change, verify the preview at `/` to make sure logos are still readable and the animation is smooth.
 
-## Technical steps if you pick A
+## Out of scope
 
-1. Fetch `https://lamboapp.com` to read the title/meta description and favicon.
-2. Insert into `startups`: `user_id = 9cd7deee-4cee-4a7b-b9bb-ee4c6e7e08b5`, name, `website_url`, description, `status = 'pending'`, logo_url.
-3. Set `consumed_at = now()` on payment `53eef644-046e-40de-a8f5-3925e249084a` so the credit isn't double-spent.
-4. Confirm the new listing shows in Admin's applications queue.
-
-No code changes needed — the underlying bug (draft lost across the payment redirect, silent submit failure) was already fixed earlier today.
+- Widget position / bottom placement option (user said no).
+- Any other landing page changes.
