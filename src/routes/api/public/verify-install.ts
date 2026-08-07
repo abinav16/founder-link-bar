@@ -193,6 +193,12 @@ export const Route = createFileRoute("/api/public/verify-install")({
             }
           }
 
+          // A conditional hide rule is a routing choice, not a cloaked embed —
+          // don't double-report it as "Hidden (CSS)".
+          if (conditionalInstall) suspicious = false;
+
+
+
 
 
           // Detect Content-Security-Policy that blocks the widget script,
