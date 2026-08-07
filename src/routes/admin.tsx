@@ -414,14 +414,17 @@ function AdminPage() {
                     // Wrong-ID takes top priority: the loader is pinging a
                     // different startup, so our heartbeats will never match
                     // this row no matter what the site looks like.
-                    const badge: "checking" | "live" | "hidden" | "csp-blocked" | "wrong-id" | "installed-unseen" | "removed" | "missing" | "error" | "idle" =
+                    const badge: "checking" | "live" | "hidden" | "csp-blocked" | "wrong-id" | "consent-blocked" | "conditional" | "installed-unseen" | "removed" | "missing" | "error" | "idle" =
                       e.state === "checking" ? "checking"
                       : scriptIdMismatch ? "wrong-id"
                       : scriptCspBlocked ? "csp-blocked"
+                      : scriptConsentBlocked ? "consent-blocked"
                       : scriptRemoved ? "removed"
-                      : scriptInstalled && hbVisible && !scriptSuspicious ? "live"
+                      : scriptInstalled && hbVisible && !scriptSuspicious && !scriptConditional ? "live"
                       : scriptInstalled && (hbHidden || scriptSuspicious) ? "hidden"
+                      : scriptConditional ? "conditional"
                       : scriptInstalled ? "installed-unseen"
+
                       : e.state === "error" ? "error"
                       : e.state === "missing" ? "missing"
                       : "idle";
