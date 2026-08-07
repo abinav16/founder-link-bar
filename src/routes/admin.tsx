@@ -479,7 +479,10 @@ function AdminPage() {
                             badge === "live" ? "Script installed and widget visible to visitors"
                             : badge === "csp-blocked" ? "Site's Content Security Policy blocks startupbar.co/widget/loader.js. Ask the founder to add https://startupbar.co to their script-src directive."
                             : badge === "wrong-id" ? `Loader is installed with a different data-startup-id${installedIdValue ? ` (${installedIdValue})` : ""}. Heartbeats will never match this startup — ask the founder to re-copy their snippet.`
+                            : badge === "consent-blocked" ? `${consentVendorName ?? "A cookie-consent"} auto-blocker on this site stops third-party scripts, so the widget never loads until a visitor accepts cookies. Ask the founder to allowlist startupbar.co in their consent tool.`
+                            : badge === "conditional" ? "Loader is injected by inline JS and/or hidden by a conditional CSS rule, so it only runs on some pages. Ask the founder to install it site-wide."
                             : badge === "hidden" ? (scriptSuspicious
+
                                 ? "Script is wrapped in a hidden element (display:none / visibility:hidden / height:0)"
                                 : "Script installed but widget reports as hidden on the page")
                             : badge === "installed-unseen" ? "Script tag detected, but no recent visibility ping. The page may not have been loaded yet."
