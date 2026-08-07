@@ -96,7 +96,7 @@ function HeroCanvas() {
       if (!data || data.length === 0) return;
       // Total dots across all rings = 8+12+16+20 = 56. Spread logos evenly
       // across unique dot slots so every approved startup gets its own orbit spot.
-      const TOTAL_DOTS = 56;
+      const TOTAL_DOTS = 100;
       const shuffled = [...data].sort(() => Math.random() - 0.5).slice(0, TOTAL_DOTS);
       const step = Math.max(1, Math.floor(TOTAL_DOTS / shuffled.length));
       const used = new Set<number>();
@@ -128,7 +128,7 @@ function HeroCanvas() {
       const cx = canvas.offsetWidth / 2;
       const cy = canvas.offsetHeight * 0.48;
       RINGS.forEach((radius, ri) => {
-        const count = 8 + ri * 4;
+        const count = 13 + ri * 8;
         for (let i = 0; i < count; i++) {
           const angle = (i / count) * Math.PI * 2;
           const speed = (0.0012 + Math.random() * 0.0008) * (Math.random() > 0.5 ? 1 : -1);
