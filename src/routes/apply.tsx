@@ -251,6 +251,14 @@ function Apply() {
   // True when a payment came back verified but we have no usable draft to submit.
   const [paidNeedsForm, setPaidNeedsForm] = useState(false);
 
+  // Reuse the same install ID for a given site across attempts/sessions, so the
+  // snippet the founder already pasted keeps matching their listing.
+  useEffect(() => {
+    if (resubmitId) return;
+    const pinned = pinnedInstallId(url, startupId);
+    if (pinned !== startupId) setStartupId(pinned);
+  }, [url, resubmitId, startupId]);
+
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setAuthed(!!data.user));
