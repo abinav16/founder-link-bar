@@ -390,6 +390,10 @@ function AdminPage() {
                     const scriptCspBlocked = e.state === "installed" && e.cspBlocked;
                     const scriptIdMismatch = e.state === "installed" && e.idMismatch;
                     const installedIdValue = e.state === "installed" ? e.installedId : null;
+                    const scriptConsentBlocked = e.state === "installed" && e.consentBlocked;
+                    const consentVendorName = e.state === "installed" ? e.consentVendor : null;
+                    const scriptConditional = e.state === "installed" && e.conditionalInstall;
+
                     // Heartbeat freshness: a ping in the last 6h is "recent
                     // enough to trust as currently live" — but only when the
                     // page scan ALSO still finds the script (a founder can
