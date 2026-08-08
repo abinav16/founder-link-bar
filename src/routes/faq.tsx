@@ -417,6 +417,9 @@ function FaqPage() {
             <Link to="/apply" className="hover:text-black transition-colors">
               Apply
             </Link>
+            <Link to="/pricing" className="hover:text-black transition-colors">
+              Pricing
+            </Link>
             <Link to="/privacy" className="hover:text-black transition-colors">
               Privacy Policy
             </Link>
