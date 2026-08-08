@@ -14,6 +14,7 @@ function FooterBar() {
         </div>
         <div className="flex flex-wrap items-center gap-4 text-xs text-black/40">
           <a href="mailto:hello@startupbar.co" className="hover:text-black transition-colors">Support</a>
+          <Link to="/faq" className="hover:text-black transition-colors">FAQ</Link>
           <Link to="/privacy" className="hover:text-black transition-colors">Privacy</Link>
           <Link to="/terms" className="hover:text-black transition-colors">Terms</Link>
           <Link to="/apply" className="hover:text-black transition-colors">Apply</Link>
