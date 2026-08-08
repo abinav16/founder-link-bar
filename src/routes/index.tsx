@@ -855,6 +855,7 @@ function Landing() {
                 <Link to="/auth" className="hover:text-black transition-colors">Sign in</Link>
               )}
               <Link to="/apply" className="hover:text-black transition-colors">Apply</Link>
+              <Link to="/pricing" className="hover:text-black transition-colors">Pricing</Link>
               <Link to="/faq" className="hover:text-black transition-colors">FAQ</Link>
               <Link to="/privacy" className="hover:text-black transition-colors">Privacy</Link>
               <Link to="/terms" className="hover:text-black transition-colors">Terms</Link>

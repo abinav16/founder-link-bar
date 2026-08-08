@@ -57,8 +57,6 @@ function Check() {
   return <span aria-hidden className="mt-[2px] text-black">✓</span>;
 }
 
-export default function _unused() { return null; }
-
 function PricingPage() {
   return (
     <div className="min-h-screen bg-white">

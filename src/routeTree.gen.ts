@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as NetworkRouteImport } from './routes/network'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as FaqRouteImport } from './routes/faq'
@@ -48,6 +49,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NetworkRoute = NetworkRouteImport.update({
@@ -170,6 +176,7 @@ export interface FileRoutesByFullPath {
   '/faq': typeof FaqRoute
   '/leaderboard': typeof LeaderboardRoute
   '/network': typeof NetworkRoute
+  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
@@ -196,6 +203,7 @@ export interface FileRoutesByTo {
   '/faq': typeof FaqRoute
   '/leaderboard': typeof LeaderboardRoute
   '/network': typeof NetworkRoute
+  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
@@ -224,6 +232,7 @@ export interface FileRoutesById {
   '/faq': typeof FaqRoute
   '/leaderboard': typeof LeaderboardRoute
   '/network': typeof NetworkRoute
+  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
@@ -252,6 +261,7 @@ export interface FileRouteTypes {
     | '/faq'
     | '/leaderboard'
     | '/network'
+    | '/pricing'
     | '/privacy'
     | '/sitemap.xml'
     | '/terms'
@@ -278,6 +288,7 @@ export interface FileRouteTypes {
     | '/faq'
     | '/leaderboard'
     | '/network'
+    | '/pricing'
     | '/privacy'
     | '/sitemap.xml'
     | '/terms'
@@ -305,6 +316,7 @@ export interface FileRouteTypes {
     | '/faq'
     | '/leaderboard'
     | '/network'
+    | '/pricing'
     | '/privacy'
     | '/sitemap.xml'
     | '/terms'
@@ -333,6 +345,7 @@ export interface RootRouteChildren {
   FaqRoute: typeof FaqRoute
   LeaderboardRoute: typeof LeaderboardRoute
   NetworkRoute: typeof NetworkRoute
+  PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
@@ -371,6 +384,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/network': {
@@ -552,6 +572,7 @@ const rootRouteChildren: RootRouteChildren = {
   FaqRoute: FaqRoute,
   LeaderboardRoute: LeaderboardRoute,
   NetworkRoute: NetworkRoute,
+  PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
