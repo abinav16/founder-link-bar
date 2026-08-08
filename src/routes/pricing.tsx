@@ -1,4 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -53,11 +55,44 @@ function Logo() {
   );
 }
 
+type Membership = { loading: boolean; signedIn: boolean; listings: number };
+
+function useMembership(): Membership {
+  const [state, setState] = useState<Membership>({ loading: true, signedIn: false, listings: 0 });
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      const { data } = await supabase.auth.getSession();
+      const user = data.session?.user;
+      if (!user) {
+        if (!cancelled) setState({ loading: false, signedIn: false, listings: 0 });
+        return;
+      }
+      const { count } = await supabase
+        .from("startups")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .neq("status", "rejected");
+      if (!cancelled) setState({ loading: false, signedIn: true, listings: count ?? 0 });
+    }
+
+    load();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => { load(); });
+    return () => { cancelled = true; subscription.unsubscribe(); };
+  }, []);
+
+  return state;
+}
+
 function Check() {
   return <span aria-hidden className="mt-[2px] text-black">✓</span>;
 }
 
 function PricingPage() {
+  const { loading, signedIn, listings } = useMembership();
+
   return (
     <div className="min-h-screen bg-white">
       <header className="border-b border-black/8">
@@ -88,12 +123,37 @@ function PricingPage() {
               <li className="flex gap-2"><Check />Impression &amp; click dashboard</li>
               <li className="flex gap-2"><Check />Leaderboard and network listing</li>
             </ul>
-            <Link
-              to="/apply"
-              className="mt-6 inline-flex h-10 items-center rounded-md bg-black px-4 text-sm font-medium text-white hover:bg-black/80 transition-colors"
-            >
-              Join free
-            </Link>
+            {loading ? (
+              <div aria-hidden className="mt-6 h-10 w-36 rounded-md bg-black/5" />
+            ) : !signedIn ? (
+              <div className="mt-6 flex flex-wrap items-center gap-3">
+                <Link
+                  to="/apply"
+                  className="inline-flex h-10 items-center rounded-md bg-black px-4 text-sm font-medium text-white hover:bg-black/80 transition-colors"
+                >
+                  Join free
+                </Link>
+                <Link to="/auth" className="text-sm text-black/45 hover:text-black transition-colors">
+                  Already a member? Sign in
+                </Link>
+              </div>
+            ) : listings > 0 ? (
+              <div className="mt-6 flex flex-wrap items-center gap-3">
+                <span className="inline-flex h-10 items-center rounded-md bg-black/5 px-4 text-sm font-medium text-black/50">
+                  Free listing active
+                </span>
+                <Link to="/dashboard" className="text-sm text-black/45 hover:text-black transition-colors">
+                  View dashboard
+                </Link>
+              </div>
+            ) : (
+              <Link
+                to="/apply"
+                className="mt-6 inline-flex h-10 items-center rounded-md bg-black px-4 text-sm font-medium text-white hover:bg-black/80 transition-colors"
+              >
+                List your startup free
+              </Link>
+            )}
           </div>
 
           <div className="rounded-xl border-2 border-black p-6">
@@ -108,12 +168,37 @@ function PricingPage() {
               <li className="flex gap-2"><Check />Charged once per extra listing — no subscription</li>
               <li className="flex gap-2"><Check />Reviewed before it goes live</li>
             </ul>
-            <Link
-              to="/apply"
-              className="mt-6 inline-flex h-10 items-center rounded-md border border-black px-4 text-sm font-medium text-black hover:bg-black hover:text-white transition-colors"
-            >
-              Add another startup
-            </Link>
+            {loading ? (
+              <div aria-hidden className="mt-6 h-10 w-44 rounded-md bg-black/5" />
+            ) : !signedIn ? (
+              <div className="mt-6">
+                <Link
+                  to="/auth"
+                  className="inline-flex h-10 items-center rounded-md border border-black px-4 text-sm font-medium text-black hover:bg-black hover:text-white transition-colors"
+                >
+                  Sign in to add another
+                </Link>
+                <p className="mt-2 text-xs text-black/40">
+                  Extra listings are added from your account, after your first startup is listed.
+                </p>
+              </div>
+            ) : listings === 0 ? (
+              <div className="mt-6">
+                <span className="inline-flex h-10 items-center rounded-md bg-black/5 px-4 text-sm font-medium text-black/50">
+                  List your first startup first
+                </span>
+                <p className="mt-2 text-xs text-black/40">
+                  Your first listing is free — paid listings unlock once it&rsquo;s submitted.
+                </p>
+              </div>
+            ) : (
+              <Link
+                to="/apply"
+                className="mt-6 inline-flex h-10 items-center rounded-md border border-black px-4 text-sm font-medium text-black hover:bg-black hover:text-white transition-colors"
+              >
+                Add another startup — $9.99
+              </Link>
+            )}
           </div>
         </div>
 
