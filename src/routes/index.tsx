@@ -849,7 +849,11 @@ function Landing() {
             </div>
             <div className="flex flex-wrap items-center gap-4 text-xs text-black/40">
               <a href="mailto:hello@startupbar.co" className="hover:text-black transition-colors">Support</a>
-              <Link to="/auth" className="hover:text-black transition-colors">Sign in</Link>
+              {authReady && user ? (
+                <Link to="/dashboard" className="hover:text-black transition-colors">Dashboard</Link>
+              ) : (
+                <Link to="/auth" className="hover:text-black transition-colors">Sign in</Link>
+              )}
               <Link to="/apply" className="hover:text-black transition-colors">Apply</Link>
               <Link to="/faq" className="hover:text-black transition-colors">FAQ</Link>
               <Link to="/privacy" className="hover:text-black transition-colors">Privacy</Link>
