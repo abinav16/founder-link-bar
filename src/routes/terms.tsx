@@ -55,6 +55,7 @@ function TermsPage() {
           <span>© {new Date().getFullYear()} StartupBar</span>
           <div className="flex flex-wrap items-center gap-4">
             <a href="mailto:hello@startupbar.co" className="hover:text-black transition-colors">Support</a>
+            <Link to="/pricing" className="hover:text-black transition-colors">Pricing</Link>
             <Link to="/faq" className="hover:text-black transition-colors">FAQ</Link>
             <Link to="/privacy" className="hover:text-black transition-colors">Privacy Policy</Link>
             <a
