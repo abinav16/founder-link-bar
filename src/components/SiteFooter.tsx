@@ -1,4 +1,6 @@
 import { Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 function Logo() {
   return (
@@ -10,6 +12,20 @@ function Logo() {
 }
 
 export function SiteFooter() {
+  const [signedIn, setSignedIn] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSignedIn(!!data.session?.user);
+      setAuthReady(true);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      setSignedIn(!!session?.user);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
   return (
     <footer className="border-t border-black/8 bg-white px-6 py-5">
       <div className="mx-auto max-w-6xl">
@@ -20,8 +36,13 @@ export function SiteFooter() {
           </div>
           <div className="flex flex-wrap items-center gap-4 text-xs text-black/40">
             <a href="mailto:hello@startupbar.co" className="hover:text-black transition-colors">Support</a>
-            <Link to="/auth" className="hover:text-black transition-colors">Sign in</Link>
+            {authReady && signedIn ? (
+              <Link to="/dashboard" className="hover:text-black transition-colors">Dashboard</Link>
+            ) : (
+              <Link to="/auth" className="hover:text-black transition-colors">Sign in</Link>
+            )}
             <Link to="/apply" className="hover:text-black transition-colors">Apply</Link>
+            <Link to="/faq" className="hover:text-black transition-colors">FAQ</Link>
             <Link to="/privacy" className="hover:text-black transition-colors">Privacy</Link>
             <Link to="/terms" className="hover:text-black transition-colors">Terms</Link>
             <a
