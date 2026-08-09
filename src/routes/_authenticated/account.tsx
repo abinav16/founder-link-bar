@@ -163,29 +163,40 @@ function StartupCard({ startup, onUpdate, onDelete }: {
   }
 
   return (
-    <div className="rounded-xl border border-black/8 bg-white overflow-hidden">
-      <div className="flex items-center gap-3 px-5 py-4">
-        <LogoPreview logoUrl={logoUrl} websiteUrl={startup.website_url} size={36} />
+    <div className={`group rounded-2xl border bg-white transition-all ${expanded ? "border-black/15 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.18)]" : "border-black/8 hover:border-black/15 hover:shadow-[0_4px_20px_-14px_rgba(0,0,0,0.3)]"}`}>
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        className="flex w-full items-center gap-3.5 px-5 py-4 text-left"
+      >
+        <LogoPreview logoUrl={logoUrl} websiteUrl={startup.website_url} size={38} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <p className="font-medium text-black truncate">{startup.name}</p>
-            <span className={`shrink-0 inline-flex rounded-full border px-2 py-0.5 text-[10px] font-medium capitalize ${STATUS_STYLES[startup.status]}`}>
+            <p className="font-medium tracking-tight text-black truncate">{startup.name}</p>
+            <span className={`shrink-0 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium capitalize ${STATUS_STYLES[startup.status]}`}>
+              <span className="h-1 w-1 rounded-full bg-current opacity-70" />
               {startup.status}
             </span>
           </div>
-          <p className="text-xs text-black/40 truncate">{startup.website_url}</p>
+          <p className="mt-0.5 text-xs text-black/40 truncate">{startup.website_url}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <a href={startup.website_url?.startsWith("http") ? startup.website_url : `https://${startup.website_url}`} target="_blank" rel="noopener noreferrer"
-            className="text-black/25 hover:text-black transition-colors p-1">
-            <ExternalLink className="h-3.5 w-3.5" />
-          </a>
-          <button onClick={() => setExpanded(!expanded)}
-            className="rounded-md p-1.5 text-black/30 hover:text-black hover:bg-black/5 transition-all">
-            {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-          </button>
-        </div>
-      </div>
+        <span
+          role="link"
+          tabIndex={-1}
+          onClick={(e) => {
+            e.stopPropagation();
+            const href = startup.website_url?.startsWith("http") ? startup.website_url : `https://${startup.website_url}`;
+            window.open(href, "_blank", "noopener,noreferrer");
+          }}
+          className="hidden sm:inline-flex h-7 w-7 items-center justify-center rounded-full text-black/25 hover:bg-black/5 hover:text-black transition-colors"
+        >
+          <ExternalLink className="h-3.5 w-3.5" />
+        </span>
+        <span className="inline-flex h-7 w-7 items-center justify-center rounded-full text-black/35 group-hover:bg-black/5 group-hover:text-black transition-all">
+          {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        </span>
+      </button>
+
 
       {expanded && (
         <div className="border-t border-black/6 px-5 py-5">
