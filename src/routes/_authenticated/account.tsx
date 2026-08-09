@@ -163,29 +163,40 @@ function StartupCard({ startup, onUpdate, onDelete }: {
   }
 
   return (
-    <div className="rounded-xl border border-black/8 bg-white overflow-hidden">
-      <div className="flex items-center gap-3 px-5 py-4">
-        <LogoPreview logoUrl={logoUrl} websiteUrl={startup.website_url} size={36} />
+    <div className={`group rounded-2xl border bg-white transition-all ${expanded ? "border-black/15 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.18)]" : "border-black/8 hover:border-black/15 hover:shadow-[0_4px_20px_-14px_rgba(0,0,0,0.3)]"}`}>
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        className="flex w-full items-center gap-3.5 px-5 py-4 text-left"
+      >
+        <LogoPreview logoUrl={logoUrl} websiteUrl={startup.website_url} size={38} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <p className="font-medium text-black truncate">{startup.name}</p>
-            <span className={`shrink-0 inline-flex rounded-full border px-2 py-0.5 text-[10px] font-medium capitalize ${STATUS_STYLES[startup.status]}`}>
+            <p className="font-medium tracking-tight text-black truncate">{startup.name}</p>
+            <span className={`shrink-0 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium capitalize ${STATUS_STYLES[startup.status]}`}>
+              <span className="h-1 w-1 rounded-full bg-current opacity-70" />
               {startup.status}
             </span>
           </div>
-          <p className="text-xs text-black/40 truncate">{startup.website_url}</p>
+          <p className="mt-0.5 text-xs text-black/40 truncate">{startup.website_url}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <a href={startup.website_url?.startsWith("http") ? startup.website_url : `https://${startup.website_url}`} target="_blank" rel="noopener noreferrer"
-            className="text-black/25 hover:text-black transition-colors p-1">
-            <ExternalLink className="h-3.5 w-3.5" />
-          </a>
-          <button onClick={() => setExpanded(!expanded)}
-            className="rounded-md p-1.5 text-black/30 hover:text-black hover:bg-black/5 transition-all">
-            {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-          </button>
-        </div>
-      </div>
+        <span
+          role="link"
+          tabIndex={-1}
+          onClick={(e) => {
+            e.stopPropagation();
+            const href = startup.website_url?.startsWith("http") ? startup.website_url : `https://${startup.website_url}`;
+            window.open(href, "_blank", "noopener,noreferrer");
+          }}
+          className="hidden sm:inline-flex h-7 w-7 items-center justify-center rounded-full text-black/25 hover:bg-black/5 hover:text-black transition-colors"
+        >
+          <ExternalLink className="h-3.5 w-3.5" />
+        </span>
+        <span className="inline-flex h-7 w-7 items-center justify-center rounded-full text-black/35 group-hover:bg-black/5 group-hover:text-black transition-all">
+          {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        </span>
+      </button>
+
 
       {expanded && (
         <div className="border-t border-black/6 px-5 py-5">
@@ -450,106 +461,146 @@ function AccountPage() {
   return (
     <>
     <DashboardLayout>
-      <div>
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Account</h1>
-          <p className="mt-0.5 text-sm text-black/40">Manage your profile and startups.</p>
-        </div>
-
-        <div className="mt-8 space-y-10">
-          <div className="grid gap-6 md:grid-cols-[220px_1fr]">
-            <div>
-              <h2 className="text-sm font-semibold text-black">Profile</h2>
-              <p className="mt-1 text-xs leading-relaxed text-black/40">Your name, photo, and email. Email cannot be changed.</p>
+      <div className="pb-4">
+        {/* Page header */}
+        <header className="relative overflow-hidden rounded-2xl border border-black/8 bg-white">
+          <div
+            className="h-20 w-full sm:h-24"
+            style={{ background: "linear-gradient(120deg, rgba(0,0,0,0.92) 0%, rgba(30,30,35,0.85) 45%, rgba(0,0,0,0.7) 100%)" }}
+          />
+          <div className="flex flex-col gap-4 px-5 pb-5 sm:flex-row sm:items-end sm:justify-between sm:px-7 sm:pb-6">
+            <div className="flex items-end gap-4">
+              <div className="-mt-9 h-[68px] w-[68px] shrink-0 overflow-hidden rounded-2xl border-[3px] border-white bg-black/6 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.5)] sm:-mt-11 sm:h-20 sm:w-20">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center"><User className="h-6 w-6 text-black/30" /></div>
+                )}
+              </div>
+              <div className="min-w-0 pb-0.5">
+                <h1 className="truncate text-xl font-semibold tracking-tight sm:text-2xl" style={{ fontFamily: "var(--font-display)" }}>
+                  {name || "Your account"}
+                </h1>
+                <p className="truncate text-xs text-black/40 sm:text-sm">{email}</p>
+              </div>
             </div>
-            <div className="rounded-xl border border-black/8 bg-white p-6">
-              <form onSubmit={saveProfile} className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-black/6">
+            <div className="flex items-center gap-2">
+              <div className="rounded-xl border border-black/8 bg-black/[0.02] px-3.5 py-2 text-center">
+                <p className="text-base font-semibold leading-none text-black">{startups.length}</p>
+                <p className="mt-1 text-[10px] uppercase tracking-wide text-black/40">Startups</p>
+              </div>
+              <div className="rounded-xl border border-black/8 bg-black/[0.02] px-3.5 py-2 text-center">
+                <p className="text-base font-semibold leading-none text-black">{startups.filter((s) => s.status === "approved").length}</p>
+                <p className="mt-1 text-[10px] uppercase tracking-wide text-black/40">Live</p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div className="mt-8 space-y-10 sm:mt-10 sm:space-y-12">
+          <section className="grid gap-5 md:grid-cols-[220px_1fr] md:gap-8">
+            <div className="md:sticky md:top-6 md:self-start">
+              <h2 className="text-sm font-semibold tracking-tight text-black">Profile</h2>
+              <p className="mt-1.5 text-xs leading-relaxed text-black/40">Your name, photo, and email. Email cannot be changed.</p>
+            </div>
+            <div className="rounded-2xl border border-black/8 bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] sm:p-6">
+              <form onSubmit={saveProfile} className="space-y-5">
+                <div className="flex flex-wrap items-center gap-4 rounded-xl border border-black/6 bg-black/[0.015] p-4">
+                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full bg-black/6 ring-1 ring-black/8">
                     {avatarUrl ? (
                       <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center"><User className="h-5 w-5 text-black/40" /></div>
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-black truncate">{name || "—"}</p>
-                    <p className="text-xs text-black/40 truncate">{email}</p>
-                  </div>
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs font-medium text-black/60">Profile picture</label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      ref={avatarInputRef}
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp,image/gif"
-                      className="hidden"
-                      onChange={handleAvatarPick}
-                    />
-                    <button
-                      type="button"
-                      disabled={uploadingAvatar}
-                      onClick={() => avatarInputRef.current?.click()}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-black/12 px-3 py-1.5 text-xs font-medium text-black/60 hover:border-black/25 hover:text-black transition-all disabled:opacity-40"
-                    >
-                      <Upload className="h-3 w-3" />
-                      {uploadingAvatar ? "Uploading…" : avatarUrl ? "Replace photo" : "Upload photo"}
-                    </button>
-                    {avatarUrl && (
+                  <div className="min-w-[150px] flex-1">
+                    <p className="text-xs font-medium text-black/60">Profile picture</p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <input
+                        ref={avatarInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        className="hidden"
+                        onChange={handleAvatarPick}
+                      />
                       <button
                         type="button"
-                        onClick={removeAvatar}
-                        title="Remove photo"
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-full text-black/30 hover:bg-black/5 hover:text-red-500 transition-all"
+                        disabled={uploadingAvatar}
+                        onClick={() => avatarInputRef.current?.click()}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-black/12 bg-white px-3 py-1.5 text-xs font-medium text-black/60 hover:border-black/25 hover:text-black transition-all disabled:opacity-40"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Upload className="h-3 w-3" />
+                        {uploadingAvatar ? "Uploading…" : avatarUrl ? "Replace photo" : "Upload photo"}
                       </button>
-                    )}
+                      {avatarUrl && (
+                        <button
+                          type="button"
+                          onClick={removeAvatar}
+                          title="Remove photo"
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-full text-black/30 hover:bg-black/5 hover:text-red-500 transition-all"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+                    <p className="mt-2 text-[10px] text-black/35">Shown as your founder photo on public startup pages.</p>
                   </div>
-                  <p className="mt-1.5 text-[10px] text-black/30">Shown as your founder photo on public startup pages.</p>
                 </div>
-                <div>
-                  <label className="mb-1.5 block text-xs font-medium text-black/60">Display name</label>
-                  <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" className={inputCls} />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs font-medium text-black/60">X (Twitter) handle</label>
-                  <div className="relative">
-                    <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-black/40">@</span>
-                    <input
-                      value={twitter}
-                      onChange={(e) => setTwitter(e.target.value)}
-                      placeholder="yourhandle"
-                      className={`${inputCls} pl-7`}
-                    />
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-black/60">Display name</label>
+                    <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" className={inputCls} />
                   </div>
-                  <p className="mt-1.5 text-[10px] text-black/30">Shown next to your founder photo on public startup pages. Paste a handle, @handle, or X profile URL.</p>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-black/60">X (Twitter) handle</label>
+                    <div className="relative">
+                      <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-black/40">@</span>
+                      <input
+                        value={twitter}
+                        onChange={(e) => setTwitter(e.target.value)}
+                        placeholder="yourhandle"
+                        className={`${inputCls} pl-7`}
+                      />
+                    </div>
+                  </div>
                 </div>
+                <p className="-mt-2 text-[10px] text-black/35">Your handle appears next to your founder photo on public startup pages. Paste a handle, @handle, or X profile URL.</p>
+
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-black/60">Email</label>
+                  <label className="mb-1.5 block text-xs font-medium text-black/60">
+                    Email
+                    <span className="ml-2 text-[10px] font-normal text-black/30">Cannot be changed</span>
+                  </label>
                   <input value={email} disabled className={inputCls} />
                 </div>
-                <button type="submit" disabled={savingProfile}
-                  className="inline-flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/80 transition-all disabled:opacity-50">
-                  <Save className="h-3.5 w-3.5" />
-                  {savingProfile ? "Saving…" : "Save profile"}
-                </button>
+
+                <div className="flex items-center justify-end border-t border-black/6 pt-4">
+                  <button type="submit" disabled={savingProfile}
+                    className="inline-flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/80 transition-all disabled:opacity-50">
+                    <Save className="h-3.5 w-3.5" />
+                    {savingProfile ? "Saving…" : "Save profile"}
+                  </button>
+                </div>
               </form>
             </div>
-          </div>
+          </section>
 
-          <div className="grid gap-6 md:grid-cols-[220px_1fr]">
-            <div>
-              <h2 className="text-sm font-semibold text-black">Your startups</h2>
-              <p className="mt-1 text-xs leading-relaxed text-black/40">Each startup has its own embed script and appears independently in the network.</p>
+          <section className="grid gap-5 md:grid-cols-[220px_1fr] md:gap-8">
+            <div className="md:sticky md:top-6 md:self-start">
+              <h2 className="text-sm font-semibold tracking-tight text-black">Your startups</h2>
+              <p className="mt-1.5 text-xs leading-relaxed text-black/40">Each startup has its own embed script and appears independently in the network.</p>
             </div>
             <div className="space-y-3">
               {startups.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-black/15 bg-white px-6 py-10 text-center">
-                  <p className="text-sm text-black/40">No startups yet.</p>
+                <div className="rounded-2xl border border-dashed border-black/15 bg-white px-6 py-12 text-center">
+                  <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-black/5">
+                    <Globe className="h-4.5 w-4.5 text-black/30" />
+                  </div>
+                  <p className="text-sm font-medium text-black">No startups yet</p>
+                  <p className="mt-1 text-xs text-black/40">List your first startup to join the network.</p>
                   <Link to="/apply"
-                    className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/80 transition-all">
+                    className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/80 transition-all">
                     <Plus className="h-3.5 w-3.5" /> Apply your first startup
                   </Link>
                 </div>
@@ -559,13 +610,13 @@ function AccountPage() {
                     <StartupCard key={s.id} startup={s} onUpdate={handleUpdate} onDelete={handleDelete} />
                   ))}
                   <Link to="/apply"
-                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-black/15 bg-white py-3.5 text-sm font-medium text-black/50 hover:border-black/30 hover:text-black transition-all">
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-black/15 bg-white py-4 text-sm font-medium text-black/50 hover:border-black/30 hover:bg-black/[0.015] hover:text-black transition-all">
                     <Plus className="h-4 w-4" /> Add another startup
                   </Link>
                 </>
               )}
             </div>
-          </div>
+          </section>
         </div>
       </div>
     </DashboardLayout>
@@ -577,3 +628,4 @@ function AccountPage() {
     </>
   );
 }
+
