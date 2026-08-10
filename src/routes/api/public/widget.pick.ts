@@ -26,6 +26,18 @@ export const Route = createFileRoute("/api/public/widget/pick")({
           { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } }
         );
 
+        // Host's own bar placement preference (top by default). Returned with
+        // every pick so the loader can position the bar without an extra call.
+        let placement: "top" | "bottom" = "top";
+        if (host) {
+          const { data: hostRow } = await supabase
+            .from("startups")
+            .select("widget_placement")
+            .eq("id", host)
+            .maybeSingle();
+          if ((hostRow as { widget_placement?: string } | null)?.widget_placement === "bottom") placement = "bottom";
+        }
+
         // Non-members (rejected/pending/banned) with the script still installed
         // get StartupBar's own listing instead of the generic banner — shown,
         // but never counted as an impression.
@@ -36,10 +48,11 @@ export const Route = createFileRoute("/api/public/widget/pick")({
             .eq("id", STARTUPBAR_SITE_ID)
             .eq("status", "approved")
             .maybeSingle();
-          return Response.json(self ?? null, {
+          return Response.json(self ? { ...self, placement } : null, {
             headers: { "Cache-Control": "no-store", "Access-Control-Allow-Origin": "*" },
           });
         }
+
 
 
 
