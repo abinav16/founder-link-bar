@@ -45,7 +45,17 @@
     var isIphoneSafari = /iPhone|iPod/.test(ua) && /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|GSA/.test(ua);
     var isMobile = (window.innerWidth || screen.width || 0) < 640;
 
+    // Placement is owned by the host in their StartupBar account. The pick
+    // response carries it, but that arrives after the iframe loads — so we
+    // cache the last known value to position the bar instantly on repeat
+    // visits and avoid a visible jump.
+    var placement = 'top';
+    try {
+      if (localStorage.getItem('startupbar:placement:' + id) === 'bottom') placement = 'bottom';
+    } catch (e) {}
+
     var iframe = document.createElement('iframe');
+
     var iframeSrc = origin + '/widget/bar?host=' + encodeURIComponent(id) + '&theme=' + theme + '&domain=' + encodeURIComponent(window.location.hostname) + '&path=' + encodeURIComponent(window.location.pathname) + (isMobile ? '&mobile=1' : '');
     try {
       var pref = document.referrer || '';
