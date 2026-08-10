@@ -32,10 +32,21 @@ const schema = z.object({
   founder_quote: z.string().trim().max(280).optional(),
 });
 
-function BarPreview({ name, url, desc }: { name: string; url: string; desc: string }) {
+function BarPreview({ name, url, desc, placement = "top" }: { name: string; url: string; desc: string; placement?: "top" | "bottom" }) {
   const displayName = name || "Your Startup";
   const displayDesc = desc || "Your one-liner goes here";
   const favicon = url ? `https://www.google.com/s2/favicons?domain=${url}&sz=32` : null;
+  const bar = (
+    <div
+      className={`flex h-9 items-center gap-2.5 bg-white px-4 ${placement === "top" ? "border-b" : "border-t"} border-black/6`}
+    >
+      <span className="rounded-sm bg-black px-1.5 py-0.5 text-[9px] font-bold tracking-widest text-white">STARTUPBAR</span>
+      {favicon && <img src={favicon} alt="" className="h-4 w-4 rounded-sm object-contain" onError={(e) => (e.currentTarget.style.display = "none")} />}
+      <span className="text-[13px] font-medium text-black">{displayName}</span>
+      <span className="hidden truncate text-[12px] text-black/40 sm:block">— {displayDesc}</span>
+      <span className="ml-auto flex items-center gap-1 text-[12px] text-black/50">Visit <ExternalLink className="h-3 w-3" /></span>
+    </div>
+  );
   return (
     <div className="overflow-hidden rounded-xl border border-black/10 bg-white shadow-[0_8px_40px_-12px_rgba(0,0,0,0.12)]">
       <div className="flex h-8 items-center gap-1.5 border-b border-black/6 bg-black/[0.02] px-3">
@@ -44,13 +55,7 @@ function BarPreview({ name, url, desc }: { name: string; url: string; desc: stri
         <div className="h-2 w-2 rounded-full bg-green-400/70" />
         <div className="ml-2 text-[10px] text-black/25">somefounder.com</div>
       </div>
-      <div className="flex h-9 items-center gap-2.5 border-b border-black/6 bg-white px-4">
-        <span className="rounded-sm bg-black px-1.5 py-0.5 text-[9px] font-bold tracking-widest text-white">STARTUPBAR</span>
-        {favicon && <img src={favicon} alt="" className="h-4 w-4 rounded-sm object-contain" onError={(e) => (e.currentTarget.style.display = "none")} />}
-        <span className="text-[13px] font-medium text-black">{displayName}</span>
-        <span className="hidden truncate text-[12px] text-black/40 sm:block">— {displayDesc}</span>
-        <span className="ml-auto flex items-center gap-1 text-[12px] text-black/50">Visit <ExternalLink className="h-3 w-3" /></span>
-      </div>
+      {placement === "top" && bar}
       <div className="space-y-2 px-4 py-6">
         <div className="h-3 w-2/3 rounded-full bg-black/5" />
         <div className="h-3 w-1/2 rounded-full bg-black/5" />
@@ -58,9 +63,11 @@ function BarPreview({ name, url, desc }: { name: string; url: string; desc: stri
         <div className="h-3 w-5/6 rounded-full bg-black/5" />
         <div className="h-3 w-4/6 rounded-full bg-black/5" />
       </div>
+      {placement === "bottom" && bar}
     </div>
   );
 }
+
 
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
