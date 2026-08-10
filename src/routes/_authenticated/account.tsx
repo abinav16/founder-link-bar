@@ -112,6 +112,20 @@ function StartupCard({ startup, onUpdate, onDelete }: {
     onUpdate(startup.id, patch as any);
   }
 
+  async function savePlacement(next: "top" | "bottom") {
+    if (next === placement || savingPlacement) return;
+    const prev = placement;
+    setPlacement(next);
+    setSavingPlacement(true);
+    const { error } = await supabase.from("startups").update({ widget_placement: next } as any).eq("id", startup.id);
+    setSavingPlacement(false);
+    if (error) { setPlacement(prev); toast.error(error.message); return; }
+    toast.success(next === "top" ? "Bar will show at the top" : "Bar will show at the bottom", {
+      description: "Live on your site within a page refresh.",
+    });
+    onUpdate(startup.id, { widget_placement: next } as any);
+  }
+
 
   async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
