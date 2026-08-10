@@ -415,8 +415,15 @@ function StartupCard({ startup, onUpdate, onDelete }: {
   );
 }
 
+const TABS = [
+  { key: "profile" as const, label: "Profile", desc: "Name, photo, handle", icon: User },
+  { key: "startups" as const, label: "Your startups", desc: "Listings & bar settings", icon: Globe },
+];
+
 function AccountPage() {
+  const [tab, setTab] = useState<"profile" | "startups">("profile");
   const [email, setEmail] = useState("");
+
   const [name, setName] = useState("");
   const [twitter, setTwitter] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -554,13 +561,60 @@ function AccountPage() {
         </header>
 
 
-        <div className="mt-8 space-y-10 sm:mt-10 sm:space-y-12">
-          <section className="grid gap-5 md:grid-cols-[220px_1fr] md:gap-8">
-            <div className="md:sticky md:top-6 md:self-start">
-              <h2 className="text-sm font-semibold tracking-tight text-black">Profile</h2>
-              <p className="mt-1.5 text-xs leading-relaxed text-black/40">Your name, photo, and email. Email cannot be changed.</p>
+        <div className="mt-6 grid gap-5 md:mt-8 md:grid-cols-[232px_1fr] md:gap-8">
+          {/* Left nav rail */}
+          <nav className="md:sticky md:top-6 md:self-start">
+            <p className="mb-2 hidden px-1 text-[10px] font-medium uppercase tracking-[0.18em] text-black/30 md:block">Settings</p>
+            <div className="flex gap-2 overflow-x-auto pb-1 md:flex-col md:overflow-visible md:pb-0">
+              {TABS.map(({ key, label, desc, icon: Icon }) => {
+                const active = tab === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setTab(key)}
+                    aria-current={active ? "page" : undefined}
+                    className={`group relative flex shrink-0 items-center gap-3 rounded-xl px-3.5 py-3 text-left transition-all md:w-full ${
+                      active
+                        ? "bg-white shadow-[0_6px_24px_-14px_rgba(0,0,0,0.35)] ring-1 ring-black/10"
+                        : "text-black/50 hover:bg-white/70 hover:text-black"
+                    }`}
+                  >
+                    <span
+                      className={`absolute left-0 top-1/2 hidden h-6 w-[3px] -translate-y-1/2 rounded-full bg-black transition-opacity md:block ${
+                        active ? "opacity-100" : "opacity-0"
+                      }`}
+                    />
+                    <span
+                      className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                        active ? "bg-black text-white" : "bg-black/[0.05] text-black/40 group-hover:text-black/70"
+                      }`}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className={`block text-sm font-medium tracking-tight ${active ? "text-black" : ""}`}>{label}</span>
+                      <span className="hidden text-[11px] leading-snug text-black/35 md:block">{desc}</span>
+                    </span>
+                    {key === "startups" && startups.length > 0 && (
+                      <span className={`ml-auto hidden shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium md:inline ${active ? "bg-black/[0.06] text-black/60" : "bg-black/[0.04] text-black/40"}`}>
+                        {startups.length}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
+          </nav>
+
+          {/* Right panel */}
+          <div key={tab} className="page-enter min-w-0">
+            {tab === "profile" ? (
             <div className="rounded-2xl border border-black/8 bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] sm:p-6">
+              <div className="mb-5 border-b border-black/6 pb-4">
+                <h2 className="text-base font-semibold tracking-tight text-black">Profile</h2>
+                <p className="mt-1 text-xs text-black/40">Your name, photo, and email. Email cannot be changed.</p>
+              </div>
               <form onSubmit={saveProfile} className="space-y-5">
                 <div className="flex flex-wrap items-center gap-4 rounded-xl border border-black/6 bg-black/[0.015] p-4">
                   <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full bg-black/6 ring-1 ring-black/8">
@@ -641,14 +695,14 @@ function AccountPage() {
                 </div>
               </form>
             </div>
-          </section>
-
-          <section className="grid gap-5 md:grid-cols-[220px_1fr] md:gap-8">
-            <div className="md:sticky md:top-6 md:self-start">
-              <h2 className="text-sm font-semibold tracking-tight text-black">Your startups</h2>
-              <p className="mt-1.5 text-xs leading-relaxed text-black/40">Each startup has its own embed script and appears independently in the network.</p>
-            </div>
+            ) : (
             <div className="space-y-3">
+              <div className="flex flex-wrap items-end justify-between gap-2 pb-1">
+                <div>
+                  <h2 className="text-base font-semibold tracking-tight text-black">Your startups</h2>
+                  <p className="mt-1 text-xs text-black/40">Each startup has its own embed script and appears independently in the network.</p>
+                </div>
+              </div>
               {startups.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-black/15 bg-white px-6 py-12 text-center">
                   <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-black/5">
@@ -673,8 +727,10 @@ function AccountPage() {
                 </>
               )}
             </div>
-          </section>
+            )}
+          </div>
         </div>
+
       </div>
     </DashboardLayout>
     <AvatarCropDialog
