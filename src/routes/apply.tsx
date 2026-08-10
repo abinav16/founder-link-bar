@@ -32,10 +32,21 @@ const schema = z.object({
   founder_quote: z.string().trim().max(280).optional(),
 });
 
-function BarPreview({ name, url, desc }: { name: string; url: string; desc: string }) {
+function BarPreview({ name, url, desc, placement = "top" }: { name: string; url: string; desc: string; placement?: "top" | "bottom" }) {
   const displayName = name || "Your Startup";
   const displayDesc = desc || "Your one-liner goes here";
   const favicon = url ? `https://www.google.com/s2/favicons?domain=${url}&sz=32` : null;
+  const bar = (
+    <div
+      className={`flex h-9 items-center gap-2.5 bg-white px-4 ${placement === "top" ? "border-b" : "border-t"} border-black/6`}
+    >
+      <span className="rounded-sm bg-black px-1.5 py-0.5 text-[9px] font-bold tracking-widest text-white">STARTUPBAR</span>
+      {favicon && <img src={favicon} alt="" className="h-4 w-4 rounded-sm object-contain" onError={(e) => (e.currentTarget.style.display = "none")} />}
+      <span className="text-[13px] font-medium text-black">{displayName}</span>
+      <span className="hidden truncate text-[12px] text-black/40 sm:block">— {displayDesc}</span>
+      <span className="ml-auto flex items-center gap-1 text-[12px] text-black/50">Visit <ExternalLink className="h-3 w-3" /></span>
+    </div>
+  );
   return (
     <div className="overflow-hidden rounded-xl border border-black/10 bg-white shadow-[0_8px_40px_-12px_rgba(0,0,0,0.12)]">
       <div className="flex h-8 items-center gap-1.5 border-b border-black/6 bg-black/[0.02] px-3">
@@ -44,13 +55,7 @@ function BarPreview({ name, url, desc }: { name: string; url: string; desc: stri
         <div className="h-2 w-2 rounded-full bg-green-400/70" />
         <div className="ml-2 text-[10px] text-black/25">somefounder.com</div>
       </div>
-      <div className="flex h-9 items-center gap-2.5 border-b border-black/6 bg-white px-4">
-        <span className="rounded-sm bg-black px-1.5 py-0.5 text-[9px] font-bold tracking-widest text-white">STARTUPBAR</span>
-        {favicon && <img src={favicon} alt="" className="h-4 w-4 rounded-sm object-contain" onError={(e) => (e.currentTarget.style.display = "none")} />}
-        <span className="text-[13px] font-medium text-black">{displayName}</span>
-        <span className="hidden truncate text-[12px] text-black/40 sm:block">— {displayDesc}</span>
-        <span className="ml-auto flex items-center gap-1 text-[12px] text-black/50">Visit <ExternalLink className="h-3 w-3" /></span>
-      </div>
+      {placement === "top" && bar}
       <div className="space-y-2 px-4 py-6">
         <div className="h-3 w-2/3 rounded-full bg-black/5" />
         <div className="h-3 w-1/2 rounded-full bg-black/5" />
@@ -58,9 +63,11 @@ function BarPreview({ name, url, desc }: { name: string; url: string; desc: stri
         <div className="h-3 w-5/6 rounded-full bg-black/5" />
         <div className="h-3 w-4/6 rounded-full bg-black/5" />
       </div>
+      {placement === "bottom" && bar}
     </div>
   );
 }
+
 
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
@@ -235,6 +242,10 @@ function Apply() {
     if (typeof window === "undefined") return "";
     try { return JSON.parse(readRawDraft() ?? "{}")?.quote ?? ""; } catch { return ""; }
   });
+  const [placement, setPlacement] = useState<"top" | "bottom">(() => {
+    if (typeof window === "undefined") return "top";
+    try { return JSON.parse(readRawDraft() ?? "{}")?.placement === "bottom" ? "bottom" : "top"; } catch { return "top"; }
+  });
 
   const [resubmitId, setResubmitId] = useState<string>(initial.resubmitId);
   const [startupId, setStartupId] = useState<string>(() => initial.resubmitId || initial.startupId || crypto.randomUUID());
@@ -293,7 +304,7 @@ function Apply() {
       if (!u.user) return;
       const { data, error } = await supabase
         .from("startups")
-        .select("id, name, website_url, description, founder_quote, status, user_id")
+        .select("id, name, website_url, description, founder_quote, widget_placement, status, user_id")
         .eq("id", resubmitId)
         .maybeSingle();
       if (error || !data || data.user_id !== u.user.id) {
@@ -314,6 +325,7 @@ function Apply() {
       setUrl(data.website_url);
       setDesc(data.description);
       setQuote(data.founder_quote ?? "");
+      setPlacement(data.widget_placement === "bottom" ? "bottom" : "top");
       setStartupId(data.id);
       setStep(2);
       // Script was already installed for this ID — verify automatically with the fetched URL.
@@ -409,8 +421,8 @@ function Apply() {
     if (typeof window === "undefined") return;
     if (resubmitId) return; // resubmits are URL-driven — don't overwrite the fresh-apply draft
     if (!name && !url && !desc && !quote) return;
-    writeDraft({ step, name, url, desc, quote, startupId });
-  }, [step, name, url, desc, quote, resubmitId]);
+    writeDraft({ step, name, url, desc, quote, placement, startupId });
+  }, [step, name, url, desc, quote, placement, resubmitId]);
 
   const snippet = `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}"></script>`;
 
@@ -429,7 +441,7 @@ function Apply() {
     }
     if (!authed) {
       // Save draft at step 1 — user must sign in before reaching the install step.
-      writeDraft({ step: 1, name, url, desc, quote, startupId });
+      writeDraft({ step: 1, name, url, desc, quote, placement, startupId });
       sessionStorage.setItem("startupbar:auth-next", "/apply");
       navigate({ to: "/auth" });
       return;
@@ -442,7 +454,7 @@ function Apply() {
     setPaymentLoading(true);
     // Persist the draft so we can restore state after Dodo redirects back —
     // we deliberately keep the return URL tiny (no PII in query string).
-    writeDraft({ step: 2, name, url, desc, quote, startupId });
+    writeDraft({ step: 2, name, url, desc, quote, placement, startupId });
 
     const { data: u } = await supabase.auth.getUser();
     const returnUrl = `${window.location.origin}/apply?paid=true&sid=${encodeURIComponent(startupId)}`;
@@ -523,7 +535,7 @@ function Apply() {
         return;
       }
       const parsed = validated.data;
-      const payload = { ...parsed, founder_quote: quote.trim() || null };
+      const payload = { ...parsed, founder_quote: quote.trim() || null, widget_placement: placement };
 
       // Resubmit path: update the existing rejected row back to pending — no new row, no payment gate.
       if (resubmitId) {
@@ -660,6 +672,24 @@ function Apply() {
                     <span>{quote.length} / 280</span>
                   </div>
                 </Field>
+                <Field label="Bar placement" hint="Where the bar sits on your own site. You can change this anytime in your account.">
+                  <div className="inline-flex rounded-lg border border-black/12 bg-black/[0.02] p-1">
+                    {(["top", "bottom"] as const).map((p) => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setPlacement(p)}
+                        aria-pressed={placement === p}
+                        className={`rounded-md px-4 py-1.5 text-sm font-medium capitalize transition ${placement === p ? "bg-white text-black shadow-sm" : "text-black/45 hover:text-black/70"}`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-2 text-xs leading-relaxed text-black/40">
+                    Top usually performs better — visitors expect a thin strip up there, so it gets more attention and clicks. Bottom is fully supported if it fits your design.
+                  </p>
+                </Field>
                 <button type="submit" className="group flex w-full items-center justify-center gap-2 rounded-lg bg-black py-3.5 text-sm font-medium text-white transition-all hover:bg-black/80">
                   Next — Install the script
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -673,7 +703,7 @@ function Apply() {
                 <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Live preview</span>
                 <p className="mt-1.5 text-sm text-black/40">This is how your startup will appear on other founders' sites.</p>
                 <div className="mt-5">
-                  <BarPreview name={name} url={url} desc={desc} />
+                  <BarPreview name={name} url={url} desc={desc} placement={placement} />
                 </div>
                 <div className="mt-8 space-y-4 border-t border-black/8 pt-8">
                   {["Your bar will show on sites across the network as soon as you're approved.", "In return, you'll show one other startup on your site — completely automatic.", "Cancel anytime by removing the script tag. No lock-in, no fees."].map((t) => (
