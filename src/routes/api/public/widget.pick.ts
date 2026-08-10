@@ -138,7 +138,7 @@ export const Route = createFileRoute("/api/public/widget/pick")({
           }
         }
 
-        return Response.json(pick, {
+        return Response.json({ ...pick, placement }, {
           headers: { "Cache-Control": "no-store", "Access-Control-Allow-Origin": "*" },
         });
       },
