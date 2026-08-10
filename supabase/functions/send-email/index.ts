@@ -330,38 +330,59 @@ serve(async (req) => {
         return { ok: res.ok, status: res.status, message: text };
       }
 
-      let sent = 0;
-      const errors: { email: string; error: string }[] = [];
-      for (const r of recipients) {
-        const firstName = (r.name || "").split(" ")[0] || "there";
-        const personalizedSubject = subjectIn.replace(/\{\{\s*name\s*\}\}/gi, firstName);
-        const personalizedBody = bodyHtml.replace(/\{\{\s*name\s*\}\}/gi, firstName);
-        const token = await getOrCreateUnsubToken(supabase, r.email);
-        const unsubUrl = `https://startupbar.co/u/${token}`;
-        const html = shell({
-          heading: (headlineIn || subjectIn).replace(/\{\{\s*name\s*\}\}/gi, firstName),
-          bodyHtml: personalizedBody + unsubscribeFooterHtml(unsubUrl),
-        });
-        try {
-          const result = await sendOne(r.email, personalizedSubject, html, marketingHeaders(unsubUrl));
-          if (result.ok) {
-            sent += 1;
-          } else {
-            const msg = `HTTP ${result.status} ${result.message}`;
-            console.error(`broadcast send failed for ${r.email}: ${msg}`);
+      // Sending is paced at ~550ms/recipient, so anything beyond ~250 people
+      // blows past the 150s edge-function idle timeout. Run the loop as a
+      // background task and answer the client immediately.
+      async function runBroadcast(): Promise<{ sent: number; errors: { email: string; error: string }[] }> {
+        let sent = 0;
+        const errors: { email: string; error: string }[] = [];
+        for (const r of recipients) {
+          const firstName = (r.name || "").split(" ")[0] || "there";
+          const personalizedSubject = subjectIn.replace(/\{\{\s*name\s*\}\}/gi, firstName);
+          const personalizedBody = bodyHtml.replace(/\{\{\s*name\s*\}\}/gi, firstName);
+          const token = await getOrCreateUnsubToken(supabase, r.email);
+          const unsubUrl = `https://startupbar.co/u/${token}`;
+          const html = shell({
+            heading: (headlineIn || subjectIn).replace(/\{\{\s*name\s*\}\}/gi, firstName),
+            bodyHtml: personalizedBody + unsubscribeFooterHtml(unsubUrl),
+          });
+          try {
+            const result = await sendOne(r.email, personalizedSubject, html, marketingHeaders(unsubUrl));
+            if (result.ok) {
+              sent += 1;
+            } else {
+              const msg = `HTTP ${result.status} ${result.message}`;
+              console.error(`broadcast send failed for ${r.email}: ${msg}`);
+              errors.push({ email: r.email, error: msg });
+            }
+          } catch (e) {
+            const msg = String(e).slice(0, 200);
+            console.error(`broadcast send exception for ${r.email}: ${msg}`);
             errors.push({ email: r.email, error: msg });
           }
-        } catch (e) {
-          const msg = String(e).slice(0, 200);
-          console.error(`broadcast send exception for ${r.email}: ${msg}`);
-          errors.push({ email: r.email, error: msg });
+          // Pace under Resend's 2 req/s default rate limit
+          await new Promise((res) => setTimeout(res, 550));
         }
-        // Pace under Resend's 2 req/s default rate limit
-        await new Promise((res) => setTimeout(res, 550));
+        console.log(`broadcast finished: sent ${sent}/${recipients.length}, failed ${errors.length}`);
+        return { sent, errors };
       }
 
-      return new Response(JSON.stringify({ sent, failed: errors.length, total: recipients.length, errors: errors.slice(0, 25) }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      // Test send is a single email — keep it synchronous so the admin sees the result.
+      if (testOnly) {
+        const { sent, errors } = await runBroadcast();
+        return new Response(JSON.stringify({ sent, failed: errors.length, total: recipients.length, errors: errors.slice(0, 25) }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      const task = runBroadcast().catch((e) => console.error("broadcast task failed:", String(e)));
+      const waitUntil = (globalThis as { EdgeRuntime?: { waitUntil: (p: Promise<unknown>) => void } }).EdgeRuntime?.waitUntil;
+      if (waitUntil) waitUntil(task);
+
+      return new Response(JSON.stringify({ queued: true, total: recipients.length, sent: 0, failed: 0, errors: [] }), {
+        status: 202,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
+
 
     // ---- Admin notification: no startup row lookup, sends to admin only ----
     if (type === "admin-new-application") {
