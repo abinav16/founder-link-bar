@@ -309,6 +309,7 @@ export type Database = {
           widget_hidden_at: string | null
           widget_last_heartbeat_at: string | null
           widget_last_page_url: string | null
+          widget_placement: string
         }
         Insert: {
           banned?: boolean
@@ -334,6 +335,7 @@ export type Database = {
           widget_hidden_at?: string | null
           widget_last_heartbeat_at?: string | null
           widget_last_page_url?: string | null
+          widget_placement?: string
         }
         Update: {
           banned?: boolean
@@ -359,6 +361,7 @@ export type Database = {
           widget_hidden_at?: string | null
           widget_last_heartbeat_at?: string | null
           widget_last_page_url?: string | null
+          widget_placement?: string
         }
         Relationships: []
       }
@@ -417,6 +420,7 @@ export type Database = {
           widget_hidden_at: string | null
           widget_last_heartbeat_at: string | null
           widget_last_page_url: string | null
+          widget_placement: string
         }[]
         SetofOptions: {
           from: "*"
@@ -499,6 +503,7 @@ export type Database = {
           widget_hidden_at: string | null
           widget_last_heartbeat_at: string | null
           widget_last_page_url: string | null
+          widget_placement: string
         }[]
         SetofOptions: {
           from: "*"
