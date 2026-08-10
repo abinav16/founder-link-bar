@@ -415,8 +415,15 @@ function StartupCard({ startup, onUpdate, onDelete }: {
   );
 }
 
+const TABS = [
+  { key: "profile" as const, label: "Profile", desc: "Name, photo, handle", icon: User },
+  { key: "startups" as const, label: "Your startups", desc: "Listings & bar settings", icon: Globe },
+];
+
 function AccountPage() {
+  const [tab, setTab] = useState<"profile" | "startups">("profile");
   const [email, setEmail] = useState("");
+
   const [name, setName] = useState("");
   const [twitter, setTwitter] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
