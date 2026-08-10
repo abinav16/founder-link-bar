@@ -687,7 +687,7 @@ function Apply() {
                     ))}
                   </div>
                   <p className="mt-2 text-xs leading-relaxed text-black/40">
-                    Top usually performs better — visitors expect a thin strip up there, so it gets more attention and clicks. Bottom is fully supported if it fits your design.
+                    Top placement earns you more free impressions from the network. Our reciprocity algorithm rewards the most visible bars with more visibility in return. Bottom is still supported if it fits your layout.
                   </p>
                 </Field>
                 <button type="submit" className="group flex w-full items-center justify-center gap-2 rounded-lg bg-black py-3.5 text-sm font-medium text-white transition-all hover:bg-black/80">
