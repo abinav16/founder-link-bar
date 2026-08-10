@@ -30,6 +30,7 @@ interface Startup {
   founder_name: string | null;
   founder_quote: string | null;
   founder_avatar_url: string | null;
+  widget_placement: "top" | "bottom" | null;
 }
 
 
