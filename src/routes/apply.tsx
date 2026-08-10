@@ -703,7 +703,7 @@ function Apply() {
                 <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Live preview</span>
                 <p className="mt-1.5 text-sm text-black/40">This is how your startup will appear on other founders' sites.</p>
                 <div className="mt-5">
-                  <BarPreview name={name} url={url} desc={desc} />
+                  <BarPreview name={name} url={url} desc={desc} placement={placement} />
                 </div>
                 <div className="mt-8 space-y-4 border-t border-black/8 pt-8">
                   {["Your bar will show on sites across the network as soon as you're approved.", "In return, you'll show one other startup on your site — completely automatic.", "Cancel anytime by removing the script tag. No lock-in, no fees."].map((t) => (
