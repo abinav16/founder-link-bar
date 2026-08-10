@@ -326,8 +326,13 @@
       try { if (sessionStorage.getItem('startupbar:dismissed') === '1') { dismissed = true; return; } } catch (e) {}
       var html = document.documentElement;
       if (html) originalScrollPaddingTop = html.style.scrollPaddingTop || '';
-      if (document.body) originalBodyPaddingTop = document.body.style.paddingTop || '';
-      if (isIphoneSafari) {
+      if (document.body) {
+        originalBodyPaddingTop = document.body.style.paddingTop || '';
+        originalBodyPaddingBottom = document.body.style.paddingBottom || '';
+      }
+      injected = true;
+
+      if (placement === 'top' && isIphoneSafari) {
         if (document.body) {
           if (document.body.firstChild) {
             document.body.insertBefore(iframe, document.body.firstChild);
@@ -335,26 +340,18 @@
             document.body.appendChild(iframe);
           }
         }
-        if (html) {
-          html.setAttribute('data-startupbar-injected', '1');
-          html.style.scrollPaddingTop = '36px';
-        }
+        if (html) html.setAttribute('data-startupbar-injected', '1');
+        applySpacing();
         startObserver();
         scheduleHeartbeats();
         return;
       }
 
       document.body && document.body.appendChild(iframe);
-      if (html) {
-        html.setAttribute('data-startupbar-injected', '1');
-        html.style.scrollPaddingTop = '36px';
-        if (document.body) {
-          var existingPad = parseInt(getComputedStyle(document.body).paddingTop) || 0;
-          document.body.style.paddingTop = (existingPad + 36) + 'px';
-        }
-      }
+      if (html) html.setAttribute('data-startupbar-injected', '1');
+      applySpacing();
       startObserver();
-      sweepFixedElements();
+
       try {
         var resweep = function () {
           sweepFixedElements();
