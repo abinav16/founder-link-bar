@@ -304,7 +304,7 @@ function Apply() {
       if (!u.user) return;
       const { data, error } = await supabase
         .from("startups")
-        .select("id, name, website_url, description, founder_quote, status, user_id")
+        .select("id, name, website_url, description, founder_quote, widget_placement, status, user_id")
         .eq("id", resubmitId)
         .maybeSingle();
       if (error || !data || data.user_id !== u.user.id) {
@@ -325,6 +325,7 @@ function Apply() {
       setUrl(data.website_url);
       setDesc(data.description);
       setQuote(data.founder_quote ?? "");
+      setPlacement(data.widget_placement === "bottom" ? "bottom" : "top");
       setStartupId(data.id);
       setStep(2);
       // Script was already installed for this ID — verify automatically with the fetched URL.
@@ -534,7 +535,7 @@ function Apply() {
         return;
       }
       const parsed = validated.data;
-      const payload = { ...parsed, founder_quote: quote.trim() || null };
+      const payload = { ...parsed, founder_quote: quote.trim() || null, widget_placement: placement };
 
       // Resubmit path: update the existing rejected row back to pending — no new row, no payment gate.
       if (resubmitId) {
