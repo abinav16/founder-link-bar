@@ -420,8 +420,8 @@ function Apply() {
     if (typeof window === "undefined") return;
     if (resubmitId) return; // resubmits are URL-driven — don't overwrite the fresh-apply draft
     if (!name && !url && !desc && !quote) return;
-    writeDraft({ step, name, url, desc, quote, startupId });
-  }, [step, name, url, desc, quote, resubmitId]);
+    writeDraft({ step, name, url, desc, quote, placement, startupId });
+  }, [step, name, url, desc, quote, placement, resubmitId]);
 
   const snippet = `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}"></script>`;
 
@@ -440,7 +440,7 @@ function Apply() {
     }
     if (!authed) {
       // Save draft at step 1 — user must sign in before reaching the install step.
-      writeDraft({ step: 1, name, url, desc, quote, startupId });
+      writeDraft({ step: 1, name, url, desc, quote, placement, startupId });
       sessionStorage.setItem("startupbar:auth-next", "/apply");
       navigate({ to: "/auth" });
       return;
@@ -453,7 +453,7 @@ function Apply() {
     setPaymentLoading(true);
     // Persist the draft so we can restore state after Dodo redirects back —
     // we deliberately keep the return URL tiny (no PII in query string).
-    writeDraft({ step: 2, name, url, desc, quote, startupId });
+    writeDraft({ step: 2, name, url, desc, quote, placement, startupId });
 
     const { data: u } = await supabase.auth.getUser();
     const returnUrl = `${window.location.origin}/apply?paid=true&sid=${encodeURIComponent(startupId)}`;
