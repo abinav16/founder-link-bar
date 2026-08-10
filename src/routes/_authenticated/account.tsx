@@ -30,6 +30,7 @@ interface Startup {
   founder_name: string | null;
   founder_quote: string | null;
   founder_avatar_url: string | null;
+  widget_placement: "top" | "bottom" | null;
 }
 
 
@@ -66,6 +67,9 @@ function StartupCard({ startup, onUpdate, onDelete }: {
   const [sName, setSName] = useState(startup.name);
   const [sDesc, setSDesc] = useState(startup.description);
   const [fQuote, setFQuote] = useState(startup.founder_quote ?? "");
+  const [placement, setPlacement] = useState<"top" | "bottom">(startup.widget_placement === "bottom" ? "bottom" : "top");
+  const [savingPlacement, setSavingPlacement] = useState(false);
+  const [placementInfo, setPlacementInfo] = useState(false);
   const [saving, setSaving] = useState(false);
   const [savingFounder, setSavingFounder] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -106,6 +110,20 @@ function StartupCard({ startup, onUpdate, onDelete }: {
     if (error) { toast.error(error.message); return; }
     toast.success("Founder profile updated");
     onUpdate(startup.id, patch as any);
+  }
+
+  async function savePlacement(next: "top" | "bottom") {
+    if (next === placement || savingPlacement) return;
+    const prev = placement;
+    setPlacement(next);
+    setSavingPlacement(true);
+    const { error } = await supabase.from("startups").update({ widget_placement: next } as any).eq("id", startup.id);
+    setSavingPlacement(false);
+    if (error) { setPlacement(prev); toast.error(error.message); return; }
+    toast.success(next === "top" ? "Bar will show at the top" : "Bar will show at the bottom", {
+      description: "Live on your site within a page refresh.",
+    });
+    onUpdate(startup.id, { widget_placement: next } as any);
   }
 
 
@@ -291,6 +309,47 @@ function StartupCard({ startup, onUpdate, onDelete }: {
           </form>
 
           <div className="mt-6 border-t border-black/6 pt-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-1.5">
+                <p className="text-sm font-medium text-black">Bar placement</p>
+                <button
+                  type="button"
+                  aria-label="About bar placement"
+                  onClick={() => setPlacementInfo((v) => !v)}
+                  className="inline-flex h-5 w-5 items-center justify-center rounded-full text-black/30 hover:bg-black/5 hover:text-black transition-colors"
+                >
+                  <Info className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              <div className="inline-flex rounded-lg border border-black/12 bg-black/[0.03] p-0.5">
+                {(["top", "bottom"] as const).map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    disabled={savingPlacement}
+                    onClick={() => savePlacement(p)}
+                    className={`rounded-[6px] px-3.5 py-1.5 text-xs font-medium capitalize transition-all disabled:opacity-60 ${
+                      placement === p ? "bg-white text-black shadow-sm" : "text-black/45 hover:text-black"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <p className="mt-1.5 text-[11px] text-black/40">
+              Where the StartupBar sits on your site. Default is top. No review needed, it applies right away.
+            </p>
+            {placementInfo && (
+              <div className="mt-3 space-y-2 rounded-lg border border-black/10 bg-black/[0.02] px-4 py-3 text-[11px] leading-relaxed text-black/55">
+                <p>Top usually performs better. Visitors expect a thin strip at the top, so it gets more attention and clicks than a bottom bar, which competes with cookie banners, chat bubbles and mobile toolbars.</p>
+                <p>It also affects the traffic you receive. Delivery is reciprocity weighted: the more impressions your site sends into the network over the last 7 days, the more often your startup is shown on other members' sites, up to 4x the baseline. Placement doesn't change your weight directly, but a bottom bar that visitors scroll past tends to be seen and clicked less, so your contribution score and your incoming traffic both drift down.</p>
+                <p>Bottom is fully supported if it suits your design. You can switch back any time.</p>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-6 border-t border-black/6 pt-5">
             <div className="mb-3 flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-black">Founder quote</p>
@@ -384,7 +443,7 @@ function AccountPage() {
       setAvatarUrl(p?.avatar_url ?? u.user.user_metadata?.avatar_url ?? u.user.user_metadata?.picture ?? null);
 
       const { data } = await supabase
-        .from("startups").select("id, name, website_url, description, status, logo_url, user_id, slug, founder_name, founder_quote, founder_avatar_url").eq("user_id", u.user.id).order("created_at", { ascending: true });
+        .from("startups").select("id, name, website_url, description, status, logo_url, user_id, slug, founder_name, founder_quote, founder_avatar_url, widget_placement").eq("user_id", u.user.id).order("created_at", { ascending: true });
       if (data) setStartups(data as Startup[]);
     })();
   }, []);

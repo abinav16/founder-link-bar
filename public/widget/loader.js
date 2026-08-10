@@ -45,7 +45,17 @@
     var isIphoneSafari = /iPhone|iPod/.test(ua) && /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|GSA/.test(ua);
     var isMobile = (window.innerWidth || screen.width || 0) < 640;
 
+    // Placement is owned by the host in their StartupBar account. The pick
+    // response carries it, but that arrives after the iframe loads — so we
+    // cache the last known value to position the bar instantly on repeat
+    // visits and avoid a visible jump.
+    var placement = 'top';
+    try {
+      if (localStorage.getItem('startupbar:placement:' + id) === 'bottom') placement = 'bottom';
+    } catch (e) {}
+
     var iframe = document.createElement('iframe');
+
     var iframeSrc = origin + '/widget/bar?host=' + encodeURIComponent(id) + '&theme=' + theme + '&domain=' + encodeURIComponent(window.location.hostname) + '&path=' + encodeURIComponent(window.location.pathname) + (isMobile ? '&mobile=1' : '');
     try {
       var pref = document.referrer || '';
@@ -74,16 +84,24 @@
     iframe.src = iframeSrc;
     iframe.setAttribute('title', 'StartupBar');
     iframe.setAttribute('scrolling', 'no');
-    if (isIphoneSafari) {
-      iframe.style.cssText = ['position:static','top:auto','left:auto','width:100%','height:36px','border:0','margin:0','padding:0','background:' + bg,'display:block'].join(';');
-    } else {
-      iframe.style.cssText = ['position:fixed','top:0','left:0','width:100%','height:36px','border:0','margin:0','padding:0','z-index:2147483647','background:' + bg,'display:block'].join(';');
+    function applyIframeStyle() {
+      if (placement === 'bottom') {
+        iframe.style.cssText = ['position:fixed','bottom:0','top:auto','left:0','width:100%','height:' + currentHeight + 'px','border:0','margin:0','padding:0','z-index:2147483647','background:' + bg,'display:block'].join(';');
+      } else if (isIphoneSafari) {
+        iframe.style.cssText = ['position:static','top:auto','left:auto','width:100%','height:' + currentHeight + 'px','border:0','margin:0','padding:0','background:' + bg,'display:block'].join(';');
+      } else {
+        iframe.style.cssText = ['position:fixed','top:0','left:0','width:100%','height:' + currentHeight + 'px','border:0','margin:0','padding:0','z-index:2147483647','background:' + bg,'display:block'].join(';');
+      }
     }
 
     var currentHeight = 36;
     var dismissed = false;
+    var injected = false;
     var originalBodyPaddingTop = null;
+    var originalBodyPaddingBottom = null;
     var originalScrollPaddingTop = null;
+
+    applyIframeStyle();
 
     function unshiftFixedElements() {
       try {
@@ -99,17 +117,65 @@
       } catch (e) {}
     }
 
-    function teardown() {
-      if (dismissed) return;
-      dismissed = true;
+    function restoreSpacing() {
       try {
         if (document.body && originalBodyPaddingTop !== null) {
           document.body.style.paddingTop = originalBodyPaddingTop;
+        }
+        if (document.body && originalBodyPaddingBottom !== null) {
+          document.body.style.paddingBottom = originalBodyPaddingBottom;
         }
         if (document.documentElement) {
           document.documentElement.style.scrollPaddingTop = originalScrollPaddingTop || '';
         }
         unshiftFixedElements();
+      } catch (e) {}
+    }
+
+    // Reserve room for the bar so it never covers host content.
+    function applySpacing() {
+      if (dismissed || !document.body) return;
+      restoreSpacing();
+      try {
+        if (placement === 'bottom') {
+          var padB = parseInt(getComputedStyle(document.body).paddingBottom) || 0;
+          document.body.style.paddingBottom = (padB + currentHeight) + 'px';
+          return;
+        }
+        if (document.documentElement) document.documentElement.style.scrollPaddingTop = currentHeight + 'px';
+        if (!isIphoneSafari) {
+          var padT = parseInt(getComputedStyle(document.body).paddingTop) || 0;
+          document.body.style.paddingTop = (padT + currentHeight) + 'px';
+          sweepFixedElements();
+        }
+      } catch (e) {}
+    }
+
+    function setPlacement(next) {
+      if (next !== 'top' && next !== 'bottom') return;
+      try { localStorage.setItem('startupbar:placement:' + id, next); } catch (e) {}
+      if (next === placement) return;
+      placement = next;
+      applyIframeStyle();
+      if (injected && !dismissed) {
+        // Bottom bars never shift fixed headers; top bars do.
+        if (placement === 'bottom') unshiftFixedElements();
+        applySpacing();
+        if (isIphoneSafari) {
+          // Move the node: static-in-flow for top, fixed overlay for bottom.
+          try {
+            if (placement === 'bottom') document.body.appendChild(iframe);
+            else document.body.insertBefore(iframe, document.body.firstChild);
+          } catch (e) {}
+        }
+      }
+    }
+
+    function teardown() {
+      if (dismissed) return;
+      dismissed = true;
+      try {
+        restoreSpacing();
         iframe.style.display = 'none';
         iframe.style.height = '0px';
       } catch (e) {}
@@ -117,7 +183,12 @@
     }
 
     window.addEventListener('message', function(e) {
-      if (e.data && e.data.type === 'startupbar:resize') {
+      if (!e.data) return;
+      if (e.data.type === 'startupbar:placement') {
+        setPlacement(e.data.placement);
+        return;
+      }
+      if (e.data.type === 'startupbar:resize') {
         var next = Math.round(e.data.height);
         if (next === 0) { teardown(); return; }
         if (dismissed) return;
@@ -126,6 +197,7 @@
         iframe.style.height = next + 'px';
       }
     });
+
 
     function shiftFixedElement(el) {
       try {
@@ -147,7 +219,7 @@
     }
 
     function sweepFixedElements(root) {
-      if (dismissed) return;
+      if (dismissed || placement === 'bottom') return;
       try {
         var nodes = (root || document).querySelectorAll('*');
         for (var i = 0; i < nodes.length; i++) shiftFixedElement(nodes[i]);
@@ -254,8 +326,13 @@
       try { if (sessionStorage.getItem('startupbar:dismissed') === '1') { dismissed = true; return; } } catch (e) {}
       var html = document.documentElement;
       if (html) originalScrollPaddingTop = html.style.scrollPaddingTop || '';
-      if (document.body) originalBodyPaddingTop = document.body.style.paddingTop || '';
-      if (isIphoneSafari) {
+      if (document.body) {
+        originalBodyPaddingTop = document.body.style.paddingTop || '';
+        originalBodyPaddingBottom = document.body.style.paddingBottom || '';
+      }
+      injected = true;
+
+      if (placement === 'top' && isIphoneSafari) {
         if (document.body) {
           if (document.body.firstChild) {
             document.body.insertBefore(iframe, document.body.firstChild);
@@ -263,26 +340,18 @@
             document.body.appendChild(iframe);
           }
         }
-        if (html) {
-          html.setAttribute('data-startupbar-injected', '1');
-          html.style.scrollPaddingTop = '36px';
-        }
+        if (html) html.setAttribute('data-startupbar-injected', '1');
+        applySpacing();
         startObserver();
         scheduleHeartbeats();
         return;
       }
 
       document.body && document.body.appendChild(iframe);
-      if (html) {
-        html.setAttribute('data-startupbar-injected', '1');
-        html.style.scrollPaddingTop = '36px';
-        if (document.body) {
-          var existingPad = parseInt(getComputedStyle(document.body).paddingTop) || 0;
-          document.body.style.paddingTop = (existingPad + 36) + 'px';
-        }
-      }
+      if (html) html.setAttribute('data-startupbar-injected', '1');
+      applySpacing();
       startObserver();
-      sweepFixedElements();
+
       try {
         var resweep = function () {
           sweepFixedElements();

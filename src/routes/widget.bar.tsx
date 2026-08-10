@@ -104,7 +104,12 @@ function WidgetBar() {
         if (sid) params.set("sid", sid);
         const res = await fetch(`/api/public/widget/pick?${params.toString()}`);
         if (res.ok) {
-          const data = (await res.json()) as Startup | null;
+          const data = (await res.json()) as (Startup & { placement?: "top" | "bottom" }) | null;
+          if (data?.placement) {
+            try {
+              window.parent.postMessage({ type: "startupbar:placement", placement: data.placement }, "*");
+            } catch { /* ignore */ }
+          }
           if (data?.id) return data;
         }
       } catch {
