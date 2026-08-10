@@ -67,6 +67,9 @@ function StartupCard({ startup, onUpdate, onDelete }: {
   const [sName, setSName] = useState(startup.name);
   const [sDesc, setSDesc] = useState(startup.description);
   const [fQuote, setFQuote] = useState(startup.founder_quote ?? "");
+  const [placement, setPlacement] = useState<"top" | "bottom">(startup.widget_placement === "bottom" ? "bottom" : "top");
+  const [savingPlacement, setSavingPlacement] = useState(false);
+  const [placementInfo, setPlacementInfo] = useState(false);
   const [saving, setSaving] = useState(false);
   const [savingFounder, setSavingFounder] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
