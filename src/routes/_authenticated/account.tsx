@@ -565,7 +565,7 @@ function AccountPage() {
           {/* Left nav rail */}
           <nav className="md:sticky md:top-6 md:self-start">
             <p className="mb-2 hidden px-1 text-[10px] font-medium uppercase tracking-[0.18em] text-black/30 md:block">Settings</p>
-            <div className="flex gap-2 overflow-x-auto pb-1 md:flex-col md:overflow-visible md:pb-0">
+            <div className="grid grid-cols-2 gap-1 rounded-xl border border-black/8 bg-white p-1 shadow-[0_1px_2px_rgba(0,0,0,0.03)] md:flex md:flex-col md:gap-2 md:border-0 md:bg-transparent md:p-0 md:shadow-none">
               {TABS.map(({ key, label, desc, icon: Icon }) => {
                 const active = tab === key;
                 return (
@@ -574,10 +574,10 @@ function AccountPage() {
                     type="button"
                     onClick={() => setTab(key)}
                     aria-current={active ? "page" : undefined}
-                    className={`group relative flex shrink-0 items-center gap-3 rounded-xl px-3.5 py-3 text-left transition-all md:w-full ${
+                    className={`group relative flex min-w-0 items-center justify-center gap-2 rounded-lg px-2.5 py-2.5 text-center transition-all md:w-full md:justify-start md:gap-3 md:rounded-xl md:px-3.5 md:py-3 md:text-left ${
                       active
-                        ? "bg-white shadow-[0_6px_24px_-14px_rgba(0,0,0,0.35)] ring-1 ring-black/10"
-                        : "text-black/50 hover:bg-white/70 hover:text-black"
+                        ? "bg-black/[0.05] text-black md:bg-white md:shadow-[0_6px_24px_-14px_rgba(0,0,0,0.35)] md:ring-1 md:ring-black/10"
+                        : "text-black/45 hover:text-black md:hover:bg-white/70"
                     }`}
                   >
                     <span
@@ -586,18 +586,18 @@ function AccountPage() {
                       }`}
                     />
                     <span
-                      className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                      className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${
                         active ? "bg-black text-white" : "bg-black/[0.05] text-black/40 group-hover:text-black/70"
                       }`}
                     >
-                      <Icon className="h-4 w-4" />
+                      <Icon className="h-3.5 w-3.5 md:h-4 md:w-4" />
                     </span>
                     <span className="min-w-0">
-                      <span className={`block text-sm font-medium tracking-tight ${active ? "text-black" : ""}`}>{label}</span>
+                      <span className={`block truncate text-[13px] font-medium tracking-tight md:text-sm ${active ? "text-black" : ""}`}>{label}</span>
                       <span className="hidden text-[11px] leading-snug text-black/35 md:block">{desc}</span>
                     </span>
                     {key === "startups" && startups.length > 0 && (
-                      <span className={`ml-auto hidden shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium md:inline ${active ? "bg-black/[0.06] text-black/60" : "bg-black/[0.04] text-black/40"}`}>
+                      <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium md:ml-auto md:px-2 ${active ? "bg-black/[0.08] text-black/60" : "bg-black/[0.04] text-black/40"}`}>
                         {startups.length}
                       </span>
                     )}
@@ -606,6 +606,7 @@ function AccountPage() {
               })}
             </div>
           </nav>
+
 
           {/* Right panel */}
           <div key={tab} className="page-enter min-w-0">
