@@ -242,6 +242,10 @@ function Apply() {
     if (typeof window === "undefined") return "";
     try { return JSON.parse(readRawDraft() ?? "{}")?.quote ?? ""; } catch { return ""; }
   });
+  const [placement, setPlacement] = useState<"top" | "bottom">(() => {
+    if (typeof window === "undefined") return "top";
+    try { return JSON.parse(readRawDraft() ?? "{}")?.placement === "bottom" ? "bottom" : "top"; } catch { return "top"; }
+  });
 
   const [resubmitId, setResubmitId] = useState<string>(initial.resubmitId);
   const [startupId, setStartupId] = useState<string>(() => initial.resubmitId || initial.startupId || crypto.randomUUID());
