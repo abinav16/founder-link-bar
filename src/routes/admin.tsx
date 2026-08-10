@@ -789,12 +789,17 @@ function BroadcastPanel() {
         body: { type: "admin-broadcast", data: { segment, subject, headline, bodyMarkdown: body, testOnly } },
       });
       if (error) throw error;
-      const r = data as { sent: number; failed: number; total: number; errors: { email: string; error: string }[] };
-      toast.success(`Sent ${r.sent}/${r.total}${r.failed ? ` · ${r.failed} failed` : ""}`, { id: toastId });
+      const r = data as { sent: number; failed: number; total: number; queued?: boolean; errors: { email: string; error: string }[] };
+      if (r.queued) {
+        toast.success(`Queued ${r.total} emails — sending in the background (~${Math.ceil((r.total * 0.55) / 60)} min)`, { id: toastId });
+      } else {
+        toast.success(`Sent ${r.sent}/${r.total}${r.failed ? ` · ${r.failed} failed` : ""}`, { id: toastId });
+      }
       if (r.failed && r.errors?.length) {
         setLastErrors(r.errors);
         console.warn("Broadcast errors:", r.errors);
       }
+
     } catch (e) {
       toast.error(`Send failed: ${String(e).slice(0, 200)}`, { id: toastId });
     } finally {
