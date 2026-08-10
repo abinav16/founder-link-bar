@@ -219,7 +219,7 @@
     }
 
     function sweepFixedElements(root) {
-      if (dismissed) return;
+      if (dismissed || placement === 'bottom') return;
       try {
         var nodes = (root || document).querySelectorAll('*');
         for (var i = 0; i < nodes.length; i++) shiftFixedElement(nodes[i]);
