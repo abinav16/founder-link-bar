@@ -672,6 +672,24 @@ function Apply() {
                     <span>{quote.length} / 280</span>
                   </div>
                 </Field>
+                <Field label="Bar placement" hint="Where the bar sits on your own site. You can change this anytime in your account.">
+                  <div className="inline-flex rounded-lg border border-black/12 bg-black/[0.02] p-1">
+                    {(["top", "bottom"] as const).map((p) => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setPlacement(p)}
+                        aria-pressed={placement === p}
+                        className={`rounded-md px-4 py-1.5 text-sm font-medium capitalize transition ${placement === p ? "bg-white text-black shadow-sm" : "text-black/45 hover:text-black/70"}`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-2 text-xs leading-relaxed text-black/40">
+                    Top usually performs better — visitors expect a thin strip up there, so it gets more attention and clicks. Bottom is fully supported if it fits your design.
+                  </p>
+                </Field>
                 <button type="submit" className="group flex w-full items-center justify-center gap-2 rounded-lg bg-black py-3.5 text-sm font-medium text-white transition-all hover:bg-black/80">
                   Next — Install the script
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
