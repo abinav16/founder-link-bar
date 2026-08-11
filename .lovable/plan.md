@@ -13,6 +13,9 @@ Where StartupBar's 6,921 impressions come from:
   445   Zest Win
   357   park.fan
   239   TheMarketContext.com
+  239   Kustiq
+  185   NotepadPlus
+  169   Hunch
   ...    rest of the network
 ```
 
@@ -20,18 +23,20 @@ So it is not winning on merit. Half its impressions come from the widget we run 
 
 Given impressions (10,993) is also the highest in the network, which under the reciprocity weighting pushes it toward the 4x delivery cap, compounding the lead.
 
-## The fix
+## Suggested public reply
 
-Treat the StartupBar entry as a house listing rather than a competing startup:
+Use this transparent-but-smart tone:
 
-1. Hide it from the public leaderboard (both received and given tabs).
-2. Hide it from the network page: trending today, new this week, recently active, and the directory list.
-3. Keep network wide totals (impressions, clicks, CTR) unchanged, so headline numbers stay accurate.
-4. Keep it in the widget rotation and as the non member fallback, and keep its own dashboard and public page working.
+> Thanks for the honest feedback — it’s a fair thing to call out. We do list our own page on the network because it is technically a member site with the widget installed, and the leaderboard is purely impression-based. The numbers are public: we’ve received ~6.9k impressions, ~3.4k of which are from our own homepage traffic, and the rest from the same rotation every other startup is in. If any member startup passes that number, it will take the top spot automatically — there is no manual boost or special treatment. That said, we totally understand that it looks like self-promotion, so we’re going to either hide the StartupBar row from the public leaderboard or add a clear "house / network" label so the spotlight stays on the actual founders. Appreciate you keeping us honest.
 
-Nothing is deleted, no data changes, no migration. It just stops appearing in the public rankings.
+## The fix options
 
-## Technical notes
+Pick one:
+
+1. **Hide it** (default recommendation): keep the StartupBar house listing out of the public leaderboard and the network directory. Network-wide totals stay the same. No data is deleted.
+2. **Label it as house**: keep the row but mark it "Network / StartupBar" and exclude it from the "Trending today" and "Recently active" sections so it does not dominate those spotlight slots.
+
+## Technical notes if we hide it
 
 - Add a shared constant for the house id `0d2db708-f4e9-4b77-bd83-c446826c76b1` (e.g. `src/lib/house.ts`) instead of repeating the literal.
 - `src/lib/leaderboard.functions.ts`: filter the house id out of the `startups` query result before ranking, keep the stats RPC calls unchanged.
