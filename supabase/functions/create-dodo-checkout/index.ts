@@ -414,7 +414,10 @@ serve(async (req) => {
       // read-only / restricted Dodo key. Say so instead of an opaque error.
       const message = res.status === 401
         ? `Dodo rejected the ${mode} API key for ${endpoint} (401). The key appears to be read-only — generate a full-access ${mode} API key in Dodo and update the secret.`
+        : data?.code === "CUSTOMER_HAS_EXISTING_SUBSCRIPTION"
+        ? "You already have an active promotion subscription on this account. Cancel it (or wait for it to end) before booking another slot."
         : (data?.message ?? data ?? `Dodo returned ${res.status} with an empty response`);
+
       return new Response(
         JSON.stringify({ error: message, status: res.status, mode }),
         {
