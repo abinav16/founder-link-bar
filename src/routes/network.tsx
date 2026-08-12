@@ -881,8 +881,8 @@ function NetworkDashboardPage() {
         {trending.length > 1 && (
           <div>
             <SectionLabel title="Trending — last 24h" />
-            <div className="sm:hidden rounded-2xl bg-white border border-black/[0.06] px-4 py-2">
-              {trending.map((s) => <StartupRow key={s.id} s={s} />)}
+            <div className="sm:hidden">
+              <HorizontalCardRail items={trending} />
             </div>
             <div className="hidden sm:grid gap-4 sm:grid-cols-3">
               {trending.map((s) => <StartupCard key={s.id} s={s} />)}
