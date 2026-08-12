@@ -149,6 +149,8 @@ export function FeaturedBookingDialog({
         setWonSlot(row.slot_index);
         setPhase("success");
         setSlots(await fetchFeaturedSlots());
+        void qc.invalidateQueries({ queryKey: MY_FEATURED_KEY });
+        void qc.invalidateQueries({ queryKey: ["featured-slots"] });
         onBooked?.();
         setTimeout(() => onOpenChange(false), 2600);
         return;
@@ -162,6 +164,8 @@ export function FeaturedBookingDialog({
         setWonSlot(Number(confirmation.slot_index));
         setPhase("success");
         setSlots(await fetchFeaturedSlots());
+        void qc.invalidateQueries({ queryKey: MY_FEATURED_KEY });
+        void qc.invalidateQueries({ queryKey: ["featured-slots"] });
         onBooked?.();
         setTimeout(() => onOpenChange(false), 2600);
         return;
@@ -175,6 +179,16 @@ export function FeaturedBookingDialog({
   async function startCheckout() {
     if (!startupId || !slot) {
       toast.error("Pick a slot first.");
+      return;
+    }
+    // Guard: one active slot per startup.
+    if (mineByStartup.has(startupId)) {
+      toast.error("This startup is already featured.");
+      return;
+    }
+    if (taken.has(slot)) {
+      toast.error("That slot was just taken. Pick another one.");
+      setSlots(await fetchFeaturedSlots());
       return;
     }
     setBusy(true);
@@ -213,6 +227,19 @@ export function FeaturedBookingDialog({
     }
     toast.success("You're on the waitlist. We'll email you the moment a slot frees up.");
     onOpenChange(false);
+  }
+
+  async function cancelPromotion(slotId: string) {
+    setBusy(true);
+    const res = await cancelFeaturedSlot(slotId);
+    setBusy(false);
+    if (!res.ok) {
+      toast.error(res.error ?? "Could not cancel the promotion.");
+      return;
+    }
+    toast.success("Auto-renewal cancelled. Your slot stays live until the period ends.");
+    await refetchMine();
+    void qc.invalidateQueries({ queryKey: ["featured-slots"] });
   }
 
   function goSignIn() {
