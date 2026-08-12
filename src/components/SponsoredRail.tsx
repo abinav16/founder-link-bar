@@ -28,7 +28,7 @@ export function SponsoredRail({ side = "right" }: { side?: "left" | "right" }) {
                   <span className="truncate text-sm font-semibold text-[oklch(0.96_0.02_85)]">
                     Your startup
                   </span>
-                  <span className="shrink-0 rounded-full bg-[oklch(0.82_0.14_80)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-[oklch(0.28_0.06_75)]">
+                  <span className="shrink-0 rounded-full bg-[oklch(0.72_0.13_75_/_0.18)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[oklch(0.82_0.13_75)]">
                     Featured
                   </span>
                 </div>
