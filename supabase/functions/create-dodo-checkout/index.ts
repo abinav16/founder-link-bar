@@ -36,13 +36,9 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    // In test mode, prefer the test-specific key; fall back to the live key so
-    // the function still works if the test key hasn't been configured yet.
-    // Keep the environment selector separate from Dodo credentials. The
-    // dedicated variable takes precedence so an accidentally overwritten
-    // legacy DODO_MODE value can never select the live checkout.
-    const configuredMode = Deno.env.get("DODO_CHECKOUT_ENV") ?? Deno.env.get("DODO_MODE");
-    const mode = configuredMode?.trim().toLowerCase() === "test" ? "test" : "live";
+    // Live launch: checkout always runs against Dodo live, regardless of any
+    // legacy DODO_MODE / DODO_CHECKOUT_ENV values left in secrets.
+    const mode: "test" | "live" = "live";
 
 
 
