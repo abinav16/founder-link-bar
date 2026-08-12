@@ -172,7 +172,7 @@ export function FeaturedBookingDialog({
       }
       await new Promise((r) => setTimeout(r, 1200));
     }
-    toast.error("Payment received, but activation is still confirming. Reload this page in a minute — your slot will appear automatically.");
+    toast.error("Payment received, but activation is still confirming. Reload this page in a minute and your slot will appear automatically.");
     onOpenChange(false);
   }
 
@@ -249,7 +249,7 @@ export function FeaturedBookingDialog({
       toast.error(res.error ?? "Could not cancel the promotion.");
       return;
     }
-    toast.success("Auto-renewal cancelled. Your slot stays live until the period ends.");
+    toast.success("Auto renewal cancelled. Your slot stays live until the period ends.");
     await refetchMine();
     void qc.invalidateQueries({ queryKey: ["featured-slots"] });
   }
@@ -283,12 +283,56 @@ export function FeaturedBookingDialog({
               Feature your startup
             </DialogTitle>
             <p className="text-[12.5px] leading-snug text-black/50">
-              A spot on the network sidebar — logo, name, founder and one-liner. Billed monthly.
+              Put your logo, name, founder and one liner in front of the whole network.
             </p>
           </DialogHeader>
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-6">
+          {phase !== "verifying" && phase !== "success" && (
+            <div className="space-y-3 pt-5">
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { v: "100K+", l: "monthly views" },
+                  { v: "70+", l: "live sites" },
+                  { v: "3", l: "surfaces" },
+                ].map((m) => (
+                  <div
+                    key={m.l}
+                    className="rounded-xl border border-[oklch(0.72_0.13_75_/_0.3)] bg-[oklch(0.72_0.13_75_/_0.05)] px-2.5 py-2.5 text-center"
+                  >
+                    <span className="block text-[17px] font-semibold tracking-tight text-black">
+                      {m.v}
+                    </span>
+                    <span className="block text-[9.5px] uppercase tracking-[0.14em] text-black/40">
+                      {m.l}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="rounded-xl border border-black/10 px-4 py-3.5">
+                <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-black/35">
+                  How it works
+                </span>
+                <ol className="mt-2.5 space-y-2">
+                  {[
+                    "Pick a free slot and subscribe. Your card goes live in minutes.",
+                    "Your startup sits in the network sidebar on every page, seen by founders and visitors across the network.",
+                    "You also get highlighted on the network page cards and on the leaderboard cards so people spot you while browsing.",
+                  ].map((t, i) => (
+                    <li key={i} className="flex gap-2.5 text-[12px] leading-relaxed text-black/55">
+                      <span className="mt-[1px] grid h-4 w-4 shrink-0 place-items-center rounded-full bg-[oklch(0.72_0.13_75_/_0.16)] text-[9px] font-semibold text-[oklch(0.5_0.11_75)]">
+                        {i + 1}
+                      </span>
+                      {t}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            </div>
+          )}
+
 
           {phase === "loading" && (
             <div className="flex items-center justify-center py-14 text-black/30">
@@ -366,12 +410,12 @@ export function FeaturedBookingDialog({
               <div className="rounded-xl border border-[oklch(0.72_0.13_75_/_0.35)] bg-[linear-gradient(135deg,oklch(0.72_0.13_75_/_0.10),oklch(0.72_0.13_75_/_0.03))] px-4 py-3.5">
                 <p className="flex items-center gap-2 text-sm font-medium text-black">
                   <Sparkles className="h-4 w-4 text-[oklch(0.6_0.12_75)]" />
-                  Already featured — slot {activeForSelected.slot_index}
+                  Already featured in slot {activeForSelected.slot_index}
                 </p>
                 <p className="mt-1 text-[12px] leading-relaxed text-black/50">
                   {activeForSelected.cancel_at_period_end
-                    ? `Auto-renewal is off. This slot stays live for ${daysLeft(activeForSelected.expires_at)} more day(s), then frees up.`
-                    : `Renews in ${daysLeft(activeForSelected.expires_at)} day(s) at $${FEATURED_PRICE_USD}. Cancel anytime — the slot stays live until the paid period ends.`}
+                    ? `Auto renewal is off. This slot stays live for ${daysLeft(activeForSelected.expires_at)} more day(s), then frees up.`
+                    : `Renews in ${daysLeft(activeForSelected.expires_at)} day(s) at $${FEATURED_PRICE_USD}. Cancel anytime and the slot stays live until the paid period ends.`}
                 </p>
               </div>
               {!activeForSelected.cancel_at_period_end && (
@@ -461,8 +505,8 @@ export function FeaturedBookingDialog({
                   </span>
                 </div>
                 <p className="mt-1 text-[11px] leading-relaxed text-black/45">
-                  Renews automatically every {FEATURED_DAYS} days. Cancel anytime — your slot stays
-                  live until the end of the paid period.
+                  Renews automatically every {FEATURED_DAYS} days. Cancel anytime and your slot
+                  stays live until the end of the paid period.
                 </p>
               </div>
 
@@ -475,7 +519,7 @@ export function FeaturedBookingDialog({
                   {busy
                     ? "Redirecting to payment…"
                     : slot
-                      ? `Subscribe — slot ${slot} · $${FEATURED_PRICE_USD}/mo`
+                      ? `Subscribe to slot ${slot} · $${FEATURED_PRICE_USD}/mo`
                       : "Select a slot"}
                 </button>
                 <p className="text-center text-[11px] leading-relaxed text-black/35">
@@ -483,6 +527,7 @@ export function FeaturedBookingDialog({
                   impressions or clicks.
                 </p>
               </div>
+
             </div>
           )}
 
