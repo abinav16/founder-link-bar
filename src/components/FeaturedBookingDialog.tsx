@@ -105,7 +105,8 @@ export function FeaturedBookingDialog({
   }, [initialSlot]);
 
   async function verifyAndWait(paymentId: string) {
-    // The webhook is the source of truth; poll briefly for the row it writes.
+    // Poll the webhook result and ask the authenticated checkout function to
+    // verify directly with Dodo as a fallback when webhook delivery is late.
     for (let i = 0; i < 15; i++) {
       const { data } = await supabase
         .from("featured_slots")
@@ -122,9 +123,22 @@ export function FeaturedBookingDialog({
         setTimeout(() => onOpenChange(false), 2600);
         return;
       }
+
+      const { data: confirmation } = await supabase.functions.invoke("create-dodo-checkout", {
+        body: { action: "confirm_featured", subscription_id: paymentId },
+      });
+      if (confirmation?.active) {
+        sessionStorage.removeItem(RETURN_KEY);
+        setWonSlot(Number(confirmation.slot_index));
+        setPhase("success");
+        setSlots(await fetchFeaturedSlots());
+        onBooked?.();
+        setTimeout(() => onOpenChange(false), 2600);
+        return;
+      }
       await new Promise((r) => setTimeout(r, 1200));
     }
-    toast.error("Payment received. Your slot is being set up and will appear shortly.");
+    toast.error("We could not verify the payment yet. Reopen this page from Dodo's return link to retry safely.");
     onOpenChange(false);
   }
 
