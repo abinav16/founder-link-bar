@@ -2,9 +2,12 @@ import { supabase } from "@/integrations/supabase/client";
 
 /** Total sidebar slots: 1-4 = left rail, 5-8 = right rail. */
 export const FEATURED_SLOT_COUNT = 8;
-/** Monthly price, USD. */
+/** Monthly subscription price, USD (recurring every 30 days). */
 export const FEATURED_PRICE_USD = 79;
 export const FEATURED_DAYS = 30;
+/** Human label for the billing cadence. */
+export const FEATURED_BILLING_LABEL = "per month";
+
 
 export type FeaturedSlot = {
   slot_index: number;
