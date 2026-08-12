@@ -136,52 +136,58 @@ function StartupCard({ s }: { s: Card }) {
       )}
 
       <div className="relative z-10 flex-1 min-w-0 pointer-events-none">
-        <div className="flex items-center gap-2.5 sm:gap-3">
-          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden bg-black/[0.03] border border-black/[0.06] flex items-center justify-center shrink-0">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl overflow-hidden bg-white border border-black/[0.08] flex items-center justify-center shrink-0">
             <StartupFavicon url={s.website_url} name={s.name} logoUrl={s.logo_url} size={32} />
           </div>
-          <h3 className="text-[13px] sm:text-[15px] font-semibold text-black leading-snug min-w-0 truncate">{s.name}</h3>
-          <ArrowUpRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-black/20 shrink-0 ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-        </div>
-        <p className="mt-2 text-[11px] sm:text-[13px] text-black/45 leading-relaxed line-clamp-2 sm:min-h-[2.9em]">{s.description}</p>
-      </div>
-
-      <div className="relative z-10 border-t border-black/[0.05] pt-3 pointer-events-none">
-        <div className="grid grid-cols-3 gap-1">
-          <div className="flex flex-col items-center gap-0.5">
-            <span className="text-[9px] uppercase tracking-[0.1em] font-semibold text-black/30">Joined</span>
-            <span className="text-[12px] font-semibold text-black/70 tabular-nums">{joinedLabel(s.created_at)}</span>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 min-w-0">
+              <h3 className="text-[15px] font-bold text-black leading-snug min-w-0 truncate">{s.name}</h3>
+              <a
+                href={visitHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`Visit ${s.name} website`}
+                className="pointer-events-auto shrink-0 inline-flex items-center gap-1 rounded-full border border-black/10 bg-white px-2.5 py-1 text-[11px] font-medium text-black/60 hover:text-black hover:border-black/30 transition-colors"
+              >
+                <Globe className="h-3 w-3" strokeWidth={2} />
+                Visit
+                <ArrowUpRight className="h-3 w-3" strokeWidth={2} />
+              </a>
+            </div>
+            <div className="mt-1">
+              <FounderChip s={s} />
+            </div>
           </div>
-          <div className="flex flex-col items-center gap-0.5 border-x border-black/[0.05]">
-            <span className="text-[9px] uppercase tracking-[0.1em] font-semibold text-black/30">Impressions</span>
-            <span className="text-[12px] font-semibold text-black/70 tabular-nums">{fmt(s.impressions)}</span>
-          </div>
-          <div className="flex flex-col items-center gap-0.5">
-            <span className="text-[9px] uppercase tracking-[0.1em] font-semibold text-black/30">Clicks</span>
-            <span className="text-[12px] font-semibold text-black/70 tabular-nums">{fmt(s.clicks)}</span>
-          </div>
-        </div>
-        <div className="mt-3 flex items-center justify-end gap-1.5">
-          <a
-            href={visitHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`Visit ${s.name} website`}
-            title="Visit website"
-            className="pointer-events-auto inline-flex items-center justify-center h-7 w-7 rounded-full border border-black/10 bg-white text-black/60 hover:text-black hover:border-black/30 transition-colors"
-          >
-            <Globe className="h-3.5 w-3.5" strokeWidth={2} />
-          </a>
           {s.slug && (
             <StartupProfileLink
               slug={s.slug}
-              className="pointer-events-auto inline-flex items-center justify-center h-7 w-7 rounded-full bg-black text-white hover:bg-black/80 transition-colors"
+              className="pointer-events-auto shrink-0 inline-flex items-center justify-center h-9 w-9 rounded-full bg-black text-white hover:bg-black/80 transition-colors"
             >
-              <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.25} />
+              <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
             </StartupProfileLink>
           )}
         </div>
+        <p className="mt-3 text-[13px] text-black/45 leading-relaxed line-clamp-2 sm:min-h-[2.9em]">{s.description}</p>
       </div>
+
+      <div className="relative z-10 pointer-events-none">
+        <div className="grid grid-cols-3 rounded-xl border border-black/[0.07] bg-black/[0.015] divide-x divide-black/[0.07]">
+          <div className="flex flex-col items-center gap-0.5 py-2">
+            <span className="text-[9px] uppercase tracking-[0.1em] font-semibold text-black/30">Joined</span>
+            <span className="text-[13px] font-semibold text-black/70 tabular-nums">{joinedLabel(s.created_at)}</span>
+          </div>
+          <div className="flex flex-col items-center gap-0.5 py-2">
+            <span className="text-[9px] uppercase tracking-[0.1em] font-semibold text-black/30">Impressions</span>
+            <span className="text-[13px] font-semibold text-black/70 tabular-nums">{fmt(s.impressions)}</span>
+          </div>
+          <div className="flex flex-col items-center gap-0.5 py-2">
+            <span className="text-[9px] uppercase tracking-[0.1em] font-semibold text-black/30">Clicks</span>
+            <span className="text-[13px] font-semibold text-black/70 tabular-nums">{fmt(s.clicks)}</span>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 }
