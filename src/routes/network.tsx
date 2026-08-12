@@ -146,17 +146,22 @@ function StartupCard({ s }: { s: Card }) {
         <p className="mt-2 text-[11px] sm:text-[13px] text-black/45 leading-relaxed line-clamp-2 sm:min-h-[2.9em]">{s.description}</p>
       </div>
 
-      <div className="relative z-10 hidden sm:flex items-center justify-between border-t border-black/[0.05] pt-3 pointer-events-none">
-
-        {s.impressions_24h > 0 ? (
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] text-black/35 font-medium tabular-nums">{s.impressions_24h} impressions · last 24h</span>
-            {s.clicks_24h > 0 && <span className="text-[11px] text-black/20">· {s.clicks_24h} clicks</span>}
+      <div className="relative z-10 border-t border-black/[0.05] pt-3 pointer-events-none">
+        <div className="grid grid-cols-3 gap-1">
+          <div className="flex flex-col items-center gap-0.5">
+            <span className="text-[9px] uppercase tracking-[0.1em] font-semibold text-black/30">Joined</span>
+            <span className="text-[12px] font-semibold text-black/70 tabular-nums">{joinedLabel(s.created_at)}</span>
           </div>
-        ) : (
-          <span className="text-[11px] text-black/20 tracking-wide">Just joined</span>
-        )}
-        <div className="flex items-center gap-1.5">
+          <div className="flex flex-col items-center gap-0.5 border-x border-black/[0.05]">
+            <span className="text-[9px] uppercase tracking-[0.1em] font-semibold text-black/30">Impressions</span>
+            <span className="text-[12px] font-semibold text-black/70 tabular-nums">{fmt(s.impressions)}</span>
+          </div>
+          <div className="flex flex-col items-center gap-0.5">
+            <span className="text-[9px] uppercase tracking-[0.1em] font-semibold text-black/30">Clicks</span>
+            <span className="text-[12px] font-semibold text-black/70 tabular-nums">{fmt(s.clicks)}</span>
+          </div>
+        </div>
+        <div className="mt-3 flex items-center justify-end gap-1.5">
           <a
             href={visitHref}
             target="_blank"
