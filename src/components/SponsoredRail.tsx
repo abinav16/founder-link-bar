@@ -42,8 +42,9 @@ function FeaturedCard({ slot }: { slot: FeaturedSlot }) {
       href={slot.website_url}
       target="_blank"
       rel="noopener noreferrer"
-      className="sb-sponsored group relative flex min-h-0 flex-1 flex-col justify-between gap-3 overflow-hidden rounded-2xl border p-5 transition-all duration-500"
+      className="sb-sponsored group relative flex min-h-0 flex-1 flex-col gap-3 overflow-hidden rounded-2xl border p-5 transition-all duration-500"
     >
+      {/* Row 1: logo + startup name + featured badge */}
       <div className="flex min-w-0 items-center gap-2.5">
         <span className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-lg border border-[oklch(0.75_0.13_75_/_0.25)] bg-black/40">
           <StartupFavicon
@@ -61,10 +62,9 @@ function FeaturedCard({ slot }: { slot: FeaturedSlot }) {
         </span>
       </div>
 
-      <p className="line-clamp-3 text-[13px] leading-snug text-white/60">{slot.description}</p>
-
+      {/* Row 2: founder avatar + name */}
       {slot.founder_name || slot.founder_avatar_url ? (
-        <div className="flex min-w-0 items-center gap-2 border-t border-white/5 pt-3">
+        <div className="flex min-w-0 items-center gap-2">
           {slot.founder_avatar_url ? (
             <img
               src={slot.founder_avatar_url}
@@ -82,6 +82,12 @@ function FeaturedCard({ slot }: { slot: FeaturedSlot }) {
           </span>
         </div>
       ) : null}
+
+      {/* Row 3: one-liner, full width */}
+      <p className="line-clamp-3 min-w-0 border-t border-white/5 pt-3 text-[13px] leading-snug text-white/60">
+        {slot.description}
+      </p>
+
     </a>
   );
 }
