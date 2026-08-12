@@ -1,15 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { FEATURED_PRICE_USD, FEATURED_DAYS, FEATURED_SLOT_COUNT } from "@/lib/featured";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
       { title: "Pricing — StartupBar" },
-      { name: "description", content: "StartupBar pricing: your first startup listing is free forever. Additional listings are a one-time $9.99 USD payment, processed by Dodo Payments. No subscriptions, no refunds." },
+      { name: "description", content: "StartupBar pricing: first startup listing free forever, extra listings $9.99 one-time, and Featured spot promotion at $79 per month. Payments processed by Dodo Payments." },
       { property: "og:title", content: "Pricing — StartupBar" },
-      { property: "og:description", content: "First listing free. Additional listings $9.99 one-time, processed by Dodo Payments." },
+      { property: "og:description", content: "First listing free. Extra listings $9.99 one-time. Featured spot promotion $79 per month, cancel anytime." },
       { property: "og:url", content: "https://startupbar.co/pricing" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "canonical", href: "https://startupbar.co/pricing" }],
     scripts: [
@@ -18,8 +21,8 @@ export const Route = createFileRoute("/pricing")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Product",
-          name: "StartupBar additional startup listing",
-          description: "A one-time paid listing for an additional startup in the StartupBar traffic-exchange network.",
+          name: "StartupBar listings and Featured spot promotion",
+          description: "Startup listings in the StartupBar traffic exchange network, plus a paid Featured spot promotion on StartupBar pages.",
           brand: { "@type": "Brand", name: "StartupBar" },
           offers: [
             {
@@ -38,6 +41,22 @@ export const Route = createFileRoute("/pricing")({
               url: "https://startupbar.co/pricing",
               availability: "https://schema.org/InStock",
             },
+            {
+              "@type": "Offer",
+              name: "Featured spot promotion",
+              price: String(FEATURED_PRICE_USD),
+              priceCurrency: "USD",
+              url: "https://startupbar.co/pricing",
+              availability: "https://schema.org/InStock",
+              priceSpecification: {
+                "@type": "UnitPriceSpecification",
+                price: String(FEATURED_PRICE_USD),
+                priceCurrency: "USD",
+                billingDuration: FEATURED_DAYS,
+                billingIncrement: 1,
+                unitCode: "DAY",
+              },
+            },
           ],
         }),
       },
@@ -45,6 +64,7 @@ export const Route = createFileRoute("/pricing")({
   }),
   component: PricingPage,
 });
+
 
 function Logo() {
   return (
@@ -202,7 +222,50 @@ function PricingPage() {
           </div>
         </div>
 
+        {/* Featured spot promotion */}
+        <div className="mt-4 rounded-xl border border-black/10 p-6">
+          <div className="flex flex-wrap items-baseline justify-between gap-3">
+            <div>
+              <div className="text-xs font-medium uppercase tracking-wide text-black/40">Featured spot promotion</div>
+              <div className="mt-2 flex items-baseline gap-1">
+                <span className="text-4xl font-semibold tracking-tight text-black">${FEATURED_PRICE_USD}</span>
+                <span className="text-sm text-black/40">USD per month, cancel anytime</span>
+              </div>
+            </div>
+            {loading ? (
+              <div aria-hidden className="h-10 w-40 rounded-md bg-black/5" />
+            ) : !signedIn ? (
+              <Link
+                to="/auth"
+                className="inline-flex h-10 items-center rounded-md border border-black px-4 text-sm font-medium text-black hover:bg-black hover:text-white transition-colors"
+              >
+                Sign in to promote
+              </Link>
+            ) : (
+              <Link
+                to="/network"
+                className="inline-flex h-10 items-center rounded-md bg-black px-4 text-sm font-medium text-white hover:bg-black/80 transition-colors"
+              >
+                Book a featured spot
+              </Link>
+            )}
+          </div>
+          <p className="mt-4 text-sm leading-relaxed text-black/60">
+            Featured spots are an optional promotion on StartupBar&rsquo;s own pages. There are{" "}
+            {FEATURED_SLOT_COUNT} spots in total, shown in the sidebar rails beside the network feed. Booking
+            a spot does not change how the widget rotates startups on member sites, and it never buys extra
+            impressions inside the network.
+          </p>
+          <ul className="mt-5 grid gap-2 text-sm text-black/65 sm:grid-cols-2">
+            <li className="flex gap-2"><Check />A dedicated card in the StartupBar sidebar with your logo, name, founder and one liner</li>
+            <li className="flex gap-2"><Check />Gold highlight on your card in the network list, Trending and New this week</li>
+            <li className="flex gap-2"><Check />Gold highlight on the leaderboard, including the top podium if you rank there</li>
+            <li className="flex gap-2"><Check />Renews every {FEATURED_DAYS} days until you cancel</li>
+          </ul>
+        </div>
+
         <div className="mt-14 space-y-8 text-[15px] leading-relaxed text-black/65">
+
           <section>
             <h2 className="mb-3 text-base font-semibold text-black">How to purchase</h2>
             <ol className="space-y-2 list-decimal list-inside">
@@ -219,24 +282,53 @@ function PricingPage() {
           </section>
 
           <section>
+            <h2 className="mb-3 text-base font-semibold text-black">How to book a featured spot</h2>
+            <ol className="space-y-2 list-decimal list-inside">
+              <li>Sign in and open the <Link to="/network" className="text-black underline underline-offset-2">Network</Link> page or your <Link to="/dashboard" className="text-black underline underline-offset-2">Dashboard</Link>.</li>
+              <li>Press Promote on the startup you want to feature. Your startup must already be approved.</li>
+              <li>Pick one of the {FEATURED_SLOT_COUNT} spots that is still open.</li>
+              <li>You are taken to a secure Dodo Payments checkout for the ${FEATURED_PRICE_USD} monthly subscription.</li>
+              <li>After payment you return to StartupBar and the spot goes live within a minute.</li>
+            </ol>
+            <p className="mt-3">
+              Each account can hold one active featured subscription at a time. To move to a different spot,
+              cancel the current one first and book again once it ends.
+            </p>
+          </section>
+
+          <section>
             <h2 className="mb-3 text-base font-semibold text-black">Payments &amp; billing</h2>
             <ul className="space-y-2 list-disc list-inside">
               <li>Payments are processed by <strong className="font-medium text-black">Dodo Payments</strong>, our merchant of record. StartupBar never sees or stores your card details.</li>
               <li>All prices are in US dollars. Applicable taxes are calculated and shown at checkout.</li>
-              <li>Charges are one-time. There are no recurring subscriptions and nothing auto-renews.</li>
+              <li>Listing payments are one-time and never auto renew.</li>
+              <li>The featured spot is a subscription. It renews automatically every {FEATURED_DAYS} days at ${FEATURED_PRICE_USD} until you cancel.</li>
               <li>Your receipt is emailed by Dodo Payments and the charge appears on your statement via Dodo Payments.</li>
             </ul>
+          </section>
+
+          <section>
+            <h2 className="mb-3 text-base font-semibold text-black">Cancelling a featured spot</h2>
+            <p>
+              You can cancel from the Promote panel on your dashboard, or from the startup card on your{" "}
+              <Link to="/account" className="text-black underline underline-offset-2">Account</Link> page.
+              Cancelling turns off auto renewal immediately. Your spot stays live and highlighted until the end
+              of the period you already paid for, then it is released back to the pool. There are no partial
+              period refunds.
+            </p>
           </section>
 
           <section>
             <h2 className="mb-3 text-base font-semibold text-black">Refunds</h2>
             <p>
               All payments are final. Because a paid listing is delivered as soon as it is submitted for review,
-              we do not offer refunds. If a payment went through but your listing did not appear, email
+              and a featured spot goes live immediately after checkout, we do not offer refunds. If a payment
+              went through but your listing or featured spot did not appear, email
               {" "}<a href="mailto:hello@startupbar.co" className="text-black underline underline-offset-2">hello@startupbar.co</a>{" "}
-              with your payment receipt and we will complete the listing for you at no extra cost.
+              with your payment receipt and we will fix it for you at no extra cost.
             </p>
           </section>
+
 
           <section>
             <h2 className="mb-3 text-base font-semibold text-black">What you get for the money</h2>
@@ -247,7 +339,13 @@ function PricingPage() {
               in the network. See the <Link to="/faq" className="text-black underline underline-offset-2">FAQ</Link>
               {" "}for eligibility rules and delivery details.
             </p>
+            <p className="mt-3">
+              A featured spot is separate. It buys visibility on StartupBar pages only: a sidebar card plus a
+              gold highlight on the network list and leaderboard. It does not affect widget delivery,
+              reciprocity weighting, leaderboard ranking, or the impression and click numbers you earn.
+            </p>
           </section>
+
 
           <section>
             <h2 className="mb-3 text-base font-semibold text-black">Questions</h2>
