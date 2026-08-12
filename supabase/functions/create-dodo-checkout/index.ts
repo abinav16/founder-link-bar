@@ -44,21 +44,11 @@ serve(async (req) => {
     const configuredMode = Deno.env.get("DODO_CHECKOUT_ENV") ?? Deno.env.get("DODO_MODE");
     const mode = configuredMode?.trim().toLowerCase() === "test" ? "test" : "live";
 
-    // Non-sensitive diagnostic ping: reports which environment is active without
-    // ever echoing credential values.
-    if (new URL(req.url).searchParams.get("diag") === "1") {
-      return new Response(
-        JSON.stringify({
-          mode,
-          checkoutEnvSet: !!Deno.env.get("DODO_CHECKOUT_ENV"),
-          checkoutEnvIsTest: Deno.env.get("DODO_CHECKOUT_ENV")?.trim().toLowerCase() === "test",
-          legacyModeIsTest: Deno.env.get("DODO_MODE")?.trim().toLowerCase() === "test",
-          hasTestApiKey: !!Deno.env.get("DODO_TEST_API_KEY"),
-          hasTestFeaturedProduct: !!Deno.env.get("DODO_TEST_FEATURED_PRODUCT_ID"),
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
+
+
+
+
+
 
     const apiKey = mode === "test"
       ? (Deno.env.get("DODO_TEST_API_KEY") ?? Deno.env.get("DODO_PAYMENTS_API_KEY"))
@@ -205,18 +195,20 @@ serve(async (req) => {
 
     if (!res.ok || !data?.payment_link) {
       console.error("Dodo error:", { status: res.status, mode, endpoint, body: raw.slice(0, 500) });
+      // A 401 here means the API key in use can read but not create — a
+      // read-only / restricted Dodo key. Say so instead of an opaque error.
+      const message = res.status === 401
+        ? `Dodo rejected the ${mode} API key for ${endpoint} (401). The key appears to be read-only — generate a full-access ${mode} API key in Dodo and update the secret.`
+        : (data?.message ?? data ?? `Dodo returned ${res.status} with an empty response`);
       return new Response(
-        JSON.stringify({
-          error: data ?? `Dodo returned ${res.status} with an empty response`,
-          status: res.status,
-          mode,
-        }),
+        JSON.stringify({ error: message, status: res.status, mode }),
         {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         },
       );
     }
+
 
 
     console.log("dodo checkout created", { mode, endpoint, link: data.payment_link });
