@@ -70,12 +70,50 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const name: string = typeof body?.name === "string" ? body.name : "";
     const return_url: unknown = body?.return_url;
+    const kind: string = body?.kind === "featured" ? "featured" : "listing";
 
     if (!isAllowedReturnUrl(return_url)) {
       return new Response(JSON.stringify({ error: "Invalid return_url" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Product + metadata differ per purchase kind.
+    const productId = kind === "featured"
+      ? (Deno.env.get("DODO_FEATURED_PRODUCT_ID") ?? Deno.env.get("DODO_PRODUCT_ID"))
+      : Deno.env.get("DODO_PRODUCT_ID");
+    if (!productId) {
+      return new Response(JSON.stringify({ error: "Missing Dodo product id" }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const metadata: Record<string, string> = { user_id: userData.user.id, kind };
+    if (kind === "featured") {
+      const slotIndex = Number(body?.slot_index);
+      const startupId = body?.startup_id;
+      if (!Number.isInteger(slotIndex) || slotIndex < 1 || slotIndex > 8 ||
+          typeof startupId !== "string" || !startupId) {
+        return new Response(JSON.stringify({ error: "Invalid featured slot request" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      // The caller must own the startup they are promoting.
+      const { data: owned } = await userClient
+        .from("startups")
+        .select("id")
+        .eq("id", startupId)
+        .eq("status", "approved")
+        .maybeSingle();
+      if (!owned) {
+        return new Response(JSON.stringify({ error: "Startup not found or not approved" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      metadata.slot_index = String(slotIndex);
+      metadata.startup_id = startupId;
+    }
+
 
     // Default to live; set DODO_MODE=test in secrets to use the test endpoint.
     const mode = Deno.env.get("DODO_MODE") ?? "live";
