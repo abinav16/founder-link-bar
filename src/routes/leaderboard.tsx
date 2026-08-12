@@ -565,27 +565,58 @@ function LeaderboardPage() {
                   )}
                 </div>
 
-                <StartupFavicon
-                  url={row.website_url}
-                  name={row.name}
-                  logoUrl={row.logo_url}
-                  size={36}
-                  className="rounded-xl ring-1 ring-black/8 shrink-0 bg-white"
-                />
+                {row.slug ? (
+                  <Link
+                    to="/startup/$slug"
+                    params={{ slug: row.slug }}
+                    className="flex flex-1 min-w-0 items-center gap-3 group/link"
+                  >
+                    <StartupFavicon
+                      url={row.website_url}
+                      name={row.name}
+                      logoUrl={row.logo_url}
+                      size={36}
+                      className="rounded-xl ring-1 ring-black/8 shrink-0 bg-white"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-sm text-black truncate group-hover/link:underline underline-offset-2">{row.name}</span>
+                        {row.sponsored && (
+                          <span className="rounded-full bg-[oklch(0.65_0.15_68)] px-1.5 py-0.5 text-[8px] font-bold text-white uppercase tracking-wide shrink-0">Featured</span>
+                        )}
+                        {isNew(row.created_at) && <NewBadge />}
+                        {row.id === myId && (
+                          <span className="rounded-full bg-black px-1.5 py-0.5 text-[8px] font-bold text-white uppercase tracking-wide shrink-0">You</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-black/40 truncate mt-0.5">{row.description}</p>
+                    </div>
+                  </Link>
+                ) : (
+                  <>
+                    <StartupFavicon
+                      url={row.website_url}
+                      name={row.name}
+                      logoUrl={row.logo_url}
+                      size={36}
+                      className="rounded-xl ring-1 ring-black/8 shrink-0 bg-white"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-sm text-black truncate">{row.name}</span>
+                        {row.sponsored && (
+                          <span className="rounded-full bg-[oklch(0.65_0.15_68)] px-1.5 py-0.5 text-[8px] font-bold text-white uppercase tracking-wide shrink-0">Featured</span>
+                        )}
+                        {isNew(row.created_at) && <NewBadge />}
+                        {row.id === myId && (
+                          <span className="rounded-full bg-black px-1.5 py-0.5 text-[8px] font-bold text-white uppercase tracking-wide shrink-0">You</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-black/40 truncate mt-0.5">{row.description}</p>
+                    </div>
+                  </>
+                )}
 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm text-black truncate">{row.name}</span>
-                    {row.sponsored && (
-                      <span className="rounded-full bg-[oklch(0.65_0.15_68)] px-1.5 py-0.5 text-[8px] font-bold text-white uppercase tracking-wide shrink-0">Featured</span>
-                    )}
-                    {isNew(row.created_at) && <NewBadge />}
-                    {row.id === myId && (
-                      <span className="rounded-full bg-black px-1.5 py-0.5 text-[8px] font-bold text-white uppercase tracking-wide shrink-0">You</span>
-                    )}
-                  </div>
-                  <p className="text-xs text-black/40 truncate mt-0.5">{row.description}</p>
-                </div>
 
                 <div className="w-[76px] shrink-0 hidden sm:flex flex-col items-center gap-1">
                   <MiniSparkline data={sparkData(row)} />
