@@ -802,6 +802,7 @@ function HorizontalCardRail({ items }: { items: Card[] }) {
 
 type SortKey = "joined" | "impressions" | "clicks";
 type SortDir = "asc" | "desc";
+type FeaturedFilter = "all" | "featured";
 
 const SORT_COLUMNS: { key: SortKey; label: string; hint: string; width: string }[] = [
   { key: "joined", label: "Joined", hint: "How long ago this startup joined the network.", width: "w-[68px]" },
