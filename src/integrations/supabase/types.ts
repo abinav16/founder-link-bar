@@ -173,6 +173,88 @@ export type Database = {
         }
         Relationships: []
       }
+      featured_slots: {
+        Row: {
+          created_at: string
+          dodo_payment_id: string | null
+          expires_at: string
+          id: string
+          slot_index: number
+          starts_at: string
+          startup_id: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dodo_payment_id?: string | null
+          expires_at?: string
+          id?: string
+          slot_index: number
+          starts_at?: string
+          startup_id?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dodo_payment_id?: string | null
+          expires_at?: string
+          id?: string
+          slot_index?: number
+          starts_at?: string
+          startup_id?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "featured_slots_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      featured_waitlist: {
+        Row: {
+          claim_expires_at: string | null
+          claim_token: string | null
+          created_at: string
+          id: string
+          notified_at: string | null
+          startup_id: string | null
+          user_id: string
+        }
+        Insert: {
+          claim_expires_at?: string | null
+          claim_token?: string | null
+          created_at?: string
+          id?: string
+          notified_at?: string | null
+          startup_id?: string | null
+          user_id: string
+        }
+        Update: {
+          claim_expires_at?: string | null
+          claim_token?: string | null
+          created_at?: string
+          id?: string
+          notified_at?: string | null
+          startup_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "featured_waitlist_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       impressions: {
         Row: {
           browser: string | null
@@ -528,6 +610,20 @@ export type Database = {
           source_queue: string
         }
         Returns: number
+      }
+      public_featured_slots: {
+        Args: never
+        Returns: {
+          description: string
+          expires_at: string
+          founder_name: string
+          logo_url: string
+          name: string
+          slot_index: number
+          slug: string
+          startup_id: string
+          website_url: string
+        }[]
       }
       public_founder_info: {
         Args: { _user_id: string }
