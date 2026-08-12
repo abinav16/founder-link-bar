@@ -247,7 +247,7 @@ serve(async (req) => {
 
       const { error: insertError } = await admin.from("featured_slots").insert({
         slot_index: finalSlot,
-        startup_id: startupId,
+        startup_id: targetStartupId,
         user_id: userData.user.id,
         dodo_payment_id: subscriptionId,
         status: "active",
