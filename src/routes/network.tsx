@@ -1038,16 +1038,24 @@ function NetworkDashboardPage() {
             </div>
           ) : (
             <div className="rounded-2xl bg-white border border-black/[0.06] px-6 py-16 text-center">
-              <p className="text-sm text-black/60 font-medium">No startups match "{query}"</p>
-              <p className="mt-1.5 text-[13px] text-black/35">Try a shorter word, or browse the full network.</p>
+              <p className="text-sm text-black/60 font-medium">
+                {featuredFilter === "featured" && !query
+                  ? "No featured startups right now"
+                  : `No startups match "${query}"`}
+              </p>
+              <p className="mt-1.5 text-[13px] text-black/35">
+                {featuredFilter === "featured" && !query
+                  ? "Check back soon or browse the full network."
+                  : "Try a shorter word, or browse the full network."}
+              </p>
               <button
                 type="button"
-                onClick={() => { setQuery(""); setSortKey("joined"); setSortDir("desc"); }}
+                onClick={() => { setQuery(""); setSortKey("joined"); setSortDir("desc"); setFeaturedFilter("all"); }}
 
                 className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-black px-4 py-2 text-[13px] font-medium text-white hover:bg-black/85 transition-colors"
               >
                 <X className="h-3.5 w-3.5" strokeWidth={2.5} />
-                Clear search
+                Clear filters
               </button>
             </div>
           )}
