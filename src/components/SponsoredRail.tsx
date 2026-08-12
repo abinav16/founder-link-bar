@@ -36,14 +36,15 @@ function SlotMark() {
 }
 
 function FeaturedCard({ slot }: { slot: FeaturedSlot }) {
+  const initial = (slot.founder_name || slot.name || "?").trim().charAt(0).toUpperCase();
   return (
     <a
       href={slot.website_url}
       target="_blank"
       rel="noopener noreferrer"
-      className="sb-sponsored group relative flex min-h-0 flex-1 flex-col justify-between overflow-hidden rounded-2xl border p-5 transition-all duration-500"
+      className="sb-sponsored group relative flex min-h-0 flex-1 flex-col justify-between gap-3 overflow-hidden rounded-2xl border p-5 transition-all duration-500"
     >
-      <div className="flex items-center gap-2.5">
+      <div className="flex min-w-0 items-center gap-2.5">
         <span className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-lg border border-[oklch(0.75_0.13_75_/_0.25)] bg-black/40">
           <StartupFavicon
             url={slot.website_url}
@@ -52,24 +53,39 @@ function FeaturedCard({ slot }: { slot: FeaturedSlot }) {
             size={22}
           />
         </span>
-        <span className="min-w-0">
-          <span className="block truncate text-sm font-semibold text-white/95">{slot.name}</span>
-          {slot.founder_name ? (
-            <span className="block truncate text-[11px] text-white/40">
-              by {slot.founder_name}
-            </span>
-          ) : null}
+        <span className="min-w-0 flex-1 truncate text-sm font-semibold text-white/95">
+          {slot.name}
+        </span>
+        <span className="shrink-0 rounded-full border border-[oklch(0.75_0.13_75_/_0.35)] bg-[oklch(0.75_0.13_75_/_0.12)] px-2 py-0.5 text-[9px] font-medium uppercase tracking-[0.18em] text-[oklch(0.82_0.12_75)]">
+          Featured
         </span>
       </div>
 
       <p className="line-clamp-3 text-[13px] leading-snug text-white/60">{slot.description}</p>
 
-      <span className="text-[10px] font-medium uppercase tracking-[0.32em] text-[oklch(0.78_0.12_75_/_0.7)]">
-        Featured
-      </span>
+      {slot.founder_name || slot.founder_avatar_url ? (
+        <div className="flex min-w-0 items-center gap-2 border-t border-white/5 pt-3">
+          {slot.founder_avatar_url ? (
+            <img
+              src={slot.founder_avatar_url}
+              alt={slot.founder_name ?? "Founder"}
+              loading="lazy"
+              className="h-6 w-6 shrink-0 rounded-full object-cover ring-1 ring-[oklch(0.75_0.13_75_/_0.35)]"
+            />
+          ) : (
+            <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-white/10 text-[10px] font-semibold text-white/70">
+              {initial}
+            </span>
+          )}
+          <span className="min-w-0 truncate text-[11px] text-white/50">
+            {slot.founder_name ?? "Founder"}
+          </span>
+        </div>
+      ) : null}
     </a>
   );
 }
+
 
 export function SponsoredRail({ side = "right" }: { side?: "left" | "right" }) {
   const [open, setOpen] = useState(false);
