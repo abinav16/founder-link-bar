@@ -108,7 +108,7 @@ export function SponsoredRail({ side = "right" }: { side?: "left" | "right" }) {
 
   return (
     <aside className="hidden xl:block w-full min-w-0 shrink-0" aria-label={`Sponsored (${side})`}>
-      <div className="sticky top-20 flex h-[calc(100dvh-6rem)] flex-col gap-3">
+      <div className="sticky top-20 grid h-[calc(100dvh-6rem)] grid-rows-4 gap-3">
         {railSlots(side).map((i) => {
           const taken = bookedBy.get(i);
           if (taken) return <FeaturedCard key={i} slot={taken} />;
