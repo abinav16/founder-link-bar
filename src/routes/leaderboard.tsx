@@ -359,16 +359,34 @@ function LeaderboardPage() {
                           <NewBadge className="absolute top-2 right-2" />
                         )}
                         <div className="text-xl mb-1">{MEDALS[originalIndex]}</div>
-                        <StartupFavicon
-                          url={row.website_url}
-                          name={row.name}
-                          logoUrl={row.logo_url}
-                          size={28}
-                          className={`rounded-lg mb-2 bg-white ${originalIndex === 0 ? "ring-2 ring-white/20" : "ring-1 ring-black/8"}`}
-                        />
-                        <p className={`font-semibold text-xs truncate w-full ${originalIndex === 0 ? "text-white" : "text-black"}`}>
-                          {row.name}
-                        </p>
+                        {(() => {
+                          const inner = (
+                            <>
+                              <StartupFavicon
+                                url={row.website_url}
+                                name={row.name}
+                                logoUrl={row.logo_url}
+                                size={28}
+                                className={`rounded-lg mb-2 bg-white ${originalIndex === 0 ? "ring-2 ring-white/20" : "ring-1 ring-black/8"}`}
+                              />
+                              <p className={`font-semibold text-xs truncate w-full ${originalIndex === 0 ? "text-white" : "text-black"}`}>
+                                {row.name}
+                              </p>
+                            </>
+                          );
+                          return row.slug ? (
+                            <Link
+                              to="/startup/$slug"
+                              params={{ slug: row.slug }}
+                              className="flex flex-col items-center w-full hover:opacity-80 transition-opacity"
+                            >
+                              {inner}
+                            </Link>
+                          ) : (
+                            inner
+                          );
+                        })()}
+
                         {row.id === myId && (
                           <span className={`mt-0.5 rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase ${
                             originalIndex === 0 ? "bg-white/20 text-white" : "bg-black text-white"
