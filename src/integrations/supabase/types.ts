@@ -616,6 +616,7 @@ export type Database = {
         Returns: {
           description: string
           expires_at: string
+          founder_avatar_url: string
           founder_name: string
           logo_url: string
           name: string
