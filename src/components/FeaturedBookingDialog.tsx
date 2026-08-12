@@ -61,9 +61,16 @@ export function FeaturedBookingDialog({
   const [busy, setBusy] = useState(false);
   const [wonSlot, setWonSlot] = useState<number | null>(null);
   const resumed = useRef(false);
+  const qc = useQueryClient();
+  const { data: myFeatured = [], refetch: refetchMine } = useMyFeaturedSlots();
 
   const taken = useMemo(() => new Map(slots.map((s) => [s.slot_index, s])), [slots]);
-  const allTaken = slots.length >= FEATURED_SLOT_COUNT;
+  const mineByStartup = useMemo(
+    () => new Map(myFeatured.filter((m) => m.startup_id).map((m) => [m.startup_id as string, m])),
+    [myFeatured],
+  );
+  const activeForSelected = startupId ? mineByStartup.get(startupId) : undefined;
+
 
   // Resume after returning from the payment page.
   useEffect(() => {
