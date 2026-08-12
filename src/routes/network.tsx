@@ -761,16 +761,17 @@ function HorizontalCardRail({ items }: { items: Card[] }) {
     <div className="relative">
       <div
         ref={scrollerRef}
-        className="sb-rail flex gap-4 overflow-x-auto snap-x pb-3"
+        className="sb-rail flex items-stretch gap-4 overflow-x-auto snap-x pb-3"
       >
         {items.map((s) => (
           <div
             key={s.id}
-            className="snap-start shrink-0 w-[280px] sm:w-[340px]"
+            className="snap-start shrink-0 w-[280px] sm:w-[calc((100%-2rem)/3)]"
           >
             <StartupCard s={s} />
           </div>
         ))}
+
       </div>
     </div>
   );
