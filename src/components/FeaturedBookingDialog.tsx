@@ -108,9 +108,6 @@ export function FeaturedBookingDialog({
       ]);
       if (cancelled) return;
       setSlots(s);
-      void loadNetworkStats().then((v: NetworkStats) => {
-        if (!cancelled) setStats(v);
-      });
       if (!auth.session) {
         setPhase("signin");
         return;
