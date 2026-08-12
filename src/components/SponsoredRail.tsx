@@ -11,15 +11,14 @@ import { fetchFeaturedSlots, railSlots, type FeaturedSlot } from "@/lib/featured
 function SlotMark() {
   return (
     <div className="relative">
-      <div className="absolute inset-0 scale-0 rounded-full bg-[oklch(0.75_0.13_75_/_0.2)] blur-xl transition-transform duration-700 group-hover:scale-150" />
-      <div className="relative grid h-14 w-14 place-items-center rounded-full border border-[oklch(0.75_0.13_75_/_0.3)] bg-transparent">
+      <div className="relative grid h-12 w-12 place-items-center rounded-full border border-black/15 bg-transparent">
         <svg
-          width="22"
-          height="22"
+          width="20"
+          height="20"
           viewBox="0 0 24 24"
           fill="none"
           aria-hidden="true"
-          className="text-[oklch(0.78_0.12_75)] transition-transform duration-500 group-hover:scale-110"
+          className="text-black/25 transition-colors duration-500 group-hover:text-black/45"
         >
           <path
             d="M12 2L14.5 9.5H22L16 14L18.5 21.5L12 17L5.5 21.5L8 14L2 9.5H9.5L12 2Z"
