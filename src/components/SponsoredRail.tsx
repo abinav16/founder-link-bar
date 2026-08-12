@@ -12,7 +12,7 @@ function SlotMark() {
   return (
     <div className="relative">
       <div className="absolute inset-0 scale-0 rounded-full bg-[oklch(0.75_0.13_75_/_0.2)] blur-xl transition-transform duration-700 group-hover:scale-150" />
-      <div className="relative grid h-14 w-14 place-items-center rounded-full border border-[oklch(0.75_0.13_75_/_0.3)] bg-[oklch(0.17_0.008_260)] shadow-inner">
+      <div className="relative grid h-14 w-14 place-items-center rounded-full border border-[oklch(0.75_0.13_75_/_0.3)] bg-transparent">
         <svg
           width="22"
           height="22"
@@ -28,7 +28,7 @@ function SlotMark() {
             stroke="currentColor"
             strokeWidth="0.5"
           />
-          <circle cx="12" cy="12" r="2" fill="oklch(0.13 0.005 260)" />
+          <circle cx="12" cy="12" r="2" fill="none" />
         </svg>
       </div>
     </div>
@@ -118,7 +118,7 @@ export function SponsoredRail({ side = "right" }: { side?: "left" | "right" }) {
                 setSlot(i);
                 setOpen(true);
               }}
-              className="sb-sponsored group relative flex h-full min-h-0 w-full flex-col items-center justify-center gap-5 overflow-hidden rounded-2xl border p-6 text-center transition-all duration-500"
+              className="group relative flex h-full min-h-0 w-full flex-col items-center justify-center gap-5 overflow-hidden rounded-2xl border border-dashed border-[oklch(0.75_0.13_75_/_0.28)] bg-transparent p-6 text-center transition-all duration-500 hover:border-[oklch(0.78_0.12_75_/_0.6)] hover:bg-[oklch(0.75_0.13_75_/_0.04)]"
             >
               <SlotMark />
 
