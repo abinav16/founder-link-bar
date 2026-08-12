@@ -283,12 +283,56 @@ export function FeaturedBookingDialog({
               Feature your startup
             </DialogTitle>
             <p className="text-[12.5px] leading-snug text-black/50">
-              A spot on the network sidebar — logo, name, founder and one-liner. Billed monthly.
+              Put your logo, name, founder and one liner in front of the whole network.
             </p>
           </DialogHeader>
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-6">
+          {phase !== "verifying" && phase !== "success" && (
+            <div className="space-y-3 pt-5">
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { v: "100K+", l: "monthly views" },
+                  { v: "70+", l: "live sites" },
+                  { v: "3", l: "surfaces" },
+                ].map((m) => (
+                  <div
+                    key={m.l}
+                    className="rounded-xl border border-[oklch(0.72_0.13_75_/_0.3)] bg-[oklch(0.72_0.13_75_/_0.05)] px-2.5 py-2.5 text-center"
+                  >
+                    <span className="block text-[17px] font-semibold tracking-tight text-black">
+                      {m.v}
+                    </span>
+                    <span className="block text-[9.5px] uppercase tracking-[0.14em] text-black/40">
+                      {m.l}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="rounded-xl border border-black/10 px-4 py-3.5">
+                <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-black/35">
+                  How it works
+                </span>
+                <ol className="mt-2.5 space-y-2">
+                  {[
+                    "Pick a free slot and subscribe. Your card goes live in minutes.",
+                    "Your startup sits in the network sidebar on every page, seen by founders and visitors across the network.",
+                    "You also get highlighted on the network page cards and on the leaderboard cards so people spot you while browsing.",
+                  ].map((t, i) => (
+                    <li key={i} className="flex gap-2.5 text-[12px] leading-relaxed text-black/55">
+                      <span className="mt-[1px] grid h-4 w-4 shrink-0 place-items-center rounded-full bg-[oklch(0.72_0.13_75_/_0.16)] text-[9px] font-semibold text-[oklch(0.5_0.11_75)]">
+                        {i + 1}
+                      </span>
+                      {t}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            </div>
+          )}
+
 
           {phase === "loading" && (
             <div className="flex items-center justify-center py-14 text-black/30">
