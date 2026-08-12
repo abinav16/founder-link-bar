@@ -138,48 +138,48 @@ function StartupCard({ s }: { s: Card }) {
           <span className="sr-only">View {s.name} profile</span>
         </StartupProfileLink>
       )}
-      {sponsored ? (
-        <span className="absolute top-3 right-3 z-20 text-[9px] font-semibold tracking-[0.12em] uppercase px-1.5 py-0.5 rounded-full bg-[oklch(0.65_0.15_68)] text-white leading-none shadow-sm">
-          Featured
-        </span>
-      ) : fresh ? (
-        <span className="absolute top-3 right-3 z-20 text-[9px] font-semibold tracking-[0.12em] uppercase px-1.5 py-0.5 rounded-full bg-black text-white leading-none">
-          New
-        </span>
-      ) : null}
-
       <div className="relative z-10 flex-1 min-w-0 pointer-events-none">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl overflow-hidden bg-white border border-black/[0.08] flex items-center justify-center shrink-0">
             <StartupFavicon url={s.website_url} name={s.name} logoUrl={s.logo_url} size={32} />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 min-w-0">
-              <h3 className="text-[15px] font-bold text-black leading-snug min-w-0 truncate">{s.name}</h3>
-              <a
-                href={visitHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`Visit ${s.name} website`}
-                title={`Visit ${s.name} website`}
-                className="pointer-events-auto shrink-0 inline-flex items-center justify-center h-6 w-6 rounded-full border border-black/10 bg-white text-black/50 hover:text-black hover:border-black/30 transition-colors"
-              >
-                <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2} />
-              </a>
-
+            <div className="flex items-center gap-1.5 min-w-0">
+              <h3 className="min-w-0 flex-1 truncate text-[15px] font-bold text-black leading-snug">{s.name}</h3>
+              {sponsored ? (
+                <span className="shrink-0 rounded-full bg-[oklch(0.65_0.15_68)] px-1.5 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-[0.12em] text-white shadow-sm">
+                  Featured
+                </span>
+              ) : fresh ? (
+                <span className="shrink-0 rounded-full bg-black px-1.5 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-[0.12em] text-white">
+                  New
+                </span>
+              ) : null}
             </div>
-            <div className="mt-1">
+            <div className="mt-1 min-w-0">
               <FounderChip s={s} />
             </div>
           </div>
-          {s.slug && (
-            <StartupProfileLink
-              slug={s.slug}
-              className="pointer-events-auto shrink-0 inline-flex items-center justify-center h-9 w-9 rounded-full bg-black text-white hover:bg-black/80 transition-colors"
+          <div className="flex shrink-0 items-center gap-1.5">
+            <a
+              href={visitHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Visit ${s.name} website`}
+              title={`Visit ${s.name} website`}
+              className="pointer-events-auto inline-flex h-7 w-7 items-center justify-center rounded-full border border-black/10 bg-white text-black/50 transition-colors hover:border-black/30 hover:text-black"
             >
-              <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
-            </StartupProfileLink>
-          )}
+              <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2} />
+            </a>
+            {s.slug && (
+              <StartupProfileLink
+                slug={s.slug}
+                className="pointer-events-auto inline-flex h-9 w-9 items-center justify-center rounded-full bg-black text-white transition-colors hover:bg-black/80"
+              >
+                <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
+              </StartupProfileLink>
+            )}
+          </div>
         </div>
         <p className="mt-3 text-[13px] text-black/45 leading-relaxed line-clamp-2 sm:min-h-[2.9em]">{s.description}</p>
       </div>
@@ -224,7 +224,7 @@ function joinedLabel(createdAt: string) {
 function FounderChip({ s }: { s: Card }) {
   if (!s.founder_name) return null;
   return (
-    <span className="inline-flex items-center gap-1.5 min-w-0">
+    <span className="flex w-full min-w-0 items-center gap-1.5">
       {s.founder_avatar_url ? (
         <img
           src={s.founder_avatar_url}
@@ -794,7 +794,7 @@ function HorizontalCardRail({ items }: { items: Card[] }) {
         {items.map((s) => (
           <div
             key={s.id}
-            className="snap-start shrink-0 w-[280px] sm:w-[calc((100%-2rem)/3)]"
+            className="snap-start shrink-0 w-[280px] sm:w-[calc((100%-1rem)/2)] xl:w-[calc((100%-2rem)/3)]"
           >
             <StartupCard s={s} />
           </div>
