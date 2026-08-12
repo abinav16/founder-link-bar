@@ -224,7 +224,7 @@ function joinedLabel(createdAt: string) {
 function FounderChip({ s }: { s: Card }) {
   if (!s.founder_name) return null;
   return (
-    <span className="inline-flex items-center gap-1.5 min-w-0">
+    <span className="flex w-full min-w-0 items-center gap-1.5">
       {s.founder_avatar_url ? (
         <img
           src={s.founder_avatar_url}
@@ -794,7 +794,7 @@ function HorizontalCardRail({ items }: { items: Card[] }) {
         {items.map((s) => (
           <div
             key={s.id}
-            className="snap-start shrink-0 w-[280px] sm:w-[calc((100%-2rem)/3)]"
+            className="snap-start shrink-0 w-[280px] sm:w-[calc((100%-1rem)/2)] xl:w-[calc((100%-2rem)/3)]"
           >
             <StartupCard s={s} />
           </div>
