@@ -92,15 +92,32 @@ serve(async (req) => {
     // fulfil the slot. This makes activation resilient when a webhook is late
     // or was not delivered, while still treating Dodo as the source of truth.
     if (body?.action === "confirm_featured") {
-      let subscriptionId = typeof body?.subscription_id === "string"
+      const requestedId = typeof body?.subscription_id === "string"
         ? body.subscription_id.trim()
         : "";
       const baseUrl = mode === "test"
         ? "https://test.dodopayments.com"
         : "https://live.dodopayments.com";
-      // Recovery for a return URL that was already cleaned by an older client:
-      // find this user's newest active featured subscription by signed metadata.
-      if (!subscriptionId) {
+      const paidStatuses = new Set(["active", "succeeded", "completed"]);
+
+      const isMine = (sub: any) =>
+        sub?.metadata?.kind === "featured" &&
+        sub?.metadata?.user_id === userData.user.id;
+
+      async function getSubscription(id: string) {
+        const res = await fetch(`${baseUrl}/subscriptions/${encodeURIComponent(id)}`, {
+          headers: { "Authorization": `Bearer ${apiKey}` },
+        });
+        const raw = await res.text();
+        try {
+          return res.ok && raw ? JSON.parse(raw) : null;
+        } catch {
+          return null;
+        }
+      }
+
+      // Fallback discovery: this user's newest paid featured subscription.
+      async function findMine() {
         const listRes = await fetch(`${baseUrl}/subscriptions`, {
           headers: { "Authorization": `Bearer ${apiKey}` },
         });
@@ -114,42 +131,36 @@ serve(async (req) => {
         const candidates = Array.isArray(listPayload)
           ? listPayload
           : (Array.isArray(listPayload?.items) ? listPayload.items : []);
-        const match = candidates.find((item: any) =>
-          item?.metadata?.kind === "featured" &&
-          item?.metadata?.user_id === userData.user.id &&
-          ["active", "succeeded", "completed"].includes(String(item?.status ?? "").toLowerCase())
-        );
-        subscriptionId = String(match?.subscription_id ?? match?.id ?? "");
-        if (!subscriptionId) {
-          return new Response(JSON.stringify({ pending: true, error: "No active featured subscription found" }), {
-            status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+        return candidates.find((item: any) =>
+          isMine(item) && paidStatuses.has(String(item?.status ?? "").toLowerCase())
+        ) ?? null;
+      }
+
+      let subscription: any = requestedId ? await getSubscription(requestedId) : null;
+      let subscriptionId = subscription ? requestedId : "";
+
+      // If the direct lookup failed, is not ours, or isn't paid yet, try to
+      // discover a paid featured subscription for this user instead of giving up.
+      if (
+        !subscription || !isMine(subscription) ||
+        !paidStatuses.has(String(subscription.status ?? "").toLowerCase())
+      ) {
+        const discovered = await findMine();
+        if (discovered) {
+          subscription = discovered;
+          subscriptionId = String(discovered.subscription_id ?? discovered.id ?? "");
         }
       }
-      const verifyRes = await fetch(`${baseUrl}/subscriptions/${encodeURIComponent(subscriptionId)}`, {
-        headers: { "Authorization": `Bearer ${apiKey}` },
-      });
-      const verifyRaw = await verifyRes.text();
-      let subscription: any = null;
-      try {
-        subscription = verifyRaw ? JSON.parse(verifyRaw) : null;
-      } catch {
-        subscription = null;
-      }
-      if (!verifyRes.ok || !subscription) {
-        return new Response(JSON.stringify({
-          error: `Could not verify subscription (${verifyRes.status})`,
-          pending: verifyRes.status === 404,
-        }), {
-          status: verifyRes.status === 404 ? 202 : 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+
+      if (!subscription || !subscriptionId) {
+        return new Response(JSON.stringify({ pending: true, error: "Payment not confirmed yet" }), {
+          status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
       const metadata = subscription.metadata ?? {};
       const subscriptionStatus = String(subscription.status ?? "").toLowerCase();
-      const paidStatuses = new Set(["active", "succeeded", "completed"]);
-      if (metadata.kind !== "featured" || metadata.user_id !== userData.user.id) {
+      if (!isMine(subscription)) {
         return new Response(JSON.stringify({ error: "Subscription does not belong to this booking" }), {
           status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -159,6 +170,7 @@ serve(async (req) => {
           status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+
 
       const slotIndex = Number(metadata.slot_index);
       const startupId = typeof metadata.startup_id === "string" ? metadata.startup_id : "";
