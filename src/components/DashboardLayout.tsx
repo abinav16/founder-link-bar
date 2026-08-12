@@ -84,7 +84,7 @@ export function DashboardLayout({
       </div>
 
       <header className="sticky top-0 z-30 border-b border-black/8 bg-white" suppressHydrationWarning>
-        <div className={`mx-auto flex h-14 ${rail ? "max-w-6xl lg:max-w-[1800px]" : "max-w-6xl"} items-center gap-4 px-4 sm:gap-8 sm:px-6`}>
+        <div className={`mx-auto flex h-14 ${rail ? "max-w-6xl xl:max-w-[1800px]" : "max-w-6xl"} items-center gap-4 px-4 sm:gap-8 sm:px-6`}>
           <Link to="/" className="flex shrink-0 items-center gap-2">
             <div className="h-2 w-6 rounded-sm bg-black" />
             <span className="text-sm font-semibold tracking-tight text-black">StartupBar</span>
@@ -151,7 +151,7 @@ export function DashboardLayout({
       <main
         className={`mx-auto w-full flex-1 px-4 py-6 sm:px-6 sm:py-8 ${
           rail
-            ? "max-w-6xl lg:max-w-[1800px] lg:grid lg:grid-cols-[150px_minmax(0,1fr)_150px] lg:gap-3 xl:grid-cols-[190px_minmax(0,1fr)_190px] xl:gap-5 2xl:grid-cols-[280px_minmax(0,1fr)_280px] 2xl:gap-8"
+            ? "max-w-6xl xl:max-w-[1800px] xl:grid xl:grid-cols-[220px_minmax(0,1fr)_220px] xl:gap-6 2xl:grid-cols-[280px_minmax(0,1fr)_280px] 2xl:gap-8"
             : "max-w-6xl"
         }`}
       >
