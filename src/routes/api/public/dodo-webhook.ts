@@ -72,23 +72,41 @@ export const Route = createFileRoute("/api/public/dodo-webhook")({
 
         const type: string = event?.type ?? "";
         const data = event?.data ?? {};
-        const paymentId: string | undefined = data.payment_id ?? data.id;
         const status: string = String(data.status ?? "").toLowerCase();
         const customerEmail: string = String(data.customer?.email ?? "").toLowerCase();
         const metaUserId: string | undefined = data.metadata?.user_id;
+
+        // Featured slots are sold as a Dodo subscription, so the stable id for
+        // those events is subscription_id; one-time listings use payment_id.
+        const isSubscriptionEvent =
+          type.startsWith("subscription.") || Boolean(data.subscription_id);
+        const subscriptionId: string | undefined = data.subscription_id ??
+          (type.startsWith("subscription.") ? data.id : undefined);
+        const paymentId: string | undefined = isSubscriptionEvent
+          ? subscriptionId
+          : (data.payment_id ?? data.id);
 
         if (!paymentId) {
           return new Response("ok", { status: 200 });
         }
 
-        // Only act on succeeded payments. Ignore other event types (refunds, etc.).
+        // Renewal charges arrive as payment/subscription events on an existing
+        // subscription — they extend the term instead of creating a new slot.
+        const isRenewal = type === "subscription.renewed" ||
+          (isSubscriptionEvent && (type === "payment.succeeded" || type === "payment.completed"));
+
+        // Only act on succeeded payments / active subscriptions.
         const isSucceeded =
           status === "succeeded" ||
+          status === "active" ||
           type === "payment.succeeded" ||
-          type === "payment.completed";
+          type === "payment.completed" ||
+          type === "subscription.active" ||
+          type === "subscription.renewed";
         if (!isSucceeded) {
           return new Response("ok", { status: 200 });
         }
+
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
