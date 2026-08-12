@@ -117,7 +117,7 @@ function isNew(createdAt: string) {
 }
 
 function StartupCard({ s }: { s: Card }) {
-  const fresh = isNew(s.created_at);
+  
   const sponsored = s.sponsored;
   const profileHref = s.slug ? `/startup/${s.slug}` : undefined;
   const visitHref = `/api/public/widget/click?id=${s.id}&source=dashboard`;
