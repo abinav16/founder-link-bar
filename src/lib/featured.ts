@@ -2,8 +2,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 /** Total sidebar slots: 1-4 = left rail, 5-8 = right rail. */
 export const FEATURED_SLOT_COUNT = 8;
-/** Monthly price, USD. Placeholder until the Dodo product price is fixed. */
-export const FEATURED_PRICE_USD = 29;
+/** Monthly price, USD. */
+export const FEATURED_PRICE_USD = 79;
 export const FEATURED_DAYS = 30;
 
 export type FeaturedSlot = {
