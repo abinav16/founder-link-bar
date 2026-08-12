@@ -35,6 +35,32 @@ type Phase = "loading" | "signin" | "no-startup" | "choose" | "waitlist" | "veri
 
 
 
+type NetworkStats = { impressions30d: number; startups: number; clicks: number };
+
+function compact(n?: number | null) {
+  if (n === undefined || n === null) return "…";
+  if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(/\.0$/, "")}K`;
+  return String(n);
+}
+
+async function loadNetworkStats(): Promise<NetworkStats> {
+  const since = new Date(Date.now() - 30 * 864e5).toISOString();
+  const [imp, ups, totals] = await Promise.all([
+    supabase
+      .from("impressions")
+      .select("id", { count: "exact", head: true })
+      .gte("created_at", since),
+    supabase.from("startups").select("id", { count: "exact", head: true }).eq("status", "approved"),
+    supabase.rpc("public_network_totals_all"),
+  ]);
+  const t = (totals.data as unknown as { total_clicks: number }[] | null)?.[0];
+  return {
+    impressions30d: imp.count ?? 0,
+    startups: ups.count ?? 0,
+    clicks: Number(t?.total_clicks ?? 0),
+  };
+}
+
 const RETURN_KEY = "startupbar:featured-pending";
 
 export function FeaturedBookingDialog({
@@ -60,7 +86,7 @@ export function FeaturedBookingDialog({
   const [slot, setSlot] = useState<number>(initialSlot ?? 0);
   const [busy, setBusy] = useState(false);
   const [wonSlot, setWonSlot] = useState<number | null>(null);
-  const [approvedCount, setApprovedCount] = useState<number | null>(null);
+  const [stats, setStats] = useState<{ impressions30d: number; startups: number; clicks: number } | null>(null);
   const resumed = useRef(false);
   const qc = useQueryClient();
   const { data: myFeatured = [], refetch: refetchMine } = useMyFeaturedSlots();
@@ -105,13 +131,9 @@ export function FeaturedBookingDialog({
       ]);
       if (cancelled) return;
       setSlots(s);
-      void supabase
-        .from("startups")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "approved")
-        .then(({ count }) => {
-          if (!cancelled && count) setApprovedCount(count);
-        });
+      void loadNetworkStats().then((v: NetworkStats) => {
+        if (!cancelled) setStats(v);
+      });
       if (!auth.session) {
         setPhase("signin");
         return;
@@ -298,7 +320,24 @@ export function FeaturedBookingDialog({
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-6">
           {phase !== "verifying" && phase !== "success" && (
-            <div className="pt-5">
+            <div className="space-y-3 pt-5">
+              <div className="grid grid-cols-3 divide-x divide-black/8 rounded-xl border border-black/10">
+                {[
+                  { v: compact(stats?.impressions30d), l: "impressions / 30d" },
+                  { v: stats ? String(stats.startups) : "…", l: "live startups" },
+                  { v: compact(stats?.clicks), l: "clicks delivered" },
+                ].map((m) => (
+                  <div key={m.l} className="px-2 py-3 text-center">
+                    <span className="block text-[18px] font-semibold tracking-tight text-black tabular-nums">
+                      {m.v}
+                    </span>
+                    <span className="mt-0.5 block text-[9.5px] uppercase tracking-[0.12em] text-black/35">
+                      {m.l}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
               <div className="rounded-xl border border-black/10">
                 <div className="border-b border-black/8 px-4 py-2.5">
                   <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-black/35">
@@ -320,13 +359,13 @@ export function FeaturedBookingDialog({
                   ))}
                 </ul>
                 <p className="border-t border-black/8 px-4 py-2.5 text-[11px] leading-relaxed text-black/40">
-                  {approvedCount ? `${approvedCount} startups are in the network today. ` : ""}
-                  This does not touch the widget. Everyone keeps the same delivery, impressions and
-                  clicks.
+                  Numbers are live from the network. This does not touch the widget, so everyone
+                  keeps the same delivery, impressions and clicks.
                 </p>
               </div>
             </div>
           )}
+
 
 
 
