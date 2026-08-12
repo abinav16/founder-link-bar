@@ -63,7 +63,7 @@ export function FeaturedBookingDialog({
   const [slot, setSlot] = useState<number>(initialSlot ?? 0);
   const [busy, setBusy] = useState(false);
   const [wonSlot, setWonSlot] = useState<number | null>(null);
-  const [stats, setStats] = useState<{ impressions30d: number; startups: number; clicks: number } | null>(null);
+  
   const resumed = useRef(false);
   const qc = useQueryClient();
   const { data: myFeatured = [], refetch: refetchMine } = useMyFeaturedSlots();
