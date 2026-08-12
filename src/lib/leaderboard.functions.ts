@@ -145,6 +145,7 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
     const t = totalsMap.get(s.id);
     return {
       ...s,
+      sponsored: Boolean((s as any).sponsored),
       impressions: Number(t?.impressions ?? 0),
       clicks: Number(t?.clicks ?? 0),
       impressions_given: Number(t?.impressions_given ?? 0),
