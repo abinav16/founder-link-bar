@@ -112,12 +112,9 @@ function StartupProfileLink({ slug, children, className }: { slug: string; child
   );
 }
 
-function isNew(createdAt: string) {
-  return Date.now() - new Date(createdAt).getTime() < 7 * 24 * 60 * 60 * 1000;
-}
 
 function StartupCard({ s }: { s: Card }) {
-  const fresh = isNew(s.created_at);
+  
   const sponsored = s.sponsored;
   const profileHref = s.slug ? `/startup/${s.slug}` : undefined;
   const visitHref = `/api/public/widget/click?id=${s.id}&source=dashboard`;
@@ -150,11 +147,8 @@ function StartupCard({ s }: { s: Card }) {
                 <span className="shrink-0 rounded-full bg-[oklch(0.65_0.15_68)] px-1.5 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-[0.12em] text-white shadow-sm">
                   Featured
                 </span>
-              ) : fresh ? (
-                <span className="shrink-0 rounded-full bg-black px-1.5 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-[0.12em] text-white">
-                  New
-                </span>
               ) : null}
+
             </div>
             <div className="mt-1 min-w-0">
               <FounderChip s={s} />
