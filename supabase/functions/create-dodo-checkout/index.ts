@@ -224,6 +224,85 @@ serve(async (req) => {
       });
     }
 
+    // Cancel a featured subscription. The slot stays live until the end of the
+    // paid period; only auto-renewal is switched off.
+    if (body?.action === "cancel_featured") {
+      const slotId = typeof body?.slot_id === "string" ? body.slot_id.trim() : "";
+      if (!slotId) {
+        return new Response(JSON.stringify({ error: "Missing slot_id" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      if (!serviceKey) {
+        return new Response(JSON.stringify({ error: "Missing backend service configuration" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const admin = createClient(supabaseUrl, serviceKey, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      });
+      const { data: slotRow } = await admin
+        .from("featured_slots")
+        .select("id, user_id, dodo_payment_id, status, cancel_at_period_end, expires_at")
+        .eq("id", slotId)
+        .maybeSingle();
+      // Ownership check: never let one user cancel another user's slot.
+      if (!slotRow || slotRow.user_id !== userData.user.id) {
+        return new Response(JSON.stringify({ error: "Not found" }), {
+          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (slotRow.cancel_at_period_end) {
+        return new Response(JSON.stringify({ ok: true, already: true, expires_at: slotRow.expires_at }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const baseUrl = mode === "test"
+        ? "https://test.dodopayments.com"
+        : "https://live.dodopayments.com";
+      if (slotRow.dodo_payment_id) {
+        try {
+          const res = await fetch(
+            `${baseUrl}/subscriptions/${encodeURIComponent(slotRow.dodo_payment_id)}`,
+            {
+              method: "PATCH",
+              headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+              body: JSON.stringify({ cancel_at_next_billing_date: true }),
+            },
+          );
+          if (!res.ok) {
+            const detail = await res.text();
+            console.error("dodo cancel failed", res.status, detail);
+            return new Response(JSON.stringify({ error: "Could not cancel the subscription with the payment provider." }), {
+              status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+          }
+        } catch (e) {
+          console.error("dodo cancel error", e);
+          return new Response(JSON.stringify({ error: "Could not reach the payment provider." }), {
+            status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      }
+
+      const { error: updErr } = await admin
+        .from("featured_slots")
+        .update({ cancel_at_period_end: true, cancelled_at: new Date().toISOString() })
+        .eq("id", slotId);
+      if (updErr) {
+        console.error("featured cancel update failed", updErr);
+        return new Response(JSON.stringify({ error: "Could not record the cancellation" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify({ ok: true, expires_at: slotRow.expires_at }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+
     if (!isAllowedReturnUrl(return_url)) {
       return new Response(JSON.stringify({ error: "Invalid return_url" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
