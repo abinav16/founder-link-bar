@@ -22,6 +22,7 @@ export interface LeaderboardRow {
   clicks: number;
   impressions_given: number;
   clicks_given: number;
+  sponsored: boolean;
   dailyImpressions: number[];
   dailyGiven: number[];
   dailyClicks: number[];
