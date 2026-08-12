@@ -52,7 +52,8 @@ export function FeaturedBookingDialog({
   useEffect(() => {
     if (!watchReturn || resumed.current || typeof window === "undefined") return;
     const p = new URLSearchParams(window.location.search);
-    const paymentId = p.get("payment_id");
+    // Subscriptions return subscription_id; keep payment_id for older links.
+    const paymentId = p.get("subscription_id") || p.get("payment_id");
     if (!p.get("featured") || !paymentId) return;
     resumed.current = true;
     onOpenChange(true);
@@ -61,6 +62,8 @@ export function FeaturedBookingDialog({
     // Clean the URL so a refresh doesn't re-trigger.
     p.delete("featured");
     p.delete("payment_id");
+    p.delete("subscription_id");
+
     const qs = p.toString();
     window.history.replaceState({}, "", window.location.pathname + (qs ? `?${qs}` : ""));
     // eslint-disable-next-line react-hooks/exhaustive-deps
