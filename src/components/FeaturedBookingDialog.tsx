@@ -60,6 +60,7 @@ export function FeaturedBookingDialog({
   const [slot, setSlot] = useState<number>(initialSlot ?? 0);
   const [busy, setBusy] = useState(false);
   const [wonSlot, setWonSlot] = useState<number | null>(null);
+  const [approvedCount, setApprovedCount] = useState<number | null>(null);
   const resumed = useRef(false);
   const qc = useQueryClient();
   const { data: myFeatured = [], refetch: refetchMine } = useMyFeaturedSlots();
@@ -104,6 +105,13 @@ export function FeaturedBookingDialog({
       ]);
       if (cancelled) return;
       setSlots(s);
+      void supabase
+        .from("startups")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "approved")
+        .then(({ count }) => {
+          if (!cancelled && count) setApprovedCount(count);
+        });
       if (!auth.session) {
         setPhase("signin");
         return;
@@ -283,55 +291,44 @@ export function FeaturedBookingDialog({
               Feature your startup
             </DialogTitle>
             <p className="text-[12.5px] leading-snug text-black/50">
-              Put your logo, name, founder and one liner in front of the whole network.
+              Extra visibility on startupbar.co for founders browsing the network.
             </p>
           </DialogHeader>
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-6">
           {phase !== "verifying" && phase !== "success" && (
-            <div className="space-y-3 pt-5">
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { v: "100K+", l: "monthly views" },
-                  { v: "70+", l: "live sites" },
-                  { v: "3", l: "surfaces" },
-                ].map((m) => (
-                  <div
-                    key={m.l}
-                    className="rounded-xl border border-[oklch(0.72_0.13_75_/_0.3)] bg-[oklch(0.72_0.13_75_/_0.05)] px-2.5 py-2.5 text-center"
-                  >
-                    <span className="block text-[17px] font-semibold tracking-tight text-black">
-                      {m.v}
-                    </span>
-                    <span className="block text-[9.5px] uppercase tracking-[0.14em] text-black/40">
-                      {m.l}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="rounded-xl border border-black/10 px-4 py-3.5">
-                <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-black/35">
-                  How it works
-                </span>
-                <ol className="mt-2.5 space-y-2">
+            <div className="pt-5">
+              <div className="rounded-xl border border-black/10">
+                <div className="border-b border-black/8 px-4 py-2.5">
+                  <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-black/35">
+                    Where you appear
+                  </span>
+                </div>
+                <ul className="divide-y divide-black/6">
                   {[
-                    "Pick a free slot and subscribe. Your card goes live in minutes.",
-                    "Your startup sits in the network sidebar on every page, seen by founders and visitors across the network.",
-                    "You also get highlighted on the network page cards and on the leaderboard cards so people spot you while browsing.",
-                  ].map((t, i) => (
-                    <li key={i} className="flex gap-2.5 text-[12px] leading-relaxed text-black/55">
-                      <span className="mt-[1px] grid h-4 w-4 shrink-0 place-items-center rounded-full bg-[oklch(0.72_0.13_75_/_0.16)] text-[9px] font-semibold text-[oklch(0.5_0.11_75)]">
-                        {i + 1}
+                    ["Network sidebar", "Your card sits in the fixed rail on startupbar.co with logo, name, founder and one liner."],
+                    ["Network page cards", "Your listing is highlighted so it stands out while people scroll the directory."],
+                    ["Leaderboard cards", "Same highlight on the leaderboard, next to your live stats."],
+                  ].map(([t, d]) => (
+                    <li key={t} className="px-4 py-3">
+                      <span className="block text-[12.5px] font-medium text-black">{t}</span>
+                      <span className="mt-0.5 block text-[11.5px] leading-relaxed text-black/45">
+                        {d}
                       </span>
-                      {t}
                     </li>
                   ))}
-                </ol>
+                </ul>
+                <p className="border-t border-black/8 px-4 py-2.5 text-[11px] leading-relaxed text-black/40">
+                  {approvedCount ? `${approvedCount} startups are in the network today. ` : ""}
+                  This does not touch the widget. Everyone keeps the same delivery, impressions and
+                  clicks.
+                </p>
               </div>
             </div>
           )}
+
+
 
 
           {phase === "loading" && (
