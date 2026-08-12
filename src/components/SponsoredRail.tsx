@@ -42,7 +42,7 @@ function FeaturedCard({ slot }: { slot: FeaturedSlot }) {
       href={slot.website_url}
       target="_blank"
       rel="noopener noreferrer"
-      className="sb-sponsored group relative flex min-h-0 flex-1 flex-col gap-3 overflow-hidden rounded-2xl border p-4 transition-all duration-500"
+      className="sb-sponsored group relative flex h-full min-h-0 w-full flex-col gap-3 overflow-hidden rounded-2xl border p-4 transition-all duration-500"
     >
       {/* Top block: big logo on the left, name + founder stacked on the right */}
       <div className="flex min-w-0 items-center gap-3">
@@ -108,7 +108,7 @@ export function SponsoredRail({ side = "right" }: { side?: "left" | "right" }) {
 
   return (
     <aside className="hidden xl:block w-full min-w-0 shrink-0" aria-label={`Sponsored (${side})`}>
-      <div className="sticky top-20 flex h-[calc(100dvh-6rem)] flex-col gap-3">
+      <div className="sticky top-20 grid h-[calc(100dvh-6rem)] grid-rows-4 gap-3">
         {railSlots(side).map((i) => {
           const taken = bookedBy.get(i);
           if (taken) return <FeaturedCard key={i} slot={taken} />;
@@ -120,7 +120,7 @@ export function SponsoredRail({ side = "right" }: { side?: "left" | "right" }) {
                 setSlot(i);
                 setOpen(true);
               }}
-              className="sb-sponsored group relative flex min-h-0 flex-1 flex-col items-center justify-center gap-5 overflow-hidden rounded-2xl border p-6 text-center transition-all duration-500"
+              className="sb-sponsored group relative flex h-full min-h-0 w-full flex-col items-center justify-center gap-5 overflow-hidden rounded-2xl border p-6 text-center transition-all duration-500"
             >
               <SlotMark />
 
