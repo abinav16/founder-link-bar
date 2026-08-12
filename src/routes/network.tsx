@@ -150,11 +150,8 @@ function StartupCard({ s }: { s: Card }) {
                 <span className="shrink-0 rounded-full bg-[oklch(0.65_0.15_68)] px-1.5 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-[0.12em] text-white shadow-sm">
                   Featured
                 </span>
-              ) : fresh ? (
-                <span className="shrink-0 rounded-full bg-black px-1.5 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-[0.12em] text-white">
-                  New
-                </span>
               ) : null}
+
             </div>
             <div className="mt-1 min-w-0">
               <FounderChip s={s} />
