@@ -57,7 +57,7 @@ function FeaturedCard({ slot }: { slot: FeaturedSlot }) {
 
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <div className="flex min-w-0 items-center gap-2">
-            <span className="min-w-0 flex-1 truncate text-sm font-semibold leading-tight text-white/95">
+            <span className="min-w-0 flex-1 break-words text-sm font-semibold leading-tight text-white/95 line-clamp-2">
               {slot.name}
             </span>
             <span className="shrink-0 rounded-full border border-[oklch(0.75_0.13_75_/_0.35)] bg-[oklch(0.75_0.13_75_/_0.12)] px-1.5 py-0.5 text-[8px] font-medium uppercase tracking-[0.14em] text-[oklch(0.82_0.12_75)]">
