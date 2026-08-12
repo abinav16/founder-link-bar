@@ -60,6 +60,7 @@ export function FeaturedBookingDialog({
   const [slot, setSlot] = useState<number>(initialSlot ?? 0);
   const [busy, setBusy] = useState(false);
   const [wonSlot, setWonSlot] = useState<number | null>(null);
+  const [approvedCount, setApprovedCount] = useState<number | null>(null);
   const resumed = useRef(false);
   const qc = useQueryClient();
   const { data: myFeatured = [], refetch: refetchMine } = useMyFeaturedSlots();
@@ -104,6 +105,13 @@ export function FeaturedBookingDialog({
       ]);
       if (cancelled) return;
       setSlots(s);
+      void supabase
+        .from("startups")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "approved")
+        .then(({ count }) => {
+          if (!cancelled && count) setApprovedCount(count);
+        });
       if (!auth.session) {
         setPhase("signin");
         return;
