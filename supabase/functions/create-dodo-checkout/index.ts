@@ -43,6 +43,23 @@ serve(async (req) => {
     // legacy DODO_MODE value can never select the live checkout.
     const configuredMode = Deno.env.get("DODO_CHECKOUT_ENV") ?? Deno.env.get("DODO_MODE");
     const mode = configuredMode?.trim().toLowerCase() === "test" ? "test" : "live";
+
+    // Non-sensitive diagnostic ping: reports which environment is active without
+    // ever echoing credential values.
+    if (new URL(req.url).searchParams.get("diag") === "1") {
+      return new Response(
+        JSON.stringify({
+          mode,
+          checkoutEnvSet: !!Deno.env.get("DODO_CHECKOUT_ENV"),
+          checkoutEnvIsTest: Deno.env.get("DODO_CHECKOUT_ENV")?.trim().toLowerCase() === "test",
+          legacyModeIsTest: Deno.env.get("DODO_MODE")?.trim().toLowerCase() === "test",
+          hasTestApiKey: !!Deno.env.get("DODO_TEST_API_KEY"),
+          hasTestFeaturedProduct: !!Deno.env.get("DODO_TEST_FEATURED_PRODUCT_ID"),
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const apiKey = mode === "test"
       ? (Deno.env.get("DODO_TEST_API_KEY") ?? Deno.env.get("DODO_PAYMENTS_API_KEY"))
       : Deno.env.get("DODO_PAYMENTS_API_KEY");
