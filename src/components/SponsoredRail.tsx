@@ -57,7 +57,7 @@ function FeaturedCard({ slot }: { slot: FeaturedSlot }) {
 
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <div className="flex min-w-0 items-center gap-2">
-            <span className="min-w-0 flex-1 truncate text-sm font-semibold leading-tight text-white/95">
+            <span className="min-w-0 flex-1 break-words text-sm font-semibold leading-tight text-white/95 line-clamp-2">
               {slot.name}
             </span>
             <span className="shrink-0 rounded-full border border-[oklch(0.75_0.13_75_/_0.35)] bg-[oklch(0.75_0.13_75_/_0.12)] px-1.5 py-0.5 text-[8px] font-medium uppercase tracking-[0.14em] text-[oklch(0.82_0.12_75)]">
@@ -108,7 +108,7 @@ export function SponsoredRail({ side = "right" }: { side?: "left" | "right" }) {
 
   return (
     <aside className="hidden xl:block w-full min-w-0 shrink-0" aria-label={`Sponsored (${side})`}>
-      <div className="sticky top-20 grid h-[calc(100dvh-6rem)] grid-rows-4 gap-3">
+      <div className="sticky top-20 grid min-h-[calc(100dvh-6rem)] grid-rows-[repeat(4,minmax(11.5rem,1fr))] gap-3">
         {railSlots(side).map((i) => {
           const taken = bookedBy.get(i);
           if (taken) return <FeaturedCard key={i} slot={taken} />;
