@@ -108,15 +108,21 @@ export function FeaturedBookingDialog({
         setPhase("signin");
         return;
       }
-      const mine = await fetchMyApprovedStartups();
+      const [mine, mineSlots] = await Promise.all([
+        fetchMyApprovedStartups(),
+        refetchMine().then((r) => r.data ?? []),
+      ]);
       if (cancelled) return;
       setStartups(mine);
       if (mine.length === 0) {
         setPhase("no-startup");
         return;
       }
-      setStartupId((cur) => cur || preselectStartupId || mine[0].id);
+      const featuredIds = new Set(mineSlots.map((m) => m.startup_id));
+      const firstFree = mine.find((s2) => !featuredIds.has(s2.id));
+      setStartupId((cur) => cur || preselectStartupId || firstFree?.id || mine[0].id);
       setPhase(s.length >= FEATURED_SLOT_COUNT ? "waitlist" : "choose");
+
     })();
     return () => {
       cancelled = true;
