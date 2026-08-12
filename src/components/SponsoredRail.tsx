@@ -37,9 +37,6 @@ export function SponsoredRail({ side = "right" }: { side?: "left" | "right" }) {
             <p className="text-[13px] leading-relaxed text-black/50">
               One line about what you build, shown to founders browsing the network.
             </p>
-            <span className="inline-block text-[11px] font-medium text-black/35 transition-colors group-hover:text-black">
-              Sponsor this slot
-            </span>
           </Link>
         ))}
       </div>
