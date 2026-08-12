@@ -42,51 +42,54 @@ function FeaturedCard({ slot }: { slot: FeaturedSlot }) {
       href={slot.website_url}
       target="_blank"
       rel="noopener noreferrer"
-      className="sb-sponsored group relative flex min-h-0 flex-1 flex-col gap-3 overflow-hidden rounded-2xl border p-5 transition-all duration-500"
+      className="sb-sponsored group relative flex min-h-0 flex-1 flex-col gap-3 overflow-hidden rounded-2xl border p-4 transition-all duration-500"
     >
-      {/* Row 1: logo + startup name + featured badge */}
-      <div className="flex min-w-0 items-center gap-2.5">
-        <span className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-lg border border-[oklch(0.75_0.13_75_/_0.25)] bg-black/40">
+      {/* Top block: big logo on the left, name + founder stacked on the right */}
+      <div className="flex min-w-0 items-center gap-3">
+        <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-xl border border-[oklch(0.75_0.13_75_/_0.25)] bg-black/40">
           <StartupFavicon
             url={slot.website_url}
             name={slot.name}
             logoUrl={slot.logo_url}
-            size={22}
+            size={30}
           />
         </span>
-        <span className="min-w-0 flex-1 truncate text-sm font-semibold text-white/95">
-          {slot.name}
-        </span>
-        <span className="shrink-0 rounded-full border border-[oklch(0.75_0.13_75_/_0.35)] bg-[oklch(0.75_0.13_75_/_0.12)] px-2 py-0.5 text-[9px] font-medium uppercase tracking-[0.18em] text-[oklch(0.82_0.12_75)]">
-          Featured
-        </span>
+
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="min-w-0 flex-1 truncate text-sm font-semibold leading-tight text-white/95">
+              {slot.name}
+            </span>
+            <span className="shrink-0 rounded-full border border-[oklch(0.75_0.13_75_/_0.35)] bg-[oklch(0.75_0.13_75_/_0.12)] px-1.5 py-0.5 text-[8px] font-medium uppercase tracking-[0.14em] text-[oklch(0.82_0.12_75)]">
+              Featured
+            </span>
+          </div>
+
+          <div className="flex min-w-0 items-center gap-1.5">
+            {slot.founder_avatar_url ? (
+              <img
+                src={slot.founder_avatar_url}
+                alt={slot.founder_name ?? "Founder"}
+                loading="lazy"
+                className="h-5 w-5 shrink-0 rounded-full object-cover ring-1 ring-[oklch(0.75_0.13_75_/_0.35)]"
+              />
+            ) : (
+              <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-white/10 text-[9px] font-semibold text-white/70">
+                {initial}
+              </span>
+            )}
+            <span className="min-w-0 truncate text-[11px] text-white/45">
+              {slot.founder_name ?? "Founder"}
+            </span>
+          </div>
+        </div>
       </div>
 
-      {/* Row 2: founder avatar + name */}
-      {slot.founder_name || slot.founder_avatar_url ? (
-        <div className="flex min-w-0 items-center gap-2">
-          {slot.founder_avatar_url ? (
-            <img
-              src={slot.founder_avatar_url}
-              alt={slot.founder_name ?? "Founder"}
-              loading="lazy"
-              className="h-6 w-6 shrink-0 rounded-full object-cover ring-1 ring-[oklch(0.75_0.13_75_/_0.35)]"
-            />
-          ) : (
-            <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-white/10 text-[10px] font-semibold text-white/70">
-              {initial}
-            </span>
-          )}
-          <span className="min-w-0 truncate text-[11px] text-white/50">
-            {slot.founder_name ?? "Founder"}
-          </span>
-        </div>
-      ) : null}
-
-      {/* Row 3: one-liner, full width */}
-      <p className="line-clamp-3 min-w-0 border-t border-white/5 pt-3 text-[13px] leading-snug text-white/60">
+      {/* One-liner across the full card width */}
+      <p className="line-clamp-2 min-h-0 min-w-0 overflow-hidden text-[12.5px] leading-[1.45] text-white/60">
         {slot.description}
       </p>
+
 
     </a>
   );
