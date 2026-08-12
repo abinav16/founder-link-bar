@@ -3,10 +3,10 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { Save, User, Globe, Trash2, Plus, ChevronDown, ChevronUp, ExternalLink, Info, Upload, X, Clock, Sparkles } from "lucide-react";
+import { Save, User, Globe, Trash2, Plus, ChevronDown, ChevronUp, ExternalLink, Info, Upload, X, Clock } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { AvatarCropDialog } from "@/components/AvatarCropDialog";
-import { FeaturedBookingDialog } from "@/components/FeaturedBookingDialog";
+import { PromoteButton } from "@/components/FeaturedBookingDialog";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
@@ -78,7 +78,6 @@ function StartupCard({ startup, onUpdate, onDelete }: {
   const [uploading, setUploading] = useState(false);
   const [logoUrl, setLogoUrl] = useState(startup.logo_url);
   const [reviewOpen, setReviewOpen] = useState(false);
-  const [promoteOpen, setPromoteOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const hasChanges = sName.trim() !== startup.name || sDesc.trim() !== startup.description;
@@ -201,13 +200,8 @@ function StartupCard({ startup, onUpdate, onDelete }: {
           <p className="mt-0.5 text-xs text-black/40 truncate">{startup.website_url}</p>
         </div>
         {startup.status === "approved" && (
-          <span
-            role="button"
-            tabIndex={-1}
-            onClick={(e) => { e.stopPropagation(); setPromoteOpen(true); }}
-            className="hidden sm:inline-flex shrink-0 items-center gap-1 rounded-full border border-[oklch(0.72_0.13_75_/_0.5)] bg-[oklch(0.72_0.13_75_/_0.08)] px-2.5 py-1 text-[11px] font-medium text-[oklch(0.5_0.11_75)] hover:bg-[oklch(0.72_0.13_75_/_0.16)] transition-colors"
-          >
-            <Sparkles className="h-3 w-3" /> Promote
+          <span className="hidden shrink-0 sm:inline-flex">
+            <PromoteButton startupId={startup.id} as="span" showCancel />
           </span>
         )}
         <span
@@ -227,16 +221,16 @@ function StartupCard({ startup, onUpdate, onDelete }: {
         </span>
       </button>
 
-      <FeaturedBookingDialog
-        open={promoteOpen}
-        onOpenChange={setPromoteOpen}
-        preselectStartupId={startup.id}
-      />
 
 
 
       {expanded && (
         <div className="border-t border-black/6 px-5 py-5">
+          {startup.status === "approved" && (
+            <div className="mb-4 flex flex-wrap items-center gap-2 sm:hidden">
+              <PromoteButton startupId={startup.id} showCancel />
+            </div>
+          )}
           <form onSubmit={onSubmitClick} className="space-y-4">
             <div>
               <label className="mb-2 block text-xs font-medium text-black/60">Startup logo</label>

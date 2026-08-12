@@ -175,6 +175,8 @@ export type Database = {
       }
       featured_slots: {
         Row: {
+          cancel_at_period_end: boolean
+          cancelled_at: string | null
           created_at: string
           dodo_payment_id: string | null
           expires_at: string
@@ -186,6 +188,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          cancel_at_period_end?: boolean
+          cancelled_at?: string | null
           created_at?: string
           dodo_payment_id?: string | null
           expires_at?: string
@@ -197,6 +201,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          cancel_at_period_end?: boolean
+          cancelled_at?: string | null
           created_at?: string
           dodo_payment_id?: string | null
           expires_at?: string

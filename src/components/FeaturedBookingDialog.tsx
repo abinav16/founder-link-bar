@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Check, Loader2, Sparkles } from "lucide-react";
+import { Check, Loader2, Sparkles, XCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { StartupFavicon } from "@/components/StartupFavicon";
@@ -9,14 +10,30 @@ import {
   FEATURED_DAYS,
   FEATURED_PRICE_USD,
   FEATURED_SLOT_COUNT,
+  cancelFeaturedSlot,
   daysLeft,
   fetchFeaturedSlots,
   fetchMyApprovedStartups,
+  fetchMyFeaturedSlots,
   type FeaturedSlot,
+  type MyFeaturedSlot,
   type MyStartup,
 } from "@/lib/featured";
 
+/** Shared cache key so every promote surface reacts to a booking or cancel. */
+export const MY_FEATURED_KEY = ["my-featured-slots"] as const;
+
+export function useMyFeaturedSlots() {
+  return useQuery({
+    queryKey: MY_FEATURED_KEY,
+    queryFn: fetchMyFeaturedSlots,
+    staleTime: 30_000,
+  });
+}
+
 type Phase = "loading" | "signin" | "no-startup" | "choose" | "waitlist" | "verifying" | "success";
+
+
 
 const RETURN_KEY = "startupbar:featured-pending";
 
@@ -44,9 +61,16 @@ export function FeaturedBookingDialog({
   const [busy, setBusy] = useState(false);
   const [wonSlot, setWonSlot] = useState<number | null>(null);
   const resumed = useRef(false);
+  const qc = useQueryClient();
+  const { data: myFeatured = [], refetch: refetchMine } = useMyFeaturedSlots();
 
   const taken = useMemo(() => new Map(slots.map((s) => [s.slot_index, s])), [slots]);
-  const allTaken = slots.length >= FEATURED_SLOT_COUNT;
+  const mineByStartup = useMemo(
+    () => new Map(myFeatured.filter((m) => m.startup_id).map((m) => [m.startup_id as string, m])),
+    [myFeatured],
+  );
+  const activeForSelected = startupId ? mineByStartup.get(startupId) : undefined;
+
 
   // Resume after returning from the payment page.
   useEffect(() => {
@@ -84,15 +108,21 @@ export function FeaturedBookingDialog({
         setPhase("signin");
         return;
       }
-      const mine = await fetchMyApprovedStartups();
+      const [mine, mineSlots] = await Promise.all([
+        fetchMyApprovedStartups(),
+        refetchMine().then((r) => r.data ?? []),
+      ]);
       if (cancelled) return;
       setStartups(mine);
       if (mine.length === 0) {
         setPhase("no-startup");
         return;
       }
-      setStartupId((cur) => cur || preselectStartupId || mine[0].id);
+      const featuredIds = new Set(mineSlots.map((m) => m.startup_id));
+      const firstFree = mine.find((s2) => !featuredIds.has(s2.id));
+      setStartupId((cur) => cur || preselectStartupId || firstFree?.id || mine[0].id);
       setPhase(s.length >= FEATURED_SLOT_COUNT ? "waitlist" : "choose");
+
     })();
     return () => {
       cancelled = true;
@@ -119,6 +149,8 @@ export function FeaturedBookingDialog({
         setWonSlot(row.slot_index);
         setPhase("success");
         setSlots(await fetchFeaturedSlots());
+        void qc.invalidateQueries({ queryKey: MY_FEATURED_KEY });
+        void qc.invalidateQueries({ queryKey: ["featured-slots"] });
         onBooked?.();
         setTimeout(() => onOpenChange(false), 2600);
         return;
@@ -132,6 +164,8 @@ export function FeaturedBookingDialog({
         setWonSlot(Number(confirmation.slot_index));
         setPhase("success");
         setSlots(await fetchFeaturedSlots());
+        void qc.invalidateQueries({ queryKey: MY_FEATURED_KEY });
+        void qc.invalidateQueries({ queryKey: ["featured-slots"] });
         onBooked?.();
         setTimeout(() => onOpenChange(false), 2600);
         return;
@@ -145,6 +179,16 @@ export function FeaturedBookingDialog({
   async function startCheckout() {
     if (!startupId || !slot) {
       toast.error("Pick a slot first.");
+      return;
+    }
+    // Guard: one active slot per startup.
+    if (mineByStartup.has(startupId)) {
+      toast.error("This startup is already featured.");
+      return;
+    }
+    if (taken.has(slot)) {
+      toast.error("That slot was just taken. Pick another one.");
+      setSlots(await fetchFeaturedSlots());
       return;
     }
     setBusy(true);
@@ -173,6 +217,18 @@ export function FeaturedBookingDialog({
     if (!startupId) return;
     setBusy(true);
     const { data: u } = await supabase.auth.getUser();
+    // Don't create duplicate waitlist rows if they click twice / revisit.
+    const { data: existing } = await supabase
+      .from("featured_waitlist")
+      .select("id")
+      .eq("startup_id", startupId)
+      .maybeSingle();
+    if (existing) {
+      setBusy(false);
+      toast.success("You're already on the waitlist for this startup.");
+      onOpenChange(false);
+      return;
+    }
     const { error } = await supabase
       .from("featured_waitlist")
       .insert({ startup_id: startupId, user_id: u.user!.id });
@@ -183,6 +239,19 @@ export function FeaturedBookingDialog({
     }
     toast.success("You're on the waitlist. We'll email you the moment a slot frees up.");
     onOpenChange(false);
+  }
+
+  async function cancelPromotion(slotId: string) {
+    setBusy(true);
+    const res = await cancelFeaturedSlot(slotId);
+    setBusy(false);
+    if (!res.ok) {
+      toast.error(res.error ?? "Could not cancel the promotion.");
+      return;
+    }
+    toast.success("Auto-renewal cancelled. Your slot stays live until the period ends.");
+    await refetchMine();
+    void qc.invalidateQueries({ queryKey: ["featured-slots"] });
   }
 
   function goSignIn() {
@@ -277,6 +346,11 @@ export function FeaturedBookingDialog({
                     >
                       <StartupFavicon url={s.website_url} name={s.name} logoUrl={s.logo_url} size={22} />
                       <span className="truncate font-medium text-black">{s.name}</span>
+                      {mineByStartup.has(s.id) && (
+                        <span className="shrink-0 rounded-full border border-[oklch(0.72_0.13_75_/_0.5)] bg-[oklch(0.72_0.13_75_/_0.10)] px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-[0.12em] text-[oklch(0.5_0.11_75)]">
+                          Featured
+                        </span>
+                      )}
                       {active && (
                         <Check className="ml-auto h-4 w-4 shrink-0 text-[oklch(0.6_0.12_75)]" />
                       )}
@@ -287,7 +361,38 @@ export function FeaturedBookingDialog({
             </div>
           )}
 
-          {phase === "choose" && (
+          {(phase === "choose" || phase === "waitlist") && activeForSelected && (
+            <div className="space-y-4 pt-5">
+              <div className="rounded-xl border border-[oklch(0.72_0.13_75_/_0.35)] bg-[linear-gradient(135deg,oklch(0.72_0.13_75_/_0.10),oklch(0.72_0.13_75_/_0.03))] px-4 py-3.5">
+                <p className="flex items-center gap-2 text-sm font-medium text-black">
+                  <Sparkles className="h-4 w-4 text-[oklch(0.6_0.12_75)]" />
+                  Already featured — slot {activeForSelected.slot_index}
+                </p>
+                <p className="mt-1 text-[12px] leading-relaxed text-black/50">
+                  {activeForSelected.cancel_at_period_end
+                    ? `Auto-renewal is off. This slot stays live for ${daysLeft(activeForSelected.expires_at)} more day(s), then frees up.`
+                    : `Renews in ${daysLeft(activeForSelected.expires_at)} day(s) at $${FEATURED_PRICE_USD}. Cancel anytime — the slot stays live until the paid period ends.`}
+                </p>
+              </div>
+              {!activeForSelected.cancel_at_period_end && (
+                <button
+                  onClick={() => void cancelPromotion(activeForSelected.id)}
+                  disabled={busy}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-black/12 py-3 text-sm font-medium text-black/60 transition-colors hover:border-black/30 hover:text-black disabled:opacity-40"
+                >
+                  <XCircle className="h-4 w-4" />
+                  {busy ? "Cancelling…" : "Cancel promotion"}
+                </button>
+              )}
+              {startups.length > 1 && (
+                <p className="text-center text-[11px] text-black/35">
+                  Pick another startup above to feature it in a second slot.
+                </p>
+              )}
+            </div>
+          )}
+
+          {phase === "choose" && !activeForSelected && (
             <div className="space-y-5 pt-5">
               <div className="space-y-2.5">
                 <div className="flex items-baseline justify-between">
@@ -381,7 +486,7 @@ export function FeaturedBookingDialog({
             </div>
           )}
 
-          {phase === "waitlist" && (
+          {phase === "waitlist" && !activeForSelected && (
             <div className="space-y-4 pt-5">
               <p className="text-sm leading-relaxed text-black/60">
                 All {FEATURED_SLOT_COUNT} slots are booked right now. Join the waitlist and we'll
@@ -433,18 +538,86 @@ export function FeaturedReturnWatcher() {
   return <FeaturedBookingDialog open={open} onOpenChange={setOpen} watchReturn />;
 }
 
-/** Gold "Promote" pill that opens the booking dialog for one startup. */
-export function PromoteButton({ startupId, className = "" }: { startupId: string; className?: string }) {
+/**
+ * Promote control. Shows the gold "Promote" pill only when the startup is NOT
+ * currently featured; otherwise it shows the live featured state (slot +
+ * days left) and, optionally, a cancel action.
+ */
+export function PromoteButton({
+  startupId,
+  className = "",
+  showCancel = false,
+  as = "button",
+}: {
+  startupId: string;
+  className?: string;
+  showCancel?: boolean;
+  as?: "button" | "span";
+}) {
   const [open, setOpen] = useState(false);
+  const { data: mine = [] } = useMyFeaturedSlots();
+  const active = mine.find((m) => m.startup_id === startupId);
+  const Tag = as as "button";
+  const interactive = as === "span" ? { role: "button", tabIndex: -1 } : { type: "button" as const };
+
+  const stop = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+  };
+
+  if (active) {
+    return (
+      <>
+        <span className={`inline-flex items-center gap-2 ${className}`}>
+          <Tag
+            {...(interactive as object)}
+            onClick={(e: React.MouseEvent) => {
+              stop(e);
+              setOpen(true);
+            }}
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-[oklch(0.72_0.13_75_/_0.5)] bg-[oklch(0.72_0.13_75_/_0.12)] px-3 py-1.5 text-xs font-medium text-[oklch(0.5_0.11_75)] transition-colors hover:bg-[oklch(0.72_0.13_75_/_0.2)]"
+            title={
+              active.cancel_at_period_end
+                ? `Ends in ${daysLeft(active.expires_at)}d`
+                : `Renews in ${daysLeft(active.expires_at)}d`
+            }
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            Featured · slot {active.slot_index}
+            <span className="opacity-60">
+              · {active.cancel_at_period_end ? "ends" : "renews"} in {daysLeft(active.expires_at)}d
+            </span>
+          </Tag>
+          {showCancel && !active.cancel_at_period_end && (
+            <Tag
+              {...(interactive as object)}
+              onClick={(e: React.MouseEvent) => {
+                stop(e);
+                setOpen(true);
+              }}
+              className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-black/12 px-2.5 py-1.5 text-xs font-medium text-black/50 transition-colors hover:border-black/30 hover:text-black"
+            >
+              <XCircle className="h-3.5 w-3.5" /> Cancel
+            </Tag>
+          )}
+        </span>
+        <FeaturedBookingDialog open={open} onOpenChange={setOpen} preselectStartupId={startupId} />
+      </>
+    );
+  }
+
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className={`inline-flex items-center gap-1.5 rounded-full border border-[oklch(0.72_0.13_75_/_0.5)] bg-[oklch(0.72_0.13_75_/_0.08)] px-3 py-1.5 text-xs font-medium text-[oklch(0.5_0.11_75)] transition-colors hover:bg-[oklch(0.72_0.13_75_/_0.16)] ${className}`}
+      <Tag
+        {...(interactive as object)}
+        onClick={(e: React.MouseEvent) => {
+          stop(e);
+          setOpen(true);
+        }}
+        className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-[oklch(0.72_0.13_75_/_0.5)] bg-[oklch(0.72_0.13_75_/_0.08)] px-3 py-1.5 text-xs font-medium text-[oklch(0.5_0.11_75)] transition-colors hover:bg-[oklch(0.72_0.13_75_/_0.16)] ${className}`}
       >
         <Sparkles className="h-3.5 w-3.5" /> Promote
-      </button>
+      </Tag>
       <FeaturedBookingDialog open={open} onOpenChange={setOpen} preselectStartupId={startupId} />
     </>
   );

@@ -53,3 +53,34 @@ export function daysLeft(iso: string): number {
 export function railSlots(side: "left" | "right"): number[] {
   return side === "left" ? [1, 2, 3, 4] : [5, 6, 7, 8];
 }
+
+export type MyFeaturedSlot = {
+  id: string;
+  slot_index: number;
+  startup_id: string | null;
+  status: string;
+  expires_at: string;
+  cancel_at_period_end: boolean;
+};
+
+/** Active featured slots owned by the signed-in user (RLS-scoped). */
+export async function fetchMyFeaturedSlots(): Promise<MyFeaturedSlot[]> {
+  const { data: auth } = await supabase.auth.getSession();
+  if (!auth.session) return [];
+  const { data, error } = await supabase
+    .from("featured_slots")
+    .select("id, slot_index, startup_id, status, expires_at, cancel_at_period_end")
+    .eq("status", "active")
+    .gt("expires_at", new Date().toISOString());
+  if (error) return [];
+  return (data ?? []) as unknown as MyFeaturedSlot[];
+}
+
+/** Turn off auto-renewal. The slot stays live until expires_at. */
+export async function cancelFeaturedSlot(slotId: string): Promise<{ ok: boolean; error?: string }> {
+  const { data, error } = await supabase.functions.invoke("create-dodo-checkout", {
+    body: { action: "cancel_featured", slot_id: slotId },
+  });
+  if (error || !data?.ok) return { ok: false, error: data?.error ?? "Could not cancel the promotion." };
+  return { ok: true };
+}
