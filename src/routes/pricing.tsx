@@ -222,7 +222,50 @@ function PricingPage() {
           </div>
         </div>
 
+        {/* Featured spot promotion */}
+        <div className="mt-4 rounded-xl border border-black/10 p-6">
+          <div className="flex flex-wrap items-baseline justify-between gap-3">
+            <div>
+              <div className="text-xs font-medium uppercase tracking-wide text-black/40">Featured spot promotion</div>
+              <div className="mt-2 flex items-baseline gap-1">
+                <span className="text-4xl font-semibold tracking-tight text-black">${FEATURED_PRICE_USD}</span>
+                <span className="text-sm text-black/40">USD per month, cancel anytime</span>
+              </div>
+            </div>
+            {loading ? (
+              <div aria-hidden className="h-10 w-40 rounded-md bg-black/5" />
+            ) : !signedIn ? (
+              <Link
+                to="/auth"
+                className="inline-flex h-10 items-center rounded-md border border-black px-4 text-sm font-medium text-black hover:bg-black hover:text-white transition-colors"
+              >
+                Sign in to promote
+              </Link>
+            ) : (
+              <Link
+                to="/network"
+                className="inline-flex h-10 items-center rounded-md bg-black px-4 text-sm font-medium text-white hover:bg-black/80 transition-colors"
+              >
+                Book a featured spot
+              </Link>
+            )}
+          </div>
+          <p className="mt-4 text-sm leading-relaxed text-black/60">
+            Featured spots are an optional promotion on StartupBar&rsquo;s own pages. There are{" "}
+            {FEATURED_SLOT_COUNT} spots in total, shown in the sidebar rails beside the network feed. Booking
+            a spot does not change how the widget rotates startups on member sites, and it never buys extra
+            impressions inside the network.
+          </p>
+          <ul className="mt-5 grid gap-2 text-sm text-black/65 sm:grid-cols-2">
+            <li className="flex gap-2"><Check />A dedicated card in the StartupBar sidebar with your logo, name, founder and one liner</li>
+            <li className="flex gap-2"><Check />Gold highlight on your card in the network list, Trending and New this week</li>
+            <li className="flex gap-2"><Check />Gold highlight on the leaderboard, including the top podium if you rank there</li>
+            <li className="flex gap-2"><Check />Renews every {FEATURED_DAYS} days until you cancel</li>
+          </ul>
+        </div>
+
         <div className="mt-14 space-y-8 text-[15px] leading-relaxed text-black/65">
+
           <section>
             <h2 className="mb-3 text-base font-semibold text-black">How to purchase</h2>
             <ol className="space-y-2 list-decimal list-inside">
