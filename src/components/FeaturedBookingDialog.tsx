@@ -217,6 +217,18 @@ export function FeaturedBookingDialog({
     if (!startupId) return;
     setBusy(true);
     const { data: u } = await supabase.auth.getUser();
+    // Don't create duplicate waitlist rows if they click twice / revisit.
+    const { data: existing } = await supabase
+      .from("featured_waitlist")
+      .select("id")
+      .eq("startup_id", startupId)
+      .maybeSingle();
+    if (existing) {
+      setBusy(false);
+      toast.success("You're already on the waitlist for this startup.");
+      onOpenChange(false);
+      return;
+    }
     const { error } = await supabase
       .from("featured_waitlist")
       .insert({ startup_id: startupId, user_id: u.user!.id });
@@ -526,18 +538,86 @@ export function FeaturedReturnWatcher() {
   return <FeaturedBookingDialog open={open} onOpenChange={setOpen} watchReturn />;
 }
 
-/** Gold "Promote" pill that opens the booking dialog for one startup. */
-export function PromoteButton({ startupId, className = "" }: { startupId: string; className?: string }) {
+/**
+ * Promote control. Shows the gold "Promote" pill only when the startup is NOT
+ * currently featured; otherwise it shows the live featured state (slot +
+ * days left) and, optionally, a cancel action.
+ */
+export function PromoteButton({
+  startupId,
+  className = "",
+  showCancel = false,
+  as = "button",
+}: {
+  startupId: string;
+  className?: string;
+  showCancel?: boolean;
+  as?: "button" | "span";
+}) {
   const [open, setOpen] = useState(false);
+  const { data: mine = [] } = useMyFeaturedSlots();
+  const active = mine.find((m) => m.startup_id === startupId);
+  const Tag = as as "button";
+  const interactive = as === "span" ? { role: "button", tabIndex: -1 } : { type: "button" as const };
+
+  const stop = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+  };
+
+  if (active) {
+    return (
+      <>
+        <span className={`inline-flex items-center gap-2 ${className}`}>
+          <Tag
+            {...(interactive as object)}
+            onClick={(e: React.MouseEvent) => {
+              stop(e);
+              setOpen(true);
+            }}
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-[oklch(0.72_0.13_75_/_0.5)] bg-[oklch(0.72_0.13_75_/_0.12)] px-3 py-1.5 text-xs font-medium text-[oklch(0.5_0.11_75)] transition-colors hover:bg-[oklch(0.72_0.13_75_/_0.2)]"
+            title={
+              active.cancel_at_period_end
+                ? `Ends in ${daysLeft(active.expires_at)}d`
+                : `Renews in ${daysLeft(active.expires_at)}d`
+            }
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            Featured · slot {active.slot_index}
+            <span className="opacity-60">
+              · {active.cancel_at_period_end ? "ends" : "renews"} in {daysLeft(active.expires_at)}d
+            </span>
+          </Tag>
+          {showCancel && !active.cancel_at_period_end && (
+            <Tag
+              {...(interactive as object)}
+              onClick={(e: React.MouseEvent) => {
+                stop(e);
+                setOpen(true);
+              }}
+              className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-black/12 px-2.5 py-1.5 text-xs font-medium text-black/50 transition-colors hover:border-black/30 hover:text-black"
+            >
+              <XCircle className="h-3.5 w-3.5" /> Cancel
+            </Tag>
+          )}
+        </span>
+        <FeaturedBookingDialog open={open} onOpenChange={setOpen} preselectStartupId={startupId} />
+      </>
+    );
+  }
+
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className={`inline-flex items-center gap-1.5 rounded-full border border-[oklch(0.72_0.13_75_/_0.5)] bg-[oklch(0.72_0.13_75_/_0.08)] px-3 py-1.5 text-xs font-medium text-[oklch(0.5_0.11_75)] transition-colors hover:bg-[oklch(0.72_0.13_75_/_0.16)] ${className}`}
+      <Tag
+        {...(interactive as object)}
+        onClick={(e: React.MouseEvent) => {
+          stop(e);
+          setOpen(true);
+        }}
+        className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-[oklch(0.72_0.13_75_/_0.5)] bg-[oklch(0.72_0.13_75_/_0.08)] px-3 py-1.5 text-xs font-medium text-[oklch(0.5_0.11_75)] transition-colors hover:bg-[oklch(0.72_0.13_75_/_0.16)] ${className}`}
       >
         <Sparkles className="h-3.5 w-3.5" /> Promote
-      </button>
+      </Tag>
       <FeaturedBookingDialog open={open} onOpenChange={setOpen} preselectStartupId={startupId} />
     </>
   );
