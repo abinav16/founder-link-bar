@@ -331,7 +331,7 @@ function LeaderboardPage() {
                         key={row.id}
                         className={`rounded-2xl border flex flex-col items-center text-center p-3 transition-all relative overflow-hidden ${
                           row.sponsored
-                            ? "sb-sponsored border-[oklch(0.78_0.1_80)]"
+                            ? "sb-sponsored border-[oklch(0.82_0.014_250)]"
                             : originalIndex === 0
                               ? "bg-black border-black lg:-mt-3 shadow-xl shadow-black/15 z-10"
                               : "bg-white border-black/8"
@@ -539,7 +539,7 @@ function LeaderboardPage() {
                 key={row.id}
                 className={`group flex items-center gap-4 rounded-2xl border px-5 py-4 transition-all overflow-hidden ${
                   row.sponsored
-                    ? "sb-sponsored border-[oklch(0.78_0.1_80)] hover:shadow-[0_8px_24px_-12px_oklch(0.72_0.11_80_/_0.3)]"
+                    ? "sb-sponsored border-[oklch(0.82_0.014_250)] hover:shadow-[0_8px_24px_-12px_oklch(0.5_0.018_255_/_0.3)]"
                     : row.id === myId
                       ? "bg-white border-black/20 ring-1 ring-black/8 hover:border-black/20 hover:shadow-sm"
                       : "bg-white border-black/8 hover:border-black/20 hover:shadow-sm"
