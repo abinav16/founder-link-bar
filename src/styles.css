@@ -180,15 +180,15 @@
     background: rgba(0, 0, 0, 0.45);
   }
 
-/* ── Sponsored / premium platinum card treatment ────────────────────── */
+/* ── Sponsored / premium warm-gold card treatment ──────────────────── */
 @keyframes sb-sheen {
   0%   { transform: translateX(-120%); }
   55%  { transform: translateX(120%); }
   100% { transform: translateX(120%); }
 }
 @utility sb-sponsored {
-  background-color: oklch(0.97 0.006 250);
-  border-color: oklch(0.85 0.012 250);
+  background-color: oklch(0.97 0.028 80);
+  border-color: oklch(0.72 0.13 75);
   &::before {
     content: "";
     position: absolute;
@@ -196,7 +196,7 @@
     background: linear-gradient(
       115deg,
       transparent 35%,
-      oklch(0.95 0.015 255 / 0.4) 50%,
+      oklch(0.92 0.14 85 / 0.4) 50%,
       transparent 65%
     );
     transform: translateX(-120%);
@@ -206,5 +206,5 @@
   }
 }
 @utility sb-sponsored-border {
-  border-color: oklch(0.82 0.014 250);
+  border-color: oklch(0.72 0.13 75);
 }
