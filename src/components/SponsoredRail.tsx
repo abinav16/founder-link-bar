@@ -10,7 +10,7 @@ import { Sparkles } from "lucide-react";
 export function SponsoredRail({ side = "right" }: { side?: "left" | "right" }) {
   const slots = [1, 2, 3, 4];
   return (
-    <aside className="hidden 2xl:block w-[280px] shrink-0" aria-label={`Sponsored (${side})`}>
+    <aside className="hidden xl:block w-full shrink-0" aria-label={`Sponsored (${side})`}>
       <div className="sticky top-20 flex h-[calc(100dvh-6rem)] flex-col gap-3">
         {slots.map((i) => (
           <Link
