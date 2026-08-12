@@ -118,10 +118,18 @@ function isNew(createdAt: string) {
 
 function StartupCard({ s }: { s: Card }) {
   const fresh = isNew(s.created_at);
+  const sponsored = s.sponsored;
   const profileHref = s.slug ? `/startup/${s.slug}` : undefined;
   const visitHref = `/api/public/widget/click?id=${s.id}&source=dashboard`;
   return (
-    <div className="group relative flex flex-col gap-2.5 sm:gap-3 rounded-2xl bg-white border border-black/[0.06] p-4 sm:p-5 hover:border-black/[0.12] hover:shadow-[0_12px_48px_rgba(0,0,0,0.07)] transition-all duration-300 h-full">
+    <div
+      className={[
+        "group relative flex flex-col gap-2.5 sm:gap-3 rounded-2xl border p-4 sm:p-5 transition-all duration-300 h-full overflow-hidden",
+        sponsored
+          ? "sb-sponsored border-[oklch(0.78_0.1_80)] hover:shadow-[0_12px_48px_oklch(0.72_0.11_80_/_0.18)]"
+          : "bg-white border-black/[0.06] hover:border-black/[0.12] hover:shadow-[0_12px_48px_rgba(0,0,0,0.07)]",
+      ].join(" ")}
+    >
       {profileHref && (
         <StartupProfileLink
           slug={s.slug!}
@@ -130,11 +138,15 @@ function StartupCard({ s }: { s: Card }) {
           <span className="sr-only">View {s.name} profile</span>
         </StartupProfileLink>
       )}
-      {fresh && (
+      {sponsored ? (
+        <span className="absolute top-3 right-3 z-20 text-[9px] font-semibold tracking-[0.12em] uppercase px-1.5 py-0.5 rounded-full bg-[oklch(0.72_0.11_80)] text-white leading-none shadow-sm">
+          Featured
+        </span>
+      ) : fresh ? (
         <span className="absolute top-3 right-3 z-20 text-[9px] font-semibold tracking-[0.12em] uppercase px-1.5 py-0.5 rounded-full bg-black text-white leading-none">
           New
         </span>
-      )}
+      ) : null}
 
       <div className="relative z-10 flex-1 min-w-0 pointer-events-none">
         <div className="flex items-start gap-3">
