@@ -108,6 +108,55 @@ export const Route = createFileRoute("/api/public/dodo-webhook")({
           return new Response("ok", { status: 200 });
         }
 
+        // Featured-slot purchases fulfil a sidebar booking instead of a listing credit.
+        if (data.metadata?.kind === "featured") {
+          const slotIndex = Number(data.metadata?.slot_index);
+          const startupId: string | null = data.metadata?.startup_id ?? null;
+
+          // Idempotent: this payment may already have been fulfilled.
+          const { data: existing } = await supabaseAdmin
+            .from("featured_slots")
+            .select("id")
+            .eq("dodo_payment_id", paymentId)
+            .maybeSingle();
+          if (existing) return new Response("ok", { status: 200 });
+
+          const nowIso = new Date().toISOString();
+          const { data: active } = await supabaseAdmin
+            .from("featured_slots")
+            .select("slot_index")
+            .eq("status", "active")
+            .gt("expires_at", nowIso);
+          const takenSlots = new Set((active ?? []).map((r) => r.slot_index));
+
+          // Honour the requested slot; fall back to the first free one if it
+          // was taken while the buyer was on the payment page.
+          let finalSlot = Number.isInteger(slotIndex) ? slotIndex : 0;
+          if (!finalSlot || takenSlots.has(finalSlot)) {
+            finalSlot = [1, 2, 3, 4, 5, 6, 7, 8].find((i) => !takenSlots.has(i)) ?? 0;
+          }
+          if (!finalSlot) {
+            console.error("[dodo-webhook] featured payment with no free slot", { paymentId });
+            return new Response("ok", { status: 200 });
+          }
+
+          const expires = new Date(Date.now() + 30 * 86_400_000).toISOString();
+          const { error: fErr } = await supabaseAdmin.from("featured_slots").insert({
+            slot_index: finalSlot,
+            startup_id: startupId,
+            user_id: userId,
+            dodo_payment_id: paymentId,
+            status: "active",
+            starts_at: nowIso,
+            expires_at: expires,
+          });
+          if (fErr) {
+            console.error("[dodo-webhook] featured_slots insert error", fErr);
+            return new Response("DB error", { status: 500 });
+          }
+          return new Response("ok", { status: 200 });
+        }
+
         // Idempotent upsert keyed by dodo_payment_id.
         const { error } = await supabaseAdmin
           .from("payments")
@@ -122,6 +171,7 @@ export const Route = createFileRoute("/api/public/dodo-webhook")({
         }
 
         return new Response("ok", { status: 200 });
+
       },
     },
   },
