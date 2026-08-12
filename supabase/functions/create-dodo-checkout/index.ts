@@ -36,7 +36,12 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const apiKey = Deno.env.get("DODO_PAYMENTS_API_KEY");
+    // In test mode, prefer the test-specific key; fall back to the live key so
+    // the function still works if the test key hasn't been configured yet.
+    const mode = Deno.env.get("DODO_MODE") ?? "live";
+    const apiKey = mode === "test"
+      ? (Deno.env.get("DODO_TEST_API_KEY") ?? Deno.env.get("DODO_PAYMENTS_API_KEY"))
+      : Deno.env.get("DODO_PAYMENTS_API_KEY");
     if (!apiKey) {
       return new Response(JSON.stringify({ error: "Missing DODO_PAYMENTS_API_KEY" }), {
         status: 500,
@@ -78,10 +83,17 @@ serve(async (req) => {
       });
     }
 
-    // Product + metadata differ per purchase kind.
-    const productId = kind === "featured"
-      ? (Deno.env.get("DODO_FEATURED_PRODUCT_ID") ?? Deno.env.get("DODO_PRODUCT_ID"))
+    // Product + metadata differ per purchase kind. In test mode, prefer
+    // test-specific product IDs; fall back to the live ones if not set.
+    const featuredId = mode === "test"
+      ? (Deno.env.get("DODO_TEST_FEATURED_PRODUCT_ID") ?? Deno.env.get("DODO_FEATURED_PRODUCT_ID"))
+      : Deno.env.get("DODO_FEATURED_PRODUCT_ID");
+    const listingId = mode === "test"
+      ? (Deno.env.get("DODO_TEST_PRODUCT_ID") ?? Deno.env.get("DODO_PRODUCT_ID"))
       : Deno.env.get("DODO_PRODUCT_ID");
+    const productId = kind === "featured"
+      ? (featuredId ?? listingId)
+      : listingId;
     if (!productId) {
       return new Response(JSON.stringify({ error: "Missing Dodo product id" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -116,7 +128,6 @@ serve(async (req) => {
 
 
     // Default to live; set DODO_MODE=test in secrets to use the test endpoint.
-    const mode = Deno.env.get("DODO_MODE") ?? "live";
     const baseUrl = mode === "test"
       ? "https://test.dodopayments.com"
       : "https://live.dodopayments.com";
