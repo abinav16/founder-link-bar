@@ -93,11 +93,22 @@ serve(async (req) => {
         }),
       });
       const t = await r.text();
+      const pr = await fetch(`https://test.dodopayments.com/products/${pid}`, {
+        headers: { Authorization: `Bearer ${testKey}` },
+      });
+      const pt = await pr.text();
       return new Response(
-        JSON.stringify({ status: r.status, body: t.slice(0, 600), productIdLen: pid.length }),
+        JSON.stringify({
+          status: r.status,
+          body: t.slice(0, 600),
+          productIdLen: pid.length,
+          productStatus: pr.status,
+          product: pt.slice(0, 400),
+        }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
+
 
 
 
