@@ -10,6 +10,7 @@ Nothing is different between the two screenshots in terms of your app. The empty
 So the real browser has more usable side space than the preview, not less. The preview is simply too narrow to ever show a side rail.
 
 Current widths:
+
 - Network, startup profile, header/footer: `max-w-6xl` (1152px)
 - Leaderboard: `max-w-5xl` (1024px), even narrower
 
@@ -31,4 +32,6 @@ To review the rail while building, the preview must be widened or checked in a r
 
 ## Open question
 
-Do you want sponsored slots backed by the database and an admin screen from the start, or static placeholders first so we can lock the layout?
+Do you want sponsored slots backed by the database and an admin screen from the start, or static placeholders first so we can lock the layout?  
+  
+Yes lets have the static placeholder and lets seethat looks good...for the mobile view hold for it..we plan it show on mobile later...
