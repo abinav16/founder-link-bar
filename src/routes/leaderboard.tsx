@@ -341,7 +341,7 @@ function LeaderboardPage() {
                           <p className="text-[8px] font-bold tracking-[0.15em] uppercase text-white/40 mb-1">Leader</p>
                         )}
                         {row.sponsored && (
-                          <span className="absolute top-2 left-1/2 -translate-x-1/2 text-[8px] font-bold uppercase tracking-[0.12em] text-[oklch(0.5_0.1_70)]">Featured</span>
+                          <span className="absolute top-2 left-1/2 -translate-x-1/2 text-[8px] font-bold uppercase tracking-[0.12em] text-[oklch(0.82_0.13_75)]">Featured</span>
                         )}
                         {isNew(row.created_at) && (
                           <NewBadge className="absolute top-2 right-2" />

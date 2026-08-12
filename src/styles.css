@@ -187,7 +187,7 @@
   100% { transform: translateX(120%); }
 }
 @utility sb-sponsored {
-  background-color: oklch(0.97 0.028 80);
+  background-color: oklch(0.16 0.008 260);
   border-color: oklch(0.72 0.13 75);
   &::before {
     content: "";
@@ -196,7 +196,7 @@
     background: linear-gradient(
       115deg,
       transparent 35%,
-      oklch(0.92 0.14 85 / 0.4) 50%,
+      oklch(0.85 0.14 85 / 0.35) 50%,
       transparent 65%
     );
     transform: translateX(-120%);
