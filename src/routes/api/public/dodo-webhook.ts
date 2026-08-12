@@ -127,17 +127,32 @@ export const Route = createFileRoute("/api/public/dodo-webhook")({
         }
 
         // Featured-slot purchases fulfil a sidebar booking instead of a listing credit.
-        if (data.metadata?.kind === "featured") {
+        if (data.metadata?.kind === "featured" || isSubscriptionEvent) {
           const slotIndex = Number(data.metadata?.slot_index);
           const startupId: string | null = data.metadata?.startup_id ?? null;
 
-          // Idempotent: this payment may already have been fulfilled.
+          // Idempotent: this subscription may already have been fulfilled.
           const { data: existing } = await supabaseAdmin
             .from("featured_slots")
-            .select("id")
+            .select("id, expires_at")
             .eq("dodo_payment_id", paymentId)
             .maybeSingle();
-          if (existing) return new Response("ok", { status: 200 });
+          if (existing) {
+            if (isRenewal) {
+              // Extend the term by another 30 days from whichever is later.
+              const cur = existing.expires_at ? new Date(existing.expires_at).getTime() : 0;
+              const from = Math.max(cur, Date.now());
+              await supabaseAdmin
+                .from("featured_slots")
+                .update({
+                  status: "active",
+                  expires_at: new Date(from + 30 * 86_400_000).toISOString(),
+                })
+                .eq("id", existing.id);
+            }
+            return new Response("ok", { status: 200 });
+          }
+
 
           const nowIso = new Date().toISOString();
           const { data: active } = await supabaseAdmin
