@@ -193,15 +193,31 @@ serve(async (req) => {
       body: JSON.stringify(payload),
     });
 
-    const data = await res.json();
-
-    if (!res.ok) {
-      console.error("Dodo error:", data);
-      return new Response(JSON.stringify({ error: data }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    // Dodo can reply with an empty or non-JSON body (e.g. 401/5xx from the
+    // gateway). Parsing that directly threw "Unexpected end of JSON input".
+    const raw = await res.text();
+    let data: any = null;
+    try {
+      data = raw ? JSON.parse(raw) : null;
+    } catch {
+      data = { message: raw.slice(0, 500) };
     }
+
+    if (!res.ok || !data?.payment_link) {
+      console.error("Dodo error:", { status: res.status, mode, endpoint, body: raw.slice(0, 500) });
+      return new Response(
+        JSON.stringify({
+          error: data ?? `Dodo returned ${res.status} with an empty response`,
+          status: res.status,
+          mode,
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
 
     console.log("dodo checkout created", { mode, endpoint, link: data.payment_link });
     return new Response(
