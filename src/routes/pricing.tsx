@@ -1,15 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { FEATURED_PRICE_USD, FEATURED_DAYS, FEATURED_SLOT_COUNT } from "@/lib/featured";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
       { title: "Pricing — StartupBar" },
-      { name: "description", content: "StartupBar pricing: your first startup listing is free forever. Additional listings are a one-time $9.99 USD payment, processed by Dodo Payments. No subscriptions, no refunds." },
+      { name: "description", content: "StartupBar pricing: first startup listing free forever, extra listings $9.99 one-time, and Featured spot promotion at $79 per month. Payments processed by Dodo Payments." },
       { property: "og:title", content: "Pricing — StartupBar" },
-      { property: "og:description", content: "First listing free. Additional listings $9.99 one-time, processed by Dodo Payments." },
+      { property: "og:description", content: "First listing free. Extra listings $9.99 one-time. Featured spot promotion $79 per month, cancel anytime." },
       { property: "og:url", content: "https://startupbar.co/pricing" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "canonical", href: "https://startupbar.co/pricing" }],
     scripts: [
@@ -18,8 +21,8 @@ export const Route = createFileRoute("/pricing")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Product",
-          name: "StartupBar additional startup listing",
-          description: "A one-time paid listing for an additional startup in the StartupBar traffic-exchange network.",
+          name: "StartupBar listings and Featured spot promotion",
+          description: "Startup listings in the StartupBar traffic exchange network, plus a paid Featured spot promotion on StartupBar pages.",
           brand: { "@type": "Brand", name: "StartupBar" },
           offers: [
             {
@@ -38,6 +41,22 @@ export const Route = createFileRoute("/pricing")({
               url: "https://startupbar.co/pricing",
               availability: "https://schema.org/InStock",
             },
+            {
+              "@type": "Offer",
+              name: "Featured spot promotion",
+              price: String(FEATURED_PRICE_USD),
+              priceCurrency: "USD",
+              url: "https://startupbar.co/pricing",
+              availability: "https://schema.org/InStock",
+              priceSpecification: {
+                "@type": "UnitPriceSpecification",
+                price: String(FEATURED_PRICE_USD),
+                priceCurrency: "USD",
+                billingDuration: FEATURED_DAYS,
+                billingIncrement: 1,
+                unitCode: "DAY",
+              },
+            },
           ],
         }),
       },
@@ -45,6 +64,7 @@ export const Route = createFileRoute("/pricing")({
   }),
   component: PricingPage,
 });
+
 
 function Logo() {
   return (
