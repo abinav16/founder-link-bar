@@ -971,26 +971,39 @@ function NetworkDashboardPage() {
             </div>
           </div>
 
-          {/* Sort control (all viewports) */}
-          <div className="mb-3 flex items-center gap-2">
-            <span className="text-[10px] uppercase tracking-[0.1em] font-semibold text-black/30">Sort</span>
+          {/* Sort & filter controls (all viewports) */}
+          <div className="mb-3 flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] uppercase tracking-[0.1em] font-semibold text-black/30">Sort</span>
+              <select
+                value={`${sortKey}:${sortDir}`}
+                onChange={(e) => {
+                  const [k, d] = e.target.value.split(":") as [SortKey, SortDir];
+                  setSortKey(k);
+                  setSortDir(d);
+                }}
+                className="h-8 rounded-full border border-black/10 bg-white px-3 text-[12px] text-black focus:outline-none focus:border-black/30"
+              >
+                <option value="joined:desc">Newest first</option>
+                <option value="joined:asc">Oldest first</option>
+                <option value="impressions:desc">Most impressions</option>
+                <option value="impressions:asc">Fewest impressions</option>
+                <option value="clicks:desc">Most clicks</option>
+                <option value="clicks:asc">Fewest clicks</option>
+              </select>
+            </div>
 
-            <select
-              value={`${sortKey}:${sortDir}`}
-              onChange={(e) => {
-                const [k, d] = e.target.value.split(":") as [SortKey, SortDir];
-                setSortKey(k);
-                setSortDir(d);
-              }}
-              className="h-8 rounded-full border border-black/10 bg-white px-3 text-[12px] text-black focus:outline-none focus:border-black/30"
-            >
-              <option value="joined:desc">Newest first</option>
-              <option value="joined:asc">Oldest first</option>
-              <option value="impressions:desc">Most impressions</option>
-              <option value="impressions:asc">Fewest impressions</option>
-              <option value="clicks:desc">Most clicks</option>
-              <option value="clicks:asc">Fewest clicks</option>
-            </select>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] uppercase tracking-[0.1em] font-semibold text-black/30">Filter</span>
+              <select
+                value={featuredFilter}
+                onChange={(e) => setFeaturedFilter(e.target.value as FeaturedFilter)}
+                className="h-8 rounded-full border border-black/10 bg-white px-3 text-[12px] text-black focus:outline-none focus:border-black/30"
+              >
+                <option value="all">All startups</option>
+                <option value="featured">Featured only</option>
+              </select>
+            </div>
           </div>
 
           {filtered.length > 0 ? (
