@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { SponsoredRail } from "@/components/SponsoredRail";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { getLeaderboard, getNetworkActivity, type LeaderboardRow } from "@/lib/leaderboard.functions";
 import { supabase } from "@/integrations/supabase/client";
@@ -629,5 +630,5 @@ function LeaderboardPage() {
     </div>
   );
 
-  return <DashboardLayout><TooltipProvider>{body}</TooltipProvider></DashboardLayout>;
+  return <DashboardLayout rail={<SponsoredRail />}><TooltipProvider>{body}</TooltipProvider></DashboardLayout>;
 }

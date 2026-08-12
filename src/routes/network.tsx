@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { SponsoredRail } from "@/components/SponsoredRail";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { getNetworkDashboard, type NetworkDashboardResult } from "@/lib/network-dashboard.functions";
 import { ArrowUpRight, ArrowRight, Eye, Globe, Search, X } from "lucide-react";
@@ -883,7 +884,7 @@ function NetworkDashboardPage() {
   })();
 
   return (
-    <DashboardLayout>
+    <DashboardLayout rail={<SponsoredRail />}>
       <div className="space-y-10">
         {data.recentStartups.length > 0 && (
           <MagneticField startups={data.recentStartups} stats={stats} />
