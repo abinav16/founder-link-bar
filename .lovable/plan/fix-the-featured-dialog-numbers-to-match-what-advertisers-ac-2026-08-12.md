@@ -33,4 +33,8 @@ Optionally show "74 startups live" in the footer where the startup count already
 - Update tile labels and the disclaimer copy in the dialog. No hyphens or dashes in the copy.
 - Card sizing and layout stay as they are.
 
-If you want a bigger headline number later, the right move is to grow real traffic, not to inflate the tile.
+If you want a bigger headline number later, the right move is to grow real traffic, not to inflate the tile.  
+  
+  
+  
+ok forget that lets gow ith the one liner as "Get your startup in front of 50K+ founders every month for $79" make it medium big and bold isntead of showing those number please udpet
