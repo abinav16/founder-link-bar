@@ -1,0 +1,1 @@
+ALTER TABLE public.startups ADD COLUMN IF NOT EXISTS sponsored boolean NOT NULL DEFAULT false; GRANT SELECT (sponsored) ON public.startups TO authenticated; GRANT SELECT (sponsored) ON public.startups TO anon;

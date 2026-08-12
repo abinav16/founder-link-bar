@@ -31,6 +31,7 @@ export interface StartupCard {
   clicks: number;
   founder_name: string | null;
   founder_avatar_url: string | null;
+  sponsored: boolean;
 }
 
 
@@ -50,7 +51,7 @@ export const getNetworkDashboard = createServerFn({ method: "GET" }).handler(
 
     const { data: startups } = await supabase
       .from("startups")
-      .select("id, slug, name, website_url, description, logo_url, created_at, user_id")
+      .select("id, slug, name, website_url, description, logo_url, created_at, user_id, sponsored")
       .eq("status", "approved")
 
 
@@ -131,6 +132,7 @@ export const getNetworkDashboard = createServerFn({ method: "GET" }).handler(
       clicks: clickMap[s.id] ?? 0,
       founder_name: founderMap[s.user_id]?.name ?? null,
       founder_avatar_url: founderMap[s.user_id]?.avatar ?? null,
+      sponsored: Boolean(s.sponsored),
     }));
 
 

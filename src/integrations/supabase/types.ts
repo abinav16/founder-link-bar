@@ -298,6 +298,7 @@ export type Database = {
           name: string
           rejection_reason: string | null
           slug: string | null
+          sponsored: boolean
           status: Database["public"]["Enums"]["startup_status"]
           strike_count: number
           updated_at: string
@@ -324,6 +325,7 @@ export type Database = {
           name: string
           rejection_reason?: string | null
           slug?: string | null
+          sponsored?: boolean
           status?: Database["public"]["Enums"]["startup_status"]
           strike_count?: number
           updated_at?: string
@@ -350,6 +352,7 @@ export type Database = {
           name?: string
           rejection_reason?: string | null
           slug?: string | null
+          sponsored?: boolean
           status?: Database["public"]["Enums"]["startup_status"]
           strike_count?: number
           updated_at?: string
@@ -409,6 +412,7 @@ export type Database = {
           name: string
           rejection_reason: string | null
           slug: string | null
+          sponsored: boolean
           status: Database["public"]["Enums"]["startup_status"]
           strike_count: number
           updated_at: string
@@ -492,6 +496,7 @@ export type Database = {
           name: string
           rejection_reason: string | null
           slug: string | null
+          sponsored: boolean
           status: Database["public"]["Enums"]["startup_status"]
           strike_count: number
           updated_at: string

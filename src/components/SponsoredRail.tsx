@@ -3,9 +3,10 @@ import { Plus } from "lucide-react";
 
 /**
  * Static placeholder sponsored rail.
- * Desktop only (>= 2xl). Rendered on both sides: 5 slots each.
- * Each slot previews how a sponsored listing appears:
- * logo, startup name, founder name, one liner.
+ * Desktop only (>= 2xl). Rendered on both sides: 4 slots each.
+ * Each slot previews how a sponsored listing appears with the gold
+ * premium treatment + animated sheen sweep: logo, startup name,
+ * founder name, one liner.
  */
 export function SponsoredRail({ side = "right" }: { side?: "left" | "right" }) {
   const slots = [1, 2, 3, 4];
@@ -16,25 +17,25 @@ export function SponsoredRail({ side = "right" }: { side?: "left" | "right" }) {
           <Link
             key={i}
             to="/pricing"
-            className="group relative flex min-h-0 flex-1 flex-col justify-between gap-3 overflow-hidden rounded-2xl border border-black/8 bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-black/20 hover:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.25)]"
+            className="sb-sponsored group relative flex min-h-0 flex-1 flex-col justify-between gap-3 overflow-hidden rounded-2xl border p-5 transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_24px_-12px_oklch(0.72_0.11_80_/_0.4)]"
           >
-            <div className="flex items-center gap-3">
-              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-dashed border-black/15 bg-black/[0.03] text-black/25 transition-colors group-hover:border-black/30 group-hover:text-black/45">
+            <div className="relative z-10 flex items-center gap-3">
+              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-dashed border-[oklch(0.72_0.11_80_/_0.35)] bg-[oklch(0.72_0.11_80_/_0.06)] text-[oklch(0.72_0.11_80_/_0.5)] transition-colors group-hover:border-[oklch(0.72_0.11_80_/_0.6)] group-hover:text-[oklch(0.72_0.11_80_/_0.8)]">
                 <Plus className="h-4 w-4" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline gap-2">
-                  <span className="truncate text-sm font-semibold text-black/75">
+                  <span className="truncate text-sm font-semibold text-[oklch(0.45_0.06_75)]">
                     Your startup
                   </span>
-                  <span className="shrink-0 text-[10px] font-medium uppercase tracking-[0.12em] text-black/25">
-                    Ad
+                  <span className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.12em] text-[oklch(0.6_0.09_75)]">
+                    Featured
                   </span>
                 </div>
-                <div className="mt-1 truncate text-[11px] text-black/40">by your name</div>
+                <div className="mt-1 truncate text-[11px] text-[oklch(0.45_0.06_75_/_0.65)]">by your name</div>
               </div>
             </div>
-            <p className="text-[13px] leading-relaxed text-black/50">
+            <p className="relative z-10 text-[13px] leading-relaxed text-[oklch(0.4_0.05_75_/_0.7)]">
               One line about what you build, shown to founders browsing the network.
             </p>
           </Link>

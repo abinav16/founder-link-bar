@@ -22,6 +22,7 @@ export interface LeaderboardRow {
   clicks: number;
   impressions_given: number;
   clicks_given: number;
+  sponsored: boolean;
   dailyImpressions: number[];
   dailyGiven: number[];
   dailyClicks: number[];
@@ -41,7 +42,7 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
 
   const { data: startups, error } = await supabase
     .from("startups")
-    .select("id, slug, name, website_url, description, logo_url, created_at")
+    .select("id, slug, name, website_url, description, logo_url, created_at, sponsored")
     .eq("status", "approved");
 
 
@@ -144,6 +145,7 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
     const t = totalsMap.get(s.id);
     return {
       ...s,
+      sponsored: Boolean((s as any).sponsored),
       impressions: Number(t?.impressions ?? 0),
       clicks: Number(t?.clicks ?? 0),
       impressions_given: Number(t?.impressions_given ?? 0),
