@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { LogOut, LayoutDashboard, Trophy, Settings, Globe, LogIn } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SponsoredRail } from "@/components/SponsoredRail";
+import { FeaturedReturnWatcher } from "@/components/FeaturedBookingDialog";
 
 function FooterBar({ wide }: { wide?: boolean }) {
   return (
@@ -163,6 +164,7 @@ export function DashboardLayout({
       </main>
 
       <FooterBar wide={!!rail} />
+      <FeaturedReturnWatcher />
     </div>
   );
 }

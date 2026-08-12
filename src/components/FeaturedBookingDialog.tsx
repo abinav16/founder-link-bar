@@ -341,3 +341,26 @@ export function FeaturedBookingDialog({
     </Dialog>
   );
 }
+
+/** Mounted once per layout: reopens the dialog after returning from payment. */
+export function FeaturedReturnWatcher() {
+  const [open, setOpen] = useState(false);
+  return <FeaturedBookingDialog open={open} onOpenChange={setOpen} watchReturn />;
+}
+
+/** Gold "Promote" pill that opens the booking dialog for one startup. */
+export function PromoteButton({ startupId, className = "" }: { startupId: string; className?: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className={`inline-flex items-center gap-1.5 rounded-full border border-[oklch(0.72_0.13_75_/_0.5)] bg-[oklch(0.72_0.13_75_/_0.08)] px-3 py-1.5 text-xs font-medium text-[oklch(0.5_0.11_75)] transition-colors hover:bg-[oklch(0.72_0.13_75_/_0.16)] ${className}`}
+      >
+        <Sparkles className="h-3.5 w-3.5" /> Promote
+      </button>
+      <FeaturedBookingDialog open={open} onOpenChange={setOpen} preselectStartupId={startupId} />
+    </>
+  );
+}

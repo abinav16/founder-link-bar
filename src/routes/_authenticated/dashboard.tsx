@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Copy, Check, Code2, ArrowRight, BarChart2, MousePointerClick, Layers, Percent, ChevronDown, Globe2, Smartphone, Monitor, Tablet, User } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { PromoteButton } from "@/components/FeaturedBookingDialog";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { LiveVisitorMap } from "@/components/LiveVisitorMap";
 
@@ -726,6 +727,11 @@ function DashboardPage() {
                 <StatusPill status={startup.status} />
               </div>
               <p className="mt-0.5 text-sm text-black/40">{startup.description}</p>
+              {startup.status === "approved" && (
+                <div className="mt-3">
+                  <PromoteButton startupId={startup.id} />
+                </div>
+              )}
             </div>
 
             {startup.status === "pending" && (

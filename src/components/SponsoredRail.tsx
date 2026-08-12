@@ -124,7 +124,6 @@ export function SponsoredRail({ side = "right" }: { side?: "left" | "right" }) {
         open={open}
         onOpenChange={setOpen}
         initialSlot={slot}
-        watchReturn={side === "right"}
         onBooked={() => void refetch()}
       />
     </aside>
