@@ -120,7 +120,7 @@ function StartupCard({ s }: { s: Card }) {
   const profileHref = s.slug ? `/startup/${s.slug}` : undefined;
   const visitHref = `/api/public/widget/click?id=${s.id}&source=dashboard`;
   return (
-    <div className="group relative flex flex-col gap-3 sm:gap-5 rounded-2xl bg-white border border-black/[0.06] p-4 sm:p-6 hover:border-black/[0.12] hover:shadow-[0_12px_48px_rgba(0,0,0,0.07)] transition-all duration-300 h-full">
+    <div className="group relative flex flex-col gap-2.5 sm:gap-3 rounded-2xl bg-white border border-black/[0.06] p-4 sm:p-5 hover:border-black/[0.12] hover:shadow-[0_12px_48px_rgba(0,0,0,0.07)] transition-all duration-300 h-full">
       {profileHref && (
         <StartupProfileLink
           slug={s.slug!}
@@ -134,19 +134,20 @@ function StartupCard({ s }: { s: Card }) {
           New
         </span>
       )}
-      <div className="relative z-10 w-9 h-9 sm:w-11 sm:h-11 rounded-xl overflow-hidden bg-black/[0.03] border border-black/[0.06] flex items-center justify-center shrink-0 pointer-events-none">
-        <StartupFavicon url={s.website_url} name={s.name} logoUrl={s.logo_url} size={36} />
-      </div>
 
-      <div className="relative z-10 flex-1 min-w-0 space-y-1 pointer-events-none">
-        <div className="flex items-start justify-between gap-1">
-          <h3 className="text-[13px] sm:text-[15px] font-semibold text-black leading-snug">{s.name}</h3>
-          <ArrowUpRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-black/20 shrink-0 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+      <div className="relative z-10 flex-1 min-w-0 pointer-events-none">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden bg-black/[0.03] border border-black/[0.06] flex items-center justify-center shrink-0">
+            <StartupFavicon url={s.website_url} name={s.name} logoUrl={s.logo_url} size={32} />
+          </div>
+          <h3 className="text-[13px] sm:text-[15px] font-semibold text-black leading-snug min-w-0 truncate">{s.name}</h3>
+          <ArrowUpRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-black/20 shrink-0 ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
         </div>
-        <p className="text-[11px] sm:text-[13px] text-black/45 leading-relaxed line-clamp-2">{s.description}</p>
+        <p className="mt-2 text-[11px] sm:text-[13px] text-black/45 leading-relaxed line-clamp-2">{s.description}</p>
       </div>
 
-      <div className="relative z-10 hidden sm:flex items-center justify-between border-t border-black/[0.05] pt-4 pointer-events-none">
+      <div className="relative z-10 hidden sm:flex items-center justify-between border-t border-black/[0.05] pt-3 pointer-events-none">
+
         {s.impressions_24h > 0 ? (
           <div className="flex items-center gap-2">
             <span className="text-[11px] text-black/35 font-medium tabular-nums">{s.impressions_24h} impressions · last 24h</span>
