@@ -44,70 +44,8 @@ serve(async (req) => {
     const configuredMode = Deno.env.get("DODO_CHECKOUT_ENV") ?? Deno.env.get("DODO_MODE");
     const mode = configuredMode?.trim().toLowerCase() === "test" ? "test" : "live";
 
-    // Non-sensitive diagnostic ping: reports which environment is active without
-    // ever echoing credential values.
-    if (new URL(req.url).searchParams.get("diag") === "1") {
-      const testKey = Deno.env.get("DODO_TEST_API_KEY") ?? "";
-      const liveKey = Deno.env.get("DODO_PAYMENTS_API_KEY") ?? "";
-      const probe = async (host: string, key: string) => {
-        if (!key) return "no-key";
-        try {
-          const r = await fetch(`https://${host}/products?page_size=1`, {
-            headers: { Authorization: `Bearer ${key}` },
-          });
-          return r.status;
-        } catch (e) {
-          return `err:${String(e).slice(0, 80)}`;
-        }
-      };
-      return new Response(
-        JSON.stringify({
-          mode,
-          checkoutEnvIsTest: Deno.env.get("DODO_CHECKOUT_ENV")?.trim().toLowerCase() === "test",
-          testKeyLen: testKey.length,
-          liveKeyLen: liveKey.length,
-          keysIdentical: !!testKey && testKey === liveKey,
-          testKeyOnTestApi: await probe("test.dodopayments.com", testKey),
-          testKeyOnLiveApi: await probe("live.dodopayments.com", testKey),
-          liveKeyOnTestApi: await probe("test.dodopayments.com", liveKey),
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
 
-    // Diagnostic: attempt a real test subscription create and report the raw
-    // status/body so auth vs. product-config failures can be told apart.
-    if (new URL(req.url).searchParams.get("diag") === "2") {
-      const testKey = Deno.env.get("DODO_TEST_API_KEY") ?? "";
-      const pid = Deno.env.get("DODO_TEST_FEATURED_PRODUCT_ID") ?? "";
-      const r = await fetch("https://test.dodopayments.com/subscriptions", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${testKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          billing: { city: "", country: "US", state: "", street: "", zipcode: "" },
-          customer: { email: "diag@example.com", name: "Diag" },
-          payment_link: true,
-          product_id: pid,
-          quantity: 1,
-          return_url: "https://startupbar.co/network",
-        }),
-      });
-      const t = await r.text();
-      const pr = await fetch(`https://test.dodopayments.com/products/${pid}`, {
-        headers: { Authorization: `Bearer ${testKey}` },
-      });
-      const pt = await pr.text();
-      return new Response(
-        JSON.stringify({
-          status: r.status,
-          body: t.slice(0, 600),
-          productIdLen: pid.length,
-          productStatus: pr.status,
-          product: pt.slice(0, 400),
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
+
 
 
 
