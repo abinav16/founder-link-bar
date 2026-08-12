@@ -3,9 +3,10 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { Save, User, Globe, Trash2, Plus, ChevronDown, ChevronUp, ExternalLink, Info, Upload, X, Clock } from "lucide-react";
+import { Save, User, Globe, Trash2, Plus, ChevronDown, ChevronUp, ExternalLink, Info, Upload, X, Clock, Sparkles } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { AvatarCropDialog } from "@/components/AvatarCropDialog";
+import { FeaturedBookingDialog } from "@/components/FeaturedBookingDialog";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
@@ -77,6 +78,7 @@ function StartupCard({ startup, onUpdate, onDelete }: {
   const [uploading, setUploading] = useState(false);
   const [logoUrl, setLogoUrl] = useState(startup.logo_url);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [promoteOpen, setPromoteOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const hasChanges = sName.trim() !== startup.name || sDesc.trim() !== startup.description;
