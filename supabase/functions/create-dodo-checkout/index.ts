@@ -88,6 +88,120 @@ serve(async (req) => {
     const return_url: unknown = body?.return_url;
     const kind: string = body?.kind === "featured" ? "featured" : "listing";
 
+    // Payment-return fallback: verify the subscription directly with Dodo and
+    // fulfil the slot. This makes activation resilient when a webhook is late
+    // or was not delivered, while still treating Dodo as the source of truth.
+    if (body?.action === "confirm_featured") {
+      const subscriptionId = typeof body?.subscription_id === "string"
+        ? body.subscription_id.trim()
+        : "";
+      if (!subscriptionId) {
+        return new Response(JSON.stringify({ error: "Missing subscription_id" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const baseUrl = mode === "test"
+        ? "https://test.dodopayments.com"
+        : "https://live.dodopayments.com";
+      const verifyRes = await fetch(`${baseUrl}/subscriptions/${encodeURIComponent(subscriptionId)}`, {
+        headers: { "Authorization": `Bearer ${apiKey}` },
+      });
+      const verifyRaw = await verifyRes.text();
+      let subscription: any = null;
+      try {
+        subscription = verifyRaw ? JSON.parse(verifyRaw) : null;
+      } catch {
+        subscription = null;
+      }
+      if (!verifyRes.ok || !subscription) {
+        return new Response(JSON.stringify({
+          error: `Could not verify subscription (${verifyRes.status})`,
+          pending: verifyRes.status === 404,
+        }), {
+          status: verifyRes.status === 404 ? 202 : 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const metadata = subscription.metadata ?? {};
+      const subscriptionStatus = String(subscription.status ?? "").toLowerCase();
+      const paidStatuses = new Set(["active", "succeeded", "completed"]);
+      if (metadata.kind !== "featured" || metadata.user_id !== userData.user.id) {
+        return new Response(JSON.stringify({ error: "Subscription does not belong to this booking" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (!paidStatuses.has(subscriptionStatus)) {
+        return new Response(JSON.stringify({ pending: true, status: subscriptionStatus }), {
+          status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const slotIndex = Number(metadata.slot_index);
+      const startupId = typeof metadata.startup_id === "string" ? metadata.startup_id : "";
+      if (!Number.isInteger(slotIndex) || slotIndex < 1 || slotIndex > 8 || !startupId) {
+        return new Response(JSON.stringify({ error: "Invalid subscription metadata" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      if (!serviceKey) {
+        return new Response(JSON.stringify({ error: "Missing backend service configuration" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const admin = createClient(supabaseUrl, serviceKey, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      });
+      const { data: existing } = await admin
+        .from("featured_slots")
+        .select("id, slot_index")
+        .eq("dodo_payment_id", subscriptionId)
+        .maybeSingle();
+      if (existing) {
+        return new Response(JSON.stringify({ active: true, slot_index: existing.slot_index }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const nowIso = new Date().toISOString();
+      const { data: activeSlots } = await admin
+        .from("featured_slots")
+        .select("slot_index")
+        .eq("status", "active")
+        .gt("expires_at", nowIso);
+      const taken = new Set((activeSlots ?? []).map((row) => row.slot_index));
+      const finalSlot = !taken.has(slotIndex)
+        ? slotIndex
+        : ([1, 2, 3, 4, 5, 6, 7, 8].find((candidate) => !taken.has(candidate)) ?? 0);
+      if (!finalSlot) {
+        return new Response(JSON.stringify({ error: "No featured slot is currently available" }), {
+          status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { error: insertError } = await admin.from("featured_slots").insert({
+        slot_index: finalSlot,
+        startup_id: startupId,
+        user_id: userData.user.id,
+        dodo_payment_id: subscriptionId,
+        status: "active",
+        starts_at: nowIso,
+        expires_at: new Date(Date.now() + 30 * 86_400_000).toISOString(),
+      });
+      if (insertError) {
+        console.error("featured confirmation insert failed", insertError);
+        return new Response(JSON.stringify({ error: "Could not activate featured slot" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify({ active: true, slot_index: finalSlot }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (!isAllowedReturnUrl(return_url)) {
       return new Response(JSON.stringify({ error: "Invalid return_url" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
