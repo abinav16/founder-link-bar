@@ -117,26 +117,22 @@ export function SponsoredRail({ side = "right" }: { side?: "left" | "right" }) {
                 setSlot(i);
                 setOpen(true);
               }}
-              className="group relative flex h-full min-h-0 w-full flex-col items-center justify-center gap-5 overflow-hidden rounded-2xl border border-dashed border-[oklch(0.75_0.13_75_/_0.28)] bg-transparent p-6 text-center transition-all duration-500 hover:border-[oklch(0.78_0.12_75_/_0.6)] hover:bg-[oklch(0.75_0.13_75_/_0.04)]"
+              className="group relative flex h-full min-h-0 w-full flex-col items-center justify-center gap-4 overflow-hidden rounded-2xl border border-black/15 bg-transparent p-6 text-center transition-all duration-300 hover:border-black/35 hover:bg-black/[0.02]"
             >
               <SlotMark />
 
               <div className="relative z-10 space-y-1">
-                <span className="block text-[10px] font-medium uppercase tracking-[0.4em] text-[oklch(0.78_0.12_75_/_0.6)] transition-colors duration-500 group-hover:text-[oklch(0.82_0.12_75)]">
+                <span className="block text-[10px] font-medium uppercase tracking-[0.35em] text-black/35 transition-colors duration-300 group-hover:text-black/55">
                   Available slot
                 </span>
                 <h3
-                  className="text-[1.6rem] font-medium italic leading-tight text-white/90 transition-colors duration-500 group-hover:text-white"
+                  className="text-[1.5rem] font-medium italic leading-tight text-black/55 transition-colors duration-300 group-hover:text-black/75"
                   style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
                 >
                   Book this slot
                 </h3>
               </div>
 
-              <span
-                aria-hidden
-                className="absolute bottom-5 h-px w-8 bg-[oklch(0.78_0.12_75_/_0.35)] transition-all duration-700 group-hover:w-16"
-              />
             </button>
           );
         })}
