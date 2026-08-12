@@ -172,7 +172,7 @@ export function FeaturedBookingDialog({
       }
       await new Promise((r) => setTimeout(r, 1200));
     }
-    toast.error("We could not verify the payment yet. Reopen this page from Dodo's return link to retry safely.");
+    toast.error("Payment received, but activation is still confirming. Reload this page in a minute — your slot will appear automatically.");
     onOpenChange(false);
   }
 
