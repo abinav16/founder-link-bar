@@ -226,6 +226,11 @@ function StartupCard({ startup, onUpdate, onDelete }: {
 
       {expanded && (
         <div className="border-t border-black/6 px-5 py-5">
+          {startup.status === "approved" && (
+            <div className="mb-4 flex flex-wrap items-center gap-2 sm:hidden">
+              <PromoteButton startupId={startup.id} showCancel />
+            </div>
+          )}
           <form onSubmit={onSubmitClick} className="space-y-4">
             <div>
               <label className="mb-2 block text-xs font-medium text-black/60">Startup logo</label>
