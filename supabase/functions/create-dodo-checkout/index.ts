@@ -92,18 +92,40 @@ serve(async (req) => {
     // fulfil the slot. This makes activation resilient when a webhook is late
     // or was not delivered, while still treating Dodo as the source of truth.
     if (body?.action === "confirm_featured") {
-      const subscriptionId = typeof body?.subscription_id === "string"
+      let subscriptionId = typeof body?.subscription_id === "string"
         ? body.subscription_id.trim()
         : "";
-      if (!subscriptionId) {
-        return new Response(JSON.stringify({ error: "Missing subscription_id" }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
       const baseUrl = mode === "test"
         ? "https://test.dodopayments.com"
         : "https://live.dodopayments.com";
+      // Recovery for a return URL that was already cleaned by an older client:
+      // find this user's newest active featured subscription by signed metadata.
+      if (!subscriptionId) {
+        const listRes = await fetch(`${baseUrl}/subscriptions`, {
+          headers: { "Authorization": `Bearer ${apiKey}` },
+        });
+        const listRaw = await listRes.text();
+        let listPayload: any = null;
+        try {
+          listPayload = listRaw ? JSON.parse(listRaw) : null;
+        } catch {
+          listPayload = null;
+        }
+        const candidates = Array.isArray(listPayload)
+          ? listPayload
+          : (Array.isArray(listPayload?.items) ? listPayload.items : []);
+        const match = candidates.find((item: any) =>
+          item?.metadata?.kind === "featured" &&
+          item?.metadata?.user_id === userData.user.id &&
+          ["active", "succeeded", "completed"].includes(String(item?.status ?? "").toLowerCase())
+        );
+        subscriptionId = String(match?.subscription_id ?? match?.id ?? "");
+        if (!subscriptionId) {
+          return new Response(JSON.stringify({ pending: true, error: "No active featured subscription found" }), {
+            status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      }
       const verifyRes = await fetch(`${baseUrl}/subscriptions/${encodeURIComponent(subscriptionId)}`, {
         headers: { "Authorization": `Bearer ${apiKey}` },
       });
