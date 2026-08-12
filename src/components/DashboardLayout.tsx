@@ -43,7 +43,13 @@ const NAV = [
   { to: "/dashboard",   label: "Dashboard",   icon: LayoutDashboard },
 ] as const;
 
-export function DashboardLayout({ children }: { children: React.ReactNode }) {
+export function DashboardLayout({
+  children,
+  rail,
+}: {
+  children: React.ReactNode;
+  rail?: React.ReactNode;
+}) {
   const navigate = useNavigate();
   const { location, status } = useRouterState();
   const path = location.pathname;
@@ -141,10 +147,17 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
-        <div className="page-enter">
+      <main
+        className={`mx-auto w-full flex-1 px-4 py-6 sm:px-6 sm:py-8 ${
+          rail
+            ? "max-w-6xl 2xl:max-w-[1500px] 2xl:grid 2xl:grid-cols-[minmax(0,1fr)_300px] 2xl:gap-8"
+            : "max-w-6xl"
+        }`}
+      >
+        <div className="page-enter min-w-0">
           {children}
         </div>
+        {rail}
       </main>
 
       <FooterBar />
