@@ -182,8 +182,10 @@ serve(async (req) => {
       });
     }
 
+    console.log("dodo checkout created", { mode, endpoint, link: data.payment_link });
     return new Response(
       JSON.stringify({
+        mode,
         payment_link: data.payment_link,
         payment_id: data.payment_id,
         subscription_id: data.subscription_id,
