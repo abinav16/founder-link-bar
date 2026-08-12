@@ -334,6 +334,11 @@ export function FeaturedBookingDialog({
                     >
                       <StartupFavicon url={s.website_url} name={s.name} logoUrl={s.logo_url} size={22} />
                       <span className="truncate font-medium text-black">{s.name}</span>
+                      {mineByStartup.has(s.id) && (
+                        <span className="shrink-0 rounded-full border border-[oklch(0.72_0.13_75_/_0.5)] bg-[oklch(0.72_0.13_75_/_0.10)] px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-[0.12em] text-[oklch(0.5_0.11_75)]">
+                          Featured
+                        </span>
+                      )}
                       {active && (
                         <Check className="ml-auto h-4 w-4 shrink-0 text-[oklch(0.6_0.12_75)]" />
                       )}
@@ -344,7 +349,38 @@ export function FeaturedBookingDialog({
             </div>
           )}
 
-          {phase === "choose" && (
+          {(phase === "choose" || phase === "waitlist") && activeForSelected && (
+            <div className="space-y-4 pt-5">
+              <div className="rounded-xl border border-[oklch(0.72_0.13_75_/_0.35)] bg-[linear-gradient(135deg,oklch(0.72_0.13_75_/_0.10),oklch(0.72_0.13_75_/_0.03))] px-4 py-3.5">
+                <p className="flex items-center gap-2 text-sm font-medium text-black">
+                  <Sparkles className="h-4 w-4 text-[oklch(0.6_0.12_75)]" />
+                  Already featured — slot {activeForSelected.slot_index}
+                </p>
+                <p className="mt-1 text-[12px] leading-relaxed text-black/50">
+                  {activeForSelected.cancel_at_period_end
+                    ? `Auto-renewal is off. This slot stays live for ${daysLeft(activeForSelected.expires_at)} more day(s), then frees up.`
+                    : `Renews in ${daysLeft(activeForSelected.expires_at)} day(s) at $${FEATURED_PRICE_USD}. Cancel anytime — the slot stays live until the paid period ends.`}
+                </p>
+              </div>
+              {!activeForSelected.cancel_at_period_end && (
+                <button
+                  onClick={() => void cancelPromotion(activeForSelected.id)}
+                  disabled={busy}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-black/12 py-3 text-sm font-medium text-black/60 transition-colors hover:border-black/30 hover:text-black disabled:opacity-40"
+                >
+                  <XCircle className="h-4 w-4" />
+                  {busy ? "Cancelling…" : "Cancel promotion"}
+                </button>
+              )}
+              {startups.length > 1 && (
+                <p className="text-center text-[11px] text-black/35">
+                  Pick another startup above to feature it in a second slot.
+                </p>
+              )}
+            </div>
+          )}
+
+          {phase === "choose" && !activeForSelected && (
             <div className="space-y-5 pt-5">
               <div className="space-y-2.5">
                 <div className="flex items-baseline justify-between">
@@ -438,7 +474,7 @@ export function FeaturedBookingDialog({
             </div>
           )}
 
-          {phase === "waitlist" && (
+          {phase === "waitlist" && !activeForSelected && (
             <div className="space-y-4 pt-5">
               <p className="text-sm leading-relaxed text-black/60">
                 All {FEATURED_SLOT_COUNT} slots are booked right now. Join the waitlist and we'll
