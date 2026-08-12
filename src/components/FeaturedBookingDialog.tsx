@@ -178,32 +178,32 @@ export function FeaturedBookingDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg overflow-hidden border-black/10 p-0">
+      <DialogContent className="flex max-h-[88svh] max-w-lg flex-col overflow-hidden border-black/10 p-0">
         {/* Header band */}
-        <div className="relative border-b border-black/8 bg-[linear-gradient(180deg,oklch(0.72_0.13_75_/_0.10),transparent)] px-6 pb-5 pt-6">
+        <div className="relative shrink-0 border-b border-black/8 bg-[linear-gradient(180deg,oklch(0.72_0.13_75_/_0.10),transparent)] px-6 pb-4 pt-5">
           <div
             aria-hidden
             className="pointer-events-none absolute inset-x-0 top-0 h-px"
             style={{ background: `linear-gradient(90deg,transparent,${gold},transparent)` }}
           />
-          <DialogHeader className="space-y-1.5">
+          <DialogHeader className="space-y-1">
             <span className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.22em] text-[oklch(0.55_0.11_75)]">
               <Sparkles className="h-3.5 w-3.5" /> Featured placement
             </span>
             <DialogTitle
-              className="text-[26px] font-normal leading-tight text-black"
+              className="text-[22px] font-normal leading-tight text-black"
               style={{ fontFamily: '"Cormorant Garamond", Georgia, serif' }}
             >
               Feature your startup
             </DialogTitle>
-            <p className="text-[13px] leading-relaxed text-black/50">
-              A permanent spot on the network sidebar — logo, name, founder and one-liner —
-              billed monthly.
+            <p className="text-[12.5px] leading-snug text-black/50">
+              A spot on the network sidebar — logo, name, founder and one-liner. Billed monthly.
             </p>
           </DialogHeader>
         </div>
 
-        <div className="px-6 pb-6">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-6">
+
           {phase === "loading" && (
             <div className="flex items-center justify-center py-14 text-black/30">
               <Loader2 className="h-5 w-5 animate-spin" />
