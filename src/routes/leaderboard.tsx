@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { SponsoredRail } from "@/components/SponsoredRail";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { getLeaderboard, getNetworkActivity, type LeaderboardRow } from "@/lib/leaderboard.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Trophy, ExternalLink, Info } from "lucide-react";
+import { useFeaturedStartupIds } from "@/lib/featured";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 
@@ -146,8 +147,19 @@ function ColHeader({ label, hint, className = "" }: { label: string; hint: strin
 
 function LeaderboardPage() {
   const { leaderboard, activity } = Route.useLoaderData();
-  const rowsByReceived = leaderboard.rowsByReceived;
-  const rowsByGiven = leaderboard.rowsByGiven;
+  const featuredIds = useFeaturedStartupIds();
+  const markFeatured = (rows: LeaderboardRow[]) =>
+    rows.map((r) => (featuredIds.has(r.id) && !r.sponsored ? { ...r, sponsored: true } : r));
+  const rowsByReceived = useMemo(
+    () => markFeatured(leaderboard.rowsByReceived),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [leaderboard.rowsByReceived, featuredIds],
+  );
+  const rowsByGiven = useMemo(
+    () => markFeatured(leaderboard.rowsByGiven),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [leaderboard.rowsByGiven, featuredIds],
+  );
   const [tab, setTab] = useState<"received" | "given">("received");
   const [range, setRange] = useState<Range>("all");
   // Hydrate myId from sessionStorage so repeat visits highlight "You"
@@ -539,7 +551,7 @@ function LeaderboardPage() {
                 key={row.id}
                 className={`group flex items-center gap-4 rounded-2xl border px-5 py-4 transition-all overflow-hidden ${
                   row.sponsored
-                    ? "sb-sponsored border-[oklch(0.72_0.13_75)] hover:shadow-[0_8px_24px_-12px_oklch(0.65_0.15_68_/_0.3)]"
+                    ? "sb-featured-row relative hover:shadow-[0_8px_24px_-12px_oklch(0.65_0.15_68_/_0.3)]"
                     : row.id === myId
                       ? "bg-white border-black/20 ring-1 ring-black/8 hover:border-black/20 hover:shadow-sm"
                       : "bg-white border-black/8 hover:border-black/20 hover:shadow-sm"
