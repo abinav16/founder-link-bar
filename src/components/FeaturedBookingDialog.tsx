@@ -35,6 +35,32 @@ type Phase = "loading" | "signin" | "no-startup" | "choose" | "waitlist" | "veri
 
 
 
+type NetworkStats = { impressions30d: number; startups: number; clicks: number };
+
+function compact(n?: number | null) {
+  if (n === undefined || n === null) return "…";
+  if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(/\.0$/, "")}K`;
+  return String(n);
+}
+
+async function loadNetworkStats(): Promise<NetworkStats> {
+  const since = new Date(Date.now() - 30 * 864e5).toISOString();
+  const [imp, ups, totals] = await Promise.all([
+    supabase
+      .from("impressions")
+      .select("id", { count: "exact", head: true })
+      .gte("created_at", since),
+    supabase.from("startups").select("id", { count: "exact", head: true }).eq("status", "approved"),
+    supabase.rpc("public_network_totals_all"),
+  ]);
+  const t = (totals.data as unknown as { total_clicks: number }[] | null)?.[0];
+  return {
+    impressions30d: imp.count ?? 0,
+    startups: ups.count ?? 0,
+    clicks: Number(t?.total_clicks ?? 0),
+  };
+}
+
 const RETURN_KEY = "startupbar:featured-pending";
 
 export function FeaturedBookingDialog({
@@ -105,7 +131,7 @@ export function FeaturedBookingDialog({
       ]);
       if (cancelled) return;
       setSlots(s);
-      void loadNetworkStats().then((v) => {
+      void loadNetworkStats().then((v: NetworkStats) => {
         if (!cancelled) setStats(v);
       });
       if (!auth.session) {
