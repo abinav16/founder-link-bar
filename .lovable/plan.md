@@ -1,44 +1,34 @@
-# Why StartupBar is always first, and how to stop it
+# Why the side space looks different, and how to use it for sponsored slots
 
-## What the data shows
+## What is actually happening
 
-StartupBar's lifetime numbers: 6,921 impressions received, 294 clicks, 10,993 impressions given.
-Next best startup is VerifiedMRR at 3,007 impressions.
+Nothing is different between the two screenshots in terms of your app. The empty area you marked in the Lovable screenshot is the editor's own grey background around the preview frame, not part of the page.
 
-Where StartupBar's 6,921 impressions come from:
+- Lovable preview frame: about 1200px wide. Your content container is capped at 1152px (`max-w-6xl`), so it fills the frame edge to edge and there is almost no side space inside the page.
+- Chrome window: about 1920px wide. The same 1152px container is centered, so there IS roughly 380px of free space on each side. That is exactly what screenshot 2 shows.
 
-```text
-3,428   startupbar.co itself (no host site)
-  671   Technical AI
-  445   Zest Win
-  357   park.fan
-  239   TheMarketContext.com
-  239   Kustiq
-  185   NotepadPlus
-  169   Hunch
-  ...    rest of the network
-```
+So the real browser has more usable side space than the preview, not less. The preview is simply too narrow to ever show a side rail.
 
-So it is not winning on merit. Half its impressions come from the widget we run on our own site, and the rest come from being in the normal rotation on member sites like every other startup. That double counting puts it permanently at the top of the leaderboard and trending, which is exactly what the Reddit commenter noticed.
+Current widths:
+- Network, startup profile, header/footer: `max-w-6xl` (1152px)
+- Leaderboard: `max-w-5xl` (1024px), even narrower
 
-Given impressions (10,993) is also the highest in the network, which under the reciprocity weighting pushes it toward the 4x delivery cap, compounding the lead.
+## Plan for sponsored side slots
 
-## Suggested public reply
+1. Introduce a shared page shell that keeps the main column at its current width but adds an optional right (or left+right) rail that only renders at `2xl` and above (>=1536px viewport). Below that breakpoint the rail is hidden entirely so nothing shifts on laptops, tablets or the Lovable preview.
+2. Widen the outer wrapper on those large screens (main column + gap + 300px rail) while the inner content column keeps its current 1152px / 1024px cap so existing layouts are untouched.
+3. Apply the shell to Network, Leaderboard and the startup profile page.
+4. Rail content: sticky sponsored card stack (logo, name, one liner, CTA), with a placeholder "Sponsor this slot" card when no sponsor is booked.
+5. On screens below 1536px, fall back to a single inline sponsored card placed between sections so sponsors still get delivery on smaller viewports.
 
-Use this transparent-but-smart tone:
+To review the rail while building, the preview must be widened or checked in a real browser window, since the preview frame itself is narrower than the breakpoint.
 
-> Thanks for the honest feedback — it’s a fair thing to call out. We do list our own page on the network because it is technically a member site with the widget installed, and the leaderboard is purely impression-based. The numbers are public: we’ve received ~6.9k impressions, ~3.4k of which are from our own homepage traffic, and the rest from the same rotation every other startup is in. If any member startup passes that number, it will take the top spot automatically — there is no manual boost or special treatment. That said, we totally understand that it looks like self-promotion, so we’re going to either hide the StartupBar row from the public leaderboard or add a clear "house / network" label so the spotlight stays on the actual founders. Appreciate you keeping us honest.
+## Technical notes
 
-## The fix options
+- New component `src/components/PageShell.tsx` with `hidden 2xl:block w-[300px] shrink-0 sticky top-20` rail.
+- Grid: `2xl:grid 2xl:grid-cols-[minmax(0,1fr)_300px] 2xl:gap-8 2xl:max-w-[1500px]`, main child keeps `min-w-0`.
+- Sponsored data source is not decided yet; first pass renders static placeholder slots so layout can be reviewed before any table or admin work.
 
-Pick one:
+## Open question
 
-1. **Hide it** (default recommendation): keep the StartupBar house listing out of the public leaderboard and the network directory. Network-wide totals stay the same. No data is deleted.
-2. **Label it as house**: keep the row but mark it "Network / StartupBar" and exclude it from the "Trending today" and "Recently active" sections so it does not dominate those spotlight slots.
-
-## Technical notes if we hide it
-
-- Add a shared constant for the house id `0d2db708-f4e9-4b77-bd83-c446826c76b1` (e.g. `src/lib/house.ts`) instead of repeating the literal.
-- `src/lib/leaderboard.functions.ts`: filter the house id out of the `startups` query result before ranking, keep the stats RPC calls unchanged.
-- `src/lib/network-dashboard.functions.ts`: filter the house id out of `cards` after they are built, so `stats.totalImpressions` / `totalClicks` (which come from `public_network_totals_all`) stay untouched, while `recentStartups`, `newThisWeek`, `recentlyActive` and trending lose the house row.
-- No change to `src/routes/api/public/widget.pick.ts`, `widget.click.ts`, or any RLS policy.
+Do you want sponsored slots backed by the database and an admin screen from the start, or static placeholders first so we can lock the layout?
