@@ -174,173 +174,241 @@ export function FeaturedBookingDialog({
     navigate({ to: "/auth" });
   }
 
+  const gold = "oklch(0.72 0.13 75)";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-base">
-            <Sparkles className="h-4 w-4 text-[oklch(0.72_0.13_75)]" />
-            Feature your startup
-          </DialogTitle>
-        </DialogHeader>
-
-        {phase === "loading" && (
-          <div className="flex items-center justify-center py-12 text-black/40">
-            <Loader2 className="h-5 w-5 animate-spin" />
-          </div>
-        )}
-
-        {phase === "signin" && (
-          <div className="space-y-4 py-2">
-            <p className="text-sm text-black/60">
-              Featured slots are for network members. Sign in to book one.
-            </p>
-            <button
-              onClick={goSignIn}
-              className="w-full rounded-md bg-black py-2.5 text-sm font-medium text-white"
-            >
-              Sign in
-            </button>
-          </div>
-        )}
-
-        {phase === "no-startup" && (
-          <div className="space-y-4 py-2">
-            <p className="text-sm text-black/60">
-              Featured slots are available to approved network members. Add your startup first,
-              then come back to book a slot.
-            </p>
-            <Link
-              to="/apply"
-              onClick={() => onOpenChange(false)}
-              className="block w-full rounded-md bg-black py-2.5 text-center text-sm font-medium text-white"
-            >
-              Apply to the network
-            </Link>
-          </div>
-        )}
-
-        {(phase === "choose" || phase === "waitlist") && startups.length > 1 && (
-          <div className="space-y-2">
-            <span className="text-xs font-medium uppercase tracking-wider text-black/40">
-              Startup
+      <DialogContent className="max-w-lg overflow-hidden border-black/10 p-0">
+        {/* Header band */}
+        <div className="relative border-b border-black/8 bg-[linear-gradient(180deg,oklch(0.72_0.13_75_/_0.10),transparent)] px-6 pb-5 pt-6">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 h-px"
+            style={{ background: `linear-gradient(90deg,transparent,${gold},transparent)` }}
+          />
+          <DialogHeader className="space-y-1.5">
+            <span className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.22em] text-[oklch(0.55_0.11_75)]">
+              <Sparkles className="h-3.5 w-3.5" /> Featured placement
             </span>
-            <div className="flex flex-col gap-1.5">
-              {startups.map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => setStartupId(s.id)}
-                  className={`flex items-center gap-2 rounded-md border px-3 py-2 text-left text-sm transition-colors ${
-                    startupId === s.id
-                      ? "border-black bg-black/[0.03]"
-                      : "border-black/10 hover:border-black/25"
-                  }`}
-                >
-                  <StartupFavicon url={s.website_url} name={s.name} logoUrl={s.logo_url} size={20} />
-                  <span className="truncate font-medium text-black">{s.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+            <DialogTitle
+              className="text-[26px] font-normal leading-tight text-black"
+              style={{ fontFamily: '"Cormorant Garamond", Georgia, serif' }}
+            >
+              Feature your startup
+            </DialogTitle>
+            <p className="text-[13px] leading-relaxed text-black/50">
+              A permanent spot on the network sidebar — logo, name, founder and one-liner —
+              billed monthly.
+            </p>
+          </DialogHeader>
+        </div>
 
-        {phase === "choose" && (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <span className="text-xs font-medium uppercase tracking-wider text-black/40">
-                Pick a slot
+        <div className="px-6 pb-6">
+          {phase === "loading" && (
+            <div className="flex items-center justify-center py-14 text-black/30">
+              <Loader2 className="h-5 w-5 animate-spin" />
+            </div>
+          )}
+
+          {phase === "signin" && (
+            <div className="space-y-4 py-5">
+              <p className="text-sm leading-relaxed text-black/60">
+                Featured slots are for network members. Sign in to book one.
+              </p>
+              <button
+                onClick={goSignIn}
+                className="w-full rounded-lg bg-black py-3 text-sm font-medium text-white transition-opacity hover:opacity-90"
+              >
+                Sign in
+              </button>
+            </div>
+          )}
+
+          {phase === "no-startup" && (
+            <div className="space-y-4 py-5">
+              <p className="text-sm leading-relaxed text-black/60">
+                Featured slots are available to approved network members. Add your startup first,
+                then come back to book a slot.
+              </p>
+              <Link
+                to="/apply"
+                onClick={() => onOpenChange(false)}
+                className="block w-full rounded-lg bg-black py-3 text-center text-sm font-medium text-white"
+              >
+                Apply to the network
+              </Link>
+            </div>
+          )}
+
+          {(phase === "choose" || phase === "waitlist") && startups.length > 1 && (
+            <div className="space-y-2.5 pt-5">
+              <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-black/35">
+                Startup
               </span>
-              <div className="grid grid-cols-2 gap-3">
-                {(["left", "right"] as const).map((side) => (
-                  <div key={side} className="space-y-1.5">
-                    <span className="block text-[10px] uppercase tracking-widest text-black/30">
-                      {side} rail
-                    </span>
-                    {(side === "left" ? [1, 2, 3, 4] : [5, 6, 7, 8]).map((i) => {
-                      const booked = taken.get(i);
-                      const active = slot === i;
-                      return (
-                        <button
-                          key={i}
-                          disabled={!!booked}
-                          onClick={() => setSlot(i)}
-                          className={`w-full rounded-md border px-2.5 py-2 text-left text-xs transition-colors ${
-                            booked
-                              ? "cursor-not-allowed border-black/8 bg-black/[0.03] text-black/35"
-                              : active
-                                ? "border-[oklch(0.72_0.13_75)] bg-[oklch(0.72_0.13_75_/_0.08)] text-black"
-                                : "border-black/12 text-black/60 hover:border-black/30"
-                          }`}
-                        >
-                          <span className="block font-medium">Slot {i}</span>
-                          <span className="block text-[10px]">
-                            {booked ? `Frees up in ${daysLeft(booked.expires_at)}d` : "Available"}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                ))}
+              <div className="flex flex-col gap-2">
+                {startups.map((s) => {
+                  const active = startupId === s.id;
+                  return (
+                    <button
+                      key={s.id}
+                      onClick={() => setStartupId(s.id)}
+                      className={`flex items-center gap-2.5 rounded-lg border px-3 py-2.5 text-left text-sm transition-all ${
+                        active
+                          ? "border-[oklch(0.72_0.13_75_/_0.6)] bg-[oklch(0.72_0.13_75_/_0.07)] shadow-[0_1px_0_rgba(0,0,0,0.02)]"
+                          : "border-black/10 hover:border-black/25"
+                      }`}
+                    >
+                      <StartupFavicon url={s.website_url} name={s.name} logoUrl={s.logo_url} size={22} />
+                      <span className="truncate font-medium text-black">{s.name}</span>
+                      {active && (
+                        <Check className="ml-auto h-4 w-4 shrink-0 text-[oklch(0.6_0.12_75)]" />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
+          )}
 
-            <div className="flex items-center justify-between rounded-md bg-black/[0.03] px-3 py-2 text-sm">
-              <span className="text-black/60">{FEATURED_DAYS} days featured</span>
-              <span className="font-semibold text-black">${FEATURED_PRICE_USD}</span>
+          {phase === "choose" && (
+            <div className="space-y-5 pt-5">
+              <div className="space-y-2.5">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-black/35">
+                    Pick a slot
+                  </span>
+                  <span className="text-[10px] uppercase tracking-[0.14em] text-black/25">
+                    {FEATURED_SLOT_COUNT - slots.length} of {FEATURED_SLOT_COUNT} open
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-x-3 gap-y-2">
+                  {(["left", "right"] as const).map((side) => (
+                    <div key={side} className="space-y-1.5">
+                      <span className="block text-[9px] uppercase tracking-[0.2em] text-black/25">
+                        {side} rail
+                      </span>
+                      {(side === "left" ? [1, 2, 3, 4] : [5, 6, 7, 8]).map((i) => {
+                        const booked = taken.get(i);
+                        const active = slot === i;
+                        return (
+                          <button
+                            key={i}
+                            disabled={!!booked}
+                            onClick={() => setSlot(i)}
+                            className={`flex w-full items-center gap-2 rounded-lg border px-2.5 py-2 text-left transition-all ${
+                              booked
+                                ? "cursor-not-allowed border-black/6 bg-black/[0.025] text-black/30"
+                                : active
+                                  ? "border-[oklch(0.72_0.13_75)] bg-[oklch(0.72_0.13_75_/_0.09)] text-black shadow-[0_0_0_3px_oklch(0.72_0.13_75_/_0.10)]"
+                                  : "border-black/10 text-black/55 hover:border-black/30 hover:bg-black/[0.015]"
+                            }`}
+                          >
+                            <span
+                              className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+                                booked
+                                  ? "bg-black/15"
+                                  : active
+                                    ? "bg-[oklch(0.68_0.13_75)]"
+                                    : "bg-black/20"
+                              }`}
+                            />
+                            <span className="min-w-0">
+                              <span className="block text-xs font-medium leading-tight">
+                                Slot {i}
+                              </span>
+                              <span className="block text-[10px] leading-tight opacity-70">
+                                {booked ? `Free in ${daysLeft(booked.expires_at)}d` : "Available"}
+                              </span>
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-[oklch(0.72_0.13_75_/_0.35)] bg-[linear-gradient(135deg,oklch(0.72_0.13_75_/_0.10),oklch(0.72_0.13_75_/_0.03))] px-4 py-3.5">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-sm font-medium text-black">Monthly subscription</span>
+                  <span className="flex items-baseline gap-1">
+                    <span className="text-2xl font-semibold tracking-tight text-black">
+                      ${FEATURED_PRICE_USD}
+                    </span>
+                    <span className="text-xs text-black/45">/month</span>
+                  </span>
+                </div>
+                <p className="mt-1 text-[11px] leading-relaxed text-black/45">
+                  Renews automatically every {FEATURED_DAYS} days. Cancel anytime — your slot stays
+                  live until the end of the paid period.
+                </p>
+              </div>
+
+              <div className="space-y-2.5">
+                <button
+                  onClick={startCheckout}
+                  disabled={busy || !slot}
+                  className="w-full rounded-lg bg-black py-3 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-35"
+                >
+                  {busy
+                    ? "Redirecting to payment…"
+                    : slot
+                      ? `Subscribe — slot ${slot} · $${FEATURED_PRICE_USD}/mo`
+                      : "Select a slot"}
+                </button>
+                <p className="text-center text-[11px] leading-relaxed text-black/35">
+                  Featured placement is presentation only. It never changes widget delivery,
+                  impressions or clicks.
+                </p>
+              </div>
             </div>
+          )}
 
-            <button
-              onClick={startCheckout}
-              disabled={busy || !slot}
-              className="w-full rounded-md bg-black py-2.5 text-sm font-medium text-white disabled:opacity-40"
-            >
-              {busy ? "Redirecting to payment…" : slot ? `Book slot ${slot}` : "Select a slot"}
-            </button>
-            <p className="text-center text-[11px] leading-relaxed text-black/35">
-              Featured placement is presentation only. It never changes widget delivery,
-              impressions or clicks.
-            </p>
-          </div>
-        )}
+          {phase === "waitlist" && (
+            <div className="space-y-4 pt-5">
+              <p className="text-sm leading-relaxed text-black/60">
+                All {FEATURED_SLOT_COUNT} slots are booked right now. Join the waitlist and we'll
+                email you the moment one frees up. No payment is taken today.
+              </p>
+              <button
+                onClick={joinWaitlist}
+                disabled={busy || !startupId}
+                className="w-full rounded-lg bg-black py-3 text-sm font-medium text-white disabled:opacity-40"
+              >
+                {busy ? "Joining…" : "Join the waitlist"}
+              </button>
+            </div>
+          )}
 
-        {phase === "waitlist" && (
-          <div className="space-y-4">
-            <p className="text-sm text-black/60">
-              All {FEATURED_SLOT_COUNT} slots are booked right now. Join the waitlist and we'll
-              email you the moment one frees up. No payment is taken today.
-            </p>
-            <button
-              onClick={joinWaitlist}
-              disabled={busy || !startupId}
-              className="w-full rounded-md bg-black py-2.5 text-sm font-medium text-white disabled:opacity-40"
-            >
-              {busy ? "Joining…" : "Join the waitlist"}
-            </button>
-          </div>
-        )}
+          {phase === "verifying" && (
+            <div className="flex flex-col items-center gap-3 py-14 text-center">
+              <Loader2 className="h-6 w-6 animate-spin text-black/30" />
+              <p className="text-sm text-black/55">Confirming your subscription…</p>
+            </div>
+          )}
 
-        {phase === "verifying" && (
-          <div className="flex flex-col items-center gap-3 py-12 text-center">
-            <Loader2 className="h-6 w-6 animate-spin text-black/40" />
-            <p className="text-sm text-black/60">Confirming your payment…</p>
-          </div>
-        )}
-
-        {phase === "success" && (
-          <div className="flex flex-col items-center gap-3 py-12 text-center">
-            <span className="grid h-14 w-14 place-items-center rounded-full bg-[oklch(0.72_0.13_75_/_0.15)]">
-              <Check className="h-7 w-7 animate-[scale-in_0.3s_ease-out] text-[oklch(0.62_0.13_75)]" />
-            </span>
-            <p className="text-base font-medium text-black">
-              You&apos;re live in slot {wonSlot}
-            </p>
-            <p className="text-sm text-black/50">Featured for the next {FEATURED_DAYS} days.</p>
-          </div>
-        )}
+          {phase === "success" && (
+            <div className="flex flex-col items-center gap-3 py-14 text-center">
+              <span className="grid h-16 w-16 place-items-center rounded-full bg-[oklch(0.72_0.13_75_/_0.14)] shadow-[0_0_0_8px_oklch(0.72_0.13_75_/_0.06)]">
+                <Check className="h-8 w-8 animate-[scale-in_0.3s_ease-out] text-[oklch(0.6_0.13_75)]" />
+              </span>
+              <p
+                className="text-xl text-black"
+                style={{ fontFamily: '"Cormorant Garamond", Georgia, serif' }}
+              >
+                You&apos;re live in slot {wonSlot}
+              </p>
+              <p className="text-sm text-black/45">
+                Renews every {FEATURED_DAYS} days at ${FEATURED_PRICE_USD}.
+              </p>
+            </div>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
 }
+
 
 /** Mounted once per layout: reopens the dialog after returning from payment. */
 export function FeaturedReturnWatcher() {
