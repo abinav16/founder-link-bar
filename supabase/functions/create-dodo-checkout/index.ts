@@ -139,7 +139,8 @@ serve(async (req) => {
         // Metadata is echoed back on webhook events, letting us reliably
         // map a payment to a StartupBar user even if the customer email
         // differs from their auth email.
-        metadata: { user_id: userData.user.id },
+        metadata,
+
       }),
     });
 
