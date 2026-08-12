@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 /** Total sidebar slots: 1-4 = left rail, 5-8 = right rail. */
@@ -83,4 +85,20 @@ export async function cancelFeaturedSlot(slotId: string): Promise<{ ok: boolean;
   });
   if (error || !data?.ok) return { ok: false, error: data?.error ?? "Could not cancel the promotion." };
   return { ok: true };
+}
+
+/**
+ * Ids of startups currently holding a paid featured slot. Used to highlight
+ * them across the network page and leaderboard with the gold treatment.
+ */
+export function useFeaturedStartupIds(): Set<string> {
+  const { data } = useQuery({
+    queryKey: ["featured-startup-ids"],
+    queryFn: fetchFeaturedSlots,
+    staleTime: 60_000,
+  });
+  return useMemo(
+    () => new Set((data ?? []).map((s) => s.startup_id).filter(Boolean)),
+    [data],
+  );
 }
