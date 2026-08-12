@@ -47,18 +47,34 @@ serve(async (req) => {
     // Non-sensitive diagnostic ping: reports which environment is active without
     // ever echoing credential values.
     if (new URL(req.url).searchParams.get("diag") === "1") {
+      const testKey = Deno.env.get("DODO_TEST_API_KEY") ?? "";
+      const liveKey = Deno.env.get("DODO_PAYMENTS_API_KEY") ?? "";
+      const probe = async (host: string, key: string) => {
+        if (!key) return "no-key";
+        try {
+          const r = await fetch(`https://${host}/products?page_size=1`, {
+            headers: { Authorization: `Bearer ${key}` },
+          });
+          return r.status;
+        } catch (e) {
+          return `err:${String(e).slice(0, 80)}`;
+        }
+      };
       return new Response(
         JSON.stringify({
           mode,
-          checkoutEnvSet: !!Deno.env.get("DODO_CHECKOUT_ENV"),
           checkoutEnvIsTest: Deno.env.get("DODO_CHECKOUT_ENV")?.trim().toLowerCase() === "test",
-          legacyModeIsTest: Deno.env.get("DODO_MODE")?.trim().toLowerCase() === "test",
-          hasTestApiKey: !!Deno.env.get("DODO_TEST_API_KEY"),
-          hasTestFeaturedProduct: !!Deno.env.get("DODO_TEST_FEATURED_PRODUCT_ID"),
+          testKeyLen: testKey.length,
+          liveKeyLen: liveKey.length,
+          keysIdentical: !!testKey && testKey === liveKey,
+          testKeyOnTestApi: await probe("test.dodopayments.com", testKey),
+          testKeyOnLiveApi: await probe("live.dodopayments.com", testKey),
+          liveKeyOnTestApi: await probe("test.dodopayments.com", liveKey),
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
+
 
     const apiKey = mode === "test"
       ? (Deno.env.get("DODO_TEST_API_KEY") ?? Deno.env.get("DODO_PAYMENTS_API_KEY"))
