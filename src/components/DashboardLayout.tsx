@@ -152,7 +152,7 @@ export function DashboardLayout({
       <main
         className={`mx-auto w-full flex-1 px-4 py-6 sm:px-6 sm:py-8 ${
           rail
-            ? "max-w-6xl xl:max-w-[1800px] xl:grid xl:grid-cols-[290px_minmax(0,1fr)_290px] xl:gap-5 2xl:grid-cols-[380px_minmax(0,1fr)_380px] 2xl:gap-6"
+            ? "max-w-6xl xl:max-w-[1800px] xl:grid xl:grid-cols-[270px_minmax(0,1fr)_270px] xl:gap-5 2xl:grid-cols-[330px_minmax(0,1fr)_330px] 2xl:gap-6"
             : "max-w-6xl"
         }`}
       >
