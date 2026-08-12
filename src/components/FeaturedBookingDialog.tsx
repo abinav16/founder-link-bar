@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Check, Loader2, Sparkles } from "lucide-react";
+import { Check, Loader2, Sparkles, XCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { StartupFavicon } from "@/components/StartupFavicon";
@@ -9,14 +10,30 @@ import {
   FEATURED_DAYS,
   FEATURED_PRICE_USD,
   FEATURED_SLOT_COUNT,
+  cancelFeaturedSlot,
   daysLeft,
   fetchFeaturedSlots,
   fetchMyApprovedStartups,
+  fetchMyFeaturedSlots,
   type FeaturedSlot,
+  type MyFeaturedSlot,
   type MyStartup,
 } from "@/lib/featured";
 
+/** Shared cache key so every promote surface reacts to a booking or cancel. */
+export const MY_FEATURED_KEY = ["my-featured-slots"] as const;
+
+export function useMyFeaturedSlots() {
+  return useQuery({
+    queryKey: MY_FEATURED_KEY,
+    queryFn: fetchMyFeaturedSlots,
+    staleTime: 30_000,
+  });
+}
+
 type Phase = "loading" | "signin" | "no-startup" | "choose" | "waitlist" | "verifying" | "success";
+
+
 
 const RETURN_KEY = "startupbar:featured-pending";
 
