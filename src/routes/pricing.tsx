@@ -282,24 +282,53 @@ function PricingPage() {
           </section>
 
           <section>
+            <h2 className="mb-3 text-base font-semibold text-black">How to book a featured spot</h2>
+            <ol className="space-y-2 list-decimal list-inside">
+              <li>Sign in and open the <Link to="/network" className="text-black underline underline-offset-2">Network</Link> page or your <Link to="/dashboard" className="text-black underline underline-offset-2">Dashboard</Link>.</li>
+              <li>Press Promote on the startup you want to feature. Your startup must already be approved.</li>
+              <li>Pick one of the {FEATURED_SLOT_COUNT} spots that is still open.</li>
+              <li>You are taken to a secure Dodo Payments checkout for the ${FEATURED_PRICE_USD} monthly subscription.</li>
+              <li>After payment you return to StartupBar and the spot goes live within a minute.</li>
+            </ol>
+            <p className="mt-3">
+              Each account can hold one active featured subscription at a time. To move to a different spot,
+              cancel the current one first and book again once it ends.
+            </p>
+          </section>
+
+          <section>
             <h2 className="mb-3 text-base font-semibold text-black">Payments &amp; billing</h2>
             <ul className="space-y-2 list-disc list-inside">
               <li>Payments are processed by <strong className="font-medium text-black">Dodo Payments</strong>, our merchant of record. StartupBar never sees or stores your card details.</li>
               <li>All prices are in US dollars. Applicable taxes are calculated and shown at checkout.</li>
-              <li>Charges are one-time. There are no recurring subscriptions and nothing auto-renews.</li>
+              <li>Listing payments are one-time and never auto renew.</li>
+              <li>The featured spot is a subscription. It renews automatically every {FEATURED_DAYS} days at ${FEATURED_PRICE_USD} until you cancel.</li>
               <li>Your receipt is emailed by Dodo Payments and the charge appears on your statement via Dodo Payments.</li>
             </ul>
+          </section>
+
+          <section>
+            <h2 className="mb-3 text-base font-semibold text-black">Cancelling a featured spot</h2>
+            <p>
+              You can cancel from the Promote panel on your dashboard, or from the startup card on your{" "}
+              <Link to="/account" className="text-black underline underline-offset-2">Account</Link> page.
+              Cancelling turns off auto renewal immediately. Your spot stays live and highlighted until the end
+              of the period you already paid for, then it is released back to the pool. There are no partial
+              period refunds.
+            </p>
           </section>
 
           <section>
             <h2 className="mb-3 text-base font-semibold text-black">Refunds</h2>
             <p>
               All payments are final. Because a paid listing is delivered as soon as it is submitted for review,
-              we do not offer refunds. If a payment went through but your listing did not appear, email
+              and a featured spot goes live immediately after checkout, we do not offer refunds. If a payment
+              went through but your listing or featured spot did not appear, email
               {" "}<a href="mailto:hello@startupbar.co" className="text-black underline underline-offset-2">hello@startupbar.co</a>{" "}
-              with your payment receipt and we will complete the listing for you at no extra cost.
+              with your payment receipt and we will fix it for you at no extra cost.
             </p>
           </section>
+
 
           <section>
             <h2 className="mb-3 text-base font-semibold text-black">What you get for the money</h2>
