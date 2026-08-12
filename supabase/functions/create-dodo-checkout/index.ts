@@ -193,12 +193,41 @@ serve(async (req) => {
         .from("featured_slots")
         .select("id, slot_index")
         .eq("dodo_payment_id", subscriptionId)
+        .eq("status", "active")
         .maybeSingle();
       if (existing) {
         return new Response(JSON.stringify({ active: true, slot_index: existing.slot_index }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+
+      // The startup in the subscription metadata can be gone (deleted and
+      // re-applied). Fall back to this user's newest approved startup so a
+      // paid booking is never lost to a stale id.
+      let targetStartupId = startupId;
+      const { data: metaStartup } = await admin
+        .from("startups")
+        .select("id")
+        .eq("id", startupId)
+        .eq("user_id", userData.user.id)
+        .maybeSingle();
+      if (!metaStartup) {
+        const { data: fallbackStartup } = await admin
+          .from("startups")
+          .select("id")
+          .eq("user_id", userData.user.id)
+          .eq("status", "approved")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (!fallbackStartup) {
+          return new Response(JSON.stringify({ error: "The startup for this booking no longer exists." }), {
+            status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        targetStartupId = fallbackStartup.id;
+      }
+
 
       const nowIso = new Date().toISOString();
       const { data: activeSlots } = await admin
