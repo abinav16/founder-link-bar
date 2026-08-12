@@ -112,9 +112,6 @@ function StartupProfileLink({ slug, children, className }: { slug: string; child
   );
 }
 
-function isNew(createdAt: string) {
-  return Date.now() - new Date(createdAt).getTime() < 7 * 24 * 60 * 60 * 1000;
-}
 
 function StartupCard({ s }: { s: Card }) {
   
