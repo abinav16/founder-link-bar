@@ -329,10 +329,12 @@ function LeaderboardPage() {
                     return (
                       <div
                         key={row.id}
-                        className={`rounded-2xl border flex flex-col items-center text-center p-3 transition-all relative ${
-                          originalIndex === 0
-                            ? "bg-black border-black lg:-mt-3 shadow-xl shadow-black/15 z-10"
-                            : "bg-white border-black/8"
+                        className={`rounded-2xl border flex flex-col items-center text-center p-3 transition-all relative overflow-hidden ${
+                          row.sponsored
+                            ? "sb-sponsored border-[oklch(0.78_0.1_80)]"
+                            : originalIndex === 0
+                              ? "bg-black border-black lg:-mt-3 shadow-xl shadow-black/15 z-10"
+                              : "bg-white border-black/8"
                         }`}
                       >
                         {originalIndex === 0 && (
@@ -532,8 +534,12 @@ function LeaderboardPage() {
             {activeRows.map((row: LeaderboardRow, i: number) => (
               <div
                 key={row.id}
-                className={`group flex items-center gap-4 rounded-2xl border bg-white px-5 py-4 transition-all hover:border-black/20 hover:shadow-sm ${
-                  row.id === myId ? "border-black/20 ring-1 ring-black/8" : "border-black/8"
+                className={`group flex items-center gap-4 rounded-2xl border px-5 py-4 transition-all overflow-hidden ${
+                  row.sponsored
+                    ? "sb-sponsored border-[oklch(0.78_0.1_80)] hover:shadow-[0_8px_24px_-12px_oklch(0.72_0.11_80_/_0.3)]"
+                    : row.id === myId
+                      ? "bg-white border-black/20 ring-1 ring-black/8 hover:border-black/20 hover:shadow-sm"
+                      : "bg-white border-black/8 hover:border-black/20 hover:shadow-sm"
                 }`}
               >
                 <div className="w-7 shrink-0 text-center">
