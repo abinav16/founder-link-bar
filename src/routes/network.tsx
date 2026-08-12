@@ -148,12 +148,12 @@ function StartupCard({ s }: { s: Card }) {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={`Visit ${s.name} website`}
-                className="pointer-events-auto shrink-0 inline-flex items-center gap-1 rounded-full border border-black/10 bg-white px-2.5 py-1 text-[11px] font-medium text-black/60 hover:text-black hover:border-black/30 transition-colors"
+                title={`Visit ${s.name} website`}
+                className="pointer-events-auto shrink-0 inline-flex items-center justify-center h-6 w-6 rounded-full border border-black/10 bg-white text-black/50 hover:text-black hover:border-black/30 transition-colors"
               >
-                <Globe className="h-3 w-3" strokeWidth={2} />
-                Visit
-                <ArrowUpRight className="h-3 w-3" strokeWidth={2} />
+                <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2} />
               </a>
+
             </div>
             <div className="mt-1">
               <FounderChip s={s} />
