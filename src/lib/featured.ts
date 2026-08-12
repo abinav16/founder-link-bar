@@ -18,6 +18,7 @@ export type FeaturedSlot = {
   logo_url: string | null;
   description: string;
   founder_name: string | null;
+  founder_avatar_url: string | null;
   expires_at: string;
 };
 
