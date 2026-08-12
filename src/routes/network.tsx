@@ -255,8 +255,9 @@ function Metric({ value, label }: { value: string; label: string }) {
 
 function StartupRow({ s }: { s: Card }) {
   const visitHref = `/api/public/widget/click?id=${s.id}&source=dashboard`;
+  const sponsored = s.sponsored;
   return (
-    <div className="group relative py-4 border-b border-black/[0.05] last:border-0 transition-colors duration-150">
+    <div className={`group relative py-4 border-b border-black/[0.05] last:border-0 transition-colors duration-150 ${sponsored ? "sb-sponsored" : ""}`}>
       {s.slug && (
         <StartupProfileLink slug={s.slug} className="absolute inset-0 z-0">
           <span className="sr-only">View {s.name} profile</span>
@@ -271,6 +272,9 @@ function StartupRow({ s }: { s: Card }) {
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 items-center gap-2 sm:gap-2.5">
             <span className="text-sm font-semibold text-black truncate">{s.name}</span>
+            {sponsored && (
+              <span className="shrink-0 rounded-full bg-[oklch(0.72_0.11_80)] px-1.5 py-0.5 text-[8px] font-bold text-white uppercase tracking-wide">Featured</span>
+            )}
             <a
               href={visitHref}
               target="_blank"
