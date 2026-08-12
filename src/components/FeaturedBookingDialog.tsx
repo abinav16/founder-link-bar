@@ -461,8 +461,8 @@ export function FeaturedBookingDialog({
                   </span>
                 </div>
                 <p className="mt-1 text-[11px] leading-relaxed text-black/45">
-                  Renews automatically every {FEATURED_DAYS} days. Cancel anytime — your slot stays
-                  live until the end of the paid period.
+                  Renews automatically every {FEATURED_DAYS} days. Cancel anytime and your slot
+                  stays live until the end of the paid period.
                 </p>
               </div>
 
@@ -475,7 +475,7 @@ export function FeaturedBookingDialog({
                   {busy
                     ? "Redirecting to payment…"
                     : slot
-                      ? `Subscribe — slot ${slot} · $${FEATURED_PRICE_USD}/mo`
+                      ? `Subscribe to slot ${slot} · $${FEATURED_PRICE_USD}/mo`
                       : "Select a slot"}
                 </button>
                 <p className="text-center text-[11px] leading-relaxed text-black/35">
@@ -483,6 +483,7 @@ export function FeaturedBookingDialog({
                   impressions or clicks.
                 </p>
               </div>
+
             </div>
           )}
 
