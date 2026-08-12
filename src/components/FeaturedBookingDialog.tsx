@@ -137,7 +137,7 @@ export function FeaturedBookingDialog({
   async function verifyAndWait(paymentId: string) {
     // Poll the webhook result and ask the authenticated checkout function to
     // verify directly with Dodo as a fallback when webhook delivery is late.
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 40; i++) {
       const { data } = await supabase
         .from("featured_slots")
         .select("slot_index, status")
