@@ -172,7 +172,7 @@ export function FeaturedBookingDialog({
       }
       await new Promise((r) => setTimeout(r, 1200));
     }
-    toast.error("Payment received, but activation is still confirming. Reload this page in a minute — your slot will appear automatically.");
+    toast.error("Payment received, but activation is still confirming. Reload this page in a minute and your slot will appear automatically.");
     onOpenChange(false);
   }
 
@@ -249,7 +249,7 @@ export function FeaturedBookingDialog({
       toast.error(res.error ?? "Could not cancel the promotion.");
       return;
     }
-    toast.success("Auto-renewal cancelled. Your slot stays live until the period ends.");
+    toast.success("Auto renewal cancelled. Your slot stays live until the period ends.");
     await refetchMine();
     void qc.invalidateQueries({ queryKey: ["featured-slots"] });
   }
@@ -410,12 +410,12 @@ export function FeaturedBookingDialog({
               <div className="rounded-xl border border-[oklch(0.72_0.13_75_/_0.35)] bg-[linear-gradient(135deg,oklch(0.72_0.13_75_/_0.10),oklch(0.72_0.13_75_/_0.03))] px-4 py-3.5">
                 <p className="flex items-center gap-2 text-sm font-medium text-black">
                   <Sparkles className="h-4 w-4 text-[oklch(0.6_0.12_75)]" />
-                  Already featured — slot {activeForSelected.slot_index}
+                  Already featured in slot {activeForSelected.slot_index}
                 </p>
                 <p className="mt-1 text-[12px] leading-relaxed text-black/50">
                   {activeForSelected.cancel_at_period_end
-                    ? `Auto-renewal is off. This slot stays live for ${daysLeft(activeForSelected.expires_at)} more day(s), then frees up.`
-                    : `Renews in ${daysLeft(activeForSelected.expires_at)} day(s) at $${FEATURED_PRICE_USD}. Cancel anytime — the slot stays live until the paid period ends.`}
+                    ? `Auto renewal is off. This slot stays live for ${daysLeft(activeForSelected.expires_at)} more day(s), then frees up.`
+                    : `Renews in ${daysLeft(activeForSelected.expires_at)} day(s) at $${FEATURED_PRICE_USD}. Cancel anytime and the slot stays live until the paid period ends.`}
                 </p>
               </div>
               {!activeForSelected.cancel_at_period_end && (
