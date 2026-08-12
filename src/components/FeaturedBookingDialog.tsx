@@ -105,7 +105,7 @@ export function FeaturedBookingDialog({
     // The webhook is the source of truth; poll briefly for the row it writes.
     for (let i = 0; i < 15; i++) {
       const { data } = await supabase
-        .from("featured_slots" as never)
+        .from("featured_slots")
         .select("slot_index, status")
         .eq("dodo_payment_id", paymentId)
         .maybeSingle();
@@ -157,8 +157,8 @@ export function FeaturedBookingDialog({
     setBusy(true);
     const { data: u } = await supabase.auth.getUser();
     const { error } = await supabase
-      .from("featured_waitlist" as never)
-      .insert({ startup_id: startupId, user_id: u.user?.id } as never);
+      .from("featured_waitlist")
+      .insert({ startup_id: startupId, user_id: u.user!.id });
     setBusy(false);
     if (error) {
       toast.error("Could not join the waitlist.");

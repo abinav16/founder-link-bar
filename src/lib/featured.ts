@@ -19,7 +19,7 @@ export type FeaturedSlot = {
 };
 
 export async function fetchFeaturedSlots(): Promise<FeaturedSlot[]> {
-  const { data, error } = await supabase.rpc("public_featured_slots" as never);
+  const { data, error } = await supabase.rpc("public_featured_slots");
   if (error) {
     console.error("[featured] slots load failed", error);
     return [];
@@ -37,7 +37,7 @@ export type MyStartup = {
 };
 
 export async function fetchMyApprovedStartups(): Promise<MyStartup[]> {
-  const { data, error } = await supabase.rpc("get_my_startups" as never);
+  const { data, error } = await supabase.rpc("get_my_startups");
   if (error) return [];
   return ((data ?? []) as unknown as MyStartup[]).filter((s) => s.status === "approved");
 }
