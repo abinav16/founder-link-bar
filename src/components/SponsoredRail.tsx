@@ -42,7 +42,7 @@ function FeaturedCard({ slot }: { slot: FeaturedSlot }) {
       href={slot.website_url}
       target="_blank"
       rel="noopener noreferrer"
-      className="sb-sponsored group relative flex min-h-0 flex-1 flex-col gap-3 overflow-hidden rounded-2xl border p-4 transition-all duration-500"
+      className="sb-sponsored group relative flex h-full min-h-0 w-full flex-col gap-3 overflow-hidden rounded-2xl border p-4 transition-all duration-500"
     >
       {/* Top block: big logo on the left, name + founder stacked on the right */}
       <div className="flex min-w-0 items-center gap-3">
@@ -120,7 +120,7 @@ export function SponsoredRail({ side = "right" }: { side?: "left" | "right" }) {
                 setSlot(i);
                 setOpen(true);
               }}
-              className="sb-sponsored group relative flex min-h-0 flex-1 flex-col items-center justify-center gap-5 overflow-hidden rounded-2xl border p-6 text-center transition-all duration-500"
+              className="sb-sponsored group relative flex h-full min-h-0 w-full flex-col items-center justify-center gap-5 overflow-hidden rounded-2xl border p-6 text-center transition-all duration-500"
             >
               <SlotMark />
 
