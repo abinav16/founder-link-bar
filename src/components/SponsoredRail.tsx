@@ -86,7 +86,7 @@ function FeaturedCard({ slot }: { slot: FeaturedSlot }) {
       </div>
 
       {/* One-liner across the full card width */}
-      <p className="line-clamp-2 min-h-0 min-w-0 overflow-hidden text-[12.5px] leading-[1.45] text-white/60">
+      <p className="line-clamp-3 min-h-0 min-w-0 overflow-hidden text-[12.5px] leading-[1.45] text-white/60">
         {slot.description}
       </p>
 
