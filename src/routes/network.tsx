@@ -126,7 +126,7 @@ function StartupCard({ s }: { s: Card }) {
       className={[
         "group relative flex flex-col gap-2.5 sm:gap-3 rounded-2xl border p-4 sm:p-5 transition-all duration-300 h-full overflow-hidden",
         sponsored
-          ? "sb-sponsored border-[oklch(0.78_0.1_80)] hover:shadow-[0_12px_48px_oklch(0.72_0.11_80_/_0.18)]"
+          ? "sb-sponsored border-[oklch(0.82_0.014_250)] hover:shadow-[0_12px_48px_oklch(0.5_0.018_255_/_0.18)]"
           : "bg-white border-black/[0.06] hover:border-black/[0.12] hover:shadow-[0_12px_48px_rgba(0,0,0,0.07)]",
       ].join(" ")}
     >
@@ -139,7 +139,7 @@ function StartupCard({ s }: { s: Card }) {
         </StartupProfileLink>
       )}
       {sponsored ? (
-        <span className="absolute top-3 right-3 z-20 text-[9px] font-semibold tracking-[0.12em] uppercase px-1.5 py-0.5 rounded-full bg-[oklch(0.72_0.11_80)] text-white leading-none shadow-sm">
+        <span className="absolute top-3 right-3 z-20 text-[9px] font-semibold tracking-[0.12em] uppercase px-1.5 py-0.5 rounded-full bg-[oklch(0.5_0.018_255)] text-white leading-none shadow-sm">
           Featured
         </span>
       ) : fresh ? (
@@ -273,7 +273,7 @@ function StartupRow({ s }: { s: Card }) {
           <div className="flex min-w-0 items-center gap-2 sm:gap-2.5">
             <span className="text-sm font-semibold text-black truncate">{s.name}</span>
             {sponsored && (
-              <span className="shrink-0 rounded-full bg-[oklch(0.72_0.11_80)] px-1.5 py-0.5 text-[8px] font-bold text-white uppercase tracking-wide">Featured</span>
+              <span className="shrink-0 rounded-full bg-[oklch(0.5_0.018_255)] px-1.5 py-0.5 text-[8px] font-bold text-white uppercase tracking-wide">Featured</span>
             )}
             <a
               href={visitHref}
