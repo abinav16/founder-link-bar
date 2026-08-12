@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 function FooterBar() {
   return (
     <footer className="border-t border-black/8 bg-white px-4 py-6 sm:px-6">
-      <div className="mx-auto max-w-6xl flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mx-auto max-w-6xl 2xl:max-w-[1500px] flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
           <div className="h-2 w-6 rounded-sm bg-black" />
           <span className="text-sm font-semibold tracking-tight text-black">StartupBar</span>
@@ -83,7 +83,7 @@ export function DashboardLayout({
       </div>
 
       <header className="sticky top-0 z-30 border-b border-black/8 bg-white" suppressHydrationWarning>
-        <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4 sm:gap-8 sm:px-6">
+        <div className="mx-auto flex h-14 max-w-6xl 2xl:max-w-[1500px] items-center gap-4 px-4 sm:gap-8 sm:px-6">
           <Link to="/" className="flex shrink-0 items-center gap-2">
             <div className="h-2 w-6 rounded-sm bg-black" />
             <span className="text-sm font-semibold tracking-tight text-black">StartupBar</span>
