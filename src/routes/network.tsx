@@ -847,6 +847,7 @@ function NetworkDashboardPage() {
   const [query, setQuery] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("joined");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [featuredFilter, setFeaturedFilter] = useState<FeaturedFilter>("all");
 
   function toggleSort(key: SortKey) {
     if (key === sortKey) {
@@ -867,11 +868,15 @@ function NetworkDashboardPage() {
   );
   const q = query.trim().toLowerCase();
   const filtered = useMemo(() => {
-    const base = q
+    let base = q
       ? allStartups.filter((s) =>
           `${s.name} ${s.description} ${s.website_url}`.toLowerCase().includes(q),
         )
       : allStartups;
+
+    if (featuredFilter === "featured") {
+      base = base.filter((s) => s.sponsored);
+    }
 
     const sorted = [...base];
     const sign = sortDir === "desc" ? 1 : -1;
@@ -887,7 +892,7 @@ function NetworkDashboardPage() {
       }
     });
     return sorted;
-  }, [allStartups, q, sortKey, sortDir]);
+  }, [allStartups, q, sortKey, sortDir, featuredFilter]);
 
 
   const trending = (() => {
