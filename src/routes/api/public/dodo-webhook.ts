@@ -42,8 +42,13 @@ export const Route = createFileRoute("/api/public/dodo-webhook")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const secret = process.env.DODO_WEBHOOK_SECRET;
-        if (!secret) {
+        // Accept both the live and test webhook secrets so the same endpoint
+        // can fulfil events from either Dodo environment.
+        const secrets = [
+          process.env.DODO_WEBHOOK_SECRET,
+          process.env.DODO_TEST_WEBHOOK_SECRET,
+        ].filter((s): s is string => Boolean(s));
+        if (secrets.length === 0) {
           console.error("[dodo-webhook] Missing DODO_WEBHOOK_SECRET");
           return new Response("Server misconfigured", { status: 500 });
         }
@@ -59,7 +64,10 @@ export const Route = createFileRoute("/api/public/dodo-webhook")({
           return new Response("Stale timestamp", { status: 401 });
         }
 
-        if (!verifyDodoSignature(rawBody, id, timestamp, signature, secret)) {
+        const valid = secrets.some((s) =>
+          verifyDodoSignature(rawBody, id, timestamp, signature, s),
+        );
+        if (!valid) {
           return new Response("Invalid signature", { status: 401 });
         }
 
