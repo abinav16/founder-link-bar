@@ -11,12 +11,12 @@ export function SponsoredRail({ side = "right" }: { side?: "left" | "right" }) {
   const slots = [1, 2, 3, 4];
   return (
     <aside className="hidden 2xl:block w-[280px] shrink-0" aria-label={`Sponsored (${side})`}>
-      <div className="sticky top-20 flex flex-col gap-2.5">
+      <div className="sticky top-20 flex h-[calc(100dvh-6rem)] flex-col gap-3">
         {slots.map((i) => (
           <Link
             key={i}
             to="/pricing"
-            className="group relative block overflow-hidden rounded-2xl border border-black/8 bg-white p-3.5 transition-all hover:-translate-y-0.5 hover:border-black/20 hover:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.25)]"
+            className="group relative flex min-h-0 flex-1 flex-col justify-center overflow-hidden rounded-2xl border border-black/8 bg-white p-4 transition-all hover:-translate-y-0.5 hover:border-black/20 hover:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.25)]"
           >
             <div className="flex items-center gap-3">
               <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-dashed border-black/15 bg-black/[0.03] text-black/25 transition-colors group-hover:border-black/30 group-hover:text-black/45">
