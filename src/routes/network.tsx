@@ -143,7 +143,7 @@ function StartupCard({ s }: { s: Card }) {
           <h3 className="text-[13px] sm:text-[15px] font-semibold text-black leading-snug min-w-0 truncate">{s.name}</h3>
           <ArrowUpRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-black/20 shrink-0 ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
         </div>
-        <p className="mt-2 text-[11px] sm:text-[13px] text-black/45 leading-relaxed line-clamp-2">{s.description}</p>
+        <p className="mt-2 text-[11px] sm:text-[13px] text-black/45 leading-relaxed line-clamp-2 sm:min-h-[2.9em]">{s.description}</p>
       </div>
 
       <div className="relative z-10 hidden sm:flex items-center justify-between border-t border-black/[0.05] pt-3 pointer-events-none">
@@ -761,16 +761,17 @@ function HorizontalCardRail({ items }: { items: Card[] }) {
     <div className="relative">
       <div
         ref={scrollerRef}
-        className="sb-rail flex gap-4 overflow-x-auto snap-x pb-3"
+        className="sb-rail flex items-stretch gap-4 overflow-x-auto snap-x pb-3"
       >
         {items.map((s) => (
           <div
             key={s.id}
-            className="snap-start shrink-0 w-[280px] sm:w-[340px]"
+            className="snap-start shrink-0 w-[280px] sm:w-[calc((100%-2rem)/3)]"
           >
             <StartupCard s={s} />
           </div>
         ))}
+
       </div>
     </div>
   );
