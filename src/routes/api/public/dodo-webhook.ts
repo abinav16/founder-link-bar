@@ -72,23 +72,41 @@ export const Route = createFileRoute("/api/public/dodo-webhook")({
 
         const type: string = event?.type ?? "";
         const data = event?.data ?? {};
-        const paymentId: string | undefined = data.payment_id ?? data.id;
         const status: string = String(data.status ?? "").toLowerCase();
         const customerEmail: string = String(data.customer?.email ?? "").toLowerCase();
         const metaUserId: string | undefined = data.metadata?.user_id;
+
+        // Featured slots are sold as a Dodo subscription, so the stable id for
+        // those events is subscription_id; one-time listings use payment_id.
+        const isSubscriptionEvent =
+          type.startsWith("subscription.") || Boolean(data.subscription_id);
+        const subscriptionId: string | undefined = data.subscription_id ??
+          (type.startsWith("subscription.") ? data.id : undefined);
+        const paymentId: string | undefined = isSubscriptionEvent
+          ? subscriptionId
+          : (data.payment_id ?? data.id);
 
         if (!paymentId) {
           return new Response("ok", { status: 200 });
         }
 
-        // Only act on succeeded payments. Ignore other event types (refunds, etc.).
+        // Renewal charges arrive as payment/subscription events on an existing
+        // subscription — they extend the term instead of creating a new slot.
+        const isRenewal = type === "subscription.renewed" ||
+          (isSubscriptionEvent && (type === "payment.succeeded" || type === "payment.completed"));
+
+        // Only act on succeeded payments / active subscriptions.
         const isSucceeded =
           status === "succeeded" ||
+          status === "active" ||
           type === "payment.succeeded" ||
-          type === "payment.completed";
+          type === "payment.completed" ||
+          type === "subscription.active" ||
+          type === "subscription.renewed";
         if (!isSucceeded) {
           return new Response("ok", { status: 200 });
         }
+
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -109,17 +127,32 @@ export const Route = createFileRoute("/api/public/dodo-webhook")({
         }
 
         // Featured-slot purchases fulfil a sidebar booking instead of a listing credit.
-        if (data.metadata?.kind === "featured") {
+        if (data.metadata?.kind === "featured" || isSubscriptionEvent) {
           const slotIndex = Number(data.metadata?.slot_index);
           const startupId: string | null = data.metadata?.startup_id ?? null;
 
-          // Idempotent: this payment may already have been fulfilled.
+          // Idempotent: this subscription may already have been fulfilled.
           const { data: existing } = await supabaseAdmin
             .from("featured_slots")
-            .select("id")
+            .select("id, expires_at")
             .eq("dodo_payment_id", paymentId)
             .maybeSingle();
-          if (existing) return new Response("ok", { status: 200 });
+          if (existing) {
+            if (isRenewal) {
+              // Extend the term by another 30 days from whichever is later.
+              const cur = existing.expires_at ? new Date(existing.expires_at).getTime() : 0;
+              const from = Math.max(cur, Date.now());
+              await supabaseAdmin
+                .from("featured_slots")
+                .update({
+                  status: "active",
+                  expires_at: new Date(from + 30 * 86_400_000).toISOString(),
+                })
+                .eq("id", existing.id);
+            }
+            return new Response("ok", { status: 200 });
+          }
+
 
           const nowIso = new Date().toISOString();
           const { data: active } = await supabaseAdmin

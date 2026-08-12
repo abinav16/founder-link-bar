@@ -120,28 +120,45 @@ serve(async (req) => {
     const baseUrl = mode === "test"
       ? "https://test.dodopayments.com"
       : "https://live.dodopayments.com";
-    // Append {payment_id} placeholder so Dodo substitutes the real ID on redirect.
+    // Featured slots are a recurring subscription product in Dodo; listings are
+    // a one-time payment. The two use different endpoints and return different
+    // id fields on the redirect.
+    const isSubscription = kind === "featured";
     const sep = return_url.includes("?") ? "&" : "?";
-    const finalReturnUrl = `${return_url}${sep}payment_id={payment_id}`;
+    const finalReturnUrl = isSubscription
+      ? `${return_url}${sep}subscription_id={subscription_id}`
+      : `${return_url}${sep}payment_id={payment_id}`;
 
-    const res = await fetch(`${baseUrl}/payments`, {
+    const endpoint = isSubscription ? "/subscriptions" : "/payments";
+    const payload = isSubscription
+      ? {
+          billing: { city: "", country: "US", state: "", street: "", zipcode: "" },
+          customer: { email, name: name || email },
+          payment_link: true,
+          product_id: productId,
+          quantity: 1,
+          return_url: finalReturnUrl,
+          metadata,
+        }
+      : {
+          billing: { city: "", country: "US", state: "", street: "", zipcode: "" },
+          customer: { email, name: name || email },
+          payment_link: true,
+          product_cart: [{ product_id: productId, quantity: 1 }],
+          return_url: finalReturnUrl,
+          // Metadata is echoed back on webhook events, letting us reliably
+          // map a payment to a StartupBar user even if the customer email
+          // differs from their auth email.
+          metadata,
+        };
+
+    const res = await fetch(`${baseUrl}${endpoint}`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        billing: { city: "", country: "US", state: "", street: "", zipcode: "" },
-        customer: { email, name: name || email },
-        payment_link: true,
-        product_cart: [{ product_id: productId, quantity: 1 }],
-        return_url: finalReturnUrl,
-        // Metadata is echoed back on webhook events, letting us reliably
-        // map a payment to a StartupBar user even if the customer email
-        // differs from their auth email.
-        metadata,
-
-      }),
+      body: JSON.stringify(payload),
     });
 
     const data = await res.json();
@@ -155,9 +172,14 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ payment_link: data.payment_link, payment_id: data.payment_id }),
+      JSON.stringify({
+        payment_link: data.payment_link,
+        payment_id: data.payment_id,
+        subscription_id: data.subscription_id,
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
+
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e) }), {
       status: 500,
