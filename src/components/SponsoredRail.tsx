@@ -60,10 +60,8 @@ function FeaturedCard({ slot }: { slot: FeaturedSlot }) {
             <span className="min-w-0 flex-1 truncate text-sm font-semibold leading-tight text-white/95">
               {slot.name}
             </span>
-            <span className="shrink-0 rounded-full border border-[oklch(0.75_0.13_75_/_0.35)] bg-[oklch(0.75_0.13_75_/_0.12)] px-1.5 py-0.5 text-[8px] font-medium uppercase tracking-[0.14em] text-[oklch(0.82_0.12_75)]">
-              Featured
-            </span>
           </div>
+
 
           <div className="flex min-w-0 items-center gap-1.5">
             {slot.founder_avatar_url ? (
