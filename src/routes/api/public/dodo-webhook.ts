@@ -103,6 +103,28 @@ export const Route = createFileRoute("/api/public/dodo-webhook")({
         const isRenewal = type === "subscription.renewed" ||
           (isSubscriptionEvent && (type === "payment.succeeded" || type === "payment.completed"));
 
+        // Subscription ended or was cancelled at the provider: reflect it here.
+        const isCancelEvent =
+          type === "subscription.cancelled" ||
+          type === "subscription.canceled" ||
+          type === "subscription.expired" ||
+          status === "cancelled" ||
+          status === "canceled" ||
+          status === "expired";
+        if (isSubscriptionEvent && isCancelEvent) {
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          const endsNow = type === "subscription.expired" || status === "expired";
+          await supabaseAdmin
+            .from("featured_slots")
+            .update(
+              endsNow
+                ? { status: "expired", cancel_at_period_end: true, cancelled_at: new Date().toISOString() }
+                : { cancel_at_period_end: true, cancelled_at: new Date().toISOString() },
+            )
+            .eq("dodo_payment_id", paymentId);
+          return new Response("ok", { status: 200 });
+        }
+
         // Only act on succeeded payments / active subscriptions.
         const isSucceeded =
           status === "succeeded" ||
@@ -142,11 +164,11 @@ export const Route = createFileRoute("/api/public/dodo-webhook")({
           // Idempotent: this subscription may already have been fulfilled.
           const { data: existing } = await supabaseAdmin
             .from("featured_slots")
-            .select("id, expires_at")
+            .select("id, expires_at, cancel_at_period_end")
             .eq("dodo_payment_id", paymentId)
             .maybeSingle();
           if (existing) {
-            if (isRenewal) {
+            if (isRenewal && !existing.cancel_at_period_end) {
               // Extend the term by another 30 days from whichever is later.
               const cur = existing.expires_at ? new Date(existing.expires_at).getTime() : 0;
               const from = Math.max(cur, Date.now());
