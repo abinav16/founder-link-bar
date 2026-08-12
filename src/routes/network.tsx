@@ -802,6 +802,7 @@ function HorizontalCardRail({ items }: { items: Card[] }) {
 
 type SortKey = "joined" | "impressions" | "clicks";
 type SortDir = "asc" | "desc";
+type FeaturedFilter = "all" | "featured";
 
 const SORT_COLUMNS: { key: SortKey; label: string; hint: string; width: string }[] = [
   { key: "joined", label: "Joined", hint: "How long ago this startup joined the network.", width: "w-[68px]" },
@@ -846,6 +847,7 @@ function NetworkDashboardPage() {
   const [query, setQuery] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("joined");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [featuredFilter, setFeaturedFilter] = useState<FeaturedFilter>("all");
 
   function toggleSort(key: SortKey) {
     if (key === sortKey) {
@@ -866,11 +868,15 @@ function NetworkDashboardPage() {
   );
   const q = query.trim().toLowerCase();
   const filtered = useMemo(() => {
-    const base = q
+    let base = q
       ? allStartups.filter((s) =>
           `${s.name} ${s.description} ${s.website_url}`.toLowerCase().includes(q),
         )
       : allStartups;
+
+    if (featuredFilter === "featured") {
+      base = base.filter((s) => s.sponsored);
+    }
 
     const sorted = [...base];
     const sign = sortDir === "desc" ? 1 : -1;
@@ -886,7 +892,7 @@ function NetworkDashboardPage() {
       }
     });
     return sorted;
-  }, [allStartups, q, sortKey, sortDir]);
+  }, [allStartups, q, sortKey, sortDir, featuredFilter]);
 
 
   const trending = (() => {
@@ -965,26 +971,39 @@ function NetworkDashboardPage() {
             </div>
           </div>
 
-          {/* Sort control (all viewports) */}
-          <div className="mb-3 flex items-center gap-2">
-            <span className="text-[10px] uppercase tracking-[0.1em] font-semibold text-black/30">Sort</span>
+          {/* Sort & filter controls (all viewports) */}
+          <div className="mb-3 flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] uppercase tracking-[0.1em] font-semibold text-black/30">Sort</span>
+              <select
+                value={`${sortKey}:${sortDir}`}
+                onChange={(e) => {
+                  const [k, d] = e.target.value.split(":") as [SortKey, SortDir];
+                  setSortKey(k);
+                  setSortDir(d);
+                }}
+                className="h-8 rounded-full border border-black/10 bg-white px-3 text-[12px] text-black focus:outline-none focus:border-black/30"
+              >
+                <option value="joined:desc">Newest first</option>
+                <option value="joined:asc">Oldest first</option>
+                <option value="impressions:desc">Most impressions</option>
+                <option value="impressions:asc">Fewest impressions</option>
+                <option value="clicks:desc">Most clicks</option>
+                <option value="clicks:asc">Fewest clicks</option>
+              </select>
+            </div>
 
-            <select
-              value={`${sortKey}:${sortDir}`}
-              onChange={(e) => {
-                const [k, d] = e.target.value.split(":") as [SortKey, SortDir];
-                setSortKey(k);
-                setSortDir(d);
-              }}
-              className="h-8 rounded-full border border-black/10 bg-white px-3 text-[12px] text-black focus:outline-none focus:border-black/30"
-            >
-              <option value="joined:desc">Newest first</option>
-              <option value="joined:asc">Oldest first</option>
-              <option value="impressions:desc">Most impressions</option>
-              <option value="impressions:asc">Fewest impressions</option>
-              <option value="clicks:desc">Most clicks</option>
-              <option value="clicks:asc">Fewest clicks</option>
-            </select>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] uppercase tracking-[0.1em] font-semibold text-black/30">Filter</span>
+              <select
+                value={featuredFilter}
+                onChange={(e) => setFeaturedFilter(e.target.value as FeaturedFilter)}
+                className="h-8 rounded-full border border-black/10 bg-white px-3 text-[12px] text-black focus:outline-none focus:border-black/30"
+              >
+                <option value="all">All startups</option>
+                <option value="featured">Featured only</option>
+              </select>
+            </div>
           </div>
 
           {filtered.length > 0 ? (
@@ -1019,16 +1038,24 @@ function NetworkDashboardPage() {
             </div>
           ) : (
             <div className="rounded-2xl bg-white border border-black/[0.06] px-6 py-16 text-center">
-              <p className="text-sm text-black/60 font-medium">No startups match "{query}"</p>
-              <p className="mt-1.5 text-[13px] text-black/35">Try a shorter word, or browse the full network.</p>
+              <p className="text-sm text-black/60 font-medium">
+                {featuredFilter === "featured" && !query
+                  ? "No featured startups right now"
+                  : `No startups match "${query}"`}
+              </p>
+              <p className="mt-1.5 text-[13px] text-black/35">
+                {featuredFilter === "featured" && !query
+                  ? "Check back soon or browse the full network."
+                  : "Try a shorter word, or browse the full network."}
+              </p>
               <button
                 type="button"
-                onClick={() => { setQuery(""); setSortKey("joined"); setSortDir("desc"); }}
+                onClick={() => { setQuery(""); setSortKey("joined"); setSortDir("desc"); setFeaturedFilter("all"); }}
 
                 className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-black px-4 py-2 text-[13px] font-medium text-white hover:bg-black/85 transition-colors"
               >
                 <X className="h-3.5 w-3.5" strokeWidth={2.5} />
-                Clear search
+                Clear filters
               </button>
             </div>
           )}
