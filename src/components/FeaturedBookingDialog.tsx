@@ -321,8 +321,9 @@ export function FeaturedBookingDialog({
                   ))}
                 </ul>
                 <p className="border-t border-black/8 px-4 py-2.5 text-[11px] leading-relaxed text-black/40">
-                  Numbers are live from the network. This does not touch the widget, so everyone
-                  keeps the same delivery, impressions and clicks.
+                  Featured placement is visibility on our pages. It does not touch the widget, so
+                  everyone keeps the same delivery, impressions and clicks.
+
                 </p>
               </div>
             </div>
