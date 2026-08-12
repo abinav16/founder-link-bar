@@ -42,7 +42,7 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
 
   const { data: startups, error } = await supabase
     .from("startups")
-    .select("id, slug, name, website_url, description, logo_url, created_at")
+    .select("id, slug, name, website_url, description, logo_url, created_at, sponsored")
     .eq("status", "approved");
 
 
