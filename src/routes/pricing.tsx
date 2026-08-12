@@ -339,7 +339,13 @@ function PricingPage() {
               in the network. See the <Link to="/faq" className="text-black underline underline-offset-2">FAQ</Link>
               {" "}for eligibility rules and delivery details.
             </p>
+            <p className="mt-3">
+              A featured spot is separate. It buys visibility on StartupBar pages only: a sidebar card plus a
+              gold highlight on the network list and leaderboard. It does not affect widget delivery,
+              reciprocity weighting, leaderboard ranking, or the impression and click numbers you earn.
+            </p>
           </section>
+
 
           <section>
             <h2 className="mb-3 text-base font-semibold text-black">Questions</h2>
