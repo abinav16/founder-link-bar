@@ -5,6 +5,7 @@ import { SponsoredRail } from "@/components/SponsoredRail";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { getNetworkDashboard, type NetworkDashboardResult } from "@/lib/network-dashboard.functions";
 import { ArrowUpRight, ArrowRight, Eye, Globe, Search, X } from "lucide-react";
+import { useFeaturedStartupIds } from "@/lib/featured";
 
 
 function NetworkPending() {
@@ -251,7 +252,7 @@ function StartupRow({ s }: { s: Card }) {
   const visitHref = `/api/public/widget/click?id=${s.id}&source=dashboard`;
   const sponsored = s.sponsored;
   return (
-    <div className={`group relative py-4 border-b border-black/[0.05] last:border-0 transition-colors duration-150 ${sponsored ? "sb-sponsored" : ""}`}>
+    <div className={`group relative py-4 border-b last:border-0 transition-colors duration-150 overflow-hidden ${sponsored ? "sb-featured-row rounded-xl border-b-0 my-1 px-3 border" : "border-black/[0.05]"}`}>
       {s.slug && (
         <StartupProfileLink slug={s.slug} className="absolute inset-0 z-0">
           <span className="sr-only">View {s.name} profile</span>
@@ -855,7 +856,14 @@ function NetworkDashboardPage() {
     }
   }
 
-  const allStartups = data.recentStartups;
+  const featuredIds = useFeaturedStartupIds();
+  const allStartups = useMemo(
+    () =>
+      data.recentStartups.map((s) =>
+        featuredIds.has(s.id) && !s.sponsored ? { ...s, sponsored: true } : s,
+      ),
+    [data.recentStartups, featuredIds],
+  );
   const q = query.trim().toLowerCase();
   const filtered = useMemo(() => {
     const base = q
@@ -893,6 +901,14 @@ function NetworkDashboardPage() {
     return sorted.slice(0, 3);
   })();
 
+  const newThisWeek = useMemo(
+    () =>
+      data.newThisWeek.map((s) =>
+        featuredIds.has(s.id) && !s.sponsored ? { ...s, sponsored: true } : s,
+      ),
+    [data.newThisWeek, featuredIds],
+  );
+
   return (
     <DashboardLayout rail={<SponsoredRail />}>
       <div className="space-y-10">
@@ -916,7 +932,7 @@ function NetworkDashboardPage() {
         {data.newThisWeek.length > 0 && (
           <div>
             <SectionLabel title="New This Week" count={data.newThisWeek.length} />
-            <HorizontalCardRail items={data.newThisWeek} />
+            <HorizontalCardRail items={newThisWeek} />
           </div>
         )}
 
