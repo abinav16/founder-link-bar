@@ -195,18 +195,20 @@ serve(async (req) => {
 
     if (!res.ok || !data?.payment_link) {
       console.error("Dodo error:", { status: res.status, mode, endpoint, body: raw.slice(0, 500) });
+      // A 401 here means the API key in use can read but not create — a
+      // read-only / restricted Dodo key. Say so instead of an opaque error.
+      const message = res.status === 401
+        ? `Dodo rejected the ${mode} API key for ${endpoint} (401). The key appears to be read-only — generate a full-access ${mode} API key in Dodo and update the secret.`
+        : (data?.message ?? data ?? `Dodo returned ${res.status} with an empty response`);
       return new Response(
-        JSON.stringify({
-          error: data ?? `Dodo returned ${res.status} with an empty response`,
-          status: res.status,
-          mode,
-        }),
+        JSON.stringify({ error: message, status: res.status, mode }),
         {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         },
       );
     }
+
 
 
     console.log("dodo checkout created", { mode, endpoint, link: data.payment_link });
