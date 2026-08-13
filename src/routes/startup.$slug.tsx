@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { getStartupPage, getStartupPulse } from "@/lib/startup-page.functions";
@@ -8,7 +8,7 @@ import { SponsoredRail } from "@/components/SponsoredRail";
 
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { supabase } from "@/integrations/supabase/client";
-import { ExternalLink, Quote, Activity, ArrowUpRight, Calendar, User, Pencil, LayoutDashboard, Share2, Check } from "lucide-react";
+import { ExternalLink, Quote, Activity, ArrowUpRight, Calendar, User, Pencil, LayoutDashboard, Share2, Check, ArrowLeft } from "lucide-react";
 
 
 const pageQuery = (slug: string) =>
