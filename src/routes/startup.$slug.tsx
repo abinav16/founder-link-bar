@@ -142,7 +142,6 @@ function StartupPage() {
   const { slug } = Route.useParams();
   const { data } = useSuspenseQuery(pageQuery(slug));
   const s = data!;
-  const navigate = useNavigate({ from: Route.fullPath });
 
   const [authState, setAuthState] = useState<{ ready: boolean; userId: string | null }>({ ready: false, userId: null });
   useEffect(() => {
