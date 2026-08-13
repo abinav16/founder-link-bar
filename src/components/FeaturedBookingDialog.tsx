@@ -619,17 +619,20 @@ export function PromoteButton({
               stop(e);
               setOpen(true);
             }}
-            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-[oklch(0.72_0.13_75_/_0.5)] bg-[oklch(0.72_0.13_75_/_0.12)] px-3 py-1.5 text-xs font-medium text-[oklch(0.5_0.11_75)] transition-colors hover:bg-[oklch(0.72_0.13_75_/_0.2)]"
+            className="group inline-flex cursor-pointer items-center gap-2 rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs font-medium text-black shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:border-black/25"
             title={
               active.cancel_at_period_end
                 ? `Ends in ${daysLeft(active.expires_at)}d`
                 : `Renews in ${daysLeft(active.expires_at)}d`
             }
           >
-            <Sparkles className="h-3.5 w-3.5" />
-            Featured · slot {active.slot_index}
-            <span className="opacity-60">
-              · {active.cancel_at_period_end ? "ends" : "renews"} in {daysLeft(active.expires_at)}d
+            <Sparkles className="h-3.5 w-3.5 text-[oklch(0.72_0.13_75)]" />
+            <span>Featured</span>
+            <span className="h-3 w-px bg-black/10" />
+            <span className="text-black/55">Slot {active.slot_index}</span>
+            <span className="h-3 w-px bg-black/10" />
+            <span className="text-black/45">
+              {active.cancel_at_period_end ? "Ends" : "Renews"} in {daysLeft(active.expires_at)}d
             </span>
           </Tag>
           {showCancel && !active.cancel_at_period_end && (
@@ -639,7 +642,7 @@ export function PromoteButton({
                 stop(e);
                 setOpen(true);
               }}
-              className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-black/12 px-2.5 py-1.5 text-xs font-medium text-black/50 transition-colors hover:border-black/30 hover:text-black"
+              className="inline-flex cursor-pointer items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium text-black/45 transition-colors hover:text-black"
             >
               <XCircle className="h-3.5 w-3.5" /> Cancel
             </Tag>
@@ -658,10 +661,11 @@ export function PromoteButton({
           stop(e);
           setOpen(true);
         }}
-        className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-[oklch(0.72_0.13_75_/_0.5)] bg-[oklch(0.72_0.13_75_/_0.08)] px-3 py-1.5 text-xs font-medium text-[oklch(0.5_0.11_75)] transition-colors hover:bg-[oklch(0.72_0.13_75_/_0.16)] ${className}`}
+        className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-black px-3.5 py-1.5 text-xs font-medium text-white transition-opacity hover:opacity-85 ${className}`}
       >
-        <Sparkles className="h-3.5 w-3.5" /> Promote
+        <Sparkles className="h-3.5 w-3.5 text-[oklch(0.82_0.13_85)]" /> Promote
       </Tag>
+
       <FeaturedBookingDialog open={open} onOpenChange={setOpen} preselectStartupId={startupId} />
     </>
   );
