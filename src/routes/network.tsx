@@ -789,7 +789,7 @@ function HorizontalCardRail({ items }: { items: Card[] }) {
         {items.map((s) => (
           <div
             key={s.id}
-            className="snap-start shrink-0 w-[280px] sm:w-[calc((100%-1rem)/2)] xl:w-[calc((100%-2rem)/3)]"
+            className="snap-start shrink-0 w-[280px] sm:w-[calc((100%-2rem)/3)]"
           >
             <StartupCard s={s} />
           </div>
