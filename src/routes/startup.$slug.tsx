@@ -173,6 +173,12 @@ function StartupPage() {
     <DashboardLayout rail={<SponsoredRail />}>
       <div className="-mx-4 -my-6 sm:-mx-6 sm:-my-8 bg-white text-black">
       <main className="mx-auto max-w-6xl px-4 sm:px-5 pt-8 md:pt-16 pb-8">
+        <button
+          onClick={() => navigate({ to: ".." })}
+          className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs font-medium text-black/70 hover:bg-black/[0.03] transition"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" /> Back
+        </button>
 
         {/* HERO */}
         <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
