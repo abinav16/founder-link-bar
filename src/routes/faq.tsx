@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { FEATURED_PRICE_USD, FEATURED_DAYS, FEATURED_SLOT_COUNT } from "@/lib/featured";
 
 type Faq = { id: string; q: string; a: string; cat: string };
 
@@ -7,6 +8,7 @@ const CATEGORIES = [
   "Getting started",
   "Widget & install",
   "Membership & approval",
+  "Featured spots",
   "Billing",
   "Traffic & delivery",
   "Rules",
