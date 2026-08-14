@@ -834,11 +834,12 @@ function DashboardPage() {
               {rangeLoading && <span className="ml-1 text-[11px] text-black/30">Updating…</span>}
             </div>
 
-            <div className={`grid grid-cols-2 gap-4 lg:grid-cols-4 transition-opacity ${rangeLoading ? "opacity-60" : ""}`}>
+            <div className={`grid grid-cols-2 gap-4 lg:grid-cols-5 transition-opacity ${rangeLoading ? "opacity-60" : ""}`}>
 
               <StatCard icon={BarChart2} label="Impressions" value={stats.impressions.toLocaleString()} sub={RANGE_SUB[range]} />
               <StatCard icon={MousePointerClick} label="Clicks" value={stats.clicks.toLocaleString()} sub={RANGE_SUB[range]} />
               <StatCard icon={Percent} label="CTR" value={`${ctr}%`} sub="Click-through rate" />
+              <StatCard icon={Eye} label="Profile views" value={profileViews === null ? "—" : profileViews.toLocaleString()} sub={`Your StartupBar page · ${RANGE_SUB[range].toLowerCase()}`} />
               <StatCard icon={BarChart2} label="Rank" value={rank ? `#${rank}` : "—"} sub="By impressions (all time)" />
             </div>
 
