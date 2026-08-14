@@ -21,7 +21,7 @@ function StartupPageSkeleton() {
   return (
     <DashboardLayout rail={<SponsoredRail />}>
       <div className="-mx-4 -my-6 bg-white text-black sm:-mx-6 sm:-my-8">
-        <main className="mx-auto max-w-6xl px-5 pb-8 pt-10 md:pt-16">
+        <main className="mx-auto max-w-6xl px-5 pb-8 pt-4 sm:pt-5">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="flex items-start gap-5">
               <div className="h-20 w-20 shrink-0 animate-pulse rounded-2xl border border-black/8 bg-black/[0.05]" />
@@ -171,7 +171,7 @@ function StartupPage() {
   return (
     <DashboardLayout rail={<SponsoredRail />}>
       <div className="-mx-4 -my-6 sm:-mx-6 sm:-my-8 bg-white text-black">
-      <main className="mx-auto max-w-6xl px-4 sm:px-5 pt-8 md:pt-16 pb-8">
+      <main className="mx-auto max-w-6xl px-4 sm:px-5 pt-4 sm:pt-5 pb-8">
         <button
           onClick={() => window.history.back()}
           className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs font-medium text-black/70 hover:bg-black/[0.03] transition"
