@@ -21,7 +21,7 @@ function StartupPageSkeleton() {
   return (
     <DashboardLayout rail={<SponsoredRail />}>
       <div className="-mx-4 -my-6 bg-white text-black sm:-mx-6 sm:-my-8">
-        <main className="mx-auto max-w-6xl px-5 pb-8 pt-10 md:pt-16">
+        <main className="mx-auto max-w-6xl px-5 pb-8 pt-4 sm:pt-5">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="flex items-start gap-5">
               <div className="h-20 w-20 shrink-0 animate-pulse rounded-2xl border border-black/8 bg-black/[0.05]" />
