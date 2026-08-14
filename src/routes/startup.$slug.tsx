@@ -143,6 +143,25 @@ function StartupPage() {
   const { data } = useSuspenseQuery(pageQuery(slug));
   const s = data!;
 
+  // Record a visit to this public profile page (once per browser session per
+  // startup) so founders can see profile views on their dashboard.
+  useEffect(() => {
+    try {
+      const key = `sb_visit_/startup/${slug}`;
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, "1");
+      fetch("/api/public/track/site-visit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          path: `/startup/${slug}`,
+          referrer: document.referrer || null,
+        }),
+        keepalive: true,
+      }).catch(() => {});
+    } catch {}
+  }, [slug]);
+
   const [authState, setAuthState] = useState<{ ready: boolean; userId: string | null }>({ ready: false, userId: null });
   useEffect(() => {
     let cancel = false;
