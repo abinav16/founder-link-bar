@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Copy, Check, Code2, ArrowRight, BarChart2, MousePointerClick, Layers, Percent, ChevronDown, Globe2, Smartphone, Monitor, Tablet, User } from "lucide-react";
+import { Copy, Check, Code2, ArrowRight, BarChart2, MousePointerClick, Layers, Percent, ChevronDown, Globe2, Smartphone, Monitor, Tablet, User, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { PromoteButton } from "@/components/FeaturedBookingDialog";
@@ -165,6 +165,16 @@ async function loadDashboardData(startupId: string) {
 }
 
 type RangeKey = "24h" | "7d" | "30d" | "all";
+
+// Visits to the startup's public page on startupbar.co (/startup/<slug>).
+// Counted server-side so the raw impressions table stays closed to readers.
+async function loadProfileViews(startupId: string, since: Date | null) {
+  const { data } = await supabase.rpc("public_startup_profile_views" as never, {
+    _startup_id: startupId,
+    _since: since ? since.toISOString() : null,
+  } as never);
+  return typeof data === "number" ? data : Number(data ?? 0) || 0;
+}
 
 const RANGE_OPTIONS: { key: RangeKey; label: string }[] = [
   { key: "24h", label: "24h" },
@@ -410,6 +420,7 @@ function DashboardPage() {
   const [allStartups, setAllStartups] = useState<Startup[]>(loaderData.allStartups);
   const [startup, setStartup] = useState<Startup | null>(loaderData.startup);
   const [stats, setStats] = useState<{ impressions: number; clicks: number }>(loaderData.stats);
+  const [profileViews, setProfileViews] = useState<number | null>(null);
   const [current, setCurrent] = useState<Startup | null>(loaderData.current);
   const [copied, setCopied] = useState(false);
   const [userName] = useState(loaderData.userName);
@@ -454,6 +465,20 @@ function DashboardPage() {
     let cancelled = false;
 
     setRangeLoading(true);
+    setProfileViews(null);
+
+    const since = (() => {
+      if (range === "all") return null;
+      const d = new Date();
+      if (range === "24h") d.setTime(d.getTime() - 24 * 3600 * 1000);
+      else { d.setDate(d.getDate() - (range === "7d" ? 6 : 29)); d.setHours(0, 0, 0, 0); }
+      return d;
+    })();
+
+    loadProfileViews(startup.id, since)
+      .then((n) => { if (!cancelled) setProfileViews(n); })
+      .catch(() => { if (!cancelled) setProfileViews(0); });
+
     loadRangeData(startup.id, range)
       .then((r) => {
         if (cancelled) return;
@@ -809,11 +834,12 @@ function DashboardPage() {
               {rangeLoading && <span className="ml-1 text-[11px] text-black/30">Updating…</span>}
             </div>
 
-            <div className={`grid grid-cols-2 gap-4 lg:grid-cols-4 transition-opacity ${rangeLoading ? "opacity-60" : ""}`}>
+            <div className={`grid grid-cols-2 gap-4 lg:grid-cols-5 transition-opacity ${rangeLoading ? "opacity-60" : ""}`}>
 
               <StatCard icon={BarChart2} label="Impressions" value={stats.impressions.toLocaleString()} sub={RANGE_SUB[range]} />
               <StatCard icon={MousePointerClick} label="Clicks" value={stats.clicks.toLocaleString()} sub={RANGE_SUB[range]} />
               <StatCard icon={Percent} label="CTR" value={`${ctr}%`} sub="Click-through rate" />
+              <StatCard icon={Eye} label="Profile views" value={profileViews === null ? "—" : profileViews.toLocaleString()} sub={`Your StartupBar page · ${RANGE_SUB[range].toLowerCase()}`} />
               <StatCard icon={BarChart2} label="Rank" value={rank ? `#${rank}` : "—"} sub="By impressions (all time)" />
             </div>
 
