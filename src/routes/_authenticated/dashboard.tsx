@@ -465,6 +465,20 @@ function DashboardPage() {
     let cancelled = false;
 
     setRangeLoading(true);
+    setProfileViews(null);
+
+    const since = (() => {
+      if (range === "all") return null;
+      const d = new Date();
+      if (range === "24h") d.setTime(d.getTime() - 24 * 3600 * 1000);
+      else { d.setDate(d.getDate() - (range === "7d" ? 6 : 29)); d.setHours(0, 0, 0, 0); }
+      return d;
+    })();
+
+    loadProfileViews(startup.id, since)
+      .then((n) => { if (!cancelled) setProfileViews(n); })
+      .catch(() => { if (!cancelled) setProfileViews(0); });
+
     loadRangeData(startup.id, range)
       .then((r) => {
         if (cancelled) return;
