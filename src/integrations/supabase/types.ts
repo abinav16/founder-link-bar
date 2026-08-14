@@ -719,6 +719,10 @@ export type Database = {
           startup_id: string
         }[]
       }
+      public_startup_profile_views: {
+        Args: { _since?: string; _startup_id: string }
+        Returns: number
+      }
       public_startup_pulse: { Args: { _startup_id: string }; Returns: number }
       public_startup_referrers: {
         Args: { _startup_id: string }
