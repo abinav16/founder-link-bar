@@ -166,6 +166,16 @@ async function loadDashboardData(startupId: string) {
 
 type RangeKey = "24h" | "7d" | "30d" | "all";
 
+// Visits to the startup's public page on startupbar.co (/startup/<slug>).
+// Counted server-side so the raw impressions table stays closed to readers.
+async function loadProfileViews(startupId: string, since: Date | null) {
+  const { data } = await supabase.rpc("public_startup_profile_views" as never, {
+    _startup_id: startupId,
+    _since: since ? since.toISOString() : null,
+  } as never);
+  return typeof data === "number" ? data : Number(data ?? 0) || 0;
+}
+
 const RANGE_OPTIONS: { key: RangeKey; label: string }[] = [
   { key: "24h", label: "24h" },
   { key: "7d", label: "7 days" },
