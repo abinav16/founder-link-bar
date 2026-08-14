@@ -420,6 +420,7 @@ function DashboardPage() {
   const [allStartups, setAllStartups] = useState<Startup[]>(loaderData.allStartups);
   const [startup, setStartup] = useState<Startup | null>(loaderData.startup);
   const [stats, setStats] = useState<{ impressions: number; clicks: number }>(loaderData.stats);
+  const [profileViews, setProfileViews] = useState<number | null>(null);
   const [current, setCurrent] = useState<Startup | null>(loaderData.current);
   const [copied, setCopied] = useState(false);
   const [userName] = useState(loaderData.userName);
