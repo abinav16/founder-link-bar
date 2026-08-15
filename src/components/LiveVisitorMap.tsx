@@ -1031,7 +1031,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
                   return (
                     <div className="space-y-2">
                       <PillRow
-                        label={networkMode ? "Referrers from StartupBar Widget" : "Referrers"}
+                        label="Referrers"
                         entries={[...xRefCounts.entries()]
                           .filter(([k]) => true)
                           .sort((a, b) => b[1] - a[1])
