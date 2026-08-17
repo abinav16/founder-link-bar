@@ -137,11 +137,27 @@
 
     function restoreSpacing() {
       try {
-        if (document.body && originalBodyPaddingTop !== null) {
-          document.body.style.paddingTop = originalBodyPaddingTop;
-        }
-        if (document.body && originalBodyPaddingBottom !== null) {
-          document.body.style.paddingBottom = originalBodyPaddingBottom;
+        // Prefer removing exactly what we added: after a client-side body swap
+        // the captured "original" values belong to a body that no longer
+        // exists, and blindly reapplying them stacks a second 36px gap.
+        var body = document.body;
+        if (body) {
+          var addedT = parseFloat(body.getAttribute('data-startupbar-pad-top') || '');
+          var addedB = parseFloat(body.getAttribute('data-startupbar-pad-bottom') || '');
+          if (!isNaN(addedT)) {
+            var curT = parseFloat(getComputedStyle(body).paddingTop) || 0;
+            body.style.paddingTop = Math.max(0, curT - addedT) + 'px';
+            body.removeAttribute('data-startupbar-pad-top');
+          } else if (originalBodyPaddingTop !== null) {
+            body.style.paddingTop = originalBodyPaddingTop;
+          }
+          if (!isNaN(addedB)) {
+            var curB = parseFloat(getComputedStyle(body).paddingBottom) || 0;
+            body.style.paddingBottom = Math.max(0, curB - addedB) + 'px';
+            body.removeAttribute('data-startupbar-pad-bottom');
+          } else if (originalBodyPaddingBottom !== null) {
+            body.style.paddingBottom = originalBodyPaddingBottom;
+          }
         }
         if (document.documentElement) {
           document.documentElement.style.scrollPaddingTop = originalScrollPaddingTop || '';
@@ -158,16 +174,19 @@
         if (placement === 'bottom') {
           var padB = parseInt(getComputedStyle(document.body).paddingBottom) || 0;
           document.body.style.paddingBottom = (padB + currentHeight) + 'px';
+          document.body.setAttribute('data-startupbar-pad-bottom', String(currentHeight));
           return;
         }
         if (document.documentElement) document.documentElement.style.scrollPaddingTop = currentHeight + 'px';
         if (!isIphoneSafari) {
           var padT = parseInt(getComputedStyle(document.body).paddingTop) || 0;
           document.body.style.paddingTop = (padT + currentHeight) + 'px';
+          document.body.setAttribute('data-startupbar-pad-top', String(currentHeight));
           sweepFixedElements();
         }
       } catch (e) {}
     }
+
 
     function setPlacement(next) {
       if (next !== 'top' && next !== 'bottom') return;
