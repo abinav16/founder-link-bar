@@ -62,7 +62,18 @@ function WidgetBar() {
   const { host, theme: urlTheme, domain, path, sbref, pref, sid, mobile } = useSearch({ from: "/widget/bar" });
   const [activeTheme, setActiveTheme] = useState<"light" | "dark">(urlTheme ?? "light");
   const tokens = activeTheme === "dark" ? darkTokens : lightTokens;
-  const [startup, setStartup] = useState<Startup | null>(null);
+  // Paint the last startup shown in this session immediately so a page
+  // navigation never flashes an empty/generic bar. The real pick request
+  // still runs and swaps in fresh content (and owns impression counting).
+  const cacheKey = `startupbar:last:${host ?? "none"}`;
+  const [startup, setStartup] = useState<Startup | null>(() => {
+    try {
+      const raw = typeof sessionStorage !== "undefined" ? sessionStorage.getItem(cacheKey) : null;
+      return raw ? (JSON.parse(raw) as Startup) : null;
+    } catch {
+      return null;
+    }
+  });
   const [loaded, setLoaded] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [dismissed, setDismissed] = useState(false);
