@@ -54,7 +54,25 @@
       if (localStorage.getItem('startupbar:placement:' + id) === 'bottom') placement = 'bottom';
     } catch (e) {}
 
+    // Only ever one bar per page. Client-side routers (Livewire wire:navigate,
+    // Turbo, Astro) re-execute scripts after a navigation; without this guard a
+    // second instance is created and it treats the first instance's iframe as a
+    // host fixed element, pushing the bar down by its own height.
+    var existingFrame = document.querySelector('iframe[data-startupbar-frame="1"]');
+    if (window.__startupbarLoaded && existingFrame) {
+      try {
+        existingFrame.style.top = existingFrame.style.bottom === '0px' ? 'auto' : '0px';
+        try { delete existingFrame.dataset.startupbarShifted; } catch (e2) {}
+        try { delete existingFrame.dataset.startupbarOriginalTop; } catch (e2) {}
+        window.dispatchEvent(new Event('startupbar:reinit'));
+      } catch (e) {}
+      return;
+    }
+    window.__startupbarLoaded = true;
+
     var iframe = document.createElement('iframe');
+    iframe.setAttribute('data-startupbar-frame', '1');
+
 
     var iframeSrc = origin + '/widget/bar?host=' + encodeURIComponent(id) + '&theme=' + theme + '&domain=' + encodeURIComponent(window.location.hostname) + '&path=' + encodeURIComponent(window.location.pathname) + (isMobile ? '&mobile=1' : '');
     try {
@@ -119,11 +137,27 @@
 
     function restoreSpacing() {
       try {
-        if (document.body && originalBodyPaddingTop !== null) {
-          document.body.style.paddingTop = originalBodyPaddingTop;
-        }
-        if (document.body && originalBodyPaddingBottom !== null) {
-          document.body.style.paddingBottom = originalBodyPaddingBottom;
+        // Prefer removing exactly what we added: after a client-side body swap
+        // the captured "original" values belong to a body that no longer
+        // exists, and blindly reapplying them stacks a second 36px gap.
+        var body = document.body;
+        if (body) {
+          var addedT = parseFloat(body.getAttribute('data-startupbar-pad-top') || '');
+          var addedB = parseFloat(body.getAttribute('data-startupbar-pad-bottom') || '');
+          if (!isNaN(addedT)) {
+            var curT = parseFloat(getComputedStyle(body).paddingTop) || 0;
+            body.style.paddingTop = Math.max(0, curT - addedT) + 'px';
+            body.removeAttribute('data-startupbar-pad-top');
+          } else if (originalBodyPaddingTop !== null) {
+            body.style.paddingTop = originalBodyPaddingTop;
+          }
+          if (!isNaN(addedB)) {
+            var curB = parseFloat(getComputedStyle(body).paddingBottom) || 0;
+            body.style.paddingBottom = Math.max(0, curB - addedB) + 'px';
+            body.removeAttribute('data-startupbar-pad-bottom');
+          } else if (originalBodyPaddingBottom !== null) {
+            body.style.paddingBottom = originalBodyPaddingBottom;
+          }
         }
         if (document.documentElement) {
           document.documentElement.style.scrollPaddingTop = originalScrollPaddingTop || '';
@@ -140,16 +174,19 @@
         if (placement === 'bottom') {
           var padB = parseInt(getComputedStyle(document.body).paddingBottom) || 0;
           document.body.style.paddingBottom = (padB + currentHeight) + 'px';
+          document.body.setAttribute('data-startupbar-pad-bottom', String(currentHeight));
           return;
         }
         if (document.documentElement) document.documentElement.style.scrollPaddingTop = currentHeight + 'px';
         if (!isIphoneSafari) {
           var padT = parseInt(getComputedStyle(document.body).paddingTop) || 0;
           document.body.style.paddingTop = (padT + currentHeight) + 'px';
+          document.body.setAttribute('data-startupbar-pad-top', String(currentHeight));
           sweepFixedElements();
         }
       } catch (e) {}
     }
+
 
     function setPlacement(next) {
       if (next !== 'top' && next !== 'bottom') return;
@@ -202,7 +239,11 @@
     function shiftFixedElement(el) {
       try {
         if (!el || el.nodeType !== 1) return;
+        // Never shift our own bar. Match by attribute, not identity: after a
+        // client-side navigation a re-executed loader can hold a different
+        // reference to an older StartupBar iframe still in the DOM.
         if (el === iframe || (iframe.contains && iframe.contains(el))) return;
+        if (el.getAttribute && el.getAttribute('data-startupbar-frame') === '1') return;
         if (el.dataset && el.dataset.startupbarShifted === '1') return;
         var cs = getComputedStyle(el);
         if (cs.position !== 'fixed' && cs.position !== 'sticky') return;
@@ -358,6 +399,27 @@
           setTimeout(sweepFixedElements, 250);
           setTimeout(sweepFixedElements, 800);
         };
+        // Client-side routers (Livewire wire:navigate, Turbo, Astro) swap the
+        // body. Re-attach the bar, reset it to its own placement and rebuild
+        // spacing from a clean base so nothing stacks.
+        var reassert = function () {
+          if (dismissed) return;
+          try {
+            if (document.body && iframe.parentNode !== document.body) {
+              if (placement === 'top' && isIphoneSafari && document.body.firstChild) {
+                document.body.insertBefore(iframe, document.body.firstChild);
+              } else {
+                document.body.appendChild(iframe);
+              }
+            }
+            try { delete iframe.dataset.startupbarShifted; } catch (e2) {}
+            try { delete iframe.dataset.startupbarOriginalTop; } catch (e2) {}
+            applyIframeStyle();
+            if (document.documentElement) document.documentElement.setAttribute('data-startupbar-injected', '1');
+            applySpacing();
+          } catch (e2) {}
+          resweep();
+        };
         var wrap = function (name) {
           var orig = history[name];
           if (typeof orig !== 'function') return;
@@ -369,11 +431,17 @@
         };
         wrap('pushState');
         wrap('replaceState');
-        window.addEventListener('popstate', resweep);
+        window.addEventListener('popstate', reassert);
         window.addEventListener('hashchange', resweep);
-        window.addEventListener('startupbar:locationchange', resweep);
+        window.addEventListener('startupbar:locationchange', reassert);
         window.addEventListener('load', resweep);
+        document.addEventListener('livewire:navigated', reassert);
+        document.addEventListener('livewire:navigate', reassert);
+        document.addEventListener('turbo:load', reassert);
+        document.addEventListener('astro:page-load', reassert);
+        window.addEventListener('startupbar:reinit', reassert);
       } catch (e) {}
+
       scheduleHeartbeats();
     }
 
