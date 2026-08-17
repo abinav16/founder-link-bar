@@ -239,7 +239,11 @@
     function shiftFixedElement(el) {
       try {
         if (!el || el.nodeType !== 1) return;
+        // Never shift our own bar. Match by attribute, not identity: after a
+        // client-side navigation a re-executed loader can hold a different
+        // reference to an older StartupBar iframe still in the DOM.
         if (el === iframe || (iframe.contains && iframe.contains(el))) return;
+        if (el.getAttribute && el.getAttribute('data-startupbar-frame') === '1') return;
         if (el.dataset && el.dataset.startupbarShifted === '1') return;
         var cs = getComputedStyle(el);
         if (cs.position !== 'fixed' && cs.position !== 'sticky') return;
