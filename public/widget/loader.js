@@ -410,12 +410,13 @@
         var reassert = function () {
           if (dismissed) return;
           try {
-            if (document.body && iframe.parentNode !== document.body) {
-              if (placement === 'top' && isIphoneSafari && document.body.firstChild) {
-                document.body.insertBefore(iframe, document.body.firstChild);
-              } else {
-                document.body.appendChild(iframe);
+            if (placement === 'top' && isIphoneSafari) {
+              if (document.body && iframe.parentNode !== document.body) {
+                if (document.body.firstChild) document.body.insertBefore(iframe, document.body.firstChild);
+                else document.body.appendChild(iframe);
               }
+            } else if (!iframe.parentNode || !document.contains(iframe)) {
+              (document.documentElement || document.body).appendChild(iframe);
             }
             try { delete iframe.dataset.startupbarShifted; } catch (e2) {}
             try { delete iframe.dataset.startupbarOriginalTop; } catch (e2) {}
