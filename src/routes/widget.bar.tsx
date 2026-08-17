@@ -62,7 +62,18 @@ function WidgetBar() {
   const { host, theme: urlTheme, domain, path, sbref, pref, sid, mobile } = useSearch({ from: "/widget/bar" });
   const [activeTheme, setActiveTheme] = useState<"light" | "dark">(urlTheme ?? "light");
   const tokens = activeTheme === "dark" ? darkTokens : lightTokens;
-  const [startup, setStartup] = useState<Startup | null>(null);
+  // Paint the last startup shown in this session immediately so a page
+  // navigation never flashes an empty/generic bar. The real pick request
+  // still runs and swaps in fresh content (and owns impression counting).
+  const cacheKey = `startupbar:last:${host ?? "none"}`;
+  const [startup, setStartup] = useState<Startup | null>(() => {
+    try {
+      const raw = typeof sessionStorage !== "undefined" ? sessionStorage.getItem(cacheKey) : null;
+      return raw ? (JSON.parse(raw) as Startup) : null;
+    } catch {
+      return null;
+    }
+  });
   const [loaded, setLoaded] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [dismissed, setDismissed] = useState(false);
@@ -110,7 +121,13 @@ function WidgetBar() {
               window.parent.postMessage({ type: "startupbar:placement", placement: data.placement }, "*");
             } catch { /* ignore */ }
           }
-          if (data?.id) return data;
+          if (data?.id) {
+            try {
+              const { id, name, website_url, description, logo_url } = data;
+              sessionStorage.setItem(cacheKey, JSON.stringify({ id, name, website_url, description, logo_url }));
+            } catch { /* ignore */ }
+            return data;
+          }
         }
       } catch {
         /* ignore */
@@ -244,9 +261,9 @@ function WidgetBar() {
         `}</style>
       )}
       <div
-        style={{ ...barStyle, cursor: loaded && startup ? "pointer" : undefined }}
+        style={{ ...barStyle, cursor: startup ? "pointer" : undefined }}
         onClick={() => {
-          if (!loaded || !startup) return;
+          if (!startup) return;
           const url = `/api/public/widget/click?id=${startup.id}${host ? `&host=${host}` : ""}${domain ? `&via=${encodeURIComponent(domain)}` : ""}`;
           window.open(url, "_blank", "noopener,noreferrer");
         }}
@@ -264,7 +281,7 @@ function WidgetBar() {
         )}
 
 
-        {loaded && startup ? (
+        {startup ? (
           <div
             style={{
               display: "flex",
@@ -310,8 +327,15 @@ function WidgetBar() {
               Visit →
             </a>
           </div>
+        ) : !loaded ? (
+          /* First pick still in flight: neutral skeleton, never the generic
+             fallback copy (which used to flash on every navigation). */
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0 }} aria-hidden="true">
+            <span style={{ width: 14, height: 14, borderRadius: 3, background: tokens.border, flexShrink: 0 }} />
+            <span style={{ width: 80, height: 8, borderRadius: 4, background: tokens.border, flexShrink: 0 }} />
+            <span style={{ flex: 1, height: 8, borderRadius: 4, background: tokens.border, minWidth: 0, maxWidth: 260 }} />
+          </div>
         ) : (
-
           <>
             <span style={{ color: tokens.textMuted, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               Discover founder-built tools — join the free traffic exchange

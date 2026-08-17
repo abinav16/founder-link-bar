@@ -388,7 +388,12 @@
         return;
       }
 
-      document.body && document.body.appendChild(iframe);
+      // Mount on <html>, not <body>: client-side routers (Livewire
+      // wire:navigate, Turbo, Astro) replace the body, which would destroy and
+      // reload the frame on every navigation (blank bar, then generic bar,
+      // then the startup). Parented to <html> the bar simply survives.
+      var mountTarget = html || document.body;
+      mountTarget && mountTarget.appendChild(iframe);
       if (html) html.setAttribute('data-startupbar-injected', '1');
       applySpacing();
       startObserver();
@@ -405,12 +410,13 @@
         var reassert = function () {
           if (dismissed) return;
           try {
-            if (document.body && iframe.parentNode !== document.body) {
-              if (placement === 'top' && isIphoneSafari && document.body.firstChild) {
-                document.body.insertBefore(iframe, document.body.firstChild);
-              } else {
-                document.body.appendChild(iframe);
+            if (placement === 'top' && isIphoneSafari) {
+              if (document.body && iframe.parentNode !== document.body) {
+                if (document.body.firstChild) document.body.insertBefore(iframe, document.body.firstChild);
+                else document.body.appendChild(iframe);
               }
+            } else if (!iframe.parentNode || !document.contains(iframe)) {
+              (document.documentElement || document.body).appendChild(iframe);
             }
             try { delete iframe.dataset.startupbarShifted; } catch (e2) {}
             try { delete iframe.dataset.startupbarOriginalTop; } catch (e2) {}
