@@ -281,7 +281,7 @@ function WidgetBar() {
         )}
 
 
-        {loaded && startup ? (
+        {startup ? (
           <div
             style={{
               display: "flex",
