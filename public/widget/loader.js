@@ -399,6 +399,27 @@
           setTimeout(sweepFixedElements, 250);
           setTimeout(sweepFixedElements, 800);
         };
+        // Client-side routers (Livewire wire:navigate, Turbo, Astro) swap the
+        // body. Re-attach the bar, reset it to its own placement and rebuild
+        // spacing from a clean base so nothing stacks.
+        var reassert = function () {
+          if (dismissed) return;
+          try {
+            if (document.body && iframe.parentNode !== document.body) {
+              if (placement === 'top' && isIphoneSafari && document.body.firstChild) {
+                document.body.insertBefore(iframe, document.body.firstChild);
+              } else {
+                document.body.appendChild(iframe);
+              }
+            }
+            try { delete iframe.dataset.startupbarShifted; } catch (e2) {}
+            try { delete iframe.dataset.startupbarOriginalTop; } catch (e2) {}
+            applyIframeStyle();
+            if (document.documentElement) document.documentElement.setAttribute('data-startupbar-injected', '1');
+            applySpacing();
+          } catch (e2) {}
+          resweep();
+        };
         var wrap = function (name) {
           var orig = history[name];
           if (typeof orig !== 'function') return;
@@ -410,11 +431,17 @@
         };
         wrap('pushState');
         wrap('replaceState');
-        window.addEventListener('popstate', resweep);
+        window.addEventListener('popstate', reassert);
         window.addEventListener('hashchange', resweep);
-        window.addEventListener('startupbar:locationchange', resweep);
+        window.addEventListener('startupbar:locationchange', reassert);
         window.addEventListener('load', resweep);
+        document.addEventListener('livewire:navigated', reassert);
+        document.addEventListener('livewire:navigate', reassert);
+        document.addEventListener('turbo:load', reassert);
+        document.addEventListener('astro:page-load', reassert);
+        window.addEventListener('startupbar:reinit', reassert);
       } catch (e) {}
+
       scheduleHeartbeats();
     }
 
