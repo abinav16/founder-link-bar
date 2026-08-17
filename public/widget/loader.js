@@ -54,7 +54,25 @@
       if (localStorage.getItem('startupbar:placement:' + id) === 'bottom') placement = 'bottom';
     } catch (e) {}
 
+    // Only ever one bar per page. Client-side routers (Livewire wire:navigate,
+    // Turbo, Astro) re-execute scripts after a navigation; without this guard a
+    // second instance is created and it treats the first instance's iframe as a
+    // host fixed element, pushing the bar down by its own height.
+    var existingFrame = document.querySelector('iframe[data-startupbar-frame="1"]');
+    if (window.__startupbarLoaded && existingFrame) {
+      try {
+        existingFrame.style.top = existingFrame.style.bottom === '0px' ? 'auto' : '0px';
+        try { delete existingFrame.dataset.startupbarShifted; } catch (e2) {}
+        try { delete existingFrame.dataset.startupbarOriginalTop; } catch (e2) {}
+        window.dispatchEvent(new Event('startupbar:reinit'));
+      } catch (e) {}
+      return;
+    }
+    window.__startupbarLoaded = true;
+
     var iframe = document.createElement('iframe');
+    iframe.setAttribute('data-startupbar-frame', '1');
+
 
     var iframeSrc = origin + '/widget/bar?host=' + encodeURIComponent(id) + '&theme=' + theme + '&domain=' + encodeURIComponent(window.location.hostname) + '&path=' + encodeURIComponent(window.location.pathname) + (isMobile ? '&mobile=1' : '');
     try {
