@@ -121,7 +121,13 @@ function WidgetBar() {
               window.parent.postMessage({ type: "startupbar:placement", placement: data.placement }, "*");
             } catch { /* ignore */ }
           }
-          if (data?.id) return data;
+          if (data?.id) {
+            try {
+              const { id, name, website_url, description, logo_url } = data;
+              sessionStorage.setItem(cacheKey, JSON.stringify({ id, name, website_url, description, logo_url }));
+            } catch { /* ignore */ }
+            return data;
+          }
         }
       } catch {
         /* ignore */
