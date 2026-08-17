@@ -388,7 +388,12 @@
         return;
       }
 
-      document.body && document.body.appendChild(iframe);
+      // Mount on <html>, not <body>: client-side routers (Livewire
+      // wire:navigate, Turbo, Astro) replace the body, which would destroy and
+      // reload the frame on every navigation (blank bar, then generic bar,
+      // then the startup). Parented to <html> the bar simply survives.
+      var mountTarget = html || document.body;
+      mountTarget && mountTarget.appendChild(iframe);
       if (html) html.setAttribute('data-startupbar-injected', '1');
       applySpacing();
       startObserver();
