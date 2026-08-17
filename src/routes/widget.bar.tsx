@@ -261,9 +261,9 @@ function WidgetBar() {
         `}</style>
       )}
       <div
-        style={{ ...barStyle, cursor: loaded && startup ? "pointer" : undefined }}
+        style={{ ...barStyle, cursor: startup ? "pointer" : undefined }}
         onClick={() => {
-          if (!loaded || !startup) return;
+          if (!startup) return;
           const url = `/api/public/widget/click?id=${startup.id}${host ? `&host=${host}` : ""}${domain ? `&via=${encodeURIComponent(domain)}` : ""}`;
           window.open(url, "_blank", "noopener,noreferrer");
         }}
