@@ -327,8 +327,15 @@ function WidgetBar() {
               Visit →
             </a>
           </div>
+        ) : !loaded ? (
+          /* First pick still in flight: neutral skeleton, never the generic
+             fallback copy (which used to flash on every navigation). */
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0 }} aria-hidden="true">
+            <span style={{ width: 14, height: 14, borderRadius: 3, background: tokens.border, flexShrink: 0 }} />
+            <span style={{ width: 80, height: 8, borderRadius: 4, background: tokens.border, flexShrink: 0 }} />
+            <span style={{ flex: 1, height: 8, borderRadius: 4, background: tokens.border, minWidth: 0, maxWidth: 260 }} />
+          </div>
         ) : (
-
           <>
             <span style={{ color: tokens.textMuted, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               Discover founder-built tools — join the free traffic exchange
