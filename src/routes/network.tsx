@@ -238,7 +238,7 @@ function joinedLabel(createdAt: string) {
   return `${Math.floor(m / 12)}y ago`;
 }
 
-function FounderChip({ s }: { s: Card }) {
+function FounderChip({ s, sponsored }: { s: Card; sponsored?: boolean }) {
   if (!s.founder_name) return null;
   return (
     <span className="flex w-full min-w-0 items-center gap-1.5">
@@ -249,14 +249,20 @@ function FounderChip({ s }: { s: Card }) {
           width={18}
           height={18}
           loading="lazy"
-          className="h-[18px] w-[18px] rounded-full object-cover bg-black/[0.06] shrink-0"
+          className={[
+            "h-[18px] w-[18px] rounded-full object-cover shrink-0",
+            sponsored ? "bg-white/10" : "bg-black/[0.06]",
+          ].join(" ")}
         />
       ) : (
-        <span className="h-[18px] w-[18px] rounded-full bg-black/[0.06] text-black/45 text-[9px] font-semibold inline-flex items-center justify-center shrink-0">
+        <span className={[
+          "h-[18px] w-[18px] rounded-full text-[9px] font-semibold inline-flex items-center justify-center shrink-0",
+          sponsored ? "bg-white/10 text-white/65" : "bg-black/[0.06] text-black/45",
+        ].join(" ")}>
           {s.founder_name.trim().charAt(0).toUpperCase()}
         </span>
       )}
-      <span className="text-[11px] text-black/45 font-medium truncate">{s.founder_name}</span>
+      <span className={["text-[11px] font-medium truncate", sponsored ? "text-white/60" : "text-black/45"].join(" ")}>{s.founder_name}</span>
     </span>
   );
 }
