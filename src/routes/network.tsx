@@ -115,7 +115,7 @@ function StartupProfileLink({ slug, children, className }: { slug: string; child
 
 
 function StartupCard({ s }: { s: Card }) {
-  
+
   const sponsored = s.sponsored;
   const profileHref = s.slug ? `/startup/${s.slug}` : undefined;
   const visitHref = `/api/public/widget/click?id=${s.id}&source=dashboard`;
@@ -138,12 +138,18 @@ function StartupCard({ s }: { s: Card }) {
       )}
       <div className="relative z-10 flex-1 min-w-0 pointer-events-none">
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-xl overflow-hidden bg-white border border-black/[0.08] flex items-center justify-center shrink-0">
+          <div className={[
+            "w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center shrink-0",
+            sponsored ? "bg-black/40 border border-white/[0.15]" : "bg-white border border-black/[0.08]",
+          ].join(" ")}>
             <StartupFavicon url={s.website_url} name={s.name} logoUrl={s.logo_url} size={32} />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 min-w-0">
-              <h3 className="min-w-0 flex-1 truncate text-[15px] font-bold text-black leading-snug">{s.name}</h3>
+              <h3 className={[
+                "min-w-0 flex-1 truncate text-[15px] font-bold leading-snug",
+                sponsored ? "text-white" : "text-black",
+              ].join(" ")}>{s.name}</h3>
               {sponsored ? (
                 <span className="shrink-0 rounded-full bg-[oklch(0.65_0.15_68)] px-1.5 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-[0.12em] text-white shadow-sm">
                   Featured
@@ -152,7 +158,7 @@ function StartupCard({ s }: { s: Card }) {
 
             </div>
             <div className="mt-1 min-w-0">
-              <FounderChip s={s} />
+              <FounderChip s={s} sponsored={sponsored} />
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
@@ -162,36 +168,52 @@ function StartupCard({ s }: { s: Card }) {
               rel="noopener noreferrer"
               aria-label={`Visit ${s.name} website`}
               title={`Visit ${s.name} website`}
-              className="pointer-events-auto inline-flex h-7 w-7 items-center justify-center rounded-full border border-black/10 bg-white text-black/50 transition-colors hover:border-black/30 hover:text-black"
+              className={[
+                "pointer-events-auto inline-flex h-7 w-7 items-center justify-center rounded-full border transition-colors",
+                sponsored
+                  ? "border-white/20 bg-white/10 text-white/70 hover:border-white/40 hover:bg-white/20 hover:text-white"
+                  : "border-black/10 bg-white text-black/50 hover:border-black/30 hover:text-black",
+              ].join(" ")}
             >
               <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2} />
             </a>
             {s.slug && (
               <StartupProfileLink
                 slug={s.slug}
-                className="pointer-events-auto inline-flex h-9 w-9 items-center justify-center rounded-full bg-black text-white transition-colors hover:bg-black/80"
+                className={[
+                  "pointer-events-auto inline-flex h-9 w-9 items-center justify-center rounded-full transition-colors",
+                  sponsored ? "bg-white text-black hover:bg-white/85" : "bg-black text-white hover:bg-black/80",
+                ].join(" ")}
               >
                 <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
               </StartupProfileLink>
             )}
           </div>
         </div>
-        <p className="mt-3 text-[13px] text-black/45 leading-relaxed line-clamp-2 sm:min-h-[2.9em]">{s.description}</p>
+        <p className={[
+          "mt-3 text-[13px] leading-relaxed line-clamp-2 sm:min-h-[2.9em]",
+          sponsored ? "text-white/65" : "text-black/45",
+        ].join(" ")}>{s.description}</p>
       </div>
 
       <div className="relative z-10 pointer-events-none">
-        <div className="grid grid-cols-3 rounded-xl border border-black/[0.07] bg-black/[0.015] divide-x divide-black/[0.07]">
+        <div className={[
+          "grid grid-cols-3 rounded-xl divide-x",
+          sponsored
+            ? "border border-white/[0.12] bg-white/[0.06] divide-white/[0.12]"
+            : "border border-black/[0.07] bg-black/[0.015] divide-black/[0.07]",
+        ].join(" ")}>
           <div className="flex flex-col items-center gap-0.5 py-2">
-            <span className="text-[9px] uppercase tracking-[0.1em] font-semibold text-black/30">Joined</span>
-            <span className="text-[13px] font-semibold text-black/70 tabular-nums">{joinedLabel(s.created_at)}</span>
+            <span className={["text-[9px] uppercase tracking-[0.1em] font-semibold", sponsored ? "text-white/35" : "text-black/30"].join(" ")}>Joined</span>
+            <span className={["text-[13px] font-semibold tabular-nums", sponsored ? "text-white/85" : "text-black/70"].join(" ")}>{joinedLabel(s.created_at)}</span>
           </div>
           <div className="flex flex-col items-center gap-0.5 py-2">
-            <span className="text-[9px] uppercase tracking-[0.1em] font-semibold text-black/30">Impressions</span>
-            <span className="text-[13px] font-semibold text-black/70 tabular-nums">{fmt(s.impressions)}</span>
+            <span className={["text-[9px] uppercase tracking-[0.1em] font-semibold", sponsored ? "text-white/35" : "text-black/30"].join(" ")}>Impressions</span>
+            <span className={["text-[13px] font-semibold tabular-nums", sponsored ? "text-white/85" : "text-black/70"].join(" ")}>{fmt(s.impressions)}</span>
           </div>
           <div className="flex flex-col items-center gap-0.5 py-2">
-            <span className="text-[9px] uppercase tracking-[0.1em] font-semibold text-black/30">Clicks</span>
-            <span className="text-[13px] font-semibold text-black/70 tabular-nums">{fmt(s.clicks)}</span>
+            <span className={["text-[9px] uppercase tracking-[0.1em] font-semibold", sponsored ? "text-white/35" : "text-black/30"].join(" ")}>Clicks</span>
+            <span className={["text-[13px] font-semibold tabular-nums", sponsored ? "text-white/85" : "text-black/70"].join(" ")}>{fmt(s.clicks)}</span>
           </div>
         </div>
       </div>
@@ -216,7 +238,7 @@ function joinedLabel(createdAt: string) {
   return `${Math.floor(m / 12)}y ago`;
 }
 
-function FounderChip({ s }: { s: Card }) {
+function FounderChip({ s, sponsored }: { s: Card; sponsored?: boolean }) {
   if (!s.founder_name) return null;
   return (
     <span className="flex w-full min-w-0 items-center gap-1.5">
@@ -227,14 +249,20 @@ function FounderChip({ s }: { s: Card }) {
           width={18}
           height={18}
           loading="lazy"
-          className="h-[18px] w-[18px] rounded-full object-cover bg-black/[0.06] shrink-0"
+          className={[
+            "h-[18px] w-[18px] rounded-full object-cover shrink-0",
+            sponsored ? "bg-white/10" : "bg-black/[0.06]",
+          ].join(" ")}
         />
       ) : (
-        <span className="h-[18px] w-[18px] rounded-full bg-black/[0.06] text-black/45 text-[9px] font-semibold inline-flex items-center justify-center shrink-0">
+        <span className={[
+          "h-[18px] w-[18px] rounded-full text-[9px] font-semibold inline-flex items-center justify-center shrink-0",
+          sponsored ? "bg-white/10 text-white/65" : "bg-black/[0.06] text-black/45",
+        ].join(" ")}>
           {s.founder_name.trim().charAt(0).toUpperCase()}
         </span>
       )}
-      <span className="text-[11px] text-black/45 font-medium truncate">{s.founder_name}</span>
+      <span className={["text-[11px] font-medium truncate", sponsored ? "text-white/60" : "text-black/45"].join(" ")}>{s.founder_name}</span>
     </span>
   );
 }
