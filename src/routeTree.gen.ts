@@ -35,6 +35,7 @@ import { Route as ApiPublicWidgetPickRouteImport } from './routes/api/public/wid
 import { Route as ApiPublicWidgetHeartbeatRouteImport } from './routes/api/public/widget.heartbeat'
 import { Route as ApiPublicWidgetClickRouteImport } from './routes/api/public/widget.click'
 import { Route as ApiPublicTrackSiteVisitRouteImport } from './routes/api/public/track.site-visit'
+import { Route as ApiPublicTrackFunnelRouteImport } from './routes/api/public/track.funnel'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -167,6 +168,11 @@ const ApiPublicTrackSiteVisitRoute = ApiPublicTrackSiteVisitRouteImport.update({
   path: '/api/public/track/site-visit',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicTrackFunnelRoute = ApiPublicTrackFunnelRouteImport.update({
+  id: '/api/public/track/funnel',
+  path: '/api/public/track/funnel',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -189,6 +195,7 @@ export interface FileRoutesByFullPath {
   '/api/public/dodo-webhook': typeof ApiPublicDodoWebhookRoute
   '/api/public/unsubscribe': typeof ApiPublicUnsubscribeRoute
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
+  '/api/public/track/funnel': typeof ApiPublicTrackFunnelRoute
   '/api/public/track/site-visit': typeof ApiPublicTrackSiteVisitRoute
   '/api/public/widget/click': typeof ApiPublicWidgetClickRoute
   '/api/public/widget/heartbeat': typeof ApiPublicWidgetHeartbeatRoute
@@ -216,6 +223,7 @@ export interface FileRoutesByTo {
   '/api/public/dodo-webhook': typeof ApiPublicDodoWebhookRoute
   '/api/public/unsubscribe': typeof ApiPublicUnsubscribeRoute
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
+  '/api/public/track/funnel': typeof ApiPublicTrackFunnelRoute
   '/api/public/track/site-visit': typeof ApiPublicTrackSiteVisitRoute
   '/api/public/widget/click': typeof ApiPublicWidgetClickRoute
   '/api/public/widget/heartbeat': typeof ApiPublicWidgetHeartbeatRoute
@@ -245,6 +253,7 @@ export interface FileRoutesById {
   '/api/public/dodo-webhook': typeof ApiPublicDodoWebhookRoute
   '/api/public/unsubscribe': typeof ApiPublicUnsubscribeRoute
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
+  '/api/public/track/funnel': typeof ApiPublicTrackFunnelRoute
   '/api/public/track/site-visit': typeof ApiPublicTrackSiteVisitRoute
   '/api/public/widget/click': typeof ApiPublicWidgetClickRoute
   '/api/public/widget/heartbeat': typeof ApiPublicWidgetHeartbeatRoute
@@ -274,6 +283,7 @@ export interface FileRouteTypes {
     | '/api/public/dodo-webhook'
     | '/api/public/unsubscribe'
     | '/api/public/verify-install'
+    | '/api/public/track/funnel'
     | '/api/public/track/site-visit'
     | '/api/public/widget/click'
     | '/api/public/widget/heartbeat'
@@ -301,6 +311,7 @@ export interface FileRouteTypes {
     | '/api/public/dodo-webhook'
     | '/api/public/unsubscribe'
     | '/api/public/verify-install'
+    | '/api/public/track/funnel'
     | '/api/public/track/site-visit'
     | '/api/public/widget/click'
     | '/api/public/widget/heartbeat'
@@ -329,6 +340,7 @@ export interface FileRouteTypes {
     | '/api/public/dodo-webhook'
     | '/api/public/unsubscribe'
     | '/api/public/verify-install'
+    | '/api/public/track/funnel'
     | '/api/public/track/site-visit'
     | '/api/public/widget/click'
     | '/api/public/widget/heartbeat'
@@ -356,6 +368,7 @@ export interface RootRouteChildren {
   ApiPublicDodoWebhookRoute: typeof ApiPublicDodoWebhookRoute
   ApiPublicUnsubscribeRoute: typeof ApiPublicUnsubscribeRoute
   ApiPublicVerifyInstallRoute: typeof ApiPublicVerifyInstallRoute
+  ApiPublicTrackFunnelRoute: typeof ApiPublicTrackFunnelRoute
   ApiPublicTrackSiteVisitRoute: typeof ApiPublicTrackSiteVisitRoute
   ApiPublicWidgetClickRoute: typeof ApiPublicWidgetClickRoute
   ApiPublicWidgetHeartbeatRoute: typeof ApiPublicWidgetHeartbeatRoute
@@ -547,6 +560,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicTrackSiteVisitRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/track/funnel': {
+      id: '/api/public/track/funnel'
+      path: '/api/public/track/funnel'
+      fullPath: '/api/public/track/funnel'
+      preLoaderRoute: typeof ApiPublicTrackFunnelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -583,6 +603,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicDodoWebhookRoute: ApiPublicDodoWebhookRoute,
   ApiPublicUnsubscribeRoute: ApiPublicUnsubscribeRoute,
   ApiPublicVerifyInstallRoute: ApiPublicVerifyInstallRoute,
+  ApiPublicTrackFunnelRoute: ApiPublicTrackFunnelRoute,
   ApiPublicTrackSiteVisitRoute: ApiPublicTrackSiteVisitRoute,
   ApiPublicWidgetClickRoute: ApiPublicWidgetClickRoute,
   ApiPublicWidgetHeartbeatRoute: ApiPublicWidgetHeartbeatRoute,

@@ -4,6 +4,8 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { StartupFavicon } from "@/components/StartupFavicon";
+import { trackFunnel } from "@/lib/funnel";
+
 import {
   ArrowRight, ArrowLeft, ExternalLink,
   Copy, Check, CheckCircle2, XCircle, Loader2, ShieldAlert, ChevronDown,
@@ -275,10 +277,16 @@ function Apply() {
     supabase.auth.getUser().then(({ data }) => setAuthed(!!data.user));
   }, []);
 
+  // Funnel breadcrumbs: without these, an application that is started and
+  // abandoned leaves no trace at all.
+  useEffect(() => { trackFunnel("apply_opened"); }, []);
+  useEffect(() => { trackFunnel("apply_step", { step, name, url }); }, [step, name, url]);
+
   // Never allow step 2 without an authenticated session — it gates the script + submission.
   useEffect(() => {
     if (authed === false && step === 2) setStep(1);
   }, [authed, step]);
+
 
   async function refreshGateData(userId: string) {
     const [{ count }, { data: prepaid }] = await Promise.all([

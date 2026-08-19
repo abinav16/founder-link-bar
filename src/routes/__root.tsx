@@ -14,6 +14,8 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { trackPageView } from "@/lib/analytics";
+import { trackSiteVisit } from "@/lib/site-visit";
+
 
 function NotFoundComponent() {
   return (
@@ -107,14 +109,17 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
 
-  // Send GA pageviews after each navigation settles, so document.title (set by
-  // the route's head()) is already applied — otherwise GA logs "(not set)".
+  // Send GA pageviews + our own site-visit ping after each navigation settles,
+  // so document.title (set by the route's head()) is already applied —
+  // otherwise GA logs "(not set)". The site-visit ping runs on every route so
+  // /auth, /apply, /pricing and /faq show up in the funnel, not just landings.
   useEffect(() => {
-    const send = () => window.setTimeout(trackPageView, 0);
+    const send = () => window.setTimeout(() => { trackPageView(); trackSiteVisit(); }, 0);
     send();
     const unsub = router.subscribe("onResolved", send);
     return unsub;
   }, [router]);
+
 
 
 
