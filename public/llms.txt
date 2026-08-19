@@ -14,9 +14,11 @@ To embed the widget, add this script tag to your site's `<head>` (or anywhere in
 
 Notes:
 
-- The bar renders in a sandboxed iframe at the top of the page (36px tall) and never blocks page content.
+- The bar renders in a sandboxed iframe (36px tall) and never blocks page content.
+- Placement is your choice: show the bar at the top or the bottom of your site, switchable from the dashboard.
 - Theme is auto-detected (light/dark) from your site. Force it with `data-theme="dark"` or `data-theme="light"`.
 - Visitors can dismiss the bar for their session; nothing is stored beyond a per-session ID used to de-duplicate impressions.
+- The bar survives client-side navigation (Livewire, Turbo, Astro, SPA routers) without reloading or shifting your layout.
 - Works on any site or framework — plain HTML, React, Next.js, Webflow, Framer, etc. No npm package needed.
 - Installation is verified automatically; the dashboard shows whether the widget is detected and last seen.
 
@@ -33,18 +35,31 @@ Accepted: live software products, SaaS, developer tools, AI apps, and indie/foun
 
 Rejected: sites that are not live yet, parked or placeholder pages, adult content, gambling, crypto pump/airdrop schemes, scams or MLM, link farms, pirated content, and anything illegal or unsafe. Sites that remove the widget after joining are removed from the network.
 
+## Pricing
+
+- Joining the network and listing one startup is free.
+- Additional listings beyond your first are a one-time paid add-on.
+- Featured spots cost $79 per month, with 8 slots available across StartupBar pages. Cancel anytime; the slot stays active until the end of the paid period.
+
+## Featured spots
+
+A Featured spot is paid visibility on StartupBar's own pages, not inside the widget. A featured startup appears in the sponsored rails beside the network, leaderboard and dashboard pages, and is highlighted in gold across the network cards, network list and leaderboard. Featured spots do not change widget delivery, impression counts, or leaderboard ranking. Payments are handled by Dodo Payments.
+
 ## Dashboard
 
-After approval, founders get a dashboard at [startupbar.co/dashboard](/dashboard) with impressions served, impressions contributed, clicks, click-through rate, network rank, and 12-month trends.
+After approval, founders get a dashboard at [startupbar.co/dashboard](/dashboard) with impressions served, impressions contributed, clicks, click-through rate, profile views, network rank, and 12-month trends.
 
 ## Pages
 
 - [Home](/): Overview of the traffic-exchange network, how the widget works, and how to join.
 - [Apply](/apply): Submit your startup to join the network. Provide your startup name, website URL, and a one-liner description.
 - [Leaderboard](/leaderboard): Live ranking of all startups in the network by total impressions and clicks, with real-time stats.
-- [Network](/network): Explore the full network of startups, browse by category, and see recent activity across the exchange.
+- [Network](/network): Explore the full network of startups, trending startups by daily clicks, newly joined startups, and a sortable, searchable list.
+- [Startup profiles](/startup/): One public page per approved startup with founder name, photo and quote, joined date, impressions served and contributed, clicks, and a live preview of the site.
+- [Pricing](/pricing): Free listing, additional listings, and the $79/month Featured spot.
+- [FAQ](/faq): Answers on getting started, widget install, membership and approval, billing, featured spots, traffic and delivery.
 - [Privacy Policy](/privacy): How StartupBar collects, uses, and protects founder and visitor data.
-- [Terms of Service](/terms): Rules for participating in the traffic exchange, application requirements, and acceptable use.
+- [Terms of Service](/terms): Rules for participating in the traffic exchange, application requirements, featured promotion, billing, and acceptable use.
 
 ## Optional
 
