@@ -18,11 +18,8 @@ Page tracking only records landings. Over the last 7 days, every tracked path is
 
 ## Plan
 
-1. **Reproduce the full journey end to end** in a sandboxed browser against the live app: land on the homepage, click through to sign up, create an account, and walk the apply form to submission, including the placement step and the preview. Capture console errors and failed network calls at every step. If the form breaks, fix that first and everything below still holds.
-2. **Track the funnel, not just landings.** Send a tracked view for every route the visitor sees, so `/auth`, `/apply`, `/pricing` and `/faq` show up alongside `/`. Today the tracker only fires on the landing page.
-3. **Record apply-form progress.** Log a lightweight event when someone opens the apply form and when they move between steps, using the existing application events table, so an abandoned application is visible instead of invisible.
-4. **Re-engage the accounts that stalled.** Identify accounts with no startup listed (including the two from Aug 18) and prepare a short nudge email pointing straight at the apply page.
-5. **Report back with the funnel numbers** once tracking has run for a day: landings, auth views, apply opens, submissions, so the next decision is based on where people actually drop.
+- **Track the funnel, not just landings.** Send a tracked view for every route the visitor sees, so `/auth`, `/apply`, `/pricing` and `/faq` show up alongside `/`. Today the tracker only fires on the landing page.
+- **Record apply-form progress.** Log a lightweight event when someone opens the apply form and when they move between steps, using the existing application events table, so an abandoned application is visible instead of invisible.
 
 ## Technical notes
 
