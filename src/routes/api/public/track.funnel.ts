@@ -22,12 +22,17 @@ export const Route = createFileRoute("/api/public/track/funnel")({
           const url = typeof body?.url === "string" ? body.url.slice(0, 300) : null;
 
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-          await supabaseAdmin.from("application_events").insert({
+          const { error } = await supabaseAdmin.from("application_events").insert({
             startup_name: name || "(not entered)",
             website_url: url,
             event_type: event,
             metadata: { step },
           });
+          if (error) {
+            console.error("funnel insert failed", error);
+            return Response.json({ ok: false, error: error.message }, { status: 500, headers: { "Access-Control-Allow-Origin": "*" } });
+          }
+
 
           return Response.json({ ok: true }, { headers: { "Cache-Control": "no-store", "Access-Control-Allow-Origin": "*" } });
         } catch (err) {
