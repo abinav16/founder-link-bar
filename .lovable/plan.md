@@ -1,39 +1,32 @@
-# Fix "Something broke" in hardened browsers (LibreWolf)
+# Why signups dropped, and what to do about it
 
-## What the screenshot shows
+## What the data actually shows
 
-That white card is our own React error boundary in `src/routes/__root.tsx` ("Something broke / Try again or head home"). It renders whenever a route component throws during render on the client. So it is not a server outage: the page loaded, then the app crashed while rendering in that browser. Chrome is fine, LibreWolf is not, which points at a browser API that LibreWolf blocks or hardens (storage access, canvas, or a blocked third party script).
+Verified against the live database just now:
 
-The exact throwing line is not confirmed yet, so step 1 is reproducing it rather than guessing.
+- **Site traffic is flat.** Landings on startupbar.co: Aug 13: 52, 14: 73, 15: 75, 16: 76, 17: 67, 18: 79, 19 (partial): 17. No traffic collapse.
+- **The widget network is healthy.** 58 to 74 active host sites every day, thousands of impressions daily, and clicks through to startupbar.co are in the normal 4 to 15/day range.
+- **Signups did slow.** Aug 14: 5, Aug 15: 4, Aug 16: 0, Aug 17: 0, Aug 18: 2, Aug 19: 0.
+- **Signup itself is not broken.** The two Aug 18 accounts were created successfully, one by Google and one by email, both confirmed, and one signed back in ten minutes later. Auth logs show no failing signup requests.
+- **The real gap is after signup.** Zero applications have been submitted since Aug 15. Both Aug 18 accounts have no startup attached. Before that, submissions ran nearly every day (5 on Aug 14, 3 on Aug 15).
 
-## Step 1: reproduce
+So nothing points to a broken front door. Traffic arrives, accounts can be created, but people are not finishing the listing. Whether that is a bug in the apply flow or just a quiet stretch is **not yet confirmed** because there is no data on what happens between landing and submitting.
 
-Run the site in a headless browser configured like LibreWolf's strict mode and capture the real error:
+## The blind spot to close
 
-- storage access denied (`localStorage`/`sessionStorage` getters throw `SecurityError`)
-- canvas readback blocked / `getContext` returning null
-- third party requests (Google Fonts, Google Analytics) blocked
+Page tracking only records landings. Over the last 7 days, every tracked path is `/` or a `/startup/...` profile: there is not a single `/auth` or `/apply` view recorded. That means we cannot tell whether visitors ever reach the signup page, whether they reach the apply form and abandon it, or whether the form errors out for them.
 
-Log the console error and stack from the crash, so the fix targets the actual line.
+## Plan
 
-## Step 2: make storage access safe everywhere
+1. **Reproduce the full journey end to end** in a sandboxed browser against the live app: land on the homepage, click through to sign up, create an account, and walk the apply form to submission, including the placement step and the preview. Capture console errors and failed network calls at every step. If the form breaks, fix that first and everything below still holds.
+2. **Track the funnel, not just landings.** Send a tracked view for every route the visitor sees, so `/auth`, `/apply`, `/pricing` and `/faq` show up alongside `/`. Today the tracker only fires on the landing page.
+3. **Record apply-form progress.** Log a lightweight event when someone opens the apply form and when they move between steps, using the existing application events table, so an abandoned application is visible instead of invisible.
+4. **Re-engage the accounts that stalled.** Identify accounts with no startup listed (including the two from Aug 18) and prepare a short nudge email pointing straight at the apply page.
+5. **Report back with the funnel numbers** once tracking has run for a day: landings, auth views, apply opens, submissions, so the next decision is based on where people actually drop.
 
-Several places call storage directly with no try/catch, and a throw there happens during render, which is exactly what triggers this boundary. Add one small helper (`src/lib/safe-storage.ts`) exposing `getItem` / `setItem` / `removeItem` that swallow errors and fall back to an in memory map, then use it in:
+## Technical notes
 
-- `src/routes/leaderboard.tsx` (read inside a `useState` initializer, render time, highest risk)
-- `src/routes/index.tsx`, `src/routes/widget.bar.tsx`, `src/routes/startup.$slug.tsx`, `src/routes/auth.tsx`, `src/routes/auth_.callback.tsx`, `src/components/FeaturedBookingDialog.tsx`, `src/routes/_authenticated/dashboard.tsx`
-
-Behaviour is unchanged for normal browsers; hardened ones just lose the caching niceties instead of crashing.
-
-## Step 3: harden the hero canvas and analytics
-
-- Wrap the orbit canvas animation setup in `src/routes/index.tsx` so any canvas failure disables the animation instead of bubbling up.
-- Ensure the analytics helper stays a no op when `gtag` is blocked (already the case, verify after repro).
-
-## Step 4: make the error boundary less of a dead end
-
-Keep the boundary, but degrade better: log the underlying message to the console for support, and keep Retry/Home. Optionally show a one line hint that a strict privacy or content blocker can cause it.
-
-## Verification
-
-Re run the hardened browser script from step 1 on `/`, `/network`, `/leaderboard`, and a startup profile page, confirming each renders with zero uncaught errors.
+- Route-level tracking: extend the existing pageview call in the root route so it posts to `/api/public/track/site-visit` on every route change, not only the homepage.
+- Funnel events: add `apply_opened` and `apply_step` event types to `public.application_events`; keep them anonymous (no PII beyond the existing user reference).
+- Stalled accounts query: `auth.users` left joined against `public.startups` on `user_id`, filtered to zero rows.
+- No schema-breaking changes; tracking writes reuse the current impressions and application events tables.
