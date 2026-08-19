@@ -4,6 +4,8 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { StartupFavicon } from "@/components/StartupFavicon";
+import { trackFunnel } from "@/lib/funnel";
+
 import {
   ArrowRight, ArrowLeft, ExternalLink,
   Copy, Check, CheckCircle2, XCircle, Loader2, ShieldAlert, ChevronDown,
