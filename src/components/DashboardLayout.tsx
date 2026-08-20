@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { LogOut, LayoutDashboard, Trophy, Settings, Globe, LogIn } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SponsoredRail } from "@/components/SponsoredRail";
+import { FeaturedMobileBanner } from "@/components/FeaturedMobileBanner";
 import { FeaturedReturnWatcher } from "@/components/FeaturedBookingDialog";
 
 function FooterBar({ wide }: { wide?: boolean }) {
@@ -158,9 +159,20 @@ export function DashboardLayout({
       >
         {rail ? <SponsoredRail side="left" /> : null}
         <div className="page-enter min-w-0">
+          {rail ? (
+            <div className="mb-4">
+              <FeaturedMobileBanner slots={[1, 2, 3, 4]} />
+            </div>
+          ) : null}
           {children}
+          {rail ? (
+            <div className="mt-6">
+              <FeaturedMobileBanner slots={[5, 6, 7, 8]} />
+            </div>
+          ) : null}
         </div>
         {rail ? <SponsoredRail side="right" /> : null}
+
       </main>
 
       <FooterBar wide={!!rail} />
