@@ -160,13 +160,13 @@ export function DashboardLayout({
         {rail ? <SponsoredRail side="left" /> : null}
         <div className="page-enter min-w-0">
           {rail ? (
-            <div className="mb-4">
+            <div className="sticky top-14 z-20 -mx-4 bg-[#f7f7f6] px-4 pb-2 pt-1 xl:hidden">
               <FeaturedMobileBanner slots={[1, 2, 3, 4]} />
             </div>
           ) : null}
           {children}
           {rail ? (
-            <div className="mt-6">
+            <div className="sticky bottom-0 z-20 -mx-4 bg-[#f7f7f6] px-4 pt-2 pb-1 xl:hidden">
               <FeaturedMobileBanner slots={[5, 6, 7, 8]} />
             </div>
           ) : null}
