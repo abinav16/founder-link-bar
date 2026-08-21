@@ -1,0 +1,190 @@
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { BID_MIN_CENTS, formatUsd, normalizeBidUrl, priceToClaim, type BidEntry } from "@/lib/bid";
+import { ArrowRight, Loader2 } from "lucide-react";
+
+const PRESETS = [500, 1000, 2500, 5000];
+
+/** Inline bid form for the hero — no popup: enter site, pick amount, go to checkout. */
+export function InlineBidForm({ board }: { board: BidEntry[] }) {
+  const [url, setUrl] = useState("");
+  const [dollars, setDollars] = useState("10");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [myStartups, setMyStartups] = useState<{ name: string; website_url: string }[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      const uid = data.session?.user?.id;
+      if (!uid || cancelled) return;
+      const { data: rows } = await supabase
+        .from("startups")
+        .select("name, website_url")
+        .eq("user_id", uid);
+      if (!cancelled) setMyStartups(rows ?? []);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const target = useMemo(() => normalizeBidUrl(url), [url]);
+  const amountCents = Math.round(Number(dollars || 0) * 100);
+
+  const existing = useMemo(
+    () => (target.ok ? board.find((b) => b.url_key === target.urlKey) : undefined),
+    [board, target],
+  );
+
+  const projected = useMemo(() => {
+    if (!target.ok || amountCents < BID_MIN_CENTS) return null;
+    const newTotal = (existing?.total_cents ?? 0) + amountCents;
+    const above = board.filter(
+      (b) => b.url_key !== target.urlKey && b.total_cents >= newTotal,
+    ).length;
+    return { newTotal, rank: above + 1 };
+  }, [board, target, amountCents, existing]);
+
+  const top = board[0];
+  const toBeatTop = top ? priceToClaim(top.total_cents) - (existing?.total_cents ?? 0) : BID_MIN_CENTS;
+
+  async function submit() {
+    setError(null);
+    if (!target.ok) {
+      setError("Enter a valid website (example.com) or an @handle.");
+      return;
+    }
+    if (!Number.isFinite(amountCents) || amountCents < BID_MIN_CENTS) {
+      setError("Minimum bid is $5.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess.session?.access_token;
+      const res = await fetch("/api/public/bid-checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          url,
+          amount_cents: amountCents,
+          name: existing?.name || undefined,
+        }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.payment_link) {
+        setError(json?.error ?? "Could not start the checkout. Please try again.");
+        setBusy(false);
+        return;
+      }
+      window.location.href = json.payment_link;
+    } catch {
+      setError("Network error. Please try again.");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="mx-auto mt-6 w-full max-w-xl text-left">
+      <div className="flex flex-col gap-2 rounded-2xl border border-black/[0.09] bg-white p-2 shadow-[0_1px_2px_rgba(0,0,0,0.04)] sm:flex-row sm:items-center">
+        <input
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") submit();
+          }}
+          placeholder="yoursite.com or @handle"
+          aria-label="Your site or handle"
+          className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm text-black outline-none placeholder:text-black/30"
+        />
+        <div className="flex items-center gap-2">
+          <div className="flex items-center rounded-xl border border-black/10 px-2.5 sm:w-[104px]">
+            <span className="text-sm text-black/40">$</span>
+            <input
+              value={dollars}
+              onChange={(e) => setDollars(e.target.value.replace(/[^0-9.]/g, ""))}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") submit();
+              }}
+              inputMode="decimal"
+              aria-label="Bid amount in USD"
+              className="w-full min-w-0 bg-transparent py-2 pl-1 text-sm text-black outline-none"
+            />
+          </div>
+          <button
+            onClick={submit}
+            disabled={busy}
+            className="inline-flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl bg-black px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-85 disabled:opacity-50 sm:flex-none"
+          >
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            Place bid
+            {!busy && <ArrowRight className="h-4 w-4" />}
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-2.5 flex flex-wrap items-center justify-center gap-1.5">
+        {PRESETS.map((cents) => (
+          <button
+            key={cents}
+            onClick={() => setDollars(String(cents / 100))}
+            className={`rounded-full border px-3 py-1 text-[12px] transition-colors ${
+              amountCents === cents
+                ? "border-black bg-black text-white"
+                : "border-black/12 text-black/55 hover:border-black/35 hover:text-black"
+            }`}
+          >
+            {formatUsd(cents)}
+          </button>
+        ))}
+        {top && toBeatTop > 0 && (
+          <button
+            onClick={() => setDollars(String(Math.ceil(toBeatTop / 100)))}
+            className="rounded-full border border-black/12 px-3 py-1 text-[12px] text-black/55 transition-colors hover:border-black/35 hover:text-black"
+          >
+            Take #1 · {formatUsd(toBeatTop)}
+          </button>
+        )}
+      </div>
+
+      {myStartups.length > 0 && (
+        <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5">
+          <span className="text-[11px] text-black/35">Your startups:</span>
+          {myStartups.map((s) => (
+            <button
+              key={s.website_url}
+              onClick={() => setUrl(s.website_url)}
+              className="rounded-full border border-black/12 px-2.5 py-1 text-[11px] text-black/60 transition-colors hover:border-black/40 hover:text-black"
+            >
+              {s.name}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <p className="mt-2.5 text-center text-[12px] text-black/45">
+        {error ? (
+          <span className="text-red-600">{error}</span>
+        ) : existing ? (
+          <>
+            Already #{existing.rank} with {formatUsd(existing.total_cents)} — this stacks on top
+            {projected ? ` → #${projected.rank} at ${formatUsd(projected.newTotal)}` : ""}.
+          </>
+        ) : projected ? (
+          <>
+            Projected rank <span className="font-semibold text-black">#{projected.rank}</span> at{" "}
+            {formatUsd(projected.newTotal)}. Name and description are pulled automatically from your
+            site.
+          </>
+        ) : (
+          <>Name, logo and description are pulled automatically from your site. Minimum $5.</>
+        )}
+      </p>
+    </div>
+  );
+}
