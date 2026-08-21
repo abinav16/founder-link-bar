@@ -18,7 +18,7 @@ import {
   type BidTrending,
 } from "@/lib/bid";
 import { ArrowUpRight, CheckCircle2, Clock3, Flame, Gavel, Loader2 } from "lucide-react";
-import { MagneticPill, type OrbitItem } from "@/components/MagneticPill";
+
 
 const TITLE = "StartupBid — Pay-to-rank leaderboard for startups | StartupBar";
 const DESCRIPTION =
@@ -534,24 +534,6 @@ function StartupBidPage() {
 
   const entries = board.data ?? [];
 
-  const orbitItems: OrbitItem[] = useMemo(
-    () =>
-      entries.map((e) => {
-        let domain = e.display_url;
-        try {
-          domain = new URL(
-            e.target_url.startsWith("http") ? e.target_url : `https://${e.target_url}`,
-          ).hostname.replace(/^www\./, "");
-        } catch {
-          /* keep display_url */
-        }
-        return {
-          id: e.id,
-          logoUrl: e.logo_url || `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
-        };
-      }),
-    [entries],
-  );
   const top = entries[0];
 
   const clearSearch = useCallback(() => {
