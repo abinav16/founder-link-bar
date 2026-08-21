@@ -1,3 +1,4 @@
+import { SiteHeader } from "@/components/SiteHeader";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { LiveVisitorMap } from "@/components/LiveVisitorMap";
 import { StartupFavicon } from "@/components/StartupFavicon";
@@ -599,83 +600,8 @@ function Landing() {
   return (
     <div className="min-h-dvh bg-white text-black">
       {/* HEADER */}
-      <header className="sticky top-0 z-30 border-b border-black/8 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <Logo />
-          <nav className="flex min-h-9 items-center gap-1 text-sm">
-            {!authReady ? (
-              // Reserve space so header doesn't collapse before auth resolves
-              <div aria-hidden className="h-9 w-[220px] sm:w-[360px]" />
-            ) : user ? (
-              <>
-                <Link
-                  to="/network"
-                  className="flex items-center gap-1.5 px-2 py-2 text-black/50 hover:text-black transition-colors sm:px-3"
-                >
-                  <Globe className="h-4 w-4" />
-                  <span className="hidden sm:inline">Network</span>
-                </Link>
-                <Link
-                  to="/leaderboard"
-                  className="flex items-center gap-1.5 px-2 py-2 text-black/50 hover:text-black transition-colors sm:px-3"
-                >
-                  <Trophy className="h-4 w-4" />
-                  <span className="hidden sm:inline">Leaderboard</span>
-                </Link>
-                <Link
-                  to="/startupbid"
-                  className="flex items-center gap-1.5 px-2 py-2 text-black/50 hover:text-black transition-colors sm:px-3"
-                >
-                  <Gavel className="h-4 w-4" />
-                  <span className="hidden sm:inline">StartupBid</span>
-                </Link>
-                <Link
-                  to="/dashboard"
-                  className="flex items-center gap-1.5 px-2 py-2 text-black/50 hover:text-black transition-colors sm:px-3"
-                >
-                  <LayoutDashboard className="h-4 w-4" />
-                  <span className="hidden sm:inline">Dashboard</span>
-                </Link>
-                <Link
-                  to="/account"
-                  aria-label="Account settings"
-                  className="rounded-md p-2 text-black/40 hover:text-black transition-colors"
-                >
-                  <Settings className="h-4 w-4" />
-                </Link>
-                <button
-                  onClick={signOut}
-                  aria-label="Sign out"
-                  className="flex items-center gap-1.5 rounded-md border border-black/12 px-2 py-1.5 text-black/60 hover:border-black/25 hover:text-black transition-all sm:px-3"
-                >
-                  <LogOut className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Sign out</span>
-                </button>
-              </>
-            ) : (
-              <>
-                <Link to="/network" className="flex items-center gap-1.5 px-3 py-2 text-black/50 hover:text-black transition-colors text-[13px]">
-                  <Globe className="h-4 w-4" />
-                  <span className="hidden sm:inline">Network</span>
-                </Link>
-                <Link to="/leaderboard" className="flex items-center gap-1.5 px-3 py-2 text-black/50 hover:text-black transition-colors text-[13px]">
-                  <Trophy className="h-4 w-4" />
-                  <span className="hidden sm:inline">Leaderboard</span>
-                </Link>
-                <Link to="/startupbid" className="flex items-center gap-1.5 px-3 py-2 text-black/50 hover:text-black transition-colors text-[13px]">
-                  <Gavel className="h-4 w-4" />
-                  <span className="hidden sm:inline">StartupBid</span>
-                </Link>
-                <Link to="/auth" className="px-3 py-2 text-black/50 hover:text-black transition-colors">Sign in</Link>
-                <Link to="/apply" className="inline-flex h-9 items-center rounded-md bg-black px-3 text-sm font-medium text-white hover:bg-black/80 transition-colors sm:px-4">
-                  <span className="hidden sm:inline">Join the network</span>
-                  <span className="sm:hidden">Join</span>
-                </Link>
-              </>
-            )}
-          </nav>
-        </div>
-      </header>
+      <SiteHeader />
+
 
       <main>
       {/* HERO */}
