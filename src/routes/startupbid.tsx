@@ -102,6 +102,12 @@ function HeroActivitySkeleton() {
   );
 }
 
+function bidHref(displayUrl: string): string {
+  if (displayUrl.startsWith("@")) return `https://x.com/${displayUrl.slice(1)}`;
+  if (/^https?:\/\//i.test(displayUrl)) return displayUrl;
+  return `https://${displayUrl}`;
+}
+
 function TrendingNow({ items, loading }: { items: BidTrending[]; loading: boolean }) {
   return (
     <div className="min-w-0 rounded-xl border border-white/10 bg-black/75 p-3 text-left shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md sm:p-4">
@@ -116,7 +122,14 @@ function TrendingNow({ items, loading }: { items: BidTrending[]; loading: boolea
       ) : (
         <div className="space-y-2.5">
           {items.slice(0, 3).map((item, index) => (
-            <div key={item.entry_id} className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2">
+            <a
+              key={item.entry_id}
+              href={bidHref(item.display_url)}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              onClick={() => trackBidClick(item.entry_id)}
+              className="grid min-w-0 cursor-pointer grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-lg transition-colors hover:bg-white/[0.06]"
+            >
               <StartupFavicon
                 url={item.display_url}
                 name={item.name}
@@ -131,7 +144,7 @@ function TrendingNow({ items, loading }: { items: BidTrending[]; loading: boolea
               <span className="shrink-0 text-[10.5px] font-semibold tabular-nums text-white/65">
                 {item.clicks_hour.toLocaleString()} clicks
               </span>
-            </div>
+            </a>
           ))}
         </div>
       )}
@@ -153,7 +166,14 @@ function RecentPurchases({ items, loading }: { items: BidActivity[]; loading: bo
       ) : (
         <div className="space-y-2.5">
           {items.slice(0, 3).map((item, index) => (
-            <div key={`${item.entry_id}-${item.created_at}-${index}`} className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2">
+            <a
+              key={`${item.entry_id}-${item.created_at}-${index}`}
+              href={bidHref(item.display_url)}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              onClick={() => trackBidClick(item.entry_id)}
+              className="grid min-w-0 cursor-pointer grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-lg transition-colors hover:bg-white/[0.06]"
+            >
               <StartupFavicon
                 url={item.display_url}
                 name={item.name}
@@ -168,13 +188,14 @@ function RecentPurchases({ items, loading }: { items: BidActivity[]; loading: bo
               <span className="shrink-0 text-[10.5px] font-semibold tabular-nums text-white/70">
                 +{formatUsd(item.amount_cents)}
               </span>
-            </div>
+            </a>
           ))}
         </div>
       )}
     </div>
   );
 }
+
 
 function HeroStats({ loading, stats }: { loading: boolean; stats: ReturnType<typeof useBidStats>["data"] }) {
   return (
@@ -565,22 +586,23 @@ function StartupBidPage() {
           <div className="mt-6">
             <MagneticPill
               items={orbitItems}
-              className="h-[370px] sm:h-[220px]"
+              className="h-[230px] sm:h-[220px]"
               overlay={
                 <div className="pointer-events-none absolute inset-x-0 top-1/2 z-[6] -translate-y-1/2 px-3 sm:px-7">
-                  <div className="grid grid-cols-2 items-stretch gap-2.5 sm:grid-cols-[minmax(0,1fr)_180px_minmax(0,1fr)] sm:gap-4">
-                    <div className="min-w-0 sm:order-1">
+                  <div className="grid grid-cols-1 items-stretch gap-2.5 sm:grid-cols-[minmax(0,1fr)_180px_minmax(0,1fr)] sm:gap-4">
+                    <div className="pointer-events-auto hidden min-w-0 sm:order-1 sm:block">
                       <TrendingNow items={trending.data ?? []} loading={trending.isLoading} />
                     </div>
-                    <div className="col-span-2 row-start-1 mx-auto w-[190px] sm:order-2 sm:col-span-1 sm:row-auto sm:mx-0 sm:w-auto">
+                    <div className="mx-auto w-[190px] sm:order-2 sm:mx-0 sm:w-auto">
                       <HeroStats loading={stats.isLoading} stats={stats.data} />
                     </div>
-                    <div className="min-w-0 sm:order-3">
+                    <div className="pointer-events-auto hidden min-w-0 sm:order-3 sm:block">
                       <RecentPurchases items={activity.data ?? []} loading={activity.isLoading} />
                     </div>
                   </div>
                 </div>
               }
+
             />
           </div>
 
@@ -689,6 +711,14 @@ function StartupBidPage() {
             </>
           )}
         </section>
+
+        {/* Mobile: trending + recent activity below the board */}
+        <section className="mt-8 grid grid-cols-1 gap-3 sm:hidden">
+          <TrendingNow items={trending.data ?? []} loading={trending.isLoading} />
+          <RecentPurchases items={activity.data ?? []} loading={activity.isLoading} />
+        </section>
+
+
 
         {/* How it works */}
         <section className="mt-10 sm:mt-12">
