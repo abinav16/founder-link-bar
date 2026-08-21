@@ -56,7 +56,8 @@ export async function fetchSiteMeta(url: string): Promise<{ name?: string; descr
     };
 
     const title = og("og:site_name") || og("og:title") || html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1] || "";
-    const description = og("og:description") || og("description") || "";
+    const description =
+      og("og:description") || og("description") || og("twitter:description") || "";
     return {
       name: title ? decode(title).slice(0, 80) : undefined,
       description: description ? decode(description).slice(0, 240) : undefined,
@@ -104,7 +105,7 @@ export async function fulfilBid(
   if (!row?.entry_id) return { ok: false };
 
   // Enrich the entry once, right after its first successful payment.
-  if (!row.already && enrich) {
+  if (enrich) {
     try {
       const { data: entry } = await supabaseAdmin
         .from("bid_entries")
