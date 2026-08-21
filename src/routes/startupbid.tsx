@@ -110,7 +110,7 @@ function bidHref(displayUrl: string): string {
 
 function TrendingNow({ items, loading }: { items: BidTrending[]; loading: boolean }) {
   return (
-    <div className="min-w-0 rounded-xl border border-white/10 bg-black/75 p-3 text-left shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md sm:p-4">
+    <div className="min-w-0 rounded-xl border border-white/10 bg-[#0a0a0a] p-3 text-left shadow-[0_8px_32px_rgba(0,0,0,0.4)] sm:p-4">
       <div className="mb-3 flex items-center gap-1.5 text-white/45">
         <Flame className="h-3.5 w-3.5" />
         <span className="text-[9px] font-semibold uppercase tracking-[0.12em]">Trending now</span>
@@ -154,7 +154,7 @@ function TrendingNow({ items, loading }: { items: BidTrending[]; loading: boolea
 
 function RecentPurchases({ items, loading }: { items: BidActivity[]; loading: boolean }) {
   return (
-    <div className="min-w-0 rounded-xl border border-white/10 bg-black/75 p-3 text-left shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md sm:p-4">
+    <div className="min-w-0 rounded-xl border border-white/10 bg-[#0a0a0a] p-3 text-left shadow-[0_8px_32px_rgba(0,0,0,0.4)] sm:p-4">
       <div className="mb-3 flex items-center gap-1.5 text-white/45">
         <Clock3 className="h-3.5 w-3.5" />
         <span className="text-[9px] font-semibold uppercase tracking-[0.12em]">Recent activity</span>
@@ -199,7 +199,7 @@ function RecentPurchases({ items, loading }: { items: BidActivity[]; loading: bo
 
 function HeroStats({ loading, stats }: { loading: boolean; stats: ReturnType<typeof useBidStats>["data"] }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-white/10 bg-black/75 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md">
+    <div className="overflow-hidden rounded-xl border border-white/10 bg-[#0a0a0a] shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
       <div className="flex items-center justify-center gap-2 border-b border-white/10 px-4 py-3">
         <Gavel className="h-4 w-4 text-white" />
         <span className="text-[16px] font-extrabold leading-none text-white">StartupBid</span>
