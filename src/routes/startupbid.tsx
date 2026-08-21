@@ -101,7 +101,13 @@ const PODIUM = [
 function PodiumRow({ entry, onOutbid }: { entry: BidEntry; onOutbid: (e: BidEntry) => void }) {
   const s = PODIUM[Math.min(entry.rank, 3) - 1] ?? PODIUM[2];
   return (
-    <div className={`rounded-2xl border ${s.card} ${s.pad}`}>
+    <a
+      href={entry.target_url}
+      target="_blank"
+      rel="noopener noreferrer nofollow"
+      onClick={() => trackBidClick(entry.id)}
+      className={`block cursor-pointer rounded-2xl border transition-transform hover:-translate-y-0.5 ${s.card} ${s.pad}`}
+    >
       <div className="flex items-start gap-3 sm:items-center sm:gap-4">
         <div
           className={`flex shrink-0 items-center justify-center rounded-full font-bold tabular-nums ${s.badge} ${s.badgeSize}`}
@@ -126,15 +132,11 @@ function PodiumRow({ entry, onOutbid }: { entry: BidEntry; onOutbid: (e: BidEntr
               size={26}
               className="shrink-0 rounded-lg sm:hidden"
             />
-            <a
-              href={entry.target_url}
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-              onClick={() => trackBidClick(entry.id)}
-              className={`truncate font-bold tracking-tight hover:underline ${s.name} ${s.nameSize}`}
+            <span
+              className={`truncate font-bold tracking-tight ${s.name} ${s.nameSize}`}
             >
               {entry.name}
-            </a>
+            </span>
           </div>
           <p className={`mt-1 line-clamp-2 text-[12.5px] leading-snug sm:text-[13px] ${s.desc}`}>
             {entry.description || entry.display_url}
@@ -149,7 +151,7 @@ function PodiumRow({ entry, onOutbid }: { entry: BidEntry; onOutbid: (e: BidEntr
             {formatUsd(entry.total_cents)}
           </div>
           <button
-            onClick={() => onOutbid(entry)}
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onOutbid(entry); }}
             className={`mt-0.5 text-[11.5px] font-medium hover:underline ${s.outbid}`}
           >
             Outbid · {formatUsd(priceToClaim(entry.total_cents))}
@@ -167,7 +169,7 @@ function PodiumRow({ entry, onOutbid }: { entry: BidEntry; onOutbid: (e: BidEntr
             {formatUsd(entry.total_cents)}
           </div>
           <button
-            onClick={() => onOutbid(entry)}
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onOutbid(entry); }}
             className={`rounded-full px-3 py-1.5 text-[11.5px] font-semibold ${
               entry.rank === 1
                 ? "bg-white text-black"
@@ -178,14 +180,20 @@ function PodiumRow({ entry, onOutbid }: { entry: BidEntry; onOutbid: (e: BidEntr
           </button>
         </div>
       </div>
-    </div>
+    </a>
   );
 }
 
 
 function BidRow({ entry, onOutbid }: { entry: BidEntry; onOutbid: (e: BidEntry) => void }) {
   return (
-    <div className="flex items-center gap-3 border-b border-black/[0.06] px-4 py-3.5 transition-colors last:border-0 hover:bg-black/[0.015] sm:gap-4 sm:px-5">
+    <a
+      href={entry.target_url}
+      target="_blank"
+      rel="noopener noreferrer nofollow"
+      onClick={() => trackBidClick(entry.id)}
+      className="flex cursor-pointer items-center gap-3 border-b border-black/[0.06] px-4 py-3.5 transition-colors last:border-0 hover:bg-black/[0.015] sm:gap-4 sm:px-5"
+    >
       <div className="w-6 shrink-0 text-[13px] font-semibold tabular-nums text-black/35">
         {entry.rank}
       </div>
@@ -200,15 +208,9 @@ function BidRow({ entry, onOutbid }: { entry: BidEntry; onOutbid: (e: BidEntry) 
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <a
-            href={entry.target_url}
-            target="_blank"
-            rel="noopener noreferrer nofollow"
-            onClick={() => trackBidClick(entry.id)}
-            className="truncate text-[14px] font-semibold text-black hover:underline"
-          >
+          <span className="truncate text-[14px] font-semibold text-black">
             {entry.name}
-          </a>
+          </span>
           {entry.on_network && (
             <span className="hidden shrink-0 rounded-full border border-black/10 px-2 py-0.5 text-[10px] font-medium text-black/45 sm:inline">
               In network
@@ -235,14 +237,14 @@ function BidRow({ entry, onOutbid }: { entry: BidEntry; onOutbid: (e: BidEntry) 
           {formatUsd(entry.total_cents)}
         </div>
         <button
-          onClick={() => onOutbid(entry)}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onOutbid(entry); }}
           className="whitespace-nowrap rounded-full border border-black/12 px-2.5 py-1 text-[11px] font-medium text-black/60 transition-colors hover:border-black hover:text-black sm:border-0 sm:px-0 sm:py-0 sm:hover:underline"
         >
           Outbid · {formatUsd(priceToClaim(entry.total_cents))}
         </button>
       </div>
 
-    </div>
+    </a>
   );
 }
 
@@ -394,7 +396,7 @@ function StartupBidPage() {
     <div className="min-h-screen bg-[#fafafa]">
       <SiteHeader />
 
-      <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
+      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
         {/* Hero */}
         <header className="text-center">
           <h1 className="text-[32px] font-semibold tracking-tight text-black sm:text-5xl">
