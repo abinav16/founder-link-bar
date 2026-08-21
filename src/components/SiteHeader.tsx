@@ -43,19 +43,19 @@ export function SiteHeader() {
             <div aria-hidden className="h-9 w-[220px] sm:w-[360px]" />
           ) : user ? (
             <>
-              <Link to="/network" className="flex items-center gap-1.5 px-2 py-2 text-black/50 hover:text-black transition-colors sm:px-3">
+              <Link to="/network" activeProps={{ className: "!text-black font-semibold" }} className="flex items-center gap-1.5 px-2 py-2 text-black/50 hover:text-black transition-colors sm:px-3">
                 <Globe className="h-4 w-4" />
                 <span className="hidden sm:inline">Network</span>
               </Link>
-              <Link to="/leaderboard" className="flex items-center gap-1.5 px-2 py-2 text-black/50 hover:text-black transition-colors sm:px-3">
+              <Link to="/leaderboard" activeProps={{ className: "!text-black font-semibold" }} className="flex items-center gap-1.5 px-2 py-2 text-black/50 hover:text-black transition-colors sm:px-3">
                 <Trophy className="h-4 w-4" />
                 <span className="hidden sm:inline">Leaderboard</span>
               </Link>
-              <Link to="/startupbid" className="flex items-center gap-1.5 px-2 py-2 text-black/50 hover:text-black transition-colors sm:px-3">
+              <Link to="/startupbid" activeProps={{ className: "!text-black font-semibold" }} className="flex items-center gap-1.5 px-2 py-2 text-black/50 hover:text-black transition-colors sm:px-3">
                 <Gavel className="h-4 w-4" />
                 <span className="hidden sm:inline">StartupBid</span>
               </Link>
-              <Link to="/dashboard" className="flex items-center gap-1.5 px-2 py-2 text-black/50 hover:text-black transition-colors sm:px-3">
+              <Link to="/dashboard" activeProps={{ className: "!text-black font-semibold" }} className="flex items-center gap-1.5 px-2 py-2 text-black/50 hover:text-black transition-colors sm:px-3">
                 <LayoutDashboard className="h-4 w-4" />
                 <span className="hidden sm:inline">Overview</span>
               </Link>
@@ -73,15 +73,15 @@ export function SiteHeader() {
             </>
           ) : (
             <>
-              <Link to="/network" className="flex items-center gap-1.5 px-3 py-2 text-black/50 hover:text-black transition-colors text-[13px]">
+              <Link to="/network" activeProps={{ className: "!text-black font-semibold" }} className="flex items-center gap-1.5 px-3 py-2 text-black/50 hover:text-black transition-colors text-[13px]">
                 <Globe className="h-4 w-4" />
                 <span className="hidden sm:inline">Network</span>
               </Link>
-              <Link to="/leaderboard" className="flex items-center gap-1.5 px-3 py-2 text-black/50 hover:text-black transition-colors text-[13px]">
+              <Link to="/leaderboard" activeProps={{ className: "!text-black font-semibold" }} className="flex items-center gap-1.5 px-3 py-2 text-black/50 hover:text-black transition-colors text-[13px]">
                 <Trophy className="h-4 w-4" />
                 <span className="hidden sm:inline">Leaderboard</span>
               </Link>
-              <Link to="/startupbid" className="flex items-center gap-1.5 px-3 py-2 text-black/50 hover:text-black transition-colors text-[13px]">
+              <Link to="/startupbid" activeProps={{ className: "!text-black font-semibold" }} className="flex items-center gap-1.5 px-3 py-2 text-black/50 hover:text-black transition-colors text-[13px]">
                 <Gavel className="h-4 w-4" />
                 <span className="hidden sm:inline">StartupBid</span>
               </Link>
