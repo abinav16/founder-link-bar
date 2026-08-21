@@ -24,7 +24,10 @@ function suggestedForRank(
 /** Inline bid form for the hero — no popup: enter site, pick amount, go to checkout. */
 export function InlineBidForm({ board }: { board: BidEntry[] }) {
   const [url, setUrl] = useState("");
-  const [dollars, setDollars] = useState("");
+  const [dollars, setDollars] = useState(String(BID_MIN_CENTS / 100));
+  // Total of the entry the visitor clicked "Outbid" on. Kept in state so the
+  // amount can be recomputed as a *top-up* once we know which site they bid for.
+  const [outbidTotal, setOutbidTotal] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [myStartups, setMyStartups] = useState<{ name: string; website_url: string }[]>([]);
