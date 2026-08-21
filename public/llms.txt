@@ -45,6 +45,10 @@ Rejected: sites that are not live yet, parked or placeholder pages, adult conten
 
 A Featured spot is paid visibility on StartupBar's own pages, not inside the widget. A featured startup appears in the sponsored rails beside the network, leaderboard and dashboard pages, and is highlighted in gold across the network cards, network list and leaderboard. Featured spots do not change widget delivery, impression counts, or leaderboard ranking. Payments are handled by Dodo Payments.
 
+## StartupBid
+
+StartupBid ([startupbar.co/startupbid](/startupbid)) is a standalone pay-to-rank leaderboard, separate from the widget network — no install and no account required. Anyone can bid on any website or X handle from $5. Bids are cumulative: every payment adds to that entry's lifetime total, and rank is determined purely by total amount paid. The board is public and live, shows clicks each entry received from the board, recent bids, and hourly trending entries. Payments are processed by Dodo Payments; bids are final and non-refundable. Bidding does not affect widget delivery, impressions, or the network leaderboard.
+
 ## Dashboard
 
 After approval, founders get a dashboard at [startupbar.co/dashboard](/dashboard) with impressions served, impressions contributed, clicks, click-through rate, profile views, network rank, and 12-month trends.
@@ -56,6 +60,7 @@ After approval, founders get a dashboard at [startupbar.co/dashboard](/dashboard
 - [Leaderboard](/leaderboard): Live ranking of all startups in the network by total impressions and clicks, with real-time stats.
 - [Network](/network): Explore the full network of startups, trending startups by daily clicks, newly joined startups, and a sortable, searchable list.
 - [Startup profiles](/startup/): One public page per approved startup with founder name, photo and quote, joined date, impressions served and contributed, clicks, and a live preview of the site.
+- [StartupBid](/startupbid): Standalone pay-to-rank board. Bid from $5 on any site or @handle, cumulative totals decide rank, open to guests.
 - [Pricing](/pricing): Free listing, additional listings, and the $79/month Featured spot.
 - [FAQ](/faq): Answers on getting started, widget install, membership and approval, billing, featured spots, traffic and delivery.
 - [Privacy Policy](/privacy): How StartupBar collects, uses, and protects founder and visitor data.
