@@ -36,9 +36,9 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    // Live launch: checkout always runs against Dodo live, regardless of any
-    // legacy DODO_MODE / DODO_CHECKOUT_ENV values left in secrets.
-    const mode: "test" | "live" = "live";
+    // TEST MODE: checkout runs against Dodo test (sandbox) so payments can be
+    // exercised without real money. Set back to "live" to accept real payments.
+    const mode: "test" | "live" = "test";
 
 
 
