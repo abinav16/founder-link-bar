@@ -1,7 +1,5 @@
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
-import { LogOut, LayoutDashboard, Trophy, Settings, Globe, LogIn, Gavel } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Link, useRouterState } from "@tanstack/react-router";
+
 import { SponsoredRail } from "@/components/SponsoredRail";
 import { FeaturedMobileBanner } from "@/components/FeaturedMobileBanner";
 import { FeaturedReturnWatcher } from "@/components/FeaturedBookingDialog";
