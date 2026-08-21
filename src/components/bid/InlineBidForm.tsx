@@ -165,10 +165,10 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
   return (
     <div ref={rootRef} id="bid-form" className="mx-auto mt-6 w-full max-w-xl scroll-mt-28 text-left">
       <div
-        className={`flex flex-col gap-2 rounded-3xl border bg-white/[0.025] p-2 transition-all duration-300 sm:flex-row sm:items-center sm:rounded-full ${
+        className={`flex flex-col gap-2 rounded-3xl border bg-white p-2 transition-all duration-300 sm:flex-row sm:items-center sm:rounded-full ${
           flash
-            ? "border-white shadow-[0_0_0_4px_rgba(0,0,0,0.10)]"
-            : "border-white/[0.09] shadow-[0_1px_3px_rgba(0,0,0,0.05)]"
+            ? "border-black shadow-[0_0_0_4px_rgba(0,0,0,0.10)]"
+            : "border-black/[0.09] shadow-[0_1px_3px_rgba(0,0,0,0.05)]"
         }`}
       >
         <input
@@ -180,11 +180,11 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
           }}
           placeholder="yoursite.com or @handle"
           aria-label="Your site or handle"
-          className="min-w-0 flex-1 bg-transparent px-4 py-2.5 text-[15px] text-white outline-none placeholder:text-white/30 sm:px-5 sm:text-sm"
+          className="min-w-0 flex-1 bg-transparent px-4 py-2.5 text-[15px] text-black outline-none placeholder:text-black/30 sm:px-5 sm:text-sm"
         />
         <div className="flex items-center gap-2">
-          <div className="flex w-[92px] shrink-0 items-center rounded-full border border-white/10 px-3 sm:w-[116px]">
-            <span className="text-sm text-white/40">$</span>
+          <div className="flex w-[92px] shrink-0 items-center rounded-full border border-black/10 px-3 sm:w-[116px]">
+            <span className="text-sm text-black/40">$</span>
             <input
               value={dollars}
               onChange={(e) => {
@@ -197,18 +197,18 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
               inputMode="decimal"
               aria-label="Bid amount in USD"
               placeholder="5"
-              className="w-full min-w-0 bg-transparent py-2 pl-1.5 text-[15px] text-white outline-none placeholder:text-white/25 sm:text-sm"
+              className="w-full min-w-0 bg-transparent py-2 pl-1.5 text-[15px] text-black outline-none placeholder:text-black/25 sm:text-sm"
             />
           </div>
           {projected && (
-            <span className="hidden whitespace-nowrap rounded-full bg-white/[0.08] px-2.5 py-1 text-[11px] font-medium text-white/70 sm:inline">
+            <span className="hidden whitespace-nowrap rounded-full bg-black/[0.06] px-2.5 py-1 text-[11px] font-medium text-black/70 sm:inline">
               → #{projected.rank}
             </span>
           )}
           <button
             onClick={submit}
             disabled={busy}
-            className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black sm:px-6 transition-opacity hover:opacity-85 disabled:opacity-50 sm:flex-none"
+            className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white sm:px-6 transition-opacity hover:opacity-85 disabled:opacity-50 sm:flex-none"
           >
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
             Place bid
@@ -219,7 +219,7 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
 
       {projected && (
         <div className="mt-2 flex items-center justify-center gap-1.5 sm:hidden">
-          <span className="rounded-full bg-white/[0.08] px-2.5 py-1 text-[11px] font-medium text-white/70">
+          <span className="rounded-full bg-black/[0.06] px-2.5 py-1 text-[11px] font-medium text-black/70">
             → lands at #{projected.rank}
           </span>
         </div>
@@ -234,12 +234,12 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
               onClick={() => setDollars(String(Math.ceil(cents / 100)))}
               className={`rounded-full border px-3 py-1.5 text-[12px] transition-colors ${
                 isMatch
-                  ? "border-white bg-white text-black"
-                  : "border-white/12 text-white/55 hover:border-white/35 hover:text-white"
+                  ? "border-black bg-black text-white"
+                  : "border-black/12 text-black/55 hover:border-black/35 hover:text-black"
               }`}
               title={`Bid ${formatUsd(cents)} to take rank #${rank}`}
             >
-              <span className="text-white/40">#</span>
+              <span className="text-black/40">#</span>
               {rank} · {formatUsd(cents)}
             </button>
           );
@@ -248,12 +248,12 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
 
       {myStartups.length > 0 && (
         <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5">
-          <span className="text-[11px] text-white/35">Your startups:</span>
+          <span className="text-[11px] text-black/35">Your startups:</span>
           {myStartups.map((s) => (
             <button
               key={s.website_url}
               onClick={() => setUrl(s.website_url)}
-              className="rounded-full border border-white/12 px-2.5 py-1 text-[11px] text-white/60 transition-colors hover:border-white/40 hover:text-white"
+              className="rounded-full border border-black/12 px-2.5 py-1 text-[11px] text-black/60 transition-colors hover:border-black/40 hover:text-black"
             >
               {s.name}
             </button>
@@ -261,19 +261,19 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
         </div>
       )}
 
-      <p className="mt-2.5 text-center text-[12px] text-white/45">
+      <p className="mt-2.5 text-center text-[12px] text-black/45">
         {error ? (
           <span className="text-red-600">{error}</span>
         ) : existing && projected ? (
           <>
             Already #{existing.rank} with {formatUsd(existing.total_cents)} — this stacks to{" "}
-            <span className="font-semibold text-white">#{projected.rank}</span> at{" "}
+            <span className="font-semibold text-black">#{projected.rank}</span> at{" "}
             {formatUsd(projected.newTotal)}.
           </>
         ) : projected ? (
           <>
             {formatUsd(amountCents)} lands you at{" "}
-            <span className="font-semibold text-white">#{projected.rank}</span> — name, logo and
+            <span className="font-semibold text-black">#{projected.rank}</span> — name, logo and
             description are pulled automatically from your site.
           </>
         ) : (
