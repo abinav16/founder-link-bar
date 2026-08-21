@@ -252,11 +252,6 @@ function StartupBidPage() {
             )}
           </div>
 
-          <div className="mx-auto mt-10 grid max-w-xl grid-cols-3 gap-4 rounded-2xl border border-black/[0.07] bg-white px-6 py-5 text-left">
-            <Stat label="On the board" value={(stats.data?.entries ?? 0).toLocaleString()} />
-            <Stat label="Total bid" value={formatUsd(stats.data?.total_cents ?? 0)} />
-            <Stat label="Clicks sent" value={(stats.data?.total_clicks ?? 0).toLocaleString()} />
-          </div>
         </header>
 
         {/* Board */}
