@@ -611,7 +611,12 @@ function StartupBidPage() {
                     onOutbid={(x) =>
                       window.dispatchEvent(
                         new CustomEvent("sb:outbid", {
-                          detail: { cents: priceToClaim(x.total_cents) },
+                          detail: {
+                            cents: priceToClaim(x.total_cents),
+                            targetTotal: x.total_cents,
+                            displayUrl: x.display_url,
+                            name: x.name,
+                          },
                         }),
                       )
                     }
@@ -637,7 +642,12 @@ function StartupBidPage() {
                         onOutbid={(x) =>
                           window.dispatchEvent(
                             new CustomEvent("sb:outbid", {
-                              detail: { cents: priceToClaim(x.total_cents) },
+                              detail: {
+                            cents: priceToClaim(x.total_cents),
+                            targetTotal: x.total_cents,
+                            displayUrl: x.display_url,
+                            name: x.name,
+                          },
                             }),
                           )
                         }

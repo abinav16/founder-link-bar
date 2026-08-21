@@ -24,19 +24,28 @@ function suggestedForRank(
 /** Inline bid form for the hero — no popup: enter site, pick amount, go to checkout. */
 export function InlineBidForm({ board }: { board: BidEntry[] }) {
   const [url, setUrl] = useState("");
-  const [dollars, setDollars] = useState("");
+  const [dollars, setDollars] = useState(String(BID_MIN_CENTS / 100));
+  // Total of the entry the visitor clicked "Outbid" on. Kept in state so the
+  // amount can be recomputed as a *top-up* once we know which site they bid for.
+  const [outbidTotal, setOutbidTotal] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [myStartups, setMyStartups] = useState<{ name: string; website_url: string }[]>([]);
   const [flash, setFlash] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const urlRef = useRef<HTMLInputElement | null>(null);
+  const startupsRef = useRef<{ name: string; website_url: string }[]>([]);
+  startupsRef.current = myStartups;
 
-  // "Outbid" buttons on the board dispatch this event with the amount needed.
+  // "Outbid" buttons on the board dispatch this event with the target's total.
   useEffect(() => {
     function onOutbid(e: Event) {
-      const cents = (e as CustomEvent<{ cents: number }>).detail?.cents;
-      if (typeof cents === "number") setDollars(String(Math.ceil(cents / 100)));
+      const detail = (e as CustomEvent<{ cents?: number; targetTotal?: number }>).detail ?? {};
+      if (typeof detail.targetTotal === "number") setOutbidTotal(detail.targetTotal);
+      else if (typeof detail.cents === "number") setOutbidTotal(detail.cents - BID_STEP_CENTS);
+      // Prefill the site being bid for: the member's own startup when we know it,
+      // so they never have to retype it.
+      setUrl((current) => current || startupsRef.current[0]?.website_url || "");
       rootRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       setFlash(true);
       window.setTimeout(() => urlRef.current?.focus({ preventScroll: true }), 350);
@@ -70,6 +79,17 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
     () => (target.ok ? board.find((b) => b.url_key === target.urlKey) : undefined),
     [board, target],
   );
+
+  // Outbidding is a top-up: only the difference between the target's total and
+  // what this site already holds is charged, never the full headline amount.
+  useEffect(() => {
+    if (outbidTotal === null) return;
+    const needed = Math.max(
+      outbidTotal + BID_STEP_CENTS - (existing?.total_cents ?? 0),
+      BID_MIN_CENTS,
+    );
+    setDollars(String(Math.ceil(needed / 100)));
+  }, [outbidTotal, existing]);
 
   // Other entries (excluding the bidder's own), sorted by total desc.
   const others = useMemo(
@@ -167,7 +187,10 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
             <span className="text-sm text-black/40">$</span>
             <input
               value={dollars}
-              onChange={(e) => setDollars(e.target.value.replace(/[^0-9.]/g, ""))}
+              onChange={(e) => {
+                setOutbidTotal(null);
+                setDollars(e.target.value.replace(/[^0-9.]/g, ""));
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") submit();
               }}
