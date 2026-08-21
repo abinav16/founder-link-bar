@@ -30,7 +30,14 @@ export async function fetchSiteMeta(url: string): Promise<{ name?: string; descr
     const res = await fetch(url, {
       signal: controller.signal,
       redirect: "follow",
-      headers: { "User-Agent": "StartupBarBot/1.0 (+https://startupbar.co)" },
+      headers: {
+        // Many sites serve an empty shell (or 403) to unknown bots, which is why
+        // rows used to fall back to the bare domain. Ask like a real browser.
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36 StartupBarBot/1.0 (+https://startupbar.co)",
+        Accept: "text/html,application/xhtml+xml",
+        "Accept-Language": "en-US,en;q=0.9",
+      },
     });
     clearTimeout(timer);
     if (!res.ok) return {};
