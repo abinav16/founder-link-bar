@@ -1,14 +1,30 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { BID_MIN_CENTS, formatUsd, normalizeBidUrl, priceToClaim, type BidEntry } from "@/lib/bid";
+import { BID_MIN_CENTS, BID_STEP_CENTS, formatUsd, normalizeBidUrl, type BidEntry } from "@/lib/bid";
 import { ArrowRight, Loader2 } from "lucide-react";
 
-const PRESETS = [500, 1000, 2500, 5000];
+/** Minimum additional cents needed to land at `targetRank` given the live board
+ *  and the user's existing entry (if any). */
+function suggestedForRank(
+  others: BidEntry[],
+  existingTotal: number,
+  targetRank: number,
+): number {
+  // To place at `targetRank`, the bidder must beat the entry currently sitting
+  // at that rank among the *other* entries (i.e. exclude self). If there are
+  // fewer entries than targetRank-1 ahead, the minimum bid is enough.
+  const toBeat = others[targetRank - 1];
+  if (!toBeat) {
+    return Math.max(BID_MIN_CENTS - existingTotal, BID_MIN_CENTS);
+  }
+  const neededTotal = toBeat.total_cents + BID_STEP_CENTS;
+  return Math.max(neededTotal - existingTotal, BID_MIN_CENTS);
+}
 
 /** Inline bid form for the hero — no popup: enter site, pick amount, go to checkout. */
 export function InlineBidForm({ board }: { board: BidEntry[] }) {
   const [url, setUrl] = useState("");
-  const [dollars, setDollars] = useState("10");
+  const [dollars, setDollars] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [myStartups, setMyStartups] = useState<{ name: string; website_url: string }[]>([]);
@@ -38,17 +54,37 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
     [board, target],
   );
 
+  // Other entries (excluding the bidder's own), sorted by total desc.
+  const others = useMemo(
+    () =>
+      board
+        .filter((b) => b.url_key !== target.urlKey)
+        .sort((a, b) => b.total_cents - a.total_cents),
+    [board, target],
+  );
+
   const projected = useMemo(() => {
     if (!target.ok || amountCents < BID_MIN_CENTS) return null;
     const newTotal = (existing?.total_cents ?? 0) + amountCents;
-    const above = board.filter(
-      (b) => b.url_key !== target.urlKey && b.total_cents >= newTotal,
-    ).length;
+    const above = others.filter((b) => b.total_cents >= newTotal).length;
     return { newTotal, rank: above + 1 };
-  }, [board, target, amountCents, existing]);
+  }, [others, target, amountCents, existing]);
 
-  const top = board[0];
-  const toBeatTop = top ? priceToClaim(top.total_cents) - (existing?.total_cents ?? 0) : BID_MIN_CENTS;
+  // Suggested amounts to claim ranks #1–#4, based on the live board.
+  const suggestions = useMemo(() => {
+    const existingTotal = existing?.total_cents ?? 0;
+    return [1, 2, 3, 4].map((rank) => ({
+      rank,
+      cents: suggestedForRank(others, existingTotal, rank),
+    }));
+  }, [others, existing]);
+
+  // When the user has not typed an amount, default the projection pills to the
+  // rank they'd get for each suggestion. Once they type, highlight the matching pill.
+  const activeSuggestion = useMemo(() => {
+    if (!dollars) return null;
+    return suggestions.find((s) => s.cents === amountCents) ?? null;
+  }, [suggestions, amountCents, dollars]);
 
   async function submit() {
     setError(null);
