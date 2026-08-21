@@ -452,17 +452,24 @@ function StartupBidPage() {
                     style={{ gridTemplateColumns: "1fr auto 1fr" }}
                   >
                     <div className="flex justify-center">
-                      <div className="flex items-stretch divide-x divide-white/10 overflow-hidden rounded-2xl border border-white/10 bg-black/70 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md">
-                        <div className="px-5 py-2.5">
-                          <PillStat
-                            label="On the board"
-                            value={(stats.data?.entries ?? 0).toLocaleString()}
-                          />
+                      {stats.isLoading ? (
+                        <div className="flex items-stretch divide-x divide-white/10 overflow-hidden rounded-2xl border border-white/10 bg-black/70 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md">
+                          <div className="px-5 py-2.5"><PillStatSkeleton /></div>
+                          <div className="px-5 py-2.5"><PillStatSkeleton /></div>
                         </div>
-                        <div className="px-5 py-2.5">
-                          <PillStat label="Total bid" value={formatUsd(stats.data?.total_cents ?? 0)} />
+                      ) : (
+                        <div className="flex items-stretch divide-x divide-white/10 overflow-hidden rounded-2xl border border-white/10 bg-black/70 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md">
+                          <div className="px-5 py-2.5">
+                            <PillStat
+                              label="On the board"
+                              value={(stats.data?.entries ?? 0).toLocaleString()}
+                            />
+                          </div>
+                          <div className="px-5 py-2.5">
+                            <PillStat label="Total bid" value={formatUsd(stats.data?.total_cents ?? 0)} />
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                     <div className="mx-4 flex items-center gap-2 rounded-full border border-white/10 bg-black/70 px-4 py-2 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md">
                       <Gavel className="h-4 w-4 text-white" />
