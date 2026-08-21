@@ -226,18 +226,86 @@ function StartupBidPage() {
       <main className="mx-auto max-w-3xl px-6 py-14 sm:py-20">
         {/* Hero */}
         <header className="text-center">
-          <div className="inline-flex items-stretch divide-x divide-white/10 overflow-hidden rounded-2xl border border-white/10 bg-black/85 shadow-[0_8px_32px_rgba(0,0,0,0.25)] backdrop-blur-md">
-            <div className="px-4 py-2.5 sm:px-5">
-              <PillStat label="On the board" value={(stats.data?.entries ?? 0).toLocaleString()} />
-            </div>
-            <div className="px-4 py-2.5 sm:px-5">
-              <PillStat label="Total bid" value={formatUsd(stats.data?.total_cents ?? 0)} />
-            </div>
-            <div className="px-4 py-2.5 sm:px-5">
-              <PillStat label="Clicks sent" value={(stats.data?.total_clicks ?? 0).toLocaleString()} />
-            </div>
-          </div>
-          <h1 className="mt-5 text-4xl font-semibold tracking-tight text-black sm:text-5xl">
+          <MagneticPill
+            items={orbitItems}
+            overlay={
+              <div
+                className="absolute inset-x-0 pointer-events-none"
+                style={{ top: "50%", transform: "translateY(-50%)", zIndex: 6 }}
+              >
+                <div
+                  className="hidden sm:grid w-full items-center px-10"
+                  style={{ gridTemplateColumns: "1fr auto 1fr" }}
+                >
+                  <div className="flex justify-center">
+                    <div className="flex items-stretch divide-x divide-white/10 overflow-hidden rounded-2xl border border-white/10 bg-black/70 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md">
+                      <div className="px-5 py-2.5">
+                        <PillStat
+                          label="On the board"
+                          value={(stats.data?.entries ?? 0).toLocaleString()}
+                        />
+                      </div>
+                      <div className="px-5 py-2.5">
+                        <PillStat label="Total bid" value={formatUsd(stats.data?.total_cents ?? 0)} />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mx-4 flex items-center gap-2 rounded-full border border-white/10 bg-black/70 px-4 py-2 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md">
+                    <Gavel className="h-4 w-4 text-white" />
+                    <span className="text-[18px] font-extrabold leading-none tracking-[-0.03em] text-white">
+                      StartupBid
+                    </span>
+                  </div>
+                  <div className="flex justify-center">
+                    <div className="flex items-stretch divide-x divide-white/10 overflow-hidden rounded-2xl border border-white/10 bg-black/70 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md">
+                      <div className="px-5 py-2.5">
+                        <PillStat
+                          label="Clicks sent"
+                          value={(stats.data?.total_clicks ?? 0).toLocaleString()}
+                        />
+                      </div>
+                      <div className="px-5 py-2.5">
+                        <PillStat
+                          label="Top bid"
+                          value={formatUsd(stats.data?.top_cents ?? 0)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-center gap-2 sm:hidden">
+                  <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-black/70 px-3 py-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md">
+                    <Gavel className="h-3.5 w-3.5 text-white" />
+                    <span className="text-[15px] font-extrabold leading-none tracking-[-0.03em] text-white">
+                      StartupBid
+                    </span>
+                  </div>
+                  <div className="flex items-stretch divide-x divide-white/10 overflow-hidden rounded-2xl border border-white/10 bg-black/70 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md">
+                    <div className="px-2.5 py-1.5">
+                      <PillStat
+                        small
+                        label="Board"
+                        value={(stats.data?.entries ?? 0).toLocaleString()}
+                      />
+                    </div>
+                    <div className="px-2.5 py-1.5">
+                      <PillStat small label="Bid" value={formatUsd(stats.data?.total_cents ?? 0)} />
+                    </div>
+                    <div className="px-2.5 py-1.5">
+                      <PillStat
+                        small
+                        label="Clicks"
+                        value={(stats.data?.total_clicks ?? 0).toLocaleString()}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+          />
+
+          <h1 className="mt-8 text-4xl font-semibold tracking-tight text-black sm:text-5xl">
             StartupBid
           </h1>
           <p className="mx-auto mt-3 max-w-lg text-[15px] leading-relaxed text-black/50">
