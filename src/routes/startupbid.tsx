@@ -218,6 +218,9 @@ function BidRow({ entry, onOutbid }: { entry: BidEntry; onOutbid: (e: BidEntry) 
         <p className="truncate text-[12.5px] text-black/45">
           {entry.description || entry.display_url}
         </p>
+        <div className="mt-0.5 text-[11px] tabular-nums text-black/35 sm:hidden">
+          {entry.clicks.toLocaleString()} clicks
+        </div>
       </div>
 
       <div className="hidden shrink-0 text-right sm:block">
@@ -227,17 +230,18 @@ function BidRow({ entry, onOutbid }: { entry: BidEntry; onOutbid: (e: BidEntry) 
         </div>
       </div>
 
-      <div className="shrink-0 text-right">
-        <div className="text-[15px] font-semibold tabular-nums text-black">
+      <div className="flex shrink-0 flex-col items-end gap-1">
+        <div className="text-[15px] font-semibold leading-none tabular-nums text-black">
           {formatUsd(entry.total_cents)}
         </div>
         <button
           onClick={() => onOutbid(entry)}
-          className="mt-0.5 text-[11px] font-medium text-black/45 hover:text-black hover:underline"
+          className="whitespace-nowrap rounded-full border border-black/12 px-2.5 py-1 text-[11px] font-medium text-black/60 transition-colors hover:border-black hover:text-black sm:border-0 sm:px-0 sm:py-0 sm:hover:underline"
         >
           Outbid · {formatUsd(priceToClaim(entry.total_cents))}
         </button>
       </div>
+
     </div>
   );
 }
