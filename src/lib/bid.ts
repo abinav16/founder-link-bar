@@ -173,3 +173,20 @@ export async function trackBidClick(entryId: string) {
 export function priceToClaim(totalCents: number): number {
   return Math.max(totalCents + BID_STEP_CENTS, BID_MIN_CENTS);
 }
+
+/**
+ * Tag an outbound link so the destination's analytics attribute the visit to us
+ * (utm params + a real referrer, since we drop `noreferrer` on these links).
+ */
+export function withBidUtm(rawUrl: string, medium = "startupbid"): string {
+  try {
+    const u = new URL(rawUrl);
+    if (!u.searchParams.has("utm_source")) u.searchParams.set("utm_source", "startupbar.co");
+    if (!u.searchParams.has("utm_medium")) u.searchParams.set("utm_medium", medium);
+    if (!u.searchParams.has("utm_campaign")) u.searchParams.set("utm_campaign", "startupbid");
+    if (!u.searchParams.has("ref")) u.searchParams.set("ref", "startupbar.co");
+    return u.toString();
+  } catch {
+    return rawUrl;
+  }
+}

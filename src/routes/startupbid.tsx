@@ -9,6 +9,7 @@ import {
   priceToClaim,
   timeAgo,
   trackBidClick,
+  withBidUtm,
   useBidActivity,
   useBidBoard,
   useBidStats,
@@ -104,8 +105,8 @@ function HeroActivitySkeleton() {
 
 function bidHref(displayUrl: string): string {
   if (displayUrl.startsWith("@")) return `https://x.com/${displayUrl.slice(1)}`;
-  if (/^https?:\/\//i.test(displayUrl)) return displayUrl;
-  return `https://${displayUrl}`;
+  if (/^https?:\/\//i.test(displayUrl)) return withBidUtm(displayUrl);
+  return withBidUtm(`https://${displayUrl}`);
 }
 
 function TrendingNow({ items, loading }: { items: BidTrending[]; loading: boolean }) {
@@ -126,7 +127,7 @@ function TrendingNow({ items, loading }: { items: BidTrending[]; loading: boolea
               key={item.entry_id}
               href={bidHref(item.display_url)}
               target="_blank"
-              rel="noopener noreferrer nofollow"
+              rel="noopener nofollow"
               onClick={() => trackBidClick(item.entry_id)}
               className="grid min-w-0 cursor-pointer grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-lg transition-colors hover:bg-white/[0.06]"
             >
@@ -170,7 +171,7 @@ function RecentPurchases({ items, loading }: { items: BidActivity[]; loading: bo
               key={`${item.entry_id}-${item.created_at}-${index}`}
               href={bidHref(item.display_url)}
               target="_blank"
-              rel="noopener noreferrer nofollow"
+              rel="noopener nofollow"
               onClick={() => trackBidClick(item.entry_id)}
               className="grid min-w-0 cursor-pointer grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-lg transition-colors hover:bg-white/[0.06]"
             >
@@ -268,9 +269,9 @@ function PodiumRow({ entry, onOutbid }: { entry: BidEntry; onOutbid: (e: BidEntr
   const s = PODIUM[Math.min(entry.rank, 3) - 1] ?? PODIUM[2];
   return (
     <a
-      href={entry.target_url}
+      href={withBidUtm(entry.target_url)}
       target="_blank"
-      rel="noopener noreferrer nofollow"
+      rel="noopener nofollow"
       onClick={() => trackBidClick(entry.id)}
       className={`block cursor-pointer rounded-2xl border transition-transform hover:-translate-y-0.5 ${s.card} ${s.pad}`}
     >
@@ -354,9 +355,9 @@ function PodiumRow({ entry, onOutbid }: { entry: BidEntry; onOutbid: (e: BidEntr
 function BidRow({ entry, onOutbid }: { entry: BidEntry; onOutbid: (e: BidEntry) => void }) {
   return (
     <a
-      href={entry.target_url}
+      href={withBidUtm(entry.target_url)}
       target="_blank"
-      rel="noopener noreferrer nofollow"
+      rel="noopener nofollow"
       onClick={() => trackBidClick(entry.id)}
       className="flex cursor-pointer items-center gap-3 border-b border-black/[0.06] px-4 py-3.5 transition-colors last:border-0 hover:bg-black/[0.015] sm:gap-4 sm:px-5"
     >
