@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { SponsoredRail } from "@/components/SponsoredRail";
 import { FeaturedMobileBanner } from "@/components/FeaturedMobileBanner";
 import { FeaturedReturnWatcher } from "@/components/FeaturedBookingDialog";
+import { SiteHeader } from "@/components/SiteHeader";
 
 function FooterBar({ wide }: { wide?: boolean }) {
   return (
@@ -86,70 +87,7 @@ export function DashboardLayout({
         <div className="progress-bar h-full bg-black w-full" />
       </div>
 
-      <header className="sticky top-0 z-30 border-b border-black/8 bg-white" suppressHydrationWarning>
-        <div className={`mx-auto flex h-14 ${rail ? "max-w-6xl xl:max-w-[1800px]" : "max-w-6xl"} items-center gap-4 px-4 sm:gap-8 sm:px-6`}>
-          <Link to="/" className="flex shrink-0 items-center gap-2">
-            <div className="h-2 w-6 rounded-sm bg-black" />
-            <span className="text-sm font-semibold tracking-tight text-black">StartupBar</span>
-          </Link>
-
-          <nav className="flex items-center gap-0.5 sm:gap-1">
-            {visibleNav.map(({ to, label, icon: Icon }) => {
-              const active = path === to;
-              return (
-                <Link
-                  key={to}
-                  to={to}
-                  aria-label={label}
-                  className={`relative flex min-h-11 items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                    active ? "text-black" : "text-black/45 hover:text-black/80"
-                  }`}
-                >
-                  <Icon className="h-4 w-4 sm:hidden" aria-hidden="true" />
-                  <span className="hidden sm:inline">{label}</span>
-                  {active && (
-                    <span className="absolute inset-x-2 -bottom-[calc(0.875rem+1px)] h-px bg-black sm:inset-x-3" />
-                  )}
-                </Link>
-              );
-            })}
-          </nav>
-
-          <div className="ml-auto flex min-h-9 items-center gap-1 sm:gap-2">
-            {authed === null ? (
-              <div aria-hidden className="h-9 w-[92px] sm:w-[128px]" />
-            ) : authed ? (
-              <>
-                <Link
-                  to="/account"
-                  aria-label="Account settings"
-                  className={`inline-flex min-h-11 min-w-11 items-center justify-center rounded-md p-2 transition-colors ${path === "/account" ? "text-black" : "text-black/40 hover:text-black"}`}
-                >
-                  <Settings className="h-4 w-4" />
-                </Link>
-                <button
-                  onClick={signOut}
-                  aria-label="Sign out"
-                  className="flex min-h-11 items-center gap-1.5 rounded-md border border-black/12 bg-white px-2 py-1.5 text-sm text-black/60 hover:border-black/25 hover:text-black transition-all sm:px-3"
-                >
-                  <LogOut className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Sign out</span>
-                </button>
-              </>
-            ) : (
-              <Link
-                to="/auth"
-                aria-label="Sign in"
-                className="flex min-h-11 items-center gap-1.5 rounded-md border border-black/12 bg-white px-2 py-1.5 text-sm text-black/60 hover:border-black/25 hover:text-black transition-all sm:px-3"
-              >
-                <LogIn className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Sign in</span>
-              </Link>
-
-            )}
-          </div>
-        </div>
-      </header>
+      <SiteHeader />
 
       <main
         className={`mx-auto w-full flex-1 px-4 py-6 sm:px-6 sm:py-8 ${
