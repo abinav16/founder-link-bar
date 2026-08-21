@@ -91,7 +91,7 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
 
   return (
     <div className="mx-auto mt-6 w-full max-w-xl text-left">
-      <div className="flex flex-col gap-2 rounded-2xl border border-black/[0.09] bg-white p-2 shadow-[0_1px_2px_rgba(0,0,0,0.04)] sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-2 rounded-full border border-black/[0.09] bg-white p-2 shadow-[0_1px_3px_rgba(0,0,0,0.05)] sm:flex-row sm:items-center">
         <input
           value={url}
           onChange={(e) => setUrl(e.target.value)}
@@ -100,10 +100,10 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
           }}
           placeholder="yoursite.com or @handle"
           aria-label="Your site or handle"
-          className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm text-black outline-none placeholder:text-black/30"
+          className="min-w-0 flex-1 bg-transparent px-5 py-2.5 text-sm text-black outline-none placeholder:text-black/30"
         />
         <div className="flex items-center gap-2">
-          <div className="flex items-center rounded-xl border border-black/10 px-2.5 sm:w-[104px]">
+          <div className="flex items-center rounded-full border border-black/10 px-3 sm:w-[116px]">
             <span className="text-sm text-black/40">$</span>
             <input
               value={dollars}
@@ -113,13 +113,13 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
               }}
               inputMode="decimal"
               aria-label="Bid amount in USD"
-              className="w-full min-w-0 bg-transparent py-2 pl-1 text-sm text-black outline-none"
+              className="w-full min-w-0 bg-transparent py-2 pl-1.5 text-sm text-black outline-none"
             />
           </div>
           <button
             onClick={submit}
             disabled={busy}
-            className="inline-flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl bg-black px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-85 disabled:opacity-50 sm:flex-none"
+            className="inline-flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-black px-6 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-85 disabled:opacity-50 sm:flex-none"
           >
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
             Place bid
