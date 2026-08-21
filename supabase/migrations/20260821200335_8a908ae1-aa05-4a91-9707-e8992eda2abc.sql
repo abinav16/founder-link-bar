@@ -1,0 +1,3 @@
+UPDATE public.bid_entries SET description = 'Add one line of code to your site. A 36px bar shows another founder''s startup, and yours appears on theirs. Free traffic exchange.' WHERE url_key = 'startupbar.co' AND description IS NULL;
+UPDATE public.bid_entries SET description = 'India''s verified SaaS revenue registry. Founders connect Razorpay or Dodo Payments to publish source-verified MRR, ARR and growth. Free for founders.' WHERE url_key = 'verifiedmrr.in' AND description IS NULL;
+UPDATE public.bid_entries SET description = 'The Billing & Payments Platform for AI-First Companies. From credit-based billing and usage metering to subscriptions and global payments. Monetize without building infrastructure.' WHERE url_key = 'dodopayments.com' AND description IS NULL;
