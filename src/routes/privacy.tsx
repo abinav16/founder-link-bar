@@ -58,6 +58,8 @@ function PrivacyPage() {
             <a href="mailto:hello@startupbar.co" className="hover:text-black transition-colors">Support</a>
             <Link to="/pricing" className="hover:text-black transition-colors">Pricing</Link>
             <Link to="/faq" className="hover:text-black transition-colors">FAQ</Link>
+            <Link to="/startupbid" className="hover:text-black transition-colors">StartupBid</Link>
+
             <Link to="/terms" className="hover:text-black transition-colors">Terms of Service</Link>
             <a
               href="https://x.com/danielabinav16"
