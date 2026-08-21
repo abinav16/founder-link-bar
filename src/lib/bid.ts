@@ -80,13 +80,13 @@ export function normalizeBidUrl(raw: string): {
   }
   const host = parsed.hostname.replace(/^www\./i, "").toLowerCase();
   if (!host.includes(".") || host.length < 4) return fail;
-  const path = parsed.pathname.replace(/\/+$/, "");
-  const key = `${host}${path}`.toLowerCase();
+  // One entry per site: the path is ignored so the same domain can never
+  // appear twice on the board — extra bids stack onto the existing total.
   return {
     ok: true,
-    urlKey: key,
-    displayUrl: `${host}${path}`,
-    targetUrl: `https://${host}${path}`,
+    urlKey: host,
+    displayUrl: host,
+    targetUrl: `https://${host}`,
     name: host,
   };
 }
