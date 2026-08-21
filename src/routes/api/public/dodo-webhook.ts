@@ -140,7 +140,12 @@ export const Route = createFileRoute("/api/public/dodo-webhook")({
         // StartupBid payments are guest-friendly: no user account required.
         if (data.metadata?.kind === "bid" && data.metadata?.bid_id) {
           const { fulfilBid } = await import("@/lib/bid-fulfil.server");
-          await fulfilBid(String(data.metadata.bid_id), paymentId, customerEmail ?? null);
+          await fulfilBid(
+            String(data.metadata.bid_id),
+            paymentId,
+            customerEmail ?? null,
+            Number(data?.total_amount ?? data?.settlement_amount) || null,
+          );
           return new Response("ok", { status: 200 });
         }
 

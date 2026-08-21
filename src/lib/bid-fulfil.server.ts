@@ -63,8 +63,22 @@ export async function fulfilBid(
   bidId: string,
   paymentId: string,
   email?: string | null,
+  paidCents?: number | null,
 ): Promise<FulfilResult> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  // Credit exactly what the payment provider actually charged, so a bid can
+  // never be recorded at a different amount than the money that came in.
+  if (typeof paidCents === "number" && Number.isFinite(paidCents) && paidCents >= 100) {
+    const { data: current } = await supabaseAdmin
+      .from("bids")
+      .select("amount_cents, status")
+      .eq("id", bidId)
+      .maybeSingle();
+    if (current && current.status !== "paid" && current.amount_cents !== paidCents) {
+      await supabaseAdmin.from("bids").update({ amount_cents: paidCents }).eq("id", bidId);
+    }
+  }
 
   const { data, error } = await supabaseAdmin.rpc("confirm_bid_payment" as never, {
     _bid_id: bidId,
@@ -130,18 +144,35 @@ export async function fulfilBid(
   return { ok: true, entry_id: row.entry_id, total_cents: row.total_cents, rank: row.rank, already: row.already };
 }
 
-/** Look a payment up directly with Dodo (source of truth for the return poll). */
+/** Look a payment up directly with Dodo (source of truth for the return poll).
+ *  Tries the sandbox and live APIs with whichever keys exist, so a bid is never
+ *  stuck "pending" just because the deployment is on the other mode. */
 export async function getDodoPayment(paymentId: string): Promise<any | null> {
-  const apiKey = process.env.DODO_TEST_API_KEY ?? process.env.DODO_PAYMENTS_API_KEY;
-  if (!apiKey || !paymentId) return null;
-  try {
-    const res = await fetch(
-      `https://test.dodopayments.com/payments/${encodeURIComponent(paymentId)}`,
-      { headers: { Authorization: `Bearer ${apiKey}` } },
-    );
-    const raw = await res.text();
-    return res.ok && raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
+  if (!paymentId) return null;
+  const attempts: { host: string; key: string }[] = [];
+  const testKey = process.env.DODO_TEST_API_KEY;
+  const liveKey = process.env.DODO_PAYMENTS_API_KEY;
+  if (testKey) attempts.push({ host: "https://test.dodopayments.com", key: testKey });
+  if (liveKey) attempts.push({ host: "https://live.dodopayments.com", key: liveKey });
+  if (testKey && liveKey) {
+    // Cross-pair as a last resort: keys are occasionally rotated between modes.
+    attempts.push({ host: "https://live.dodopayments.com", key: testKey });
+    attempts.push({ host: "https://test.dodopayments.com", key: liveKey });
   }
+
+  for (const { host, key } of attempts) {
+    try {
+      const res = await fetch(`${host}/payments/${encodeURIComponent(paymentId)}`, {
+        headers: { Authorization: `Bearer ${key}` },
+      });
+      if (!res.ok) continue;
+      const raw = await res.text();
+      if (!raw) continue;
+      return JSON.parse(raw);
+    } catch {
+      /* try the next endpoint */
+    }
+  }
+  console.error("[bid] payment lookup failed for", paymentId);
+  return null;
 }
