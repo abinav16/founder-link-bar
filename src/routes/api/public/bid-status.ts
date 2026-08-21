@@ -61,6 +61,7 @@ export const Route = createFileRoute("/api/public/bid-status")({
             lookupId,
             payment?.customer?.email ?? null,
             Number(payment?.total_amount ?? payment?.settlement_amount) || null,
+            false,
           );
           if (result.ok) {
             return json({

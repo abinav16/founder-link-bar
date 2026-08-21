@@ -64,6 +64,7 @@ export async function fulfilBid(
   paymentId: string,
   email?: string | null,
   paidCents?: number | null,
+  enrich = true,
 ): Promise<FulfilResult> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -96,7 +97,7 @@ export async function fulfilBid(
   if (!row?.entry_id) return { ok: false };
 
   // Enrich the entry once, right after its first successful payment.
-  if (!row.already) {
+  if (!row.already && enrich) {
     try {
       const { data: entry } = await supabaseAdmin
         .from("bid_entries")

@@ -274,6 +274,11 @@ function SuccessBanner({
   });
   const [tick, setTick] = useState(0);
   const ref = useRef<HTMLDivElement | null>(null);
+  const onDoneRef = useRef(onDone);
+
+  useEffect(() => {
+    onDoneRef.current = onDone;
+  }, [onDone]);
 
   useEffect(() => {
     ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -295,7 +300,7 @@ function SuccessBanner({
         if (cancelled) return;
         if (json?.status === "paid") {
           setState({ status: "paid", data: json });
-          onDone();
+          onDoneRef.current();
           return;
         }
       } catch {
@@ -306,13 +311,13 @@ function SuccessBanner({
         setState({ status: "failed" });
         return;
       }
-      setTimeout(poll, attempts < 10 ? 2000 : 4000);
+      setTimeout(poll, attempts < 12 ? 1000 : 2500);
     };
     poll();
     return () => {
       cancelled = true;
     };
-  }, [bidId, paymentId, onDone, tick]);
+  }, [bidId, paymentId, tick]);
 
   return (
     <div ref={ref} className="mb-6 rounded-2xl border border-black/[0.08] bg-white px-5 py-4">
