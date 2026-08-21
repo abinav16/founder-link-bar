@@ -142,7 +142,7 @@ export const Route = createFileRoute("/api/public/bid-checkout")({
         }
         const returnUrl = `${returnOrigin}/startupbid?bid=${bid.id}&payment_id={payment_id}`;
 
-        const res = await fetch("https://live.dodopayments.com/payments", {
+        const res = await fetch("https://test.dodopayments.com/payments", {
           method: "POST",
           headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
           body: JSON.stringify({
