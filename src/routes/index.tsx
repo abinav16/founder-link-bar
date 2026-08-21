@@ -5,6 +5,7 @@ import { StartupFavicon } from "@/components/StartupFavicon";
 import { ArrowRight, Settings, LogOut, LayoutDashboard, Eye, MousePointerClick, Globe, BarChart2, Users, TrendingUp, Info, X, Trophy, Gavel } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useBidBoard, formatUsd } from "@/lib/bid";
 
 function useInView(threshold = 0.12) {
   const ref = useRef<HTMLDivElement>(null);
