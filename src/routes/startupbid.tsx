@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { BidDialog } from "@/components/bid/BidDialog";
@@ -18,7 +18,7 @@ import {
   type BidTrending,
 } from "@/lib/bid";
 import { ArrowUpRight, CheckCircle2, Clock3, Flame, Gavel, Loader2 } from "lucide-react";
-import { MagneticPill, type OrbitItem } from "@/components/MagneticPill";
+
 
 const TITLE = "StartupBid — Pay-to-rank leaderboard for startups | StartupBar";
 const DESCRIPTION =
@@ -534,24 +534,6 @@ function StartupBidPage() {
 
   const entries = board.data ?? [];
 
-  const orbitItems: OrbitItem[] = useMemo(
-    () =>
-      entries.map((e) => {
-        let domain = e.display_url;
-        try {
-          domain = new URL(
-            e.target_url.startsWith("http") ? e.target_url : `https://${e.target_url}`,
-          ).hostname.replace(/^www\./, "");
-        } catch {
-          /* keep display_url */
-        }
-        return {
-          id: e.id,
-          logoUrl: e.logo_url || `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
-        };
-      }),
-    [entries],
-  );
   const top = entries[0];
 
   const clearSearch = useCallback(() => {
@@ -584,26 +566,17 @@ function StartupBidPage() {
           </p>
 
           <div className="mt-6">
-            <MagneticPill
-              items={orbitItems}
-              className="h-[230px] sm:h-[220px]"
-              overlay={
-                <div className="pointer-events-none absolute inset-x-0 top-1/2 z-[6] -translate-y-1/2 px-3 sm:px-7">
-                  <div className="grid grid-cols-1 items-stretch gap-2.5 sm:grid-cols-[minmax(0,1fr)_180px_minmax(0,1fr)] sm:gap-4">
-                    <div className="pointer-events-auto hidden min-w-0 sm:order-1 sm:block">
-                      <TrendingNow items={trending.data ?? []} loading={trending.isLoading} />
-                    </div>
-                    <div className="mx-auto w-[190px] sm:order-2 sm:mx-0 sm:w-auto">
-                      <HeroStats loading={stats.isLoading} stats={stats.data} />
-                    </div>
-                    <div className="pointer-events-auto hidden min-w-0 sm:order-3 sm:block">
-                      <RecentPurchases items={activity.data ?? []} loading={activity.isLoading} />
-                    </div>
-                  </div>
-                </div>
-              }
-
-            />
+            <div className="grid grid-cols-1 items-stretch gap-2.5 sm:grid-cols-[minmax(0,1fr)_180px_minmax(0,1fr)] sm:gap-4">
+              <div className="hidden min-w-0 sm:order-1 sm:block">
+                <TrendingNow items={trending.data ?? []} loading={trending.isLoading} />
+              </div>
+              <div className="mx-auto w-[190px] sm:order-2 sm:mx-0 sm:w-auto">
+                <HeroStats loading={stats.isLoading} stats={stats.data} />
+              </div>
+              <div className="hidden min-w-0 sm:order-3 sm:block">
+                <RecentPurchases items={activity.data ?? []} loading={activity.isLoading} />
+              </div>
+            </div>
           </div>
 
           <InlineBidForm board={entries} />
