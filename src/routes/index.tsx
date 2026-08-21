@@ -5,6 +5,7 @@ import { StartupFavicon } from "@/components/StartupFavicon";
 import { ArrowRight, Settings, LogOut, LayoutDashboard, Eye, MousePointerClick, Globe, BarChart2, Users, TrendingUp, Info, X, Trophy, Gavel } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useBidBoard, formatUsd } from "@/lib/bid";
 
 function useInView(threshold = 0.12) {
   const ref = useRef<HTMLDivElement>(null);
@@ -490,6 +491,8 @@ function FactCell({ fact, delay, total, index }: { fact: typeof FACTS[0]; delay:
 
 function StartupBidSection() {
   const { ref, visible } = useInView(0.15);
+  const { data: board } = useBidBoard();
+  const top3 = (board ?? []).slice(0, 3);
   return (
     <section className="border-t border-black/8 bg-black px-6 py-16 text-white sm:py-24">
       <div
@@ -511,7 +514,7 @@ function StartupBidSection() {
             <p className="mt-5 text-[15px] leading-relaxed text-white/50">
               StartupBid is our pay-to-rank leaderboard. Enter any site or @handle, pay from $5, and
               your startup climbs the board. Bids are cumulative, ranking is pure total spend, and
-              anyone can join — no account and no widget install required.
+              anyone can join with no account and no widget install required.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link
@@ -525,20 +528,23 @@ function StartupBidSection() {
             </div>
           </div>
           <div className="w-full max-w-sm space-y-2.5">
-            {[
-              { rank: "#1", name: "yourstartup.com", amount: "$120" },
-              { rank: "#2", name: "acme.ai", amount: "$74" },
-              { rank: "#3", name: "@founderhandle", amount: "$31" },
-            ].map((r) => (
-              <div
-                key={r.rank}
-                className="flex items-center gap-4 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3"
-              >
-                <span className="text-xs font-semibold text-white/40">{r.rank}</span>
-                <span className="flex-1 truncate text-sm font-medium text-white/85">{r.name}</span>
-                <span className="text-sm font-semibold text-white">{r.amount}</span>
+            {top3.length === 0 ? (
+              <div className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-6 text-center text-sm text-white/45">
+                The board is open. Be the first to claim #1.
               </div>
-            ))}
+            ) : (
+              top3.map((r) => (
+                <Link
+                  key={r.id}
+                  to="/startupbid"
+                  className="flex items-center gap-4 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 transition-colors hover:bg-white/[0.08]"
+                >
+                  <span className="text-xs font-semibold text-white/40">#{r.rank}</span>
+                  <span className="flex-1 truncate text-sm font-medium text-white/85">{r.display_url}</span>
+                  <span className="text-sm font-semibold text-white">{formatUsd(r.total_cents)}</span>
+                </Link>
+              ))
+            )}
             <p className="pt-1 text-center text-[11px] text-white/25">Live board updates every few seconds.</p>
           </div>
         </div>
@@ -546,6 +552,7 @@ function StartupBidSection() {
     </section>
   );
 }
+
 
 function CtaBanner() {
 
