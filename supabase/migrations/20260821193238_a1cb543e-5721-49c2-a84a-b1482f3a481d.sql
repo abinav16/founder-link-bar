@@ -1,0 +1,3 @@
+DELETE FROM public.bid_clicks WHERE entry_id IN ('9fcf149c-4b55-4156-bcb9-392035c96121','2bd75889-2534-4cbe-9111-813d3ca367e2');
+DELETE FROM public.bids WHERE entry_id IN ('9fcf149c-4b55-4156-bcb9-392035c96121','2bd75889-2534-4cbe-9111-813d3ca367e2');
+DELETE FROM public.bid_entries WHERE id IN ('9fcf149c-4b55-4156-bcb9-392035c96121','2bd75889-2534-4cbe-9111-813d3ca367e2');
