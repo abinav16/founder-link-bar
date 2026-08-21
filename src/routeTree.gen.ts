@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as StartupbidRouteImport } from './routes/startupbid'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
@@ -30,6 +31,8 @@ import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticate
 import { Route as ApiPublicVerifyInstallRouteImport } from './routes/api/public/verify-install'
 import { Route as ApiPublicUnsubscribeRouteImport } from './routes/api/public/unsubscribe'
 import { Route as ApiPublicDodoWebhookRouteImport } from './routes/api/public/dodo-webhook'
+import { Route as ApiPublicBidStatusRouteImport } from './routes/api/public/bid-status'
+import { Route as ApiPublicBidCheckoutRouteImport } from './routes/api/public/bid-checkout'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicWidgetPickRouteImport } from './routes/api/public/widget.pick'
 import { Route as ApiPublicWidgetHeartbeatRouteImport } from './routes/api/public/widget.heartbeat'
@@ -40,6 +43,11 @@ import { Route as ApiPublicTrackFunnelRouteImport } from './routes/api/public/tr
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StartupbidRoute = StartupbidRouteImport.update({
+  id: '/startupbid',
+  path: '/startupbid',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -141,6 +149,16 @@ const ApiPublicDodoWebhookRoute = ApiPublicDodoWebhookRouteImport.update({
   path: '/api/public/dodo-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicBidStatusRoute = ApiPublicBidStatusRouteImport.update({
+  id: '/api/public/bid-status',
+  path: '/api/public/bid-status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicBidCheckoutRoute = ApiPublicBidCheckoutRouteImport.update({
+  id: '/api/public/bid-checkout',
+  path: '/api/public/bid-checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LovableEmailQueueProcessRoute =
   LovableEmailQueueProcessRouteImport.update({
     id: '/lovable/email/queue/process',
@@ -185,6 +203,7 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/startupbid': typeof StartupbidRoute
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -192,6 +211,8 @@ export interface FileRoutesByFullPath {
   '/startup/$slug': typeof StartupSlugRoute
   '/u/$token': typeof UTokenRoute
   '/widget/bar': typeof WidgetBarRoute
+  '/api/public/bid-checkout': typeof ApiPublicBidCheckoutRoute
+  '/api/public/bid-status': typeof ApiPublicBidStatusRoute
   '/api/public/dodo-webhook': typeof ApiPublicDodoWebhookRoute
   '/api/public/unsubscribe': typeof ApiPublicUnsubscribeRoute
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
@@ -213,6 +234,7 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/startupbid': typeof StartupbidRoute
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -220,6 +242,8 @@ export interface FileRoutesByTo {
   '/startup/$slug': typeof StartupSlugRoute
   '/u/$token': typeof UTokenRoute
   '/widget/bar': typeof WidgetBarRoute
+  '/api/public/bid-checkout': typeof ApiPublicBidCheckoutRoute
+  '/api/public/bid-status': typeof ApiPublicBidStatusRoute
   '/api/public/dodo-webhook': typeof ApiPublicDodoWebhookRoute
   '/api/public/unsubscribe': typeof ApiPublicUnsubscribeRoute
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
@@ -243,6 +267,7 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/startupbid': typeof StartupbidRoute
   '/terms': typeof TermsRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -250,6 +275,8 @@ export interface FileRoutesById {
   '/startup/$slug': typeof StartupSlugRoute
   '/u/$token': typeof UTokenRoute
   '/widget/bar': typeof WidgetBarRoute
+  '/api/public/bid-checkout': typeof ApiPublicBidCheckoutRoute
+  '/api/public/bid-status': typeof ApiPublicBidStatusRoute
   '/api/public/dodo-webhook': typeof ApiPublicDodoWebhookRoute
   '/api/public/unsubscribe': typeof ApiPublicUnsubscribeRoute
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
@@ -273,6 +300,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/sitemap.xml'
+    | '/startupbid'
     | '/terms'
     | '/account'
     | '/dashboard'
@@ -280,6 +308,8 @@ export interface FileRouteTypes {
     | '/startup/$slug'
     | '/u/$token'
     | '/widget/bar'
+    | '/api/public/bid-checkout'
+    | '/api/public/bid-status'
     | '/api/public/dodo-webhook'
     | '/api/public/unsubscribe'
     | '/api/public/verify-install'
@@ -301,6 +331,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/sitemap.xml'
+    | '/startupbid'
     | '/terms'
     | '/account'
     | '/dashboard'
@@ -308,6 +339,8 @@ export interface FileRouteTypes {
     | '/startup/$slug'
     | '/u/$token'
     | '/widget/bar'
+    | '/api/public/bid-checkout'
+    | '/api/public/bid-status'
     | '/api/public/dodo-webhook'
     | '/api/public/unsubscribe'
     | '/api/public/verify-install'
@@ -330,6 +363,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/sitemap.xml'
+    | '/startupbid'
     | '/terms'
     | '/_authenticated/account'
     | '/_authenticated/dashboard'
@@ -337,6 +371,8 @@ export interface FileRouteTypes {
     | '/startup/$slug'
     | '/u/$token'
     | '/widget/bar'
+    | '/api/public/bid-checkout'
+    | '/api/public/bid-status'
     | '/api/public/dodo-webhook'
     | '/api/public/unsubscribe'
     | '/api/public/verify-install'
@@ -360,11 +396,14 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  StartupbidRoute: typeof StartupbidRoute
   TermsRoute: typeof TermsRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   StartupSlugRoute: typeof StartupSlugRoute
   UTokenRoute: typeof UTokenRoute
   WidgetBarRoute: typeof WidgetBarRoute
+  ApiPublicBidCheckoutRoute: typeof ApiPublicBidCheckoutRoute
+  ApiPublicBidStatusRoute: typeof ApiPublicBidStatusRoute
   ApiPublicDodoWebhookRoute: typeof ApiPublicDodoWebhookRoute
   ApiPublicUnsubscribeRoute: typeof ApiPublicUnsubscribeRoute
   ApiPublicVerifyInstallRoute: typeof ApiPublicVerifyInstallRoute
@@ -383,6 +422,13 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/startupbid': {
+      id: '/startupbid'
+      path: '/startupbid'
+      fullPath: '/startupbid'
+      preLoaderRoute: typeof StartupbidRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sitemap.xml': {
@@ -525,6 +571,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicDodoWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/bid-status': {
+      id: '/api/public/bid-status'
+      path: '/api/public/bid-status'
+      fullPath: '/api/public/bid-status'
+      preLoaderRoute: typeof ApiPublicBidStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/bid-checkout': {
+      id: '/api/public/bid-checkout'
+      path: '/api/public/bid-checkout'
+      fullPath: '/api/public/bid-checkout'
+      preLoaderRoute: typeof ApiPublicBidCheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/queue/process': {
       id: '/lovable/email/queue/process'
       path: '/lovable/email/queue/process'
@@ -595,11 +655,14 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  StartupbidRoute: StartupbidRoute,
   TermsRoute: TermsRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   StartupSlugRoute: StartupSlugRoute,
   UTokenRoute: UTokenRoute,
   WidgetBarRoute: WidgetBarRoute,
+  ApiPublicBidCheckoutRoute: ApiPublicBidCheckoutRoute,
+  ApiPublicBidStatusRoute: ApiPublicBidStatusRoute,
   ApiPublicDodoWebhookRoute: ApiPublicDodoWebhookRoute,
   ApiPublicUnsubscribeRoute: ApiPublicUnsubscribeRoute,
   ApiPublicVerifyInstallRoute: ApiPublicVerifyInstallRoute,

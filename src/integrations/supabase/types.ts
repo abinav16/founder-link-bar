@@ -50,6 +50,147 @@ export type Database = {
         }
         Relationships: []
       }
+      bid_clicks: {
+        Row: {
+          created_at: string
+          entry_id: string | null
+          id: string
+          session_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          entry_id?: string | null
+          id?: string
+          session_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          entry_id?: string | null
+          id?: string
+          session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bid_clicks_entry_id_fkey"
+            columns: ["entry_id"]
+            isOneToOne: false
+            referencedRelation: "bid_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bid_entries: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_url: string
+          first_bid_at: string
+          id: string
+          last_bid_at: string
+          logo_url: string | null
+          name: string
+          startup_id: string | null
+          target_url: string
+          total_cents: number
+          url_key: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_url: string
+          first_bid_at?: string
+          id?: string
+          last_bid_at?: string
+          logo_url?: string | null
+          name: string
+          startup_id?: string | null
+          target_url: string
+          total_cents?: number
+          url_key: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_url?: string
+          first_bid_at?: string
+          id?: string
+          last_bid_at?: string
+          logo_url?: string | null
+          name?: string
+          startup_id?: string | null
+          target_url?: string
+          total_cents?: number
+          url_key?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bid_entries_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bids: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          display_url: string
+          dodo_payment_id: string | null
+          email: string | null
+          entry_id: string | null
+          id: string
+          name: string
+          paid_at: string | null
+          status: string
+          target_url: string
+          url_key: string
+          user_id: string | null
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          display_url: string
+          dodo_payment_id?: string | null
+          email?: string | null
+          entry_id?: string | null
+          id?: string
+          name: string
+          paid_at?: string | null
+          status?: string
+          target_url: string
+          url_key: string
+          user_id?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          display_url?: string
+          dodo_payment_id?: string | null
+          email?: string | null
+          entry_id?: string | null
+          id?: string
+          name?: string
+          paid_at?: string | null
+          status?: string
+          target_url?: string
+          url_key?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bids_entry_id_fkey"
+            columns: ["entry_id"]
+            isOneToOne: false
+            referencedRelation: "bid_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clicks: {
         Row: {
           created_at: string
@@ -540,6 +681,15 @@ export type Database = {
           user_id: string
         }[]
       }
+      confirm_bid_payment: {
+        Args: { _bid_id: string; _email?: string; _payment_id: string }
+        Returns: {
+          already: boolean
+          entry_id: string
+          rank: number
+          total_cents: number
+        }[]
+      }
       consume_prepaid_listing: { Args: { _user_id: string }; Returns: string }
       delete_email: {
         Args: { message_id: number; queue_name: string }
@@ -616,6 +766,82 @@ export type Database = {
           source_queue: string
         }
         Returns: number
+      }
+      my_bids: {
+        Args: never
+        Returns: {
+          amount_cents: number
+          created_at: string
+          display_url: string
+          entry_total_cents: number
+          id: string
+          name: string
+          status: string
+        }[]
+      }
+      public_bid_activity: {
+        Args: { _limit?: number }
+        Returns: {
+          amount_cents: number
+          created_at: string
+          display_url: string
+          entry_id: string
+          logo_url: string
+          name: string
+          rank: number
+        }[]
+      }
+      public_bid_board: {
+        Args: never
+        Returns: {
+          clicks: number
+          description: string
+          display_url: string
+          first_bid_at: string
+          id: string
+          last_bid_at: string
+          logo_url: string
+          name: string
+          on_network: boolean
+          rank: number
+          startup_slug: string
+          target_url: string
+          total_cents: number
+          url_key: string
+        }[]
+      }
+      public_bid_click: {
+        Args: { _entry_id: string; _session?: string }
+        Returns: undefined
+      }
+      public_bid_lookup: {
+        Args: { _url_key: string }
+        Returns: {
+          display_url: string
+          id: string
+          name: string
+          rank: number
+          total_cents: number
+        }[]
+      }
+      public_bid_stats: {
+        Args: never
+        Returns: {
+          entries: number
+          top_cents: number
+          total_cents: number
+          total_clicks: number
+        }[]
+      }
+      public_bid_trending: {
+        Args: { _limit?: number }
+        Returns: {
+          clicks_hour: number
+          display_url: string
+          entry_id: string
+          logo_url: string
+          name: string
+        }[]
       }
       public_featured_slots: {
         Args: never

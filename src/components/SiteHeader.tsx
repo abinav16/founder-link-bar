@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Globe, Trophy, LayoutDashboard, Settings, LogOut } from "lucide-react";
+import { Globe, Trophy, LayoutDashboard, Settings, LogOut, Gavel } from "lucide-react";
 
 function Logo() {
   return (
@@ -51,6 +51,10 @@ export function SiteHeader() {
                 <Trophy className="h-4 w-4" />
                 <span className="hidden sm:inline">Leaderboard</span>
               </Link>
+              <Link to="/startupbid" className="flex items-center gap-1.5 px-2 py-2 text-black/50 hover:text-black transition-colors sm:px-3">
+                <Gavel className="h-4 w-4" />
+                <span className="hidden sm:inline">StartupBid</span>
+              </Link>
               <Link to="/dashboard" className="flex items-center gap-1.5 px-2 py-2 text-black/50 hover:text-black transition-colors sm:px-3">
                 <LayoutDashboard className="h-4 w-4" />
                 <span className="hidden sm:inline">Overview</span>
@@ -76,6 +80,10 @@ export function SiteHeader() {
               <Link to="/leaderboard" className="flex items-center gap-1.5 px-3 py-2 text-black/50 hover:text-black transition-colors text-[13px]">
                 <Trophy className="h-4 w-4" />
                 <span className="hidden sm:inline">Leaderboard</span>
+              </Link>
+              <Link to="/startupbid" className="flex items-center gap-1.5 px-3 py-2 text-black/50 hover:text-black transition-colors text-[13px]">
+                <Gavel className="h-4 w-4" />
+                <span className="hidden sm:inline">StartupBid</span>
               </Link>
               <Link to="/auth" className="px-3 py-2 text-black/50 hover:text-black transition-colors">Sign in</Link>
               <Link to="/apply" className="inline-flex h-9 items-center rounded-md bg-black px-3 text-sm font-medium text-white hover:bg-black/80 transition-colors sm:px-4">
