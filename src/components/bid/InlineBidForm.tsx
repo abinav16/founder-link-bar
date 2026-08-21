@@ -34,6 +34,8 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
   const [flash, setFlash] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const urlRef = useRef<HTMLInputElement | null>(null);
+  const startupsRef = useRef<{ name: string; website_url: string }[]>([]);
+  startupsRef.current = myStartups;
 
   // "Outbid" buttons on the board dispatch this event with the target's total.
   useEffect(() => {
@@ -77,6 +79,17 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
     () => (target.ok ? board.find((b) => b.url_key === target.urlKey) : undefined),
     [board, target],
   );
+
+  // Outbidding is a top-up: only the difference between the target's total and
+  // what this site already holds is charged, never the full headline amount.
+  useEffect(() => {
+    if (outbidTotal === null) return;
+    const needed = Math.max(
+      outbidTotal + BID_STEP_CENTS - (existing?.total_cents ?? 0),
+      BID_MIN_CENTS,
+    );
+    setDollars(String(Math.ceil(needed / 100)));
+  }, [outbidTotal, existing]);
 
   // Other entries (excluding the bidder's own), sorted by total desc.
   const others = useMemo(
