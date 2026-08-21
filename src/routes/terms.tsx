@@ -62,6 +62,8 @@ function TermsPage() {
             <a href="mailto:hello@startupbar.co" className="hover:text-black transition-colors">Support</a>
             <Link to="/pricing" className="hover:text-black transition-colors">Pricing</Link>
             <Link to="/faq" className="hover:text-black transition-colors">FAQ</Link>
+            <Link to="/startupbid" className="hover:text-black transition-colors">StartupBid</Link>
+
             <Link to="/privacy" className="hover:text-black transition-colors">Privacy Policy</Link>
             <a
               href="https://x.com/danielabinav16"
