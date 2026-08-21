@@ -112,6 +112,52 @@ export async function fulfilBid(
   return { ok: true, entry_id: row.entry_id, total_cents: row.total_cents, rank: row.rank, already: row.already };
 }
 
+/** Fill in name/description/logo for a bid entry (scrape + network match). */
+export async function enrichEntry(entryId: string): Promise<void> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  try {
+    const { data: entry } = await supabaseAdmin
+      .from("bid_entries")
+      .select("id, target_url, description, name, startup_id, logo_url, url_key, user_id")
+      .eq("id", entryId)
+      .maybeSingle();
+    if (!entry) return;
+
+    const patch: { startup_id?: string; description?: string; logo_url?: string; name?: string } = {};
+
+    if (!entry.startup_id) {
+      const host = String(entry.url_key).split("/")[0];
+      const { data: match } = await supabaseAdmin
+        .from("startups")
+        .select("id, name, description, logo_url")
+        .eq("status", "approved")
+        .ilike("website_url", `%${host}%`)
+        .limit(1)
+        .maybeSingle();
+      if (match) {
+        patch.startup_id = match.id;
+        if (!entry.description && match.description) patch.description = match.description;
+        if (!entry.logo_url && match.logo_url) patch.logo_url = match.logo_url;
+        if (match.name) patch.name = match.name;
+      }
+    }
+
+    if (!patch.description && !entry.description) {
+      const meta = await fetchSiteMeta(entry.target_url);
+      if (meta.description) patch.description = meta.description;
+      if (meta.name && !patch.name) patch.name = meta.name;
+    }
+
+    if (Object.keys(patch).length > 0) {
+      await supabaseAdmin.from("bid_entries").update(patch).eq("id", entry.id);
+    }
+  } catch (e) {
+    console.error("[bid] entry enrichment failed", e);
+  }
+}
+
+
+
 /** Look a payment up directly with Dodo (source of truth for the return poll).
  *  Tries the sandbox and live APIs with whichever keys exist, so a bid is never
  *  stuck "pending" just because the deployment is on the other mode. */
