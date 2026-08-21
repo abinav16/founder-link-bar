@@ -586,22 +586,23 @@ function StartupBidPage() {
           <div className="mt-6">
             <MagneticPill
               items={orbitItems}
-              className="h-[370px] sm:h-[220px]"
+              className="h-[230px] sm:h-[220px]"
               overlay={
                 <div className="pointer-events-none absolute inset-x-0 top-1/2 z-[6] -translate-y-1/2 px-3 sm:px-7">
-                  <div className="grid grid-cols-2 items-stretch gap-2.5 sm:grid-cols-[minmax(0,1fr)_180px_minmax(0,1fr)] sm:gap-4">
-                    <div className="min-w-0 sm:order-1">
+                  <div className="grid grid-cols-1 items-stretch gap-2.5 sm:grid-cols-[minmax(0,1fr)_180px_minmax(0,1fr)] sm:gap-4">
+                    <div className="pointer-events-auto hidden min-w-0 sm:order-1 sm:block">
                       <TrendingNow items={trending.data ?? []} loading={trending.isLoading} />
                     </div>
-                    <div className="col-span-2 row-start-1 mx-auto w-[190px] sm:order-2 sm:col-span-1 sm:row-auto sm:mx-0 sm:w-auto">
+                    <div className="mx-auto w-[190px] sm:order-2 sm:mx-0 sm:w-auto">
                       <HeroStats loading={stats.isLoading} stats={stats.data} />
                     </div>
-                    <div className="min-w-0 sm:order-3">
+                    <div className="pointer-events-auto hidden min-w-0 sm:order-3 sm:block">
                       <RecentPurchases items={activity.data ?? []} loading={activity.isLoading} />
                     </div>
                   </div>
                 </div>
               }
+
             />
           </div>
 
