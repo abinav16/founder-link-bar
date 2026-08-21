@@ -224,8 +224,16 @@ function StartupBidPage() {
       <main className="mx-auto max-w-3xl px-6 py-14 sm:py-20">
         {/* Hero */}
         <header className="text-center">
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-3 py-1 text-[11px] font-medium tracking-wide text-black/50">
-            No account needed · from $5
+          <div className="inline-flex items-stretch divide-x divide-white/10 overflow-hidden rounded-2xl border border-white/10 bg-black/85 shadow-[0_8px_32px_rgba(0,0,0,0.25)] backdrop-blur-md">
+            <div className="px-4 py-2.5 sm:px-5">
+              <PillStat label="On the board" value={(stats.data?.entries ?? 0).toLocaleString()} />
+            </div>
+            <div className="px-4 py-2.5 sm:px-5">
+              <PillStat label="Total bid" value={formatUsd(stats.data?.total_cents ?? 0)} />
+            </div>
+            <div className="px-4 py-2.5 sm:px-5">
+              <PillStat label="Clicks sent" value={(stats.data?.total_clicks ?? 0).toLocaleString()} />
+            </div>
           </div>
           <h1 className="mt-5 text-4xl font-semibold tracking-tight text-black sm:text-5xl">
             StartupBid
