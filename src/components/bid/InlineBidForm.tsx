@@ -216,19 +216,23 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
       <p className="mt-2.5 text-center text-[12px] text-black/45">
         {error ? (
           <span className="text-red-600">{error}</span>
-        ) : existing ? (
+        ) : existing && projected ? (
           <>
-            Already #{existing.rank} with {formatUsd(existing.total_cents)} — this stacks on top
-            {projected ? ` → #${projected.rank} at ${formatUsd(projected.newTotal)}` : ""}.
+            Already #{existing.rank} with {formatUsd(existing.total_cents)} — this stacks to{" "}
+            <span className="font-semibold text-black">#{projected.rank}</span> at{" "}
+            {formatUsd(projected.newTotal)}.
           </>
         ) : projected ? (
           <>
-            Projected rank <span className="font-semibold text-black">#{projected.rank}</span> at{" "}
-            {formatUsd(projected.newTotal)}. Name and description are pulled automatically from your
-            site.
+            {formatUsd(amountCents)} lands you at{" "}
+            <span className="font-semibold text-black">#{projected.rank}</span> — name, logo and
+            description are pulled automatically from your site.
           </>
         ) : (
-          <>Name, logo and description are pulled automatically from your site. Minimum $5.</>
+          <>
+            Enter an amount to see where you'll place. The pills show what each rank costs right now.
+            Minimum $5.
+          </>
         )}
       </p>
     </div>
