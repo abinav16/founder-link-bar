@@ -267,7 +267,7 @@ function StartupBidPage() {
   );
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#08080a]">
       <SiteHeader />
 
       <main className="bg-[#08080a] text-white">
