@@ -1,14 +1,30 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { BID_MIN_CENTS, formatUsd, normalizeBidUrl, priceToClaim, type BidEntry } from "@/lib/bid";
+import { BID_MIN_CENTS, BID_STEP_CENTS, formatUsd, normalizeBidUrl, type BidEntry } from "@/lib/bid";
 import { ArrowRight, Loader2 } from "lucide-react";
 
-const PRESETS = [500, 1000, 2500, 5000];
+/** Minimum additional cents needed to land at `targetRank` given the live board
+ *  and the user's existing entry (if any). */
+function suggestedForRank(
+  others: BidEntry[],
+  existingTotal: number,
+  targetRank: number,
+): number {
+  // To place at `targetRank`, the bidder must beat the entry currently sitting
+  // at that rank among the *other* entries (i.e. exclude self). If there are
+  // fewer entries than targetRank-1 ahead, the minimum bid is enough.
+  const toBeat = others[targetRank - 1];
+  if (!toBeat) {
+    return Math.max(BID_MIN_CENTS - existingTotal, BID_MIN_CENTS);
+  }
+  const neededTotal = toBeat.total_cents + BID_STEP_CENTS;
+  return Math.max(neededTotal - existingTotal, BID_MIN_CENTS);
+}
 
 /** Inline bid form for the hero — no popup: enter site, pick amount, go to checkout. */
 export function InlineBidForm({ board }: { board: BidEntry[] }) {
   const [url, setUrl] = useState("");
-  const [dollars, setDollars] = useState("10");
+  const [dollars, setDollars] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [myStartups, setMyStartups] = useState<{ name: string; website_url: string }[]>([]);
@@ -38,17 +54,37 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
     [board, target],
   );
 
+  // Other entries (excluding the bidder's own), sorted by total desc.
+  const others = useMemo(
+    () =>
+      board
+        .filter((b) => b.url_key !== target.urlKey)
+        .sort((a, b) => b.total_cents - a.total_cents),
+    [board, target],
+  );
+
   const projected = useMemo(() => {
     if (!target.ok || amountCents < BID_MIN_CENTS) return null;
     const newTotal = (existing?.total_cents ?? 0) + amountCents;
-    const above = board.filter(
-      (b) => b.url_key !== target.urlKey && b.total_cents >= newTotal,
-    ).length;
+    const above = others.filter((b) => b.total_cents >= newTotal).length;
     return { newTotal, rank: above + 1 };
-  }, [board, target, amountCents, existing]);
+  }, [others, target, amountCents, existing]);
 
-  const top = board[0];
-  const toBeatTop = top ? priceToClaim(top.total_cents) - (existing?.total_cents ?? 0) : BID_MIN_CENTS;
+  // Suggested amounts to claim ranks #1–#4, based on the live board.
+  const suggestions = useMemo(() => {
+    const existingTotal = existing?.total_cents ?? 0;
+    return [1, 2, 3, 4].map((rank) => ({
+      rank,
+      cents: suggestedForRank(others, existingTotal, rank),
+    }));
+  }, [others, existing]);
+
+  // When the user has not typed an amount, default the projection pills to the
+  // rank they'd get for each suggestion. Once they type, highlight the matching pill.
+  const activeSuggestion = useMemo(() => {
+    if (!dollars) return null;
+    return suggestions.find((s) => s.cents === amountCents) ?? null;
+  }, [suggestions, amountCents, dollars]);
 
   async function submit() {
     setError(null);
@@ -116,6 +152,11 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
               className="w-full min-w-0 bg-transparent py-2 pl-1.5 text-sm text-black outline-none"
             />
           </div>
+          {projected && (
+            <span className="hidden whitespace-nowrap rounded-full bg-black/[0.06] px-2.5 py-1 text-[11px] font-medium text-black/70 sm:inline">
+              → #{projected.rank}
+            </span>
+          )}
           <button
             onClick={submit}
             disabled={busy}
@@ -128,28 +169,33 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
         </div>
       </div>
 
+      {projected && (
+        <div className="mt-2 flex items-center justify-center gap-1.5 sm:hidden">
+          <span className="rounded-full bg-black/[0.06] px-2.5 py-1 text-[11px] font-medium text-black/70">
+            → lands at #{projected.rank}
+          </span>
+        </div>
+      )}
+
       <div className="mt-2.5 flex flex-wrap items-center justify-center gap-1.5">
-        {PRESETS.map((cents) => (
-          <button
-            key={cents}
-            onClick={() => setDollars(String(cents / 100))}
-            className={`rounded-full border px-3 py-1 text-[12px] transition-colors ${
-              amountCents === cents
-                ? "border-black bg-black text-white"
-                : "border-black/12 text-black/55 hover:border-black/35 hover:text-black"
-            }`}
-          >
-            {formatUsd(cents)}
-          </button>
-        ))}
-        {top && toBeatTop > 0 && (
-          <button
-            onClick={() => setDollars(String(Math.ceil(toBeatTop / 100)))}
-            className="rounded-full border border-black/12 px-3 py-1 text-[12px] text-black/55 transition-colors hover:border-black/35 hover:text-black"
-          >
-            Take #1 · {formatUsd(toBeatTop)}
-          </button>
-        )}
+        {suggestions.map(({ rank, cents }) => {
+          const isMatch = activeSuggestion?.rank === rank || amountCents === cents;
+          return (
+            <button
+              key={rank}
+              onClick={() => setDollars(String(Math.ceil(cents / 100)))}
+              className={`rounded-full border px-3 py-1 text-[12px] transition-colors ${
+                isMatch
+                  ? "border-black bg-black text-white"
+                  : "border-black/12 text-black/55 hover:border-black/35 hover:text-black"
+              }`}
+              title={`Bid ${formatUsd(cents)} to take rank #${rank}`}
+            >
+              <span className="text-black/40">#</span>
+              {rank} · {formatUsd(cents)}
+            </button>
+          );
+        })}
       </div>
 
       {myStartups.length > 0 && (
@@ -170,19 +216,23 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
       <p className="mt-2.5 text-center text-[12px] text-black/45">
         {error ? (
           <span className="text-red-600">{error}</span>
-        ) : existing ? (
+        ) : existing && projected ? (
           <>
-            Already #{existing.rank} with {formatUsd(existing.total_cents)} — this stacks on top
-            {projected ? ` → #${projected.rank} at ${formatUsd(projected.newTotal)}` : ""}.
+            Already #{existing.rank} with {formatUsd(existing.total_cents)} — this stacks to{" "}
+            <span className="font-semibold text-black">#{projected.rank}</span> at{" "}
+            {formatUsd(projected.newTotal)}.
           </>
         ) : projected ? (
           <>
-            Projected rank <span className="font-semibold text-black">#{projected.rank}</span> at{" "}
-            {formatUsd(projected.newTotal)}. Name and description are pulled automatically from your
-            site.
+            {formatUsd(amountCents)} lands you at{" "}
+            <span className="font-semibold text-black">#{projected.rank}</span> — name, logo and
+            description are pulled automatically from your site.
           </>
         ) : (
-          <>Name, logo and description are pulled automatically from your site. Minimum $5.</>
+          <>
+            Enter an amount to see where you'll place. The pills show what each rank costs right now.
+            Minimum $5.
+          </>
         )}
       </p>
     </div>
