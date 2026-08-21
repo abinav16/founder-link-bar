@@ -31,9 +31,9 @@ const DESCRIPTION =
   "Bid to rank your startup on StartupBid. Bids are cumulative, the board is live, and anyone can join — no account required. Every click is tracked and shown publicly.";
 
 export const Route = createFileRoute("/startupbid")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    bid: typeof search.bid === "string" ? search.bid : undefined,
-    payment_id: typeof search.payment_id === "string" ? search.payment_id : undefined,
+  validateSearch: (search: Record<string, unknown>): { bid?: string; payment_id?: string } => ({
+    ...(typeof search.bid === "string" ? { bid: search.bid } : {}),
+    ...(typeof search.payment_id === "string" ? { payment_id: search.payment_id } : {}),
   }),
   head: () => ({
     meta: [
