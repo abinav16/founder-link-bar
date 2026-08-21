@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { BidDialog } from "@/components/bid/BidDialog";
@@ -288,34 +288,28 @@ function SuccessBanner({
     status: "pending",
   });
   const [tick, setTick] = useState(0);
-  const ref = useRef<HTMLDivElement | null>(null);
-  const onDoneRef = useRef(onDone);
-
-  useEffect(() => {
-    onDoneRef.current = onDone;
-  }, [onDone]);
-
-  useEffect(() => {
-    ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, []);
-
   useEffect(() => {
     let cancelled = false;
     let attempts = 0;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     setState({ status: "pending" });
     const poll = async () => {
       attempts += 1;
       try {
+        const controller = new AbortController();
+        const requestTimeout = setTimeout(() => controller.abort(), 10_000);
         const res = await fetch(
           `/api/public/bid-status?bid=${encodeURIComponent(bidId)}${
             paymentId ? `&payment_id=${encodeURIComponent(paymentId)}` : ""
           }`,
+          { cache: "no-store", signal: controller.signal },
         );
+        clearTimeout(requestTimeout);
         const json = await res.json().catch(() => null);
         if (cancelled) return;
         if (json?.status === "paid") {
           setState({ status: "paid", data: json });
-          onDoneRef.current();
+          onDone();
           return;
         }
       } catch {
@@ -326,16 +320,17 @@ function SuccessBanner({
         setState({ status: "failed" });
         return;
       }
-      setTimeout(poll, attempts < 12 ? 1000 : 2500);
+      timer = setTimeout(poll, attempts < 12 ? 1000 : 2500);
     };
-    poll();
+    void poll();
     return () => {
       cancelled = true;
+      if (timer) clearTimeout(timer);
     };
-  }, [bidId, paymentId, tick]);
+  }, [bidId, paymentId, onDone, tick]);
 
   return (
-    <div ref={ref} className="mb-6 rounded-2xl border border-black/[0.08] bg-white px-5 py-4">
+    <div className="mb-6 rounded-2xl border border-black/[0.08] bg-white px-5 py-4">
       {state.status === "pending" && (
         <div className="flex items-center gap-3 text-black/60">
           <Loader2 className="h-4 w-4 animate-spin" />
@@ -380,6 +375,19 @@ function StartupBidPage() {
   const activity = useBidActivity();
   const stats = useBidStats();
 
+  useEffect(() => {
+    // This page previously scrolled the payment banner into view on mount,
+    // which also overrode the expected top position after a reload.
+    const previous = window.history.scrollRestoration;
+    window.history.scrollRestoration = "manual";
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    const frame = window.requestAnimationFrame(() => window.scrollTo(0, 0));
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.history.scrollRestoration = previous;
+    };
+  }, []);
+
   const [dialog, setDialog] = useState<{ open: boolean; url?: string; amount?: number }>({
     open: false,
   });
@@ -406,23 +414,19 @@ function StartupBidPage() {
   );
   const top = entries[0];
 
-  const clearSearch = useMemo(
-    () => () => {
-      board.refetch();
-      activity.refetch();
-      stats.refetch();
-      setTimeout(
-        () =>
-          navigate({
-            to: "/startupbid",
-            search: { bid: undefined, payment_id: undefined },
-            replace: true,
-          }),
-        6000,
-      );
-    },
-    [board, activity, stats, navigate],
-  );
+  const clearSearch = useCallback(() => {
+    void board.refetch();
+    void activity.refetch();
+    void stats.refetch();
+    window.setTimeout(() => {
+      void navigate({
+        to: "/startupbid",
+        search: { bid: undefined, payment_id: undefined },
+        replace: true,
+        resetScroll: false,
+      });
+    }, 6000);
+  }, [board.refetch, activity.refetch, stats.refetch, navigate]);
 
   return (
     <div className="min-h-screen bg-[#fafafa]">

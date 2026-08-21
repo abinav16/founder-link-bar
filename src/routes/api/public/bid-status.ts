@@ -45,7 +45,11 @@ export const Route = createFileRoute("/api/public/bid-status")({
         }
 
         // Not confirmed by the webhook yet — ask Dodo directly.
-        const lookupId = paymentId || bid.dodo_payment_id || "";
+        // Prefer the payment ID captured when checkout was created. Some Dodo
+        // redirects leave the `{payment_id}` placeholder untouched; trusting
+        // that URL value first makes an otherwise-paid bid poll forever.
+        const returnPaymentId = paymentId === "{payment_id}" ? "" : paymentId;
+        const lookupId = bid.dodo_payment_id || returnPaymentId;
         const payment = lookupId ? await getDodoPayment(lookupId) : null;
         const status = String(payment?.status ?? "").toLowerCase();
         const paid = status === "succeeded" || status === "completed" || status === "paid";
