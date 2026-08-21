@@ -180,12 +180,12 @@ export async function getDodoPayment(paymentId: string): Promise<any | null> {
   const attempts: { host: string; key: string }[] = [];
   const testKey = process.env.DODO_TEST_API_KEY;
   const liveKey = process.env.DODO_PAYMENTS_API_KEY;
-  if (liveKey) attempts.push({ host: "https://live.dodopayments.com", key: liveKey });
   if (testKey) attempts.push({ host: "https://test.dodopayments.com", key: testKey });
+  if (liveKey) attempts.push({ host: "https://live.dodopayments.com", key: liveKey });
   if (testKey && liveKey) {
     // Cross-pair as a last resort: keys are occasionally rotated between modes.
-    attempts.push({ host: "https://live.dodopayments.com", key: testKey });
     attempts.push({ host: "https://test.dodopayments.com", key: liveKey });
+    attempts.push({ host: "https://live.dodopayments.com", key: testKey });
   }
 
   for (const { host, key } of attempts) {
