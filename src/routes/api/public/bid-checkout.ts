@@ -81,8 +81,13 @@ export const Route = createFileRoute("/api/public/bid-checkout")({
         const origin = request.headers.get("origin") ?? "";
         if (!isAllowedOrigin(origin)) return json({ error: "Invalid origin" }, 400);
 
-        const apiKey = process.env.DODO_PAYMENTS_API_KEY;
-        const productId = process.env.DODO_BID_PRODUCT_ID ?? process.env.DODO_PRODUCT_ID;
+        // TEST MODE: bid checkout runs against Dodo test (sandbox).
+        const apiKey = process.env.DODO_TEST_API_KEY ?? process.env.DODO_PAYMENTS_API_KEY;
+        const productId =
+          process.env.DODO_TEST_BID_PRODUCT_ID ??
+          process.env.DODO_TEST_PRODUCT_ID ??
+          process.env.DODO_BID_PRODUCT_ID ??
+          process.env.DODO_PRODUCT_ID;
         if (!apiKey || !productId) {
           return json({ error: "Payments are not configured yet." }, 500);
         }
@@ -130,7 +135,7 @@ export const Route = createFileRoute("/api/public/bid-checkout")({
 
         const returnUrl = `${origin}/startupbid?bid=${bid.id}&payment_id={payment_id}`;
 
-        const res = await fetch("https://live.dodopayments.com/payments", {
+        const res = await fetch("https://test.dodopayments.com/payments", {
           method: "POST",
           headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
           body: JSON.stringify({
