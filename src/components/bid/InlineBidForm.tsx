@@ -145,7 +145,7 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
   return (
     <div ref={rootRef} id="bid-form" className="mx-auto mt-6 w-full max-w-xl scroll-mt-28 text-left">
       <div
-        className={`flex flex-col gap-2 rounded-full border bg-white p-2 transition-all duration-300 sm:flex-row sm:items-center ${
+        className={`flex flex-col gap-2 rounded-3xl border bg-white p-2 transition-all duration-300 sm:flex-row sm:items-center sm:rounded-full ${
           flash
             ? "border-black shadow-[0_0_0_4px_rgba(0,0,0,0.10)]"
             : "border-black/[0.09] shadow-[0_1px_3px_rgba(0,0,0,0.05)]"
@@ -160,10 +160,10 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
           }}
           placeholder="yoursite.com or @handle"
           aria-label="Your site or handle"
-          className="min-w-0 flex-1 bg-transparent px-5 py-2.5 text-sm text-black outline-none placeholder:text-black/30"
+          className="min-w-0 flex-1 bg-transparent px-4 py-2.5 text-[15px] text-black outline-none placeholder:text-black/30 sm:px-5 sm:text-sm"
         />
         <div className="flex items-center gap-2">
-          <div className="flex items-center rounded-full border border-black/10 px-3 sm:w-[116px]">
+          <div className="flex w-[92px] shrink-0 items-center rounded-full border border-black/10 px-3 sm:w-[116px]">
             <span className="text-sm text-black/40">$</span>
             <input
               value={dollars}
@@ -173,7 +173,8 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
               }}
               inputMode="decimal"
               aria-label="Bid amount in USD"
-              className="w-full min-w-0 bg-transparent py-2 pl-1.5 text-sm text-black outline-none"
+              placeholder="5"
+              className="w-full min-w-0 bg-transparent py-2 pl-1.5 text-[15px] text-black outline-none placeholder:text-black/25 sm:text-sm"
             />
           </div>
           {projected && (
@@ -184,7 +185,7 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
           <button
             onClick={submit}
             disabled={busy}
-            className="inline-flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-black px-6 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-85 disabled:opacity-50 sm:flex-none"
+            className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white sm:px-6 transition-opacity hover:opacity-85 disabled:opacity-50 sm:flex-none"
           >
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
             Place bid
@@ -208,7 +209,7 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
             <button
               key={rank}
               onClick={() => setDollars(String(Math.ceil(cents / 100)))}
-              className={`rounded-full border px-3 py-1 text-[12px] transition-colors ${
+              className={`rounded-full border px-3 py-1.5 text-[12px] transition-colors ${
                 isMatch
                   ? "border-black bg-black text-white"
                   : "border-black/12 text-black/55 hover:border-black/35 hover:text-black"

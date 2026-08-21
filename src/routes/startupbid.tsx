@@ -101,55 +101,87 @@ const PODIUM = [
 function PodiumRow({ entry, onOutbid }: { entry: BidEntry; onOutbid: (e: BidEntry) => void }) {
   const s = PODIUM[Math.min(entry.rank, 3) - 1] ?? PODIUM[2];
   return (
-    <div className={`flex items-center gap-4 rounded-2xl border ${s.card} ${s.pad}`}>
-      <div
-        className={`flex shrink-0 items-center justify-center rounded-full font-bold tabular-nums ${s.badge} ${s.badgeSize}`}
-      >
-        #{entry.rank}
+    <div className={`rounded-2xl border ${s.card} ${s.pad}`}>
+      <div className="flex items-start gap-3 sm:items-center sm:gap-4">
+        <div
+          className={`flex shrink-0 items-center justify-center rounded-full font-bold tabular-nums ${s.badge} ${s.badgeSize}`}
+        >
+          #{entry.rank}
+        </div>
+
+        <StartupFavicon
+          url={entry.target_url}
+          name={entry.name}
+          logoUrl={entry.logo_url}
+          size={s.logo}
+          className="hidden shrink-0 rounded-xl sm:block"
+        />
+
+        <div className="min-w-0 flex-1">
+          <div className="flex min-w-0 items-center gap-2">
+            <StartupFavicon
+              url={entry.target_url}
+              name={entry.name}
+              logoUrl={entry.logo_url}
+              size={26}
+              className="shrink-0 rounded-lg sm:hidden"
+            />
+            <a
+              href={entry.target_url}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              onClick={() => trackBidClick(entry.id)}
+              className={`truncate font-bold tracking-tight hover:underline ${s.name} ${s.nameSize}`}
+            >
+              {entry.name}
+            </a>
+          </div>
+          <p className={`mt-1 line-clamp-2 text-[12.5px] leading-snug sm:text-[13px] ${s.desc}`}>
+            {entry.description || entry.display_url}
+          </p>
+          <div className={`mt-1.5 hidden text-[11.5px] font-medium tabular-nums sm:block ${s.meta}`}>
+            {entry.clicks.toLocaleString()} clicks
+          </div>
+        </div>
+
+        <div className="hidden shrink-0 text-right sm:block">
+          <div className={`text-[18px] font-bold tabular-nums sm:text-[20px] ${s.amount}`}>
+            {formatUsd(entry.total_cents)}
+          </div>
+          <button
+            onClick={() => onOutbid(entry)}
+            className={`mt-0.5 text-[11.5px] font-medium hover:underline ${s.outbid}`}
+          >
+            Outbid · {formatUsd(priceToClaim(entry.total_cents))}
+          </button>
+        </div>
       </div>
 
-      <StartupFavicon
-        url={entry.target_url}
-        name={entry.name}
-        logoUrl={entry.logo_url}
-        size={s.logo}
-        className="hidden shrink-0 rounded-xl sm:block"
-      />
-
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <a
-            href={entry.target_url}
-            target="_blank"
-            rel="noopener noreferrer nofollow"
-            onClick={() => trackBidClick(entry.id)}
-            className={`truncate font-bold tracking-tight hover:underline ${s.name} ${s.nameSize}`}
-          >
-            {entry.name}
-          </a>
-        </div>
-        <p className={`mt-0.5 line-clamp-2 text-[13px] leading-snug ${s.desc}`}>
-          {entry.description || entry.display_url}
-        </p>
-        <div className={`mt-1.5 text-[11.5px] font-medium tabular-nums ${s.meta}`}>
+      {/* Mobile footer: amount + outbid CTA */}
+      <div className="mt-3 flex items-center justify-between gap-3 sm:hidden">
+        <div className={`text-[11.5px] font-medium tabular-nums ${s.meta}`}>
           {entry.clicks.toLocaleString()} clicks
         </div>
-      </div>
-
-      <div className="shrink-0 text-right">
-        <div className={`text-[18px] font-bold tabular-nums sm:text-[20px] ${s.amount}`}>
-          {formatUsd(entry.total_cents)}
+        <div className="flex items-center gap-2.5">
+          <div className={`text-[18px] font-bold leading-none tabular-nums ${s.amount}`}>
+            {formatUsd(entry.total_cents)}
+          </div>
+          <button
+            onClick={() => onOutbid(entry)}
+            className={`rounded-full px-3 py-1.5 text-[11.5px] font-semibold ${
+              entry.rank === 1
+                ? "bg-white text-black"
+                : "bg-black text-white"
+            }`}
+          >
+            Outbid · {formatUsd(priceToClaim(entry.total_cents))}
+          </button>
         </div>
-        <button
-          onClick={() => onOutbid(entry)}
-          className={`mt-0.5 text-[11.5px] font-medium hover:underline ${s.outbid}`}
-        >
-          Outbid · {formatUsd(priceToClaim(entry.total_cents))}
-        </button>
       </div>
     </div>
   );
 }
+
 
 function BidRow({ entry, onOutbid }: { entry: BidEntry; onOutbid: (e: BidEntry) => void }) {
   return (
@@ -186,6 +218,9 @@ function BidRow({ entry, onOutbid }: { entry: BidEntry; onOutbid: (e: BidEntry) 
         <p className="truncate text-[12.5px] text-black/45">
           {entry.description || entry.display_url}
         </p>
+        <div className="mt-0.5 text-[11px] tabular-nums text-black/35 sm:hidden">
+          {entry.clicks.toLocaleString()} clicks
+        </div>
       </div>
 
       <div className="hidden shrink-0 text-right sm:block">
@@ -195,17 +230,18 @@ function BidRow({ entry, onOutbid }: { entry: BidEntry; onOutbid: (e: BidEntry) 
         </div>
       </div>
 
-      <div className="shrink-0 text-right">
-        <div className="text-[15px] font-semibold tabular-nums text-black">
+      <div className="flex shrink-0 flex-col items-end gap-1">
+        <div className="text-[15px] font-semibold leading-none tabular-nums text-black">
           {formatUsd(entry.total_cents)}
         </div>
         <button
           onClick={() => onOutbid(entry)}
-          className="mt-0.5 text-[11px] font-medium text-black/45 hover:text-black hover:underline"
+          className="whitespace-nowrap rounded-full border border-black/12 px-2.5 py-1 text-[11px] font-medium text-black/60 transition-colors hover:border-black hover:text-black sm:border-0 sm:px-0 sm:py-0 sm:hover:underline"
         >
           Outbid · {formatUsd(priceToClaim(entry.total_cents))}
         </button>
       </div>
+
     </div>
   );
 }
@@ -343,13 +379,13 @@ function StartupBidPage() {
     <div className="min-h-screen bg-[#fafafa]">
       <SiteHeader />
 
-      <main className="mx-auto max-w-3xl px-6 py-10 sm:py-12">
+      <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
         {/* Hero */}
         <header className="text-center">
-          <h1 className="text-4xl font-semibold tracking-tight text-black sm:text-5xl">
+          <h1 className="text-[32px] font-semibold tracking-tight text-black sm:text-5xl">
             StartupBid
           </h1>
-          <p className="mx-auto mt-2 max-w-lg text-[15px] leading-relaxed text-black/50">
+          <p className="mx-auto mt-2 max-w-lg text-[13.5px] leading-relaxed text-black/50 sm:text-[15px]">
             Pay to rank. Bids are cumulative, every dollar stacks onto your total and pushes you up
             the board. Highest total sits at #1.
           </p>
@@ -440,7 +476,7 @@ function StartupBidPage() {
         </header>
 
         {/* Board */}
-        <section className="mt-12">
+        <section className="mt-10 sm:mt-12">
           {search.bid && (
             <SuccessBanner bidId={search.bid} paymentId={search.payment_id} onDone={clearSearch} />
           )}
@@ -532,7 +568,7 @@ function StartupBidPage() {
         </section>
 
         {/* Recent bids + how it works */}
-        <section className="mt-12 grid gap-6 sm:grid-cols-2">
+        <section className="mt-10 grid gap-4 sm:mt-12 sm:grid-cols-2 sm:gap-6">
           <div className="rounded-2xl border border-black/[0.07] bg-white p-5">
             <h3 className="text-[12px] font-semibold uppercase tracking-[0.14em] text-black/40">
               Recent bids
