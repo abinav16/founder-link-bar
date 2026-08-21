@@ -41,13 +41,6 @@ function FooterBar({ wide }: { wide?: boolean }) {
   );
 }
 
-const NAV = [
-  { to: "/network",     label: "Network",     icon: Globe },
-  { to: "/leaderboard", label: "Leaderboard", icon: Trophy },
-  { to: "/startupbid",  label: "StartupBid",  icon: Gavel },
-  { to: "/dashboard",   label: "Dashboard",   icon: LayoutDashboard },
-] as const;
-
 export function DashboardLayout({
   children,
   rail,
@@ -55,25 +48,9 @@ export function DashboardLayout({
   children: React.ReactNode;
   rail?: React.ReactNode;
 }) {
-  const navigate = useNavigate();
-  const { location, status } = useRouterState();
-  const path = location.pathname;
+  const { status } = useRouterState();
   const isNavigating = status === "pending";
-  const [authed, setAuthed] = useState<boolean | null>(null);
 
-  useEffect(() => {
-    // getSession() reads localStorage first — resolves before paint on refresh.
-    supabase.auth.getSession().then(({ data }) => setAuthed(!!data.session));
-    const { data: sub } = supabase.auth.onAuthStateChange((_, session) => setAuthed(!!session));
-    return () => sub.subscription.unsubscribe();
-  }, []);
-
-  async function signOut() {
-    await supabase.auth.signOut();
-    navigate({ to: "/" });
-  }
-
-  const visibleNav = authed ? NAV : NAV.filter(({ to }) => to !== "/dashboard");
 
   return (
     <div className="min-h-dvh bg-[#f7f7f6] flex flex-col">
