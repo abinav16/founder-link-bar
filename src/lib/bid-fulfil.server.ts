@@ -106,48 +106,7 @@ export async function fulfilBid(
 
   // Enrich the entry once, right after its first successful payment.
   if (enrich) {
-    try {
-      const { data: entry } = await supabaseAdmin
-        .from("bid_entries")
-        .select("id, target_url, description, name, startup_id, logo_url, url_key, user_id")
-        .eq("id", row.entry_id)
-        .maybeSingle();
-
-      if (entry) {
-        const patch: { startup_id?: string; description?: string; logo_url?: string; name?: string } = {};
-
-        // Cross-promotion: link the entry to an approved network startup when
-        // the domain matches, so the board can show the network badge.
-        if (!entry.startup_id) {
-          const host = String(entry.url_key).split("/")[0];
-          const { data: match } = await supabaseAdmin
-            .from("startups")
-            .select("id, name, description, logo_url")
-            .eq("status", "approved")
-            .ilike("website_url", `%${host}%`)
-            .limit(1)
-            .maybeSingle();
-          if (match) {
-            patch.startup_id = match.id;
-            if (!entry.description && match.description) patch.description = match.description;
-            if (!entry.logo_url && match.logo_url) patch.logo_url = match.logo_url;
-            if (match.name) patch.name = match.name;
-          }
-        }
-
-        if (!patch.description && !entry.description) {
-          const meta = await fetchSiteMeta(entry.target_url);
-          if (meta.description) patch.description = meta.description;
-          if (meta.name && !patch.name) patch.name = meta.name;
-        }
-
-        if (Object.keys(patch).length > 0) {
-          await supabaseAdmin.from("bid_entries").update(patch).eq("id", entry.id);
-        }
-      }
-    } catch (e) {
-      console.error("[bid] entry enrichment failed", e);
-    }
+    await enrichEntry(row.entry_id);
   }
 
   return { ok: true, entry_id: row.entry_id, total_cents: row.total_cents, rank: row.rank, already: row.already };
