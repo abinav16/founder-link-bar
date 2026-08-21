@@ -32,6 +32,7 @@ import { Route as ApiPublicVerifyInstallRouteImport } from './routes/api/public/
 import { Route as ApiPublicUnsubscribeRouteImport } from './routes/api/public/unsubscribe'
 import { Route as ApiPublicDodoWebhookRouteImport } from './routes/api/public/dodo-webhook'
 import { Route as ApiPublicBidStatusRouteImport } from './routes/api/public/bid-status'
+import { Route as ApiPublicBidEnrichRouteImport } from './routes/api/public/bid-enrich'
 import { Route as ApiPublicBidCheckoutRouteImport } from './routes/api/public/bid-checkout'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicWidgetPickRouteImport } from './routes/api/public/widget.pick'
@@ -154,6 +155,11 @@ const ApiPublicBidStatusRoute = ApiPublicBidStatusRouteImport.update({
   path: '/api/public/bid-status',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicBidEnrichRoute = ApiPublicBidEnrichRouteImport.update({
+  id: '/api/public/bid-enrich',
+  path: '/api/public/bid-enrich',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicBidCheckoutRoute = ApiPublicBidCheckoutRouteImport.update({
   id: '/api/public/bid-checkout',
   path: '/api/public/bid-checkout',
@@ -212,6 +218,7 @@ export interface FileRoutesByFullPath {
   '/u/$token': typeof UTokenRoute
   '/widget/bar': typeof WidgetBarRoute
   '/api/public/bid-checkout': typeof ApiPublicBidCheckoutRoute
+  '/api/public/bid-enrich': typeof ApiPublicBidEnrichRoute
   '/api/public/bid-status': typeof ApiPublicBidStatusRoute
   '/api/public/dodo-webhook': typeof ApiPublicDodoWebhookRoute
   '/api/public/unsubscribe': typeof ApiPublicUnsubscribeRoute
@@ -243,6 +250,7 @@ export interface FileRoutesByTo {
   '/u/$token': typeof UTokenRoute
   '/widget/bar': typeof WidgetBarRoute
   '/api/public/bid-checkout': typeof ApiPublicBidCheckoutRoute
+  '/api/public/bid-enrich': typeof ApiPublicBidEnrichRoute
   '/api/public/bid-status': typeof ApiPublicBidStatusRoute
   '/api/public/dodo-webhook': typeof ApiPublicDodoWebhookRoute
   '/api/public/unsubscribe': typeof ApiPublicUnsubscribeRoute
@@ -276,6 +284,7 @@ export interface FileRoutesById {
   '/u/$token': typeof UTokenRoute
   '/widget/bar': typeof WidgetBarRoute
   '/api/public/bid-checkout': typeof ApiPublicBidCheckoutRoute
+  '/api/public/bid-enrich': typeof ApiPublicBidEnrichRoute
   '/api/public/bid-status': typeof ApiPublicBidStatusRoute
   '/api/public/dodo-webhook': typeof ApiPublicDodoWebhookRoute
   '/api/public/unsubscribe': typeof ApiPublicUnsubscribeRoute
@@ -309,6 +318,7 @@ export interface FileRouteTypes {
     | '/u/$token'
     | '/widget/bar'
     | '/api/public/bid-checkout'
+    | '/api/public/bid-enrich'
     | '/api/public/bid-status'
     | '/api/public/dodo-webhook'
     | '/api/public/unsubscribe'
@@ -340,6 +350,7 @@ export interface FileRouteTypes {
     | '/u/$token'
     | '/widget/bar'
     | '/api/public/bid-checkout'
+    | '/api/public/bid-enrich'
     | '/api/public/bid-status'
     | '/api/public/dodo-webhook'
     | '/api/public/unsubscribe'
@@ -372,6 +383,7 @@ export interface FileRouteTypes {
     | '/u/$token'
     | '/widget/bar'
     | '/api/public/bid-checkout'
+    | '/api/public/bid-enrich'
     | '/api/public/bid-status'
     | '/api/public/dodo-webhook'
     | '/api/public/unsubscribe'
@@ -403,6 +415,7 @@ export interface RootRouteChildren {
   UTokenRoute: typeof UTokenRoute
   WidgetBarRoute: typeof WidgetBarRoute
   ApiPublicBidCheckoutRoute: typeof ApiPublicBidCheckoutRoute
+  ApiPublicBidEnrichRoute: typeof ApiPublicBidEnrichRoute
   ApiPublicBidStatusRoute: typeof ApiPublicBidStatusRoute
   ApiPublicDodoWebhookRoute: typeof ApiPublicDodoWebhookRoute
   ApiPublicUnsubscribeRoute: typeof ApiPublicUnsubscribeRoute
@@ -578,6 +591,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicBidStatusRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/bid-enrich': {
+      id: '/api/public/bid-enrich'
+      path: '/api/public/bid-enrich'
+      fullPath: '/api/public/bid-enrich'
+      preLoaderRoute: typeof ApiPublicBidEnrichRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/bid-checkout': {
       id: '/api/public/bid-checkout'
       path: '/api/public/bid-checkout'
@@ -662,6 +682,7 @@ const rootRouteChildren: RootRouteChildren = {
   UTokenRoute: UTokenRoute,
   WidgetBarRoute: WidgetBarRoute,
   ApiPublicBidCheckoutRoute: ApiPublicBidCheckoutRoute,
+  ApiPublicBidEnrichRoute: ApiPublicBidEnrichRoute,
   ApiPublicBidStatusRoute: ApiPublicBidStatusRoute,
   ApiPublicDodoWebhookRoute: ApiPublicDodoWebhookRoute,
   ApiPublicUnsubscribeRoute: ApiPublicUnsubscribeRoute,
