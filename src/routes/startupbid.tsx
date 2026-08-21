@@ -733,6 +733,10 @@ function StartupBidPage() {
         </Link>
       </main>
 
+      <SiteFooter />
+
+
+
       <BidDialog
         open={dialog.open}
         onClose={() => setDialog({ open: false })}
