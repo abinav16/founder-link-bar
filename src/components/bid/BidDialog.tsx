@@ -143,7 +143,7 @@ export function BidDialog({ open, onClose, board, initialUrl, initialAmountCents
           onChange={(e) => setUrl(e.target.value)}
           placeholder="yourstartup.com"
           autoFocus
-          className="mt-2 w-full rounded-xl border border-black/12 bg-white px-3.5 py-2.5 text-sm text-black outline-none placeholder:text-black/25 focus:border-black/40"
+          className="mt-2 w-full rounded-full border border-black/12 bg-white px-4 py-2.5 text-sm text-black outline-none placeholder:text-black/25 focus:border-black/40"
         />
 
         {signedIn && myStartups.length > 0 && (
@@ -172,7 +172,7 @@ export function BidDialog({ open, onClose, board, initialUrl, initialAmountCents
         <label className="mt-5 block text-[11px] font-medium uppercase tracking-wider text-black/40">
           Amount (USD)
         </label>
-        <div className="mt-2 flex items-center rounded-xl border border-black/12 bg-white px-3.5 focus-within:border-black/40">
+        <div className="mt-2 flex items-center rounded-full border border-black/12 bg-white px-4 focus-within:border-black/40">
           <span className="text-sm text-black/40">$</span>
           <input
             value={dollars}
@@ -214,13 +214,13 @@ export function BidDialog({ open, onClose, board, initialUrl, initialAmountCents
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={target.name}
-              className="mt-2 w-full rounded-xl border border-black/12 bg-white px-3.5 py-2.5 text-sm text-black outline-none placeholder:text-black/25 focus:border-black/40"
+              className="mt-2 w-full rounded-full border border-black/12 bg-white px-4 py-2.5 text-sm text-black outline-none placeholder:text-black/25 focus:border-black/40"
             />
           </>
         )}
 
         {projected && (
-          <div className="mt-5 rounded-xl border border-black/[0.08] bg-black/[0.03] px-4 py-3">
+          <div className="mt-5 rounded-full border border-black/[0.08] bg-black/[0.03] px-4 py-3">
             <p className="text-[13px] text-black/60">
               After this bid you land at{" "}
               <span className="font-semibold text-black">#{projected.rank}</span> with a total of{" "}
@@ -230,7 +230,7 @@ export function BidDialog({ open, onClose, board, initialUrl, initialAmountCents
         )}
 
         {error && (
-          <p className="mt-4 rounded-lg border border-red-500/20 bg-red-500/[0.06] px-3 py-2 text-[12.5px] text-red-600">
+          <p className="mt-4 rounded-full border border-red-500/20 bg-red-500/[0.06] px-3 py-2 text-[12.5px] text-red-600">
             {error}
           </p>
         )}
@@ -238,7 +238,7 @@ export function BidDialog({ open, onClose, board, initialUrl, initialAmountCents
         <button
           onClick={submit}
           disabled={busy}
-          className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-black py-3 text-sm font-semibold text-white transition-opacity hover:opacity-85 disabled:opacity-60"
+          className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-black py-3 text-sm font-semibold text-white transition-opacity hover:opacity-85 disabled:opacity-60"
         >
           {busy ? (
             <Loader2 className="h-4 w-4 animate-spin" />
