@@ -13,7 +13,8 @@ import {
   useBidStats,
   type BidEntry,
 } from "@/lib/bid";
-import { ArrowUpRight, CheckCircle2, Loader2 } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, Gavel, Loader2 } from "lucide-react";
+import { MagneticPill, type OrbitItem } from "@/components/MagneticPill";
 
 const TITLE = "StartupBid — Pay-to-rank leaderboard for startups | StartupBar";
 const DESCRIPTION =
@@ -37,13 +38,17 @@ export const Route = createFileRoute("/startupbid")({
   component: StartupBidPage,
 });
 
-function PillStat({ label, value }: { label: string; value: string }) {
+function PillStat({ label, value, small }: { label: string; value: string; small?: boolean }) {
   return (
     <div className="text-center">
-      <div className="text-[15px] font-bold leading-none tabular-nums tracking-tight text-white sm:text-[17px]">
+      <div
+        className={`font-bold leading-none tabular-nums tracking-tight text-white ${small ? "text-[12px]" : "text-[15px] sm:text-[17px]"}`}
+      >
         {value}
       </div>
-      <div className="mt-1 text-[9px] font-medium uppercase leading-none tracking-[0.14em] text-white/45">
+      <div
+        className={`mt-1 font-medium uppercase leading-none tracking-[0.14em] text-white/45 ${small ? "text-[8px]" : "text-[9px]"}`}
+      >
         {label}
       </div>
     </div>
@@ -199,6 +204,25 @@ function StartupBidPage() {
   });
 
   const entries = board.data ?? [];
+
+  const orbitItems: OrbitItem[] = useMemo(
+    () =>
+      entries.map((e) => {
+        let domain = e.display_url;
+        try {
+          domain = new URL(
+            e.target_url.startsWith("http") ? e.target_url : `https://${e.target_url}`,
+          ).hostname.replace(/^www\./, "");
+        } catch {
+          /* keep display_url */
+        }
+        return {
+          id: e.id,
+          logoUrl: e.logo_url || `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
+        };
+      }),
+    [entries],
+  );
   const top = entries[0];
 
   const clearSearch = useMemo(
