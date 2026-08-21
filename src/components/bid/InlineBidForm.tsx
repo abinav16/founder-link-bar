@@ -152,6 +152,11 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
               className="w-full min-w-0 bg-transparent py-2 pl-1.5 text-sm text-black outline-none"
             />
           </div>
+          {projected && (
+            <span className="hidden whitespace-nowrap rounded-full bg-black/[0.06] px-2.5 py-1 text-[11px] font-medium text-black/70 sm:inline">
+              → #{projected.rank}
+            </span>
+          )}
           <button
             onClick={submit}
             disabled={busy}
@@ -164,28 +169,33 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
         </div>
       </div>
 
+      {projected && (
+        <div className="mt-2 flex items-center justify-center gap-1.5 sm:hidden">
+          <span className="rounded-full bg-black/[0.06] px-2.5 py-1 text-[11px] font-medium text-black/70">
+            → lands at #{projected.rank}
+          </span>
+        </div>
+      )}
+
       <div className="mt-2.5 flex flex-wrap items-center justify-center gap-1.5">
-        {PRESETS.map((cents) => (
-          <button
-            key={cents}
-            onClick={() => setDollars(String(cents / 100))}
-            className={`rounded-full border px-3 py-1 text-[12px] transition-colors ${
-              amountCents === cents
-                ? "border-black bg-black text-white"
-                : "border-black/12 text-black/55 hover:border-black/35 hover:text-black"
-            }`}
-          >
-            {formatUsd(cents)}
-          </button>
-        ))}
-        {top && toBeatTop > 0 && (
-          <button
-            onClick={() => setDollars(String(Math.ceil(toBeatTop / 100)))}
-            className="rounded-full border border-black/12 px-3 py-1 text-[12px] text-black/55 transition-colors hover:border-black/35 hover:text-black"
-          >
-            Take #1 · {formatUsd(toBeatTop)}
-          </button>
-        )}
+        {suggestions.map(({ rank, cents }) => {
+          const isMatch = activeSuggestion?.rank === rank || amountCents === cents;
+          return (
+            <button
+              key={rank}
+              onClick={() => setDollars(String(Math.ceil(cents / 100)))}
+              className={`rounded-full border px-3 py-1 text-[12px] transition-colors ${
+                isMatch
+                  ? "border-black bg-black text-white"
+                  : "border-black/12 text-black/55 hover:border-black/35 hover:text-black"
+              }`}
+              title={`Bid ${formatUsd(cents)} to take rank #${rank}`}
+            >
+              <span className="text-black/40">#</span>
+              {rank} · {formatUsd(cents)}
+            </button>
+          );
+        })}
       </div>
 
       {myStartups.length > 0 && (
