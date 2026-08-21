@@ -101,16 +101,16 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
     [board, target],
   );
 
+  // Already-listed sites only ever top up, so they can climb for as little as
+  // one step ($1). The $5 floor applies to brand-new listings.
+  const minCents = existing ? BID_STEP_CENTS : BID_MIN_CENTS;
+
   const projected = useMemo(() => {
     if (!target.ok || amountCents < minCents) return null;
     const newTotal = (existing?.total_cents ?? 0) + amountCents;
     const above = others.filter((b) => b.total_cents >= newTotal).length;
     return { newTotal, rank: above + 1 };
   }, [others, target, amountCents, existing, minCents]);
-
-  // Already-listed sites only ever top up, so they can climb for as little as
-  // one step ($1). The $5 floor applies to brand-new listings.
-  const minCents = existing ? BID_STEP_CENTS : BID_MIN_CENTS;
 
   // Suggested amounts to claim ranks #1–#4, based on the live board.
   const suggestions = useMemo(() => {
