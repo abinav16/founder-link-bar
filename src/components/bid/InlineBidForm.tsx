@@ -35,11 +35,15 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const urlRef = useRef<HTMLInputElement | null>(null);
 
-  // "Outbid" buttons on the board dispatch this event with the amount needed.
+  // "Outbid" buttons on the board dispatch this event with the target's total.
   useEffect(() => {
     function onOutbid(e: Event) {
-      const cents = (e as CustomEvent<{ cents: number }>).detail?.cents;
-      if (typeof cents === "number") setDollars(String(Math.ceil(cents / 100)));
+      const detail = (e as CustomEvent<{ cents?: number; targetTotal?: number }>).detail ?? {};
+      if (typeof detail.targetTotal === "number") setOutbidTotal(detail.targetTotal);
+      else if (typeof detail.cents === "number") setOutbidTotal(detail.cents - BID_STEP_CENTS);
+      // Prefill the site being bid for: the member's own startup when we know it,
+      // so they never have to retype it.
+      setUrl((current) => current || startupsRef.current[0]?.website_url || "");
       rootRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       setFlash(true);
       window.setTimeout(() => urlRef.current?.focus({ preventScroll: true }), 350);
