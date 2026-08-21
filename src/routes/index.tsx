@@ -1,3 +1,4 @@
+import { SiteHeader } from "@/components/SiteHeader";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { LiveVisitorMap } from "@/components/LiveVisitorMap";
 import { StartupFavicon } from "@/components/StartupFavicon";
