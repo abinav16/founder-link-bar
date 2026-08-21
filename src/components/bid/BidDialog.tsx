@@ -7,7 +7,7 @@ import {
   priceToClaim,
   type BidEntry,
 } from "@/lib/bid";
-import { Loader2, X, ArrowRight, Sparkles } from "lucide-react";
+import { Loader2, X, ArrowRight } from "lucide-react";
 
 type Props = {
   open: boolean;
