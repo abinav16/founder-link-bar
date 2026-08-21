@@ -41,17 +41,29 @@ export const Route = createFileRoute("/startupbid")({
 
 function PillStat({ label, value, small }: { label: string; value: string; small?: boolean }) {
   return (
-    <div className="text-center">
-      <div
-        className={`font-bold leading-none tabular-nums tracking-tight text-white ${small ? "text-[12px]" : "text-[15px] sm:text-[17px]"}`}
+    <div className="flex flex-col items-center gap-0.5">
+      <span
+        style={{
+          color: "white",
+          fontSize: small ? 16 : 22,
+          fontWeight: 800,
+          letterSpacing: "-0.04em",
+          lineHeight: 1,
+        }}
       >
         {value}
-      </div>
-      <div
-        className={`mt-1 font-medium uppercase leading-none tracking-[0.14em] text-white/45 ${small ? "text-[8px]" : "text-[9px]"}`}
+      </span>
+      <span
+        style={{
+          color: "rgba(255,255,255,0.35)",
+          fontSize: small ? 7 : 9,
+          fontWeight: 600,
+          letterSpacing: "0.1em",
+          textTransform: "uppercase",
+        }}
       >
         {label}
-      </div>
+      </span>
     </div>
   );
 }
