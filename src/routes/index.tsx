@@ -816,6 +816,8 @@ function Landing() {
       </section>
 
       <WhyItWorks />
+      <StartupBidSection />
+
       <CtaBanner />
       </main>
 
