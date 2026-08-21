@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { BidDialog } from "@/components/bid/BidDialog";
+import { InlineBidForm } from "@/components/bid/InlineBidForm";
 import {
   formatUsd,
   priceToClaim,
@@ -339,22 +340,7 @@ function StartupBidPage() {
             />
           </div>
 
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
-            <button
-              onClick={() => setDialog({ open: true })}
-              className="rounded-xl bg-black px-5 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-85"
-            >
-              Place your bid
-            </button>
-            {top && (
-              <button
-                onClick={() => setDialog({ open: true, amount: priceToClaim(top.total_cents) })}
-                className="rounded-xl border border-black/12 bg-white px-5 py-3 text-sm font-medium text-black/70 transition-colors hover:border-black/30 hover:text-black"
-              >
-                Take #1 for {formatUsd(priceToClaim(top.total_cents))}
-              </button>
-            )}
-          </div>
+          <InlineBidForm board={entries} />
 
         </header>
 
