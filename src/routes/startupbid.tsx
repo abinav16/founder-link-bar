@@ -56,6 +56,101 @@ function PillStat({ label, value, small }: { label: string; value: string; small
   );
 }
 
+const PODIUM = [
+  {
+    card: "border-black/80 bg-black text-white shadow-[0_18px_40px_-18px_rgba(0,0,0,0.55)]",
+    badge: "bg-white text-black",
+    name: "text-white",
+    desc: "text-white/60",
+    meta: "text-white/45",
+    amount: "text-white",
+    outbid: "text-white/55 hover:text-white",
+    pad: "px-5 py-5 sm:px-6 sm:py-6",
+    logo: 60,
+    nameSize: "text-[19px] sm:text-[21px]",
+    badgeSize: "h-11 w-11 text-[15px]",
+  },
+  {
+    card: "border-black/25 bg-black/[0.055] text-black",
+    badge: "bg-black text-white",
+    name: "text-black",
+    desc: "text-black/55",
+    meta: "text-black/40",
+    amount: "text-black",
+    outbid: "text-black/45 hover:text-black",
+    pad: "px-5 py-4.5 sm:px-6 sm:py-5",
+    logo: 52,
+    nameSize: "text-[17px] sm:text-[19px]",
+    badgeSize: "h-10 w-10 text-[14px]",
+  },
+  {
+    card: "border-black/12 bg-black/[0.025] text-black",
+    badge: "bg-black/80 text-white",
+    name: "text-black",
+    desc: "text-black/50",
+    meta: "text-black/40",
+    amount: "text-black",
+    outbid: "text-black/45 hover:text-black",
+    pad: "px-5 py-4 sm:px-6 sm:py-4.5",
+    logo: 46,
+    nameSize: "text-[16px] sm:text-[17px]",
+    badgeSize: "h-9 w-9 text-[13px]",
+  },
+];
+
+function PodiumRow({ entry, onOutbid }: { entry: BidEntry; onOutbid: (e: BidEntry) => void }) {
+  const s = PODIUM[Math.min(entry.rank, 3) - 1] ?? PODIUM[2];
+  return (
+    <div className={`flex items-center gap-4 rounded-2xl border ${s.card} ${s.pad}`}>
+      <div
+        className={`flex shrink-0 items-center justify-center rounded-full font-bold tabular-nums ${s.badge} ${s.badgeSize}`}
+      >
+        #{entry.rank}
+      </div>
+
+      <StartupFavicon
+        url={entry.target_url}
+        name={entry.name}
+        logoUrl={entry.logo_url}
+        size={s.logo}
+        className="hidden shrink-0 rounded-xl sm:block"
+      />
+
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <a
+            href={entry.target_url}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            onClick={() => trackBidClick(entry.id)}
+            className={`truncate font-bold tracking-tight hover:underline ${s.name} ${s.nameSize}`}
+          >
+            {entry.name}
+          </a>
+        </div>
+        <p className={`mt-0.5 line-clamp-2 text-[13px] leading-snug ${s.desc}`}>
+          {entry.description || entry.display_url}
+        </p>
+        <div className={`mt-1.5 text-[11.5px] font-medium tabular-nums ${s.meta}`}>
+          {entry.clicks.toLocaleString()} clicks
+        </div>
+      </div>
+
+      <div className="shrink-0 text-right">
+        <div className={`text-[18px] font-bold tabular-nums sm:text-[20px] ${s.amount}`}>
+          {formatUsd(entry.total_cents)}
+        </div>
+        <button
+          onClick={() => onOutbid(entry)}
+          className={`mt-0.5 text-[11.5px] font-medium hover:underline ${s.outbid}`}
+        >
+          Outbid · {formatUsd(priceToClaim(entry.total_cents))}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function BidRow({ entry, onOutbid }: { entry: BidEntry; onOutbid: (e: BidEntry) => void }) {
   return (
     <div className="flex items-center gap-3 border-b border-black/[0.06] px-4 py-3.5 transition-colors last:border-0 hover:bg-black/[0.015] sm:gap-4 sm:px-5">
