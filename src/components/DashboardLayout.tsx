@@ -1,6 +1,6 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { LogOut, LayoutDashboard, Trophy, Settings, Globe, LogIn } from "lucide-react";
+import { LogOut, LayoutDashboard, Trophy, Settings, Globe, LogIn, Gavel } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SponsoredRail } from "@/components/SponsoredRail";
 import { FeaturedMobileBanner } from "@/components/FeaturedMobileBanner";
@@ -43,6 +43,7 @@ function FooterBar({ wide }: { wide?: boolean }) {
 const NAV = [
   { to: "/network",     label: "Network",     icon: Globe },
   { to: "/leaderboard", label: "Leaderboard", icon: Trophy },
+  { to: "/startupbid",  label: "StartupBid",  icon: Gavel },
   { to: "/dashboard",   label: "Dashboard",   icon: LayoutDashboard },
 ] as const;
 
