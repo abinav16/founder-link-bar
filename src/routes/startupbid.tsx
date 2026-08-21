@@ -493,6 +493,13 @@ function StartupBidPage() {
                           value={(stats.data?.total_clicks ?? 0).toLocaleString()}
                         />
                       </div>
+                      <div className="px-2.5 py-1.5">
+                        <PillStat
+                          small
+                          label="Top bid"
+                          value={formatUsd(stats.data?.top_cents ?? 0)}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
