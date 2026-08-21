@@ -1,6 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
+
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { BidDialog } from "@/components/bid/BidDialog";
 import { InlineBidForm } from "@/components/bid/InlineBidForm";
@@ -732,6 +734,10 @@ function StartupBidPage() {
           <ArrowUpRight className="h-4 w-4" />
         </Link>
       </main>
+
+      <SiteFooter />
+
+
 
       <BidDialog
         open={dialog.open}

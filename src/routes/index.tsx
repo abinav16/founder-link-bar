@@ -488,7 +488,67 @@ function FactCell({ fact, delay, total, index }: { fact: typeof FACTS[0]; delay:
   );
 }
 
+function StartupBidSection() {
+  const { ref, visible } = useInView(0.15);
+  return (
+    <section className="border-t border-black/8 bg-black px-6 py-16 text-white sm:py-24">
+      <div
+        ref={ref}
+        className="mx-auto max-w-5xl transition-all duration-700"
+        style={{ opacity: visible ? 1 : 0, transform: visible ? "none" : "translateY(24px)" }}
+      >
+        <div className="flex flex-col gap-10 md:flex-row md:items-center md:justify-between">
+          <div className="max-w-xl">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/20 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/70">
+              <Gavel className="h-3 w-3" /> New · StartupBid
+            </span>
+            <h2
+              className="mt-5 text-3xl font-medium leading-tight tracking-tight sm:text-4xl md:text-5xl"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              Want the top spot?<br />Bid for it.
+            </h2>
+            <p className="mt-5 text-[15px] leading-relaxed text-white/50">
+              StartupBid is our pay-to-rank leaderboard. Enter any site or @handle, pay from $5, and
+              your startup climbs the board. Bids are cumulative, ranking is pure total spend, and
+              anyone can join — no account and no widget install required.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Link
+                to="/startupbid"
+                className="group inline-flex h-12 items-center rounded-lg bg-white px-7 text-sm font-medium text-black transition-all duration-200 hover:bg-white/85"
+              >
+                See the board
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+              </Link>
+              <span className="text-xs text-white/35">Separate from the free widget network.</span>
+            </div>
+          </div>
+          <div className="w-full max-w-sm space-y-2.5">
+            {[
+              { rank: "#1", name: "yourstartup.com", amount: "$120" },
+              { rank: "#2", name: "acme.ai", amount: "$74" },
+              { rank: "#3", name: "@founderhandle", amount: "$31" },
+            ].map((r) => (
+              <div
+                key={r.rank}
+                className="flex items-center gap-4 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3"
+              >
+                <span className="text-xs font-semibold text-white/40">{r.rank}</span>
+                <span className="flex-1 truncate text-sm font-medium text-white/85">{r.name}</span>
+                <span className="text-sm font-semibold text-white">{r.amount}</span>
+              </div>
+            ))}
+            <p className="pt-1 text-center text-[11px] text-white/25">Live board updates every few seconds.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function CtaBanner() {
+
   const { ref, visible } = useInView(0.2);
   return (
     <section className="border-t border-black/8 bg-white px-6 py-16 sm:py-24 md:py-36">
@@ -756,6 +816,8 @@ function Landing() {
       </section>
 
       <WhyItWorks />
+      <StartupBidSection />
+
       <CtaBanner />
       </main>
 
@@ -778,6 +840,8 @@ function Landing() {
               <Link to="/apply" className="hover:text-black transition-colors">Apply</Link>
               <Link to="/pricing" className="hover:text-black transition-colors">Pricing</Link>
               <Link to="/faq" className="hover:text-black transition-colors">FAQ</Link>
+              <Link to="/startupbid" className="hover:text-black transition-colors">StartupBid</Link>
+
               <Link to="/privacy" className="hover:text-black transition-colors">Privacy</Link>
               <Link to="/terms" className="hover:text-black transition-colors">Terms</Link>
               <a
