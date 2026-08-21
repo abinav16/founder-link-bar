@@ -220,7 +220,7 @@ export function BidDialog({ open, onClose, board, initialUrl, initialAmountCents
         )}
 
         {projected && (
-          <div className="mt-5 rounded-xl border border-black/[0.08] bg-black/[0.03] px-4 py-3">
+          <div className="mt-5 rounded-full border border-black/[0.08] bg-black/[0.03] px-4 py-3">
             <p className="text-[13px] text-black/60">
               After this bid you land at{" "}
               <span className="font-semibold text-black">#{projected.rank}</span> with a total of{" "}
@@ -230,7 +230,7 @@ export function BidDialog({ open, onClose, board, initialUrl, initialAmountCents
         )}
 
         {error && (
-          <p className="mt-4 rounded-lg border border-red-500/20 bg-red-500/[0.06] px-3 py-2 text-[12.5px] text-red-600">
+          <p className="mt-4 rounded-full border border-red-500/20 bg-red-500/[0.06] px-3 py-2 text-[12.5px] text-red-600">
             {error}
           </p>
         )}
