@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { BID_MIN_CENTS, BID_STEP_CENTS, formatUsd, normalizeBidUrl, type BidEntry } from "@/lib/bid";
 import { ArrowRight, Loader2 } from "lucide-react";
@@ -28,6 +28,23 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [myStartups, setMyStartups] = useState<{ name: string; website_url: string }[]>([]);
+  const [flash, setFlash] = useState(false);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const urlRef = useRef<HTMLInputElement | null>(null);
+
+  // "Outbid" buttons on the board dispatch this event with the amount needed.
+  useEffect(() => {
+    function onOutbid(e: Event) {
+      const cents = (e as CustomEvent<{ cents: number }>).detail?.cents;
+      if (typeof cents === "number") setDollars(String(Math.ceil(cents / 100)));
+      rootRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      setFlash(true);
+      window.setTimeout(() => urlRef.current?.focus({ preventScroll: true }), 350);
+      window.setTimeout(() => setFlash(false), 2000);
+    }
+    window.addEventListener("sb:outbid", onOutbid as EventListener);
+    return () => window.removeEventListener("sb:outbid", onOutbid as EventListener);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -126,9 +143,16 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
   }
 
   return (
-    <div className="mx-auto mt-6 w-full max-w-xl text-left">
-      <div className="flex flex-col gap-2 rounded-full border border-black/[0.09] bg-white p-2 shadow-[0_1px_3px_rgba(0,0,0,0.05)] sm:flex-row sm:items-center">
+    <div ref={rootRef} id="bid-form" className="mx-auto mt-6 w-full max-w-xl scroll-mt-28 text-left">
+      <div
+        className={`flex flex-col gap-2 rounded-full border bg-white p-2 transition-all duration-300 sm:flex-row sm:items-center ${
+          flash
+            ? "border-black shadow-[0_0_0_4px_rgba(0,0,0,0.10)]"
+            : "border-black/[0.09] shadow-[0_1px_3px_rgba(0,0,0,0.05)]"
+        }`}
+      >
         <input
+          ref={urlRef}
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           onKeyDown={(e) => {

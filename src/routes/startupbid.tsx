@@ -490,11 +490,11 @@ function StartupBidPage() {
                     key={e.id}
                     entry={e}
                     onOutbid={(x) =>
-                      setDialog({
-                        open: true,
-                        url: x.display_url,
-                        amount: priceToClaim(x.total_cents),
-                      })
+                      window.dispatchEvent(
+                        new CustomEvent("sb:outbid", {
+                          detail: { cents: priceToClaim(x.total_cents) },
+                        }),
+                      )
                     }
                   />
                 ))}
@@ -516,11 +516,11 @@ function StartupBidPage() {
                         key={e.id}
                         entry={e}
                         onOutbid={(x) =>
-                          setDialog({
-                            open: true,
-                            url: x.display_url,
-                            amount: priceToClaim(x.total_cents),
-                          })
+                          window.dispatchEvent(
+                            new CustomEvent("sb:outbid", {
+                              detail: { cents: priceToClaim(x.total_cents) },
+                            }),
+                          )
                         }
                       />
                     ))}
