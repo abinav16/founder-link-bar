@@ -379,13 +379,13 @@ function StartupBidPage() {
     <div className="min-h-screen bg-[#fafafa]">
       <SiteHeader />
 
-      <main className="mx-auto max-w-3xl px-6 py-10 sm:py-12">
+      <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
         {/* Hero */}
         <header className="text-center">
-          <h1 className="text-4xl font-semibold tracking-tight text-black sm:text-5xl">
+          <h1 className="text-[32px] font-semibold tracking-tight text-black sm:text-5xl">
             StartupBid
           </h1>
-          <p className="mx-auto mt-2 max-w-lg text-[15px] leading-relaxed text-black/50">
+          <p className="mx-auto mt-2 max-w-lg text-[13.5px] leading-relaxed text-black/50 sm:text-[15px]">
             Pay to rank. Bids are cumulative, every dollar stacks onto your total and pushes you up
             the board. Highest total sits at #1.
           </p>
@@ -476,7 +476,7 @@ function StartupBidPage() {
         </header>
 
         {/* Board */}
-        <section className="mt-12">
+        <section className="mt-10 sm:mt-12">
           {search.bid && (
             <SuccessBanner bidId={search.bid} paymentId={search.payment_id} onDone={clearSearch} />
           )}
@@ -568,7 +568,7 @@ function StartupBidPage() {
         </section>
 
         {/* Recent bids + how it works */}
-        <section className="mt-12 grid gap-6 sm:grid-cols-2">
+        <section className="mt-10 grid gap-4 sm:mt-12 sm:grid-cols-2 sm:gap-6">
           <div className="rounded-2xl border border-black/[0.07] bg-white p-5">
             <h3 className="text-[12px] font-semibold uppercase tracking-[0.14em] text-black/40">
               Recent bids
