@@ -68,6 +68,21 @@ function PillStat({ label, value, small }: { label: string; value: string; small
   );
 }
 
+function PillStatSkeleton({ small }: { small?: boolean }) {
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <div
+        className="animate-pulse rounded-full bg-white/25"
+        style={{ height: small ? 14 : 18, width: small ? 34 : 48 }}
+      />
+      <div
+        className="animate-pulse rounded-full bg-white/10"
+        style={{ height: small ? 6 : 8, width: small ? 34 : 52 }}
+      />
+    </div>
+  );
+}
+
 const PODIUM = [
   {
     card: "border-black/80 bg-black text-white shadow-[0_18px_40px_-18px_rgba(0,0,0,0.55)]",
