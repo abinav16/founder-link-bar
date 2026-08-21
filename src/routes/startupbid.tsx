@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { BidDialog } from "@/components/bid/BidDialog";
@@ -258,10 +258,17 @@ function SuccessBanner({
   const [state, setState] = useState<{ status: "pending" | "paid" | "failed"; data?: any }>({
     status: "pending",
   });
+  const [tick, setTick] = useState(0);
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
     let attempts = 0;
+    setState({ status: "pending" });
     const poll = async () => {
       attempts += 1;
       try {
@@ -281,20 +288,20 @@ function SuccessBanner({
         /* keep polling */
       }
       if (cancelled) return;
-      if (attempts >= 20) {
+      if (attempts >= 40) {
         setState({ status: "failed" });
         return;
       }
-      setTimeout(poll, 3000);
+      setTimeout(poll, attempts < 10 ? 2000 : 4000);
     };
     poll();
     return () => {
       cancelled = true;
     };
-  }, [bidId, paymentId, onDone]);
+  }, [bidId, paymentId, onDone, tick]);
 
   return (
-    <div className="mb-6 rounded-2xl border border-black/[0.08] bg-white px-5 py-4">
+    <div ref={ref} className="mb-6 rounded-2xl border border-black/[0.08] bg-white px-5 py-4">
       {state.status === "pending" && (
         <div className="flex items-center gap-3 text-black/60">
           <Loader2 className="h-4 w-4 animate-spin" />
@@ -315,10 +322,18 @@ function SuccessBanner({
         </div>
       )}
       {state.status === "failed" && (
-        <p className="text-sm text-black/60">
-          We haven&apos;t seen the payment confirmation yet. If you were charged, your bid appears
-          automatically within a few minutes — no action needed.
-        </p>
+        <div className="flex flex-wrap items-center gap-3">
+          <p className="text-sm text-black/60">
+            We haven&apos;t seen the payment confirmation yet. If you were charged, your bid appears
+            automatically within a few minutes.
+          </p>
+          <button
+            onClick={() => setTick((t) => t + 1)}
+            className="rounded-full bg-black px-4 py-1.5 text-[12px] font-semibold text-white transition-opacity hover:opacity-85"
+          >
+            Check again
+          </button>
+        </div>
       )}
     </div>
   );
