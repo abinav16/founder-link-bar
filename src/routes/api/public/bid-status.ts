@@ -49,16 +49,25 @@ export const Route = createFileRoute("/api/public/bid-status")({
         const payment = lookupId ? await getDodoPayment(lookupId) : null;
         const status = String(payment?.status ?? "").toLowerCase();
         const paid = status === "succeeded" || status === "completed" || status === "paid";
-        const isMine = payment?.metadata?.bid_id === bidId;
+        // The bid id travels in metadata; fall back to the stored payment id so a
+        // provider that drops metadata cannot block fulfilment.
+        const isMine =
+          payment?.metadata?.bid_id === bidId ||
+          (!payment?.metadata?.bid_id && bid.dodo_payment_id === lookupId);
 
         if (payment && paid && isMine) {
-          const result = await fulfilBid(bidId, lookupId, payment?.customer?.email ?? null);
+          const result = await fulfilBid(
+            bidId,
+            lookupId,
+            payment?.customer?.email ?? null,
+            Number(payment?.total_amount ?? payment?.settlement_amount) || null,
+          );
           if (result.ok) {
             return json({
               status: "paid",
               name: bid.name,
               display_url: bid.display_url,
-              amount_cents: bid.amount_cents,
+              amount_cents: Number(payment?.total_amount) || bid.amount_cents,
               total_cents: result.total_cents,
               rank: result.rank,
             });
