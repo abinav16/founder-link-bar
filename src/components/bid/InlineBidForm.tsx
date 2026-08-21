@@ -9,16 +9,17 @@ function suggestedForRank(
   others: BidEntry[],
   existingTotal: number,
   targetRank: number,
+  minCents: number,
 ): number {
   // To place at `targetRank`, the bidder must beat the entry currently sitting
   // at that rank among the *other* entries (i.e. exclude self). If there are
   // fewer entries than targetRank-1 ahead, the minimum bid is enough.
   const toBeat = others[targetRank - 1];
   if (!toBeat) {
-    return Math.max(BID_MIN_CENTS - existingTotal, BID_MIN_CENTS);
+    return Math.max(BID_MIN_CENTS - existingTotal, minCents);
   }
   const neededTotal = toBeat.total_cents + BID_STEP_CENTS;
-  return Math.max(neededTotal - existingTotal, BID_MIN_CENTS);
+  return Math.max(neededTotal - existingTotal, minCents);
 }
 
 /** Inline bid form for the hero — no popup: enter site, pick amount, go to checkout. */
@@ -86,7 +87,7 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
     if (outbidTotal === null) return;
     const needed = Math.max(
       outbidTotal + BID_STEP_CENTS - (existing?.total_cents ?? 0),
-      BID_MIN_CENTS,
+      existing ? BID_STEP_CENTS : BID_MIN_CENTS,
     );
     setDollars(String(Math.ceil(needed / 100)));
   }, [outbidTotal, existing]);
@@ -100,21 +101,44 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
     [board, target],
   );
 
+  // Already-listed sites only ever top up, so they can climb for as little as
+  // one step ($1). The $5 floor applies to brand-new listings.
+  const minCents = existing ? BID_STEP_CENTS : BID_MIN_CENTS;
+
   const projected = useMemo(() => {
-    if (!target.ok || amountCents < BID_MIN_CENTS) return null;
+    if (!target.ok || amountCents < minCents) return null;
     const newTotal = (existing?.total_cents ?? 0) + amountCents;
     const above = others.filter((b) => b.total_cents >= newTotal).length;
     return { newTotal, rank: above + 1 };
-  }, [others, target, amountCents, existing]);
+  }, [others, target, amountCents, existing, minCents]);
 
   // Suggested amounts to claim ranks #1–#4, based on the live board.
   const suggestions = useMemo(() => {
     const existingTotal = existing?.total_cents ?? 0;
     return [1, 2, 3, 4].map((rank) => ({
       rank,
-      cents: suggestedForRank(others, existingTotal, rank),
+      cents: suggestedForRank(others, existingTotal, rank, minCents),
     }));
-  }, [others, existing]);
+  }, [others, existing, minCents]);
+
+  // When a site already on the board is typed in, recommend exactly what it
+  // costs to move up one place instead of the $5 new-listing default.
+  const autoFilledFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (outbidTotal !== null) return;
+    if (!existing) {
+      if (autoFilledFor.current) {
+        autoFilledFor.current = null;
+        setDollars(String(BID_MIN_CENTS / 100));
+      }
+      return;
+    }
+    if (autoFilledFor.current === existing.url_key) return;
+    autoFilledFor.current = existing.url_key;
+    const nextRank = Math.max(existing.rank - 1, 1);
+    const cents = suggestedForRank(others, existing.total_cents, nextRank, BID_STEP_CENTS);
+    setDollars(String(Math.ceil(cents / 100)));
+  }, [existing, others, outbidTotal]);
 
   // When the user has not typed an amount, default the projection pills to the
   // rank they'd get for each suggestion. Once they type, highlight the matching pill.
@@ -129,8 +153,8 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
       setError("Enter a valid website (example.com) or an @handle.");
       return;
     }
-    if (!Number.isFinite(amountCents) || amountCents < BID_MIN_CENTS) {
-      setError("Minimum bid is $5.");
+    if (!Number.isFinite(amountCents) || amountCents < minCents) {
+      setError(existing ? "Minimum top-up is $1." : "Minimum bid is $5.");
       return;
     }
     setBusy(true);

@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 const MIN_CENTS = 500;
+// Sites already on the board only top up, so they may climb for as little as $1.
+const TOPUP_MIN_CENTS = 100;
 const MAX_CENTS = 5_000_000; // $50,000 guard rail
 
 const ALLOWED_ORIGINS = [
@@ -74,8 +76,8 @@ export const Route = createFileRoute("/api/public/bid-checkout")({
         if (!target) return json({ error: "Enter a valid website or @handle." }, 400);
 
         const amountCents = Math.round(Number(body?.amount_cents));
-        if (!Number.isFinite(amountCents) || amountCents < MIN_CENTS || amountCents > MAX_CENTS) {
-          return json({ error: `Bids must be between $5 and $50,000.` }, 400);
+        if (!Number.isFinite(amountCents) || amountCents < TOPUP_MIN_CENTS || amountCents > MAX_CENTS) {
+          return json({ error: `Bids must be between $1 and $50,000.` }, 400);
         }
 
         const origin = request.headers.get("origin") ?? "";
@@ -103,6 +105,19 @@ export const Route = createFileRoute("/api/public/bid-checkout")({
           if (data?.user) {
             userId = data.user.id;
             email = data.user.email ?? null;
+          }
+        }
+
+        // New listings still pay the $5 floor; only existing entries may top up
+        // with less. Checked server-side so the client cannot bypass it.
+        if (amountCents < MIN_CENTS) {
+          const { data: entry } = await supabaseAdmin
+            .from("bid_entries")
+            .select("id")
+            .eq("url_key", target.urlKey)
+            .maybeSingle();
+          if (!entry) {
+            return json({ error: "Minimum bid for a new listing is $5." }, 400);
           }
         }
 
