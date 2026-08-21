@@ -55,12 +55,26 @@ export async function fetchSiteMeta(url: string): Promise<{ name?: string; descr
       return html.match(re)?.[1] ?? html.match(alt)?.[1] ?? "";
     };
 
-    const title = og("og:site_name") || og("og:title") || html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1] || "";
-    const description =
+    const rawTitle = og("og:site_name") || og("og:title") || html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1] || "";
+    const title = rawTitle ? decode(rawTitle) : "";
+    let description =
       og("og:description") || og("description") || og("twitter:description") || "";
+    description = description ? decode(description) : "";
+
+    // Plenty of SPAs ship no meta description at all. Their <title> usually
+    // carries the pitch after a separator ("Brand | does X") — use that rather
+    // than leaving the board row as a bare domain.
+    if (!description && title) {
+      const tail = title.split(/\s[|–—·:-]\s/).slice(1).join(" · ").trim();
+      if (tail.length > 8) description = tail;
+    }
+
+    // Brand name is the part before the separator.
+    const name = title ? title.split(/\s[|–—·:-]\s/)[0]!.trim() || title : "";
+
     return {
-      name: title ? decode(title).slice(0, 80) : undefined,
-      description: description ? decode(description).slice(0, 240) : undefined,
+      name: name ? name.slice(0, 80) : undefined,
+      description: description ? description.slice(0, 240) : undefined,
     };
   } catch {
     return {};
