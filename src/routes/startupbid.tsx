@@ -449,6 +449,17 @@ function SuccessBanner({
         if (json?.status === "paid") {
           setState({ status: "paid", data: json });
           onDone();
+          // Scrape title/description in the background, then refresh the board
+          // so the new row shows real copy instead of just the domain.
+          void fetch("/api/public/bid-enrich", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ bid_id: bidId }),
+          })
+            .then(() => {
+              if (!cancelled) onDone();
+            })
+            .catch(() => {});
           return;
         }
       } catch {
