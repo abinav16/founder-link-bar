@@ -187,7 +187,10 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
             <span className="text-sm text-black/40">$</span>
             <input
               value={dollars}
-              onChange={(e) => setDollars(e.target.value.replace(/[^0-9.]/g, ""))}
+              onChange={(e) => {
+                setOutbidTotal(null);
+                setDollars(e.target.value.replace(/[^0-9.]/g, ""));
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") submit();
               }}
