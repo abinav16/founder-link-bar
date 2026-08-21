@@ -37,12 +37,14 @@ export const Route = createFileRoute("/startupbid")({
   component: StartupBidPage,
 });
 
-function Stat({ label, value }: { label: string; value: string }) {
+function PillStat({ label, value }: { label: string; value: string }) {
   return (
-    <div>
-      <div className="text-[11px] uppercase tracking-wider text-black/40">{label}</div>
-      <div className="mt-0.5 text-lg font-semibold tabular-nums tracking-tight text-black">
+    <div className="text-center">
+      <div className="text-[15px] font-bold leading-none tabular-nums tracking-tight text-white sm:text-[17px]">
         {value}
+      </div>
+      <div className="mt-1 text-[9px] font-medium uppercase leading-none tracking-[0.14em] text-white/45">
+        {label}
       </div>
     </div>
   );
@@ -224,8 +226,16 @@ function StartupBidPage() {
       <main className="mx-auto max-w-3xl px-6 py-14 sm:py-20">
         {/* Hero */}
         <header className="text-center">
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-3 py-1 text-[11px] font-medium tracking-wide text-black/50">
-            No account needed · from $5
+          <div className="inline-flex items-stretch divide-x divide-white/10 overflow-hidden rounded-2xl border border-white/10 bg-black/85 shadow-[0_8px_32px_rgba(0,0,0,0.25)] backdrop-blur-md">
+            <div className="px-4 py-2.5 sm:px-5">
+              <PillStat label="On the board" value={(stats.data?.entries ?? 0).toLocaleString()} />
+            </div>
+            <div className="px-4 py-2.5 sm:px-5">
+              <PillStat label="Total bid" value={formatUsd(stats.data?.total_cents ?? 0)} />
+            </div>
+            <div className="px-4 py-2.5 sm:px-5">
+              <PillStat label="Clicks sent" value={(stats.data?.total_clicks ?? 0).toLocaleString()} />
+            </div>
           </div>
           <h1 className="mt-5 text-4xl font-semibold tracking-tight text-black sm:text-5xl">
             StartupBid
@@ -252,11 +262,6 @@ function StartupBidPage() {
             )}
           </div>
 
-          <div className="mx-auto mt-10 grid max-w-xl grid-cols-3 gap-4 rounded-2xl border border-black/[0.07] bg-white px-6 py-5 text-left">
-            <Stat label="On the board" value={(stats.data?.entries ?? 0).toLocaleString()} />
-            <Stat label="Total bid" value={formatUsd(stats.data?.total_cents ?? 0)} />
-            <Stat label="Clicks sent" value={(stats.data?.total_clicks ?? 0).toLocaleString()} />
-          </div>
         </header>
 
         {/* Board */}
