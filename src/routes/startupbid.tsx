@@ -712,6 +712,14 @@ function StartupBidPage() {
           )}
         </section>
 
+        {/* Mobile: trending + recent activity below the board */}
+        <section className="mt-8 grid grid-cols-1 gap-3 sm:hidden">
+          <TrendingNow items={trending.data ?? []} loading={trending.isLoading} />
+          <RecentPurchases items={activity.data ?? []} loading={activity.isLoading} />
+        </section>
+
+
+
         {/* How it works */}
         <section className="mt-10 sm:mt-12">
           <div className="rounded-2xl border border-black/[0.07] bg-white p-5">
