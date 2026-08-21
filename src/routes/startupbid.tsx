@@ -428,7 +428,7 @@ function StartupBidPage() {
     <div className="min-h-screen bg-[#fafafa]">
       <SiteHeader />
 
-      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
+      <main className="mx-auto max-w-5xl px-4 pb-8 pt-4 sm:px-6 sm:pb-12 sm:pt-5">
         {/* Hero */}
         <header className="text-center">
           <h1 className="text-[32px] font-semibold tracking-tight text-black sm:text-5xl">
