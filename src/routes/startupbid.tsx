@@ -478,20 +478,27 @@ function StartupBidPage() {
                       </span>
                     </div>
                     <div className="flex justify-center">
-                      <div className="flex items-stretch divide-x divide-white/10 overflow-hidden rounded-2xl border border-white/10 bg-black/70 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md">
-                        <div className="px-5 py-2.5">
-                          <PillStat
-                            label="Clicks sent"
-                            value={(stats.data?.total_clicks ?? 0).toLocaleString()}
-                          />
+                      {stats.isLoading ? (
+                        <div className="flex items-stretch divide-x divide-white/10 overflow-hidden rounded-2xl border border-white/10 bg-black/70 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md">
+                          <div className="px-5 py-2.5"><PillStatSkeleton /></div>
+                          <div className="px-5 py-2.5"><PillStatSkeleton /></div>
                         </div>
-                        <div className="px-5 py-2.5">
-                          <PillStat
-                            label="Top bid"
-                            value={formatUsd(stats.data?.top_cents ?? 0)}
-                          />
+                      ) : (
+                        <div className="flex items-stretch divide-x divide-white/10 overflow-hidden rounded-2xl border border-white/10 bg-black/70 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md">
+                          <div className="px-5 py-2.5">
+                            <PillStat
+                              label="Clicks sent"
+                              value={(stats.data?.total_clicks ?? 0).toLocaleString()}
+                            />
+                          </div>
+                          <div className="px-5 py-2.5">
+                            <PillStat
+                              label="Top bid"
+                              value={formatUsd(stats.data?.top_cents ?? 0)}
+                            />
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   </div>
 
