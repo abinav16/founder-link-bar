@@ -132,11 +132,11 @@ export async function fulfilBid(
 
 /** Look a payment up directly with Dodo (source of truth for the return poll). */
 export async function getDodoPayment(paymentId: string): Promise<any | null> {
-  const apiKey = process.env.DODO_PAYMENTS_API_KEY;
+  const apiKey = process.env.DODO_TEST_API_KEY ?? process.env.DODO_PAYMENTS_API_KEY;
   if (!apiKey || !paymentId) return null;
   try {
     const res = await fetch(
-      `https://live.dodopayments.com/payments/${encodeURIComponent(paymentId)}`,
+      `https://test.dodopayments.com/payments/${encodeURIComponent(paymentId)}`,
       { headers: { Authorization: `Bearer ${apiKey}` } },
     );
     const raw = await res.text();
