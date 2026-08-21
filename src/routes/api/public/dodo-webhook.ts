@@ -137,8 +137,15 @@ export const Route = createFileRoute("/api/public/dodo-webhook")({
           return new Response("ok", { status: 200 });
         }
 
+        // StartupBid payments are guest-friendly: no user account required.
+        if (data.metadata?.kind === "bid" && data.metadata?.bid_id) {
+          const { fulfilBid } = await import("@/lib/bid-fulfil.server");
+          await fulfilBid(String(data.metadata.bid_id), paymentId, customerEmail ?? null);
+          return new Response("ok", { status: 200 });
+        }
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
 
         // Resolve user_id from metadata first, then customer email.
         let userId: string | null = metaUserId ?? null;

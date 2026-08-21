@@ -238,3 +238,48 @@
   }
 }
 
+
+/* ── StartupBid ─────────────────────────────────────────────── */
+@utility sb-bid-gold {
+  background: linear-gradient(100deg, oklch(0.9 0.11 88), oklch(0.85 0.13 80));
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      115deg,
+      transparent 35%,
+      oklch(0.98 0.05 95 / 0.65) 50%,
+      transparent 65%
+    );
+    transform: translateX(-120%);
+    animation: sb-sheen 4.5s ease-in-out infinite;
+    pointer-events: none;
+    border-radius: inherit;
+    z-index: 1;
+  }
+}
+
+@utility sb-bid-orb {
+  animation: sb-bid-float 9s ease-in-out infinite;
+}
+
+@utility sb-bid-grid {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 20%, transparent 75%);
+}
+
+@keyframes sb-bid-float {
+  0%, 100% { transform: translate(-50%, 0) scale(1); opacity: 0.85; }
+  50% { transform: translate(-50%, 28px) scale(1.08); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sb-bid-gold::before,
+  .sb-bid-orb {
+    animation: none;
+  }
+}
