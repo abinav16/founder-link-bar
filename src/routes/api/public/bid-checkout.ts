@@ -133,7 +133,16 @@ export const Route = createFileRoute("/api/public/bid-checkout")({
           return json({ error: "Could not start the checkout." }, 500);
         }
 
-        const returnUrl = `${origin}/startupbid?bid=${bid.id}&payment_id={payment_id}`;
+        // Dodo redirects the user's browser here after payment — it must be a
+        // publicly reachable https origin (localhost would 404 for the payer).
+        let returnOrigin = "https://startupbar.co";
+        try {
+          const u = new URL(origin);
+          if (u.protocol === "https:" && u.hostname !== "localhost") returnOrigin = u.origin;
+        } catch {
+          /* keep default */
+        }
+        const returnUrl = `${returnOrigin}/startupbid?bid=${bid.id}&payment_id={payment_id}`;
 
         const res = await fetch("https://test.dodopayments.com/payments", {
           method: "POST",
