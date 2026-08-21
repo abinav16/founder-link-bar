@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { BidDialog } from "@/components/bid/BidDialog";
