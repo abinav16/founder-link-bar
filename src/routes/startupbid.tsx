@@ -720,9 +720,14 @@ function StartupBidPage() {
               <li>4. Clicks from the board are counted and shown publicly.</li>
             </ol>
             <p className="mt-3 text-[11px] leading-relaxed text-black/30">
-              Bids are final and non-refundable. StartupBid is separate from the StartupBar widget
-              network — no install required.
+              StartupBid is a paid advertising placement, not a contest, prize draw or game of
+              chance. Your listing goes live immediately after payment and stays on the board with
+              public click tracking. Ranking is decided purely by the total amount paid. Payments
+              are processed by Dodo Payments, our merchant of record; refund requests are handled
+              under their policy. StartupBid is separate from the StartupBar widget network — no
+              install required.
             </p>
+
           </div>
         </section>
 
