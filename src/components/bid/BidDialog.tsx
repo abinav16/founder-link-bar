@@ -249,8 +249,11 @@ export function BidDialog({ open, onClose, board, initialUrl, initialAmountCents
           )}
         </button>
         <p className="mt-3 text-center text-[11px] leading-relaxed text-black/35">
-          No account needed. Secure checkout by Dodo Payments. Bids are final and non-refundable.
+          No account needed. Secure checkout by Dodo Payments, our merchant of record. You are
+          buying a paid listing on the board that goes live immediately after payment. Ranking is
+          by total amount paid, not by chance.
         </p>
+
       </div>
     </div>
   );
