@@ -11,10 +11,10 @@ import { fetchFeaturedSlots, railSlots, type FeaturedSlot } from "@/lib/featured
 function SlotMark() {
   return (
     <div className="relative">
-      <div className="relative grid h-12 w-12 place-items-center rounded-full border border-black/15 bg-transparent">
+      <div className="relative grid h-9 w-9 place-items-center rounded-full border border-black/15 bg-transparent">
         <svg
-          width="20"
-          height="20"
+          width="16"
+          height="16"
           viewBox="0 0 24 24"
           fill="none"
           aria-hidden="true"
