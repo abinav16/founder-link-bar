@@ -117,16 +117,16 @@ export function SponsoredRail({ side = "right" }: { side?: "left" | "right" }) {
                 setSlot(i);
                 setOpen(true);
               }}
-              className="group relative flex h-full min-h-0 w-full flex-col items-center justify-center gap-4 overflow-hidden rounded-2xl border border-black/15 bg-transparent p-6 text-center transition-all duration-300 hover:border-black/35 hover:bg-black/[0.02]"
+              className="group relative flex h-full min-h-0 w-full flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl border border-black/15 bg-transparent p-4 text-center transition-all duration-300 hover:border-black/35 hover:bg-black/[0.02]"
             >
               <SlotMark />
 
-              <div className="relative z-10 space-y-1">
-                <span className="block text-[10px] font-medium uppercase tracking-[0.35em] text-black/35 transition-colors duration-300 group-hover:text-black/55">
+              <div className="relative z-10 space-y-0.5">
+                <span className="block text-[9px] font-medium uppercase tracking-[0.3em] text-black/35 transition-colors duration-300 group-hover:text-black/55">
                   Available slot
                 </span>
                 <h3
-                  className="text-[1.5rem] font-medium italic leading-tight text-black/55 transition-colors duration-300 group-hover:text-black/75"
+                  className="text-[1.2rem] font-medium italic leading-tight text-black/55 transition-colors duration-300 group-hover:text-black/75"
                   style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
                 >
                   Book this slot
