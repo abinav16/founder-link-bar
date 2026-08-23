@@ -11,10 +11,10 @@ import { fetchFeaturedSlots, railSlots, type FeaturedSlot } from "@/lib/featured
 function SlotMark() {
   return (
     <div className="relative">
-      <div className="relative grid h-12 w-12 place-items-center rounded-full border border-black/15 bg-transparent">
+      <div className="relative grid h-9 w-9 place-items-center rounded-full border border-black/15 bg-transparent">
         <svg
-          width="20"
-          height="20"
+          width="16"
+          height="16"
           viewBox="0 0 24 24"
           fill="none"
           aria-hidden="true"
@@ -41,22 +41,22 @@ function FeaturedCard({ slot }: { slot: FeaturedSlot }) {
       href={slot.website_url}
       target="_blank"
       rel="noopener noreferrer"
-      className="sb-sponsored group relative flex h-full min-h-0 w-full flex-col gap-3 overflow-hidden rounded-2xl border p-4 transition-all duration-500"
+      className="sb-sponsored group relative flex h-full min-h-0 w-full flex-col gap-2 overflow-hidden rounded-2xl border p-3 transition-all duration-500"
     >
       {/* Top block: big logo on the left, name + founder stacked on the right */}
-      <div className="flex min-w-0 items-center gap-3">
-        <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-xl border border-[oklch(0.75_0.13_75_/_0.25)] bg-black/40">
+      <div className="flex min-w-0 items-center gap-2">
+        <span className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-lg border border-[oklch(0.75_0.13_75_/_0.25)] bg-black/40">
           <StartupFavicon
             url={slot.website_url}
             name={slot.name}
             logoUrl={slot.logo_url}
-            size={30}
+            size={22}
           />
         </span>
 
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <div className="flex min-w-0 items-center gap-2">
-            <span className="min-w-0 flex-1 truncate text-sm font-semibold leading-tight text-white/95">
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <div className="flex min-w-0 items-center gap-1.5">
+            <span className="min-w-0 flex-1 truncate text-[13px] font-semibold leading-tight text-white/95">
               {slot.name}
             </span>
           </div>
@@ -68,14 +68,14 @@ function FeaturedCard({ slot }: { slot: FeaturedSlot }) {
                 src={slot.founder_avatar_url}
                 alt={slot.founder_name ?? "Founder"}
                 loading="lazy"
-                className="h-5 w-5 shrink-0 rounded-full object-cover ring-1 ring-[oklch(0.75_0.13_75_/_0.35)]"
+                className="h-4 w-4 shrink-0 rounded-full object-cover ring-1 ring-[oklch(0.75_0.13_75_/_0.35)]"
               />
             ) : (
-              <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-white/10 text-[9px] font-semibold text-white/70">
+              <span className="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-white/10 text-[8px] font-semibold text-white/70">
                 {initial}
               </span>
             )}
-            <span className="min-w-0 truncate text-[11px] text-white/45">
+            <span className="min-w-0 truncate text-[10px] text-white/45">
               {slot.founder_name ?? "Founder"}
             </span>
           </div>
@@ -83,7 +83,7 @@ function FeaturedCard({ slot }: { slot: FeaturedSlot }) {
       </div>
 
       {/* One-liner across the full card width */}
-      <p className="line-clamp-3 min-h-0 min-w-0 overflow-hidden text-[12.5px] leading-[1.45] text-white/60">
+      <p className="line-clamp-3 min-h-0 min-w-0 overflow-hidden text-[11px] leading-[1.4] text-white/60">
         {slot.description}
       </p>
 
@@ -117,16 +117,16 @@ export function SponsoredRail({ side = "right" }: { side?: "left" | "right" }) {
                 setSlot(i);
                 setOpen(true);
               }}
-              className="group relative flex h-full min-h-0 w-full flex-col items-center justify-center gap-4 overflow-hidden rounded-2xl border border-black/15 bg-transparent p-6 text-center transition-all duration-300 hover:border-black/35 hover:bg-black/[0.02]"
+              className="group relative flex h-full min-h-0 w-full flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl border border-black/15 bg-transparent p-4 text-center transition-all duration-300 hover:border-black/35 hover:bg-black/[0.02]"
             >
               <SlotMark />
 
-              <div className="relative z-10 space-y-1">
-                <span className="block text-[10px] font-medium uppercase tracking-[0.35em] text-black/35 transition-colors duration-300 group-hover:text-black/55">
+              <div className="relative z-10 space-y-0.5">
+                <span className="block text-[9px] font-medium uppercase tracking-[0.3em] text-black/35 transition-colors duration-300 group-hover:text-black/55">
                   Available slot
                 </span>
                 <h3
-                  className="text-[1.5rem] font-medium italic leading-tight text-black/55 transition-colors duration-300 group-hover:text-black/75"
+                  className="text-[1.2rem] font-medium italic leading-tight text-black/55 transition-colors duration-300 group-hover:text-black/75"
                   style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
                 >
                   Book this slot
