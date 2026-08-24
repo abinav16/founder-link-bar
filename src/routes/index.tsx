@@ -598,75 +598,6 @@ function Logo() {
   );
 }
 
-/** Shown when a site can neither be framed nor screenshotted. Instead of an
- *  error message we render a quiet, self-made StartupBar animation: concentric
- *  signal rings, orbiting network nodes and a floating miniature bar. */
-function PreviewUnavailable({ url }: { url: string }) {
-  const host = (() => {
-    try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return url; }
-  })();
-
-  return (
-    <div className="relative h-[320px] w-full overflow-hidden bg-[#0a0a0a] sm:h-[420px]">
-      {/* faint grid */}
-      <div className="absolute inset-0 sb-pv-grid" />
-      {/* slow drifting glow */}
-      <div className="absolute left-1/2 top-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full sb-pv-glow" />
-
-      {/* rings + orbits */}
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-        <div className="relative h-[260px] w-[260px] sm:h-[320px] sm:w-[320px]">
-          {[0, 1, 2].map((i) => (
-            <span
-              key={i}
-              className="absolute inset-0 rounded-full border border-white/12 sb-pv-ring"
-              style={{ animationDelay: `${i * 1.4}s` }}
-            />
-          ))}
-
-          <div className="absolute inset-[14%] rounded-full border border-white/8 sb-pv-orbit">
-            {[0, 120, 240].map((deg) => (
-              <span
-                key={deg}
-                className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/70"
-                style={{ transform: `rotate(${deg}deg) translateX(50%) translateX(-2px)`, transformOrigin: "0 0" }}
-              />
-            ))}
-          </div>
-          <div className="absolute inset-[32%] rounded-full border border-white/8 sb-pv-orbit-rev" />
-
-          {/* centre mark */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <div className="rounded-md bg-white px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-black sb-pv-pulse">
-              StartupBar
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* floating miniature bar with a light sweep */}
-      <div className="absolute inset-x-6 top-6 sm:inset-x-10 sm:top-8">
-        <div className="relative overflow-hidden rounded-full border border-white/10 bg-white/[0.06] px-4 py-2 backdrop-blur-sm sb-pv-float">
-          <div className="flex items-center gap-3">
-            <span className="h-2 w-2 rounded-full bg-white/80" />
-            <span className="text-[11px] font-medium text-white/80">{host}</span>
-            <span className="text-white/25">·</span>
-            <span className="h-2 flex-1 rounded-full bg-white/10" />
-          </div>
-          <span className="pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 sb-pv-sweep" />
-        </div>
-      </div>
-
-      <div className="absolute inset-x-0 bottom-7 text-center">
-        <p className="text-[12px] tracking-wide text-white/45">
-          This site blocks previews. The bar still works on it.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-
 /** Renders the visitor's own site inside the browser mock. A server probe picks
  *  the variant that can actually be framed (apex vs www, following redirects);
  *  if none can, we show a live screenshot instead. */
@@ -704,7 +635,11 @@ function SitePreviewSurface({ url }: { url: string }) {
 
   if (blocked) {
     if (shotFailed) {
-      return <PreviewUnavailable url={url} />;
+      return (
+        <div className="flex h-[320px] items-center justify-center bg-black/[0.02] text-sm text-black/35 sm:h-[420px]">
+          Preview not available for this site
+        </div>
+      );
     }
     return (
       <img
@@ -715,7 +650,6 @@ function SitePreviewSurface({ url }: { url: string }) {
       />
     );
   }
-
 
   return (
     <div className="relative h-[320px] w-full bg-white sm:h-[420px]">
