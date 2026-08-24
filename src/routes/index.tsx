@@ -596,13 +596,22 @@ function Logo() {
   );
 }
 
-/** Renders the visitor's own site inside the browser mock. Falls back to a live
- *  screenshot when the site refuses to be framed, then to the skeleton. */
+/** Renders the visitor's own site inside the browser mock. A server probe picks
+ *  the variant that can actually be framed (apex vs www, following redirects);
+ *  if none can, we show a live screenshot instead. */
 function SitePreviewSurface({ url }: { url: string }) {
   const [loaded, setLoaded] = useState(false);
   const [blocked, setBlocked] = useState(false);
   const [shotFailed, setShotFailed] = useState(false);
   const shot = `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=false&embed=screenshot.url`;
+
+  const probe = useQuery({
+    queryKey: ["embed-probe", url],
+    queryFn: () => resolveEmbedUrl({ data: { url } }),
+    staleTime: 10 * 60 * 1000,
+    retry: false,
+  });
+  const frameUrl = probe.data?.url ?? null;
 
   useEffect(() => {
     setLoaded(false);
@@ -610,12 +619,17 @@ function SitePreviewSurface({ url }: { url: string }) {
     setShotFailed(false);
   }, [url]);
 
-  // Flip to the screenshot fast: most framing refusals never fire onLoad.
+  // Probe says this site refuses framing → go straight to the screenshot.
   useEffect(() => {
-    if (loaded || blocked) return;
-    const t = window.setTimeout(() => setBlocked(true), 3000);
+    if (probe.isSuccess && !probe.data?.url) setBlocked(true);
+  }, [probe.isSuccess, probe.data]);
+
+  // Safety net for sites that pass the header check but still never render.
+  useEffect(() => {
+    if (!frameUrl || loaded || blocked) return;
+    const t = window.setTimeout(() => setBlocked(true), 4000);
     return () => window.clearTimeout(t);
-  }, [url, loaded, blocked]);
+  }, [frameUrl, loaded, blocked]);
 
   if (blocked) {
     if (shotFailed) {
@@ -650,18 +664,21 @@ function SitePreviewSurface({ url }: { url: string }) {
       {!loaded && shotFailed && (
         <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-black/[0.04] to-black/[0.01]" />
       )}
-      <iframe
-        src={url}
-        title="Your site preview"
-        className={`h-full w-full transition-opacity duration-200 ${loaded ? "opacity-100" : "opacity-0"}`}
-        sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-        referrerPolicy="no-referrer"
-        onLoad={() => setLoaded(true)}
-        onError={() => setBlocked(true)}
-      />
+      {frameUrl && (
+        <iframe
+          src={frameUrl}
+          title="Your site preview"
+          className={`h-full w-full transition-opacity duration-200 ${loaded ? "opacity-100" : "opacity-0"}`}
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+          referrerPolicy="no-referrer"
+          onLoad={() => setLoaded(true)}
+          onError={() => setBlocked(true)}
+        />
+      )}
     </div>
   );
 }
+
 
 
 
