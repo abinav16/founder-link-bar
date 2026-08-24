@@ -7,7 +7,7 @@ import { useRef, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useBidBoard, formatUsd } from "@/lib/bid";
 import { useQuery } from "@tanstack/react-query";
-import { resolveEmbedUrl } from "@/lib/preview-probe.functions";
+import { SitePreviewSurface } from "@/components/SitePreviewSurface";
 
 function useInView(threshold = 0.12) {
   const ref = useRef<HTMLDivElement>(null);
