@@ -673,16 +673,27 @@ function Landing() {
     try { return new URL(previewUrl).hostname.replace(/^www\./, ""); } catch { return "yourstartup.com"; }
   })();
 
-  function loadPreview() {
+  // Live preview: the mock window follows what the visitor types (debounced),
+  // so the arrow button is free to carry them into the apply flow.
+  useEffect(() => {
     const raw = siteInput.trim().replace(/^@/, "");
-    if (!raw) return;
-    const withProto = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
-    try {
-      const u = new URL(withProto);
-      if (!u.hostname.includes(".")) return;
-      setPreviewUrl(u.toString());
-    } catch { /* ignore invalid input */ }
+    if (!raw) { setPreviewUrl(null); return; }
+    const t = window.setTimeout(() => {
+      const withProto = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+      try {
+        const u = new URL(withProto);
+        if (!/^[^\s.]+\.[a-z]{2,}$/i.test(u.hostname)) return;
+        setPreviewUrl(u.toString());
+      } catch { /* ignore partial input */ }
+    }, 700);
+    return () => window.clearTimeout(t);
+  }, [siteInput]);
+
+  function goApply() {
+    const raw = siteInput.trim().replace(/^@/, "");
+    navigate({ to: "/apply", search: raw ? ({ url: raw } as never) : undefined });
   }
+
 
 
   useEffect(() => {
@@ -769,33 +780,33 @@ function Landing() {
             Add one line of code. A small bar appears on your site showing another founder's startup. In return, yours gets shown on theirs.
           </p>
 
-          <div className="mt-10 flex flex-col items-center justify-center gap-2">
+          <div className="mt-8 flex flex-col items-center justify-center gap-1.5">
             <div className="flex w-full max-w-md items-center gap-2 rounded-full border border-black/10 bg-white p-1.5 pl-4 shadow-[0_1px_3px_rgba(0,0,0,0.05)] transition-shadow focus-within:border-black/30 focus-within:shadow-[0_0_0_4px_rgba(0,0,0,0.06)]">
               <div className="h-2.5 w-8 shrink-0 rounded-sm bg-black" />
               <input
                 value={siteInput}
                 onChange={(e) => setSiteInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") loadPreview(); }}
+                onKeyDown={(e) => { if (e.key === "Enter") goApply(); }}
                 placeholder="yoursite.com"
                 aria-label="Your website"
                 className="min-w-0 flex-1 bg-transparent py-2 text-[15px] tracking-tight text-black outline-none placeholder:text-black/30"
               />
               <button
-                onClick={loadPreview}
-                aria-label="Preview the bar on your site"
+                onClick={goApply}
+                aria-label="Continue to apply with your site"
                 className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-black text-white transition-opacity hover:opacity-85"
               >
                 <ArrowRight className="h-4 w-4" />
               </button>
             </div>
             <p className="text-[12px] text-black/35">
-              {previewUrl ? "This is how the bar looks on your site." : "See the bar live on your own site below."}
+              {previewUrl ? "This is how the bar looks on your site." : "Type your site to see the bar on it, then hit the arrow to join."}
             </p>
           </div>
 
-
           {/* Browser mock */}
-          <div className="relative mx-auto mt-10 sm:mt-20 max-w-3xl">
+          <div className="relative mx-auto mt-4 sm:mt-6 max-w-3xl">
+
             {/* Handwritten annotation pointing at the widget bar */}
             {!mockDismissed && (
               <div
