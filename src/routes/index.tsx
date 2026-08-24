@@ -664,7 +664,26 @@ function Landing() {
   const [mockDismissed, setMockDismissed] = useState(false);
   const [startupBarId, setStartupBarId] = useState<string | null>(null);
   const [startupBarLogo, setStartupBarLogo] = useState<string | null>(null);
+  const [siteInput, setSiteInput] = useState("");
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const liveStartup = liveStartups[liveIndex] ?? null;
+
+  const previewHost = (() => {
+    if (!previewUrl) return "yourstartup.com";
+    try { return new URL(previewUrl).hostname.replace(/^www\./, ""); } catch { return "yourstartup.com"; }
+  })();
+
+  function loadPreview() {
+    const raw = siteInput.trim().replace(/^@/, "");
+    if (!raw) return;
+    const withProto = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+    try {
+      const u = new URL(withProto);
+      if (!u.hostname.includes(".")) return;
+      setPreviewUrl(u.toString());
+    } catch { /* ignore invalid input */ }
+  }
+
 
   useEffect(() => {
     supabase.from("startups").select("id, logo_url").ilike("website_url", "%startupbar.co%").maybeSingle().then(({ data }) => {
