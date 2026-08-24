@@ -691,6 +691,7 @@ function Landing() {
   const [authReady, setAuthReady] = useState(false);
   const [liveStartups, setLiveStartups] = useState<Array<{ name: string; description: string; website_url: string; logo_url: string | null }>>([]);
   const [liveIndex, setLiveIndex] = useState(0);
+  const [liveFade, setLiveFade] = useState(true);
   const [mockInfoOpen, setMockInfoOpen] = useState(false);
   const [mockDismissed, setMockDismissed] = useState(false);
   const [startupBarId, setStartupBarId] = useState<string | null>(null);
