@@ -823,7 +823,7 @@ function Landing() {
           </p>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-1.5">
-            <div className="flex w-full max-w-md items-center gap-2 rounded-full border border-black/10 bg-white p-1.5 pl-4 shadow-[0_1px_3px_rgba(0,0,0,0.05)] transition-shadow focus-within:border-black/30 focus-within:shadow-[0_0_0_4px_rgba(0,0,0,0.06)]">
+            <div className="flex w-full max-w-md items-center gap-2 rounded-full border-2 border-black bg-white p-1.5 pl-4 shadow-[0_1px_3px_rgba(0,0,0,0.05)] transition-shadow focus-within:shadow-[0_0_0_4px_rgba(0,0,0,0.06)]">
               <div className="h-2.5 w-8 shrink-0 rounded-sm bg-black" />
               <input
                 value={siteInput}
@@ -842,7 +842,7 @@ function Landing() {
               </button>
             </div>
             <p className="text-[12px] text-black/35">
-              {previewUrl ? "This is how the bar looks on your site." : "Type your site to see the bar on it, then hit the arrow to join."}
+              {previewUrl ? "This is how the bar looks on your site." : "Enter your site to add it to the network."}
             </p>
           </div>
 
