@@ -842,7 +842,7 @@ function Landing() {
               </button>
             </div>
             <p className="text-[12px] text-black/35">
-              {previewUrl ? "This is how the bar looks on your site." : "Type your site to see the bar on it, then hit the arrow to join."}
+              {previewUrl ? "This is how the bar looks on your site." : "Enter your site to add it to the network."}
             </p>
           </div>
 
