@@ -602,6 +602,7 @@ function SitePreviewSurface({ url }: { url: string }) {
   const [loaded, setLoaded] = useState(false);
   const [blocked, setBlocked] = useState(false);
   const [shotFailed, setShotFailed] = useState(false);
+  const shot = `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=false&embed=screenshot.url`;
 
   useEffect(() => {
     setLoaded(false);
@@ -609,14 +610,14 @@ function SitePreviewSurface({ url }: { url: string }) {
     setShotFailed(false);
   }, [url]);
 
+  // Flip to the screenshot fast: most framing refusals never fire onLoad.
   useEffect(() => {
     if (loaded || blocked) return;
-    const t = window.setTimeout(() => setBlocked(true), 7000);
+    const t = window.setTimeout(() => setBlocked(true), 3000);
     return () => window.clearTimeout(t);
   }, [url, loaded, blocked]);
 
   if (blocked) {
-    const shot = `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=false&embed=screenshot.url`;
     if (shotFailed) {
       return (
         <div className="flex h-[320px] items-center justify-center bg-black/[0.02] text-sm text-black/35 sm:h-[420px]">
@@ -636,13 +637,23 @@ function SitePreviewSurface({ url }: { url: string }) {
 
   return (
     <div className="relative h-[320px] w-full bg-white sm:h-[420px]">
-      {!loaded && (
+      {/* Screenshot loads in parallel so something real appears almost instantly. */}
+      {!loaded && !shotFailed && (
+        <img
+          src={shot}
+          alt=""
+          aria-hidden
+          onError={() => setShotFailed(true)}
+          className="absolute inset-0 h-full w-full object-cover object-top"
+        />
+      )}
+      {!loaded && shotFailed && (
         <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-black/[0.04] to-black/[0.01]" />
       )}
       <iframe
         src={url}
         title="Your site preview"
-        className="h-full w-full"
+        className={`h-full w-full transition-opacity duration-200 ${loaded ? "opacity-100" : "opacity-0"}`}
         sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
         referrerPolicy="no-referrer"
         onLoad={() => setLoaded(true)}
@@ -651,6 +662,7 @@ function SitePreviewSurface({ url }: { url: string }) {
     </div>
   );
 }
+
 
 
 function Landing() {
