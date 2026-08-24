@@ -596,6 +596,63 @@ function Logo() {
   );
 }
 
+/** Renders the visitor's own site inside the browser mock. Falls back to a live
+ *  screenshot when the site refuses to be framed, then to the skeleton. */
+function SitePreviewSurface({ url }: { url: string }) {
+  const [loaded, setLoaded] = useState(false);
+  const [blocked, setBlocked] = useState(false);
+  const [shotFailed, setShotFailed] = useState(false);
+
+  useEffect(() => {
+    setLoaded(false);
+    setBlocked(false);
+    setShotFailed(false);
+  }, [url]);
+
+  useEffect(() => {
+    if (loaded || blocked) return;
+    const t = window.setTimeout(() => setBlocked(true), 7000);
+    return () => window.clearTimeout(t);
+  }, [url, loaded, blocked]);
+
+  if (blocked) {
+    const shot = `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=false&embed=screenshot.url`;
+    if (shotFailed) {
+      return (
+        <div className="flex h-[320px] items-center justify-center bg-black/[0.02] text-sm text-black/35 sm:h-[420px]">
+          Preview not available for this site
+        </div>
+      );
+    }
+    return (
+      <img
+        src={shot}
+        alt="Your site preview"
+        onError={() => setShotFailed(true)}
+        className="h-[320px] w-full bg-black/[0.02] object-cover object-top sm:h-[420px]"
+      />
+    );
+  }
+
+  return (
+    <div className="relative h-[320px] w-full bg-white sm:h-[420px]">
+      {!loaded && (
+        <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-black/[0.04] to-black/[0.01]" />
+      )}
+      <iframe
+        src={url}
+        title="Your site preview"
+        className="h-full w-full"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+        referrerPolicy="no-referrer"
+        onLoad={() => setLoaded(true)}
+        onError={() => setBlocked(true)}
+      />
+    </div>
+  );
+}
+
+
 function Landing() {
   // Site visits are tracked at the root for every route now.
   const navigate = useNavigate();
