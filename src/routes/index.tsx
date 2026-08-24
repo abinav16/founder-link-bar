@@ -751,10 +751,15 @@ function Landing() {
 
   useEffect(() => {
     if (liveStartups.length <= 1) return;
+    let swap: ReturnType<typeof setTimeout>;
     const id = setInterval(() => {
-      setLiveIndex(i => (i + 1) % liveStartups.length);
-    }, 3000);
-    return () => clearInterval(id);
+      setLiveFade(false);
+      swap = setTimeout(() => {
+        setLiveIndex(i => (i + 1) % liveStartups.length);
+        setLiveFade(true);
+      }, 400);
+    }, 3600);
+    return () => { clearInterval(id); clearTimeout(swap); };
   }, [liveStartups.length]);
 
   useEffect(() => {
