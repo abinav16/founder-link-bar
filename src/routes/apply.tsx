@@ -226,9 +226,9 @@ function readInitialFromUrl() {
     return { step: 2 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "", resubmitId, startupId: "" };
   }
   if (draft) {
-    return { step: draft.step, name: draft.name, url: draft.url, desc: draft.desc, paid: false, paymentId: "", resubmitId: "", startupId: draft.startupId };
+    return { step: draft.step, name: draft.name, url: draft.url || (p.get("url") ?? ""), desc: draft.desc, paid: false, paymentId: "", resubmitId: "", startupId: draft.startupId };
   }
-  return { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "", resubmitId: "", startupId: "" };
+  return { step: 1 as 1 | 2, name: "", url: p.get("url") ?? "", desc: "", paid: false, paymentId: "", resubmitId: "", startupId: "" };
 }
 
 
