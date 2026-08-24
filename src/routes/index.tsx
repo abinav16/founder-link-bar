@@ -673,16 +673,27 @@ function Landing() {
     try { return new URL(previewUrl).hostname.replace(/^www\./, ""); } catch { return "yourstartup.com"; }
   })();
 
-  function loadPreview() {
+  // Live preview: the mock window follows what the visitor types (debounced),
+  // so the arrow button is free to carry them into the apply flow.
+  useEffect(() => {
     const raw = siteInput.trim().replace(/^@/, "");
-    if (!raw) return;
-    const withProto = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
-    try {
-      const u = new URL(withProto);
-      if (!u.hostname.includes(".")) return;
-      setPreviewUrl(u.toString());
-    } catch { /* ignore invalid input */ }
+    if (!raw) { setPreviewUrl(null); return; }
+    const t = window.setTimeout(() => {
+      const withProto = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+      try {
+        const u = new URL(withProto);
+        if (!/^[^\s.]+\.[a-z]{2,}$/i.test(u.hostname)) return;
+        setPreviewUrl(u.toString());
+      } catch { /* ignore partial input */ }
+    }, 700);
+    return () => window.clearTimeout(t);
+  }, [siteInput]);
+
+  function goApply() {
+    const raw = siteInput.trim().replace(/^@/, "");
+    navigate({ to: "/apply", search: raw ? ({ url: raw } as never) : undefined });
   }
+
 
 
   useEffect(() => {
