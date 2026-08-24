@@ -726,9 +726,22 @@ function Landing() {
   }, [siteInput]);
 
 
-  function goApply() {
+  async function goApply() {
     const raw = siteInput.trim().replace(/^@/, "");
-    navigate({ to: "/apply", search: raw ? ({ url: raw } as never) : undefined });
+    // Re-validate with the Auth server rather than trusting cached state,
+    // so a stale tab still sends logged-in users straight to /apply.
+    const { data } = await supabase.auth.getUser();
+    if (data.user) {
+      navigate({ to: "/apply", search: raw ? ({ url: raw } as never) : undefined });
+      return;
+    }
+    // Not logged in: remember the site they entered so /apply can pick it
+    // up automatically once they sign in, then send them to /auth.
+    try {
+      sessionStorage.setItem("startupbar:auth-next", "/apply");
+      if (raw) sessionStorage.setItem("startupbar:apply-url", raw);
+    } catch { /* ignore */ }
+    navigate({ to: "/auth" });
   }
 
 

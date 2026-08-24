@@ -228,7 +228,16 @@ function readInitialFromUrl() {
   if (draft) {
     return { step: draft.step, name: draft.name, url: draft.url || (p.get("url") ?? ""), desc: draft.desc, paid: false, paymentId: "", resubmitId: "", startupId: draft.startupId };
   }
-  return { step: 1 as 1 | 2, name: "", url: p.get("url") ?? "", desc: "", paid: false, paymentId: "", resubmitId: "", startupId: "" };
+  // No draft and no URL param: fall back to a site stashed before sign-in
+  // (set on the landing page when a logged-out visitor hit the arrow).
+  let pendingUrl = p.get("url") ?? "";
+  if (!pendingUrl) {
+    try {
+      pendingUrl = sessionStorage.getItem("startupbar:apply-url") ?? "";
+      if (pendingUrl) sessionStorage.removeItem("startupbar:apply-url");
+    } catch { /* ignore */ }
+  }
+  return { step: 1 as 1 | 2, name: "", url: pendingUrl, desc: "", paid: false, paymentId: "", resubmitId: "", startupId: "" };
 }
 
 
