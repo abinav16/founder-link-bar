@@ -635,11 +635,7 @@ function SitePreviewSurface({ url }: { url: string }) {
 
   if (blocked) {
     if (shotFailed) {
-      return (
-        <div className="flex h-[320px] items-center justify-center bg-black/[0.02] text-sm text-black/35 sm:h-[420px]">
-          Preview not available for this site
-        </div>
-      );
+      return <PreviewUnavailable url={url} />;
     }
     return (
       <img
@@ -650,6 +646,7 @@ function SitePreviewSurface({ url }: { url: string }) {
       />
     );
   }
+
 
   return (
     <div className="relative h-[320px] w-full bg-white sm:h-[420px]">
