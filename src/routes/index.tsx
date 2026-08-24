@@ -878,18 +878,23 @@ function Landing() {
                   )}
                 </div>
               )}
-              <div className="bg-black/[0.02] px-6 py-8 sm:px-10 sm:py-14">
-                <div className="mx-auto max-w-xl space-y-3">
-                  <div className="h-4 w-1/3 rounded bg-black/[0.07]" />
-                  <div className="h-3 w-1/2 rounded bg-black/[0.05]" />
-                  <div className="h-3 w-5/12 rounded bg-black/[0.05]" />
+              {previewUrl ? (
+                <SitePreviewSurface url={previewUrl} />
+              ) : (
+                <div className="bg-black/[0.02] px-6 py-8 sm:px-10 sm:py-14">
+                  <div className="mx-auto max-w-xl space-y-3">
+                    <div className="h-4 w-1/3 rounded bg-black/[0.07]" />
+                    <div className="h-3 w-1/2 rounded bg-black/[0.05]" />
+                    <div className="h-3 w-5/12 rounded bg-black/[0.05]" />
+                  </div>
+                  <div className="mx-auto mt-8 grid max-w-xl grid-cols-3 gap-3 sm:mt-12 sm:gap-4">
+                    <div className="h-16 rounded-lg bg-black/[0.05] sm:h-20" />
+                    <div className="h-16 rounded-lg bg-black/[0.04] sm:h-20" />
+                    <div className="h-16 rounded-lg bg-black/[0.05] sm:h-20" />
+                  </div>
                 </div>
-                <div className="mx-auto mt-8 grid max-w-xl grid-cols-3 gap-3 sm:mt-12 sm:gap-4">
-                  <div className="h-16 rounded-lg bg-black/[0.05] sm:h-20" />
-                  <div className="h-16 rounded-lg bg-black/[0.04] sm:h-20" />
-                  <div className="h-16 rounded-lg bg-black/[0.05] sm:h-20" />
-                </div>
-              </div>
+              )}
+
             </div>
           </div>
         </div>
