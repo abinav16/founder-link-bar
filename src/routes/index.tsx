@@ -830,7 +830,7 @@ function Landing() {
                 <div className="h-2.5 w-2.5 rounded-full bg-red-400/80" />
                 <div className="h-2.5 w-2.5 rounded-full bg-yellow-400/80" />
                 <div className="h-2.5 w-2.5 rounded-full bg-green-400/80" />
-                <div className="ml-3 text-[11px] text-black/30">yourstartup.com</div>
+                <div className="ml-3 truncate text-[11px] text-black/30">{previewHost}</div>
               </div>
               {!mockDismissed && (
                 <div className="relative border-b border-black/8">
