@@ -602,6 +602,7 @@ function SitePreviewSurface({ url }: { url: string }) {
   const [loaded, setLoaded] = useState(false);
   const [blocked, setBlocked] = useState(false);
   const [shotFailed, setShotFailed] = useState(false);
+  const shot = `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=false&embed=screenshot.url`;
 
   useEffect(() => {
     setLoaded(false);
@@ -609,14 +610,14 @@ function SitePreviewSurface({ url }: { url: string }) {
     setShotFailed(false);
   }, [url]);
 
+  // Flip to the screenshot fast: most framing refusals never fire onLoad.
   useEffect(() => {
     if (loaded || blocked) return;
-    const t = window.setTimeout(() => setBlocked(true), 7000);
+    const t = window.setTimeout(() => setBlocked(true), 3000);
     return () => window.clearTimeout(t);
   }, [url, loaded, blocked]);
 
   if (blocked) {
-    const shot = `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=false&embed=screenshot.url`;
     if (shotFailed) {
       return (
         <div className="flex h-[320px] items-center justify-center bg-black/[0.02] text-sm text-black/35 sm:h-[420px]">
@@ -636,13 +637,23 @@ function SitePreviewSurface({ url }: { url: string }) {
 
   return (
     <div className="relative h-[320px] w-full bg-white sm:h-[420px]">
-      {!loaded && (
+      {/* Screenshot loads in parallel so something real appears almost instantly. */}
+      {!loaded && !shotFailed && (
+        <img
+          src={shot}
+          alt=""
+          aria-hidden
+          onError={() => setShotFailed(true)}
+          className="absolute inset-0 h-full w-full object-cover object-top"
+        />
+      )}
+      {!loaded && shotFailed && (
         <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-black/[0.04] to-black/[0.01]" />
       )}
       <iframe
         src={url}
         title="Your site preview"
-        className="h-full w-full"
+        className={`h-full w-full transition-opacity duration-200 ${loaded ? "opacity-100" : "opacity-0"}`}
         sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
         referrerPolicy="no-referrer"
         onLoad={() => setLoaded(true)}
@@ -651,6 +662,7 @@ function SitePreviewSurface({ url }: { url: string }) {
     </div>
   );
 }
+
 
 
 function Landing() {
@@ -673,21 +685,26 @@ function Landing() {
     try { return new URL(previewUrl).hostname.replace(/^www\./, ""); } catch { return "yourstartup.com"; }
   })();
 
-  // Live preview: the mock window follows what the visitor types (debounced),
-  // so the arrow button is free to carry them into the apply flow.
+  // Live preview: as soon as what's typed looks like a real domain (something
+  // after the dot with a plausible TLD), load it. Short debounce so it feels
+  // instant; the arrow button stays free for the apply flow.
   useEffect(() => {
-    const raw = siteInput.trim().replace(/^@/, "");
+    const raw = siteInput.trim().replace(/^@/, "").replace(/\s+/g, "");
     if (!raw) { setPreviewUrl(null); return; }
-    const t = window.setTimeout(() => {
-      const withProto = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
-      try {
-        const u = new URL(withProto);
-        if (!/^[^\s.]+\.[a-z]{2,}$/i.test(u.hostname)) return;
-        setPreviewUrl(u.toString());
-      } catch { /* ignore partial input */ }
-    }, 700);
+    const withProto = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+    let host = "";
+    let href = "";
+    try {
+      const u = new URL(withProto);
+      host = u.hostname;
+      href = u.toString();
+    } catch { return; }
+    // Require label(s) + a TLD of at least 2 letters, e.g. "acme.co", "a.b.io".
+    if (!/^(?=.{4,253}$)([a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,24}$/i.test(host)) return;
+    const t = window.setTimeout(() => setPreviewUrl(href), 250);
     return () => window.clearTimeout(t);
   }, [siteInput]);
+
 
   function goApply() {
     const raw = siteInput.trim().replace(/^@/, "");
