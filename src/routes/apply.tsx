@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { trackFunnel } from "@/lib/funnel";
+import { SitePreviewSurface } from "@/components/SitePreviewSurface";
 
 import {
   ArrowRight, ArrowLeft, ExternalLink,
@@ -38,15 +39,40 @@ function BarPreview({ name, url, desc, placement = "top" }: { name: string; url:
   const displayName = name || "Your Startup";
   const displayDesc = desc || "Your one-liner goes here";
   const favicon = url ? `https://www.google.com/s2/favicons?domain=${url}&sz=32` : null;
+
+  // Live site preview: as soon as what's typed looks like a real domain, load
+  // the actual site inside the mock window (same behaviour as the home hero).
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  useEffect(() => {
+    const raw = (url || "").trim().replace(/^@/, "").replace(/\s+/g, "");
+    if (!raw) { setPreviewUrl(null); return; }
+    const withProto = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+    let host = "";
+    let href = "";
+    try {
+      const u = new URL(withProto);
+      host = u.hostname;
+      href = u.toString();
+    } catch { return; }
+    if (!/^(?=.{4,253}$)([a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,24}$/i.test(host)) return;
+    const t = window.setTimeout(() => setPreviewUrl(href), 250);
+    return () => window.clearTimeout(t);
+  }, [url]);
+
+  const previewHost = (() => {
+    if (!previewUrl) return "somefounder.com";
+    try { return new URL(previewUrl).hostname.replace(/^www\./, ""); } catch { return "somefounder.com"; }
+  })();
+
   const bar = (
     <div
       className={`flex h-9 items-center gap-2.5 bg-white px-4 ${placement === "top" ? "border-b" : "border-t"} border-black/6`}
     >
       <span className="rounded-sm bg-black px-1.5 py-0.5 text-[9px] font-bold tracking-widest text-white">STARTUPBAR</span>
       {favicon && <img src={favicon} alt="" className="h-4 w-4 rounded-sm object-contain" onError={(e) => (e.currentTarget.style.display = "none")} />}
-      <span className="text-[13px] font-medium text-black">{displayName}</span>
-      <span className="hidden truncate text-[12px] text-black/40 sm:block">— {displayDesc}</span>
-      <span className="ml-auto flex items-center gap-1 text-[12px] text-black/50">Visit <ExternalLink className="h-3 w-3" /></span>
+      <span className="shrink-0 text-[13px] font-medium text-black">{displayName}</span>
+      <span className="hidden truncate text-[12px] text-black/40 sm:block">· {displayDesc}</span>
+      <span className="ml-auto flex shrink-0 items-center gap-1 text-[12px] text-black/50">Visit <ExternalLink className="h-3 w-3" /></span>
     </div>
   );
   return (
@@ -55,15 +81,21 @@ function BarPreview({ name, url, desc, placement = "top" }: { name: string; url:
         <div className="h-2 w-2 rounded-full bg-red-400/70" />
         <div className="h-2 w-2 rounded-full bg-yellow-400/70" />
         <div className="h-2 w-2 rounded-full bg-green-400/70" />
-        <div className="ml-2 text-[10px] text-black/25">somefounder.com</div>
+        <div className="ml-2 truncate text-[10px] text-black/25">{previewHost}</div>
       </div>
       {placement === "top" && bar}
-      <div className="space-y-2 px-4 py-6">
-        <div className="h-3 w-2/3 rounded-full bg-black/5" />
-        <div className="h-3 w-1/2 rounded-full bg-black/5" />
-        <div className="mt-4 h-3 w-full rounded-full bg-black/5" />
-        <div className="h-3 w-5/6 rounded-full bg-black/5" />
-        <div className="h-3 w-4/6 rounded-full bg-black/5" />
+      <div className="h-[260px] w-full overflow-hidden">
+        {previewUrl ? (
+          <SitePreviewSurface url={previewUrl} heightCls="h-[260px]" />
+        ) : (
+          <div className="space-y-2 px-4 py-6">
+            <div className="h-3 w-2/3 rounded-full bg-black/5" />
+            <div className="h-3 w-1/2 rounded-full bg-black/5" />
+            <div className="mt-4 h-3 w-full rounded-full bg-black/5" />
+            <div className="h-3 w-5/6 rounded-full bg-black/5" />
+            <div className="h-3 w-4/6 rounded-full bg-black/5" />
+          </div>
+        )}
       </div>
       {placement === "bottom" && bar}
     </div>
