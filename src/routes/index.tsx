@@ -596,6 +596,63 @@ function Logo() {
   );
 }
 
+/** Renders the visitor's own site inside the browser mock. Falls back to a live
+ *  screenshot when the site refuses to be framed, then to the skeleton. */
+function SitePreviewSurface({ url }: { url: string }) {
+  const [loaded, setLoaded] = useState(false);
+  const [blocked, setBlocked] = useState(false);
+  const [shotFailed, setShotFailed] = useState(false);
+
+  useEffect(() => {
+    setLoaded(false);
+    setBlocked(false);
+    setShotFailed(false);
+  }, [url]);
+
+  useEffect(() => {
+    if (loaded || blocked) return;
+    const t = window.setTimeout(() => setBlocked(true), 7000);
+    return () => window.clearTimeout(t);
+  }, [url, loaded, blocked]);
+
+  if (blocked) {
+    const shot = `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=false&embed=screenshot.url`;
+    if (shotFailed) {
+      return (
+        <div className="flex h-[320px] items-center justify-center bg-black/[0.02] text-sm text-black/35 sm:h-[420px]">
+          Preview not available for this site
+        </div>
+      );
+    }
+    return (
+      <img
+        src={shot}
+        alt="Your site preview"
+        onError={() => setShotFailed(true)}
+        className="h-[320px] w-full bg-black/[0.02] object-cover object-top sm:h-[420px]"
+      />
+    );
+  }
+
+  return (
+    <div className="relative h-[320px] w-full bg-white sm:h-[420px]">
+      {!loaded && (
+        <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-black/[0.04] to-black/[0.01]" />
+      )}
+      <iframe
+        src={url}
+        title="Your site preview"
+        className="h-full w-full"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+        referrerPolicy="no-referrer"
+        onLoad={() => setLoaded(true)}
+        onError={() => setBlocked(true)}
+      />
+    </div>
+  );
+}
+
+
 function Landing() {
   // Site visits are tracked at the root for every route now.
   const navigate = useNavigate();
@@ -607,7 +664,26 @@ function Landing() {
   const [mockDismissed, setMockDismissed] = useState(false);
   const [startupBarId, setStartupBarId] = useState<string | null>(null);
   const [startupBarLogo, setStartupBarLogo] = useState<string | null>(null);
+  const [siteInput, setSiteInput] = useState("");
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const liveStartup = liveStartups[liveIndex] ?? null;
+
+  const previewHost = (() => {
+    if (!previewUrl) return "yourstartup.com";
+    try { return new URL(previewUrl).hostname.replace(/^www\./, ""); } catch { return "yourstartup.com"; }
+  })();
+
+  function loadPreview() {
+    const raw = siteInput.trim().replace(/^@/, "");
+    if (!raw) return;
+    const withProto = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+    try {
+      const u = new URL(withProto);
+      if (!u.hostname.includes(".")) return;
+      setPreviewUrl(u.toString());
+    } catch { /* ignore invalid input */ }
+  }
+
 
   useEffect(() => {
     supabase.from("startups").select("id, logo_url").ilike("website_url", "%startupbar.co%").maybeSingle().then(({ data }) => {
@@ -693,12 +769,30 @@ function Landing() {
             Add one line of code. A small bar appears on your site showing another founder's startup. In return, yours gets shown on theirs.
           </p>
 
-          <div className="mt-10 flex items-center justify-center">
-            <div className="flex items-center gap-3">
-              <div className="h-3 w-10 rounded-sm bg-black" />
-              <span className="text-2xl font-semibold tracking-tight text-black">StartupBar</span>
+          <div className="mt-10 flex flex-col items-center justify-center gap-2">
+            <div className="flex w-full max-w-md items-center gap-2 rounded-full border border-black/10 bg-white p-1.5 pl-4 shadow-[0_1px_3px_rgba(0,0,0,0.05)] transition-shadow focus-within:border-black/30 focus-within:shadow-[0_0_0_4px_rgba(0,0,0,0.06)]">
+              <div className="h-2.5 w-8 shrink-0 rounded-sm bg-black" />
+              <input
+                value={siteInput}
+                onChange={(e) => setSiteInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") loadPreview(); }}
+                placeholder="yoursite.com"
+                aria-label="Your website"
+                className="min-w-0 flex-1 bg-transparent py-2 text-[15px] tracking-tight text-black outline-none placeholder:text-black/30"
+              />
+              <button
+                onClick={loadPreview}
+                aria-label="Preview the bar on your site"
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-black text-white transition-opacity hover:opacity-85"
+              >
+                <ArrowRight className="h-4 w-4" />
+              </button>
             </div>
+            <p className="text-[12px] text-black/35">
+              {previewUrl ? "This is how the bar looks on your site." : "See the bar live on your own site below."}
+            </p>
           </div>
+
 
           {/* Browser mock */}
           <div className="relative mx-auto mt-10 sm:mt-20 max-w-3xl">
@@ -736,7 +830,7 @@ function Landing() {
                 <div className="h-2.5 w-2.5 rounded-full bg-red-400/80" />
                 <div className="h-2.5 w-2.5 rounded-full bg-yellow-400/80" />
                 <div className="h-2.5 w-2.5 rounded-full bg-green-400/80" />
-                <div className="ml-3 text-[11px] text-black/30">yourstartup.com</div>
+                <div className="ml-3 truncate text-[11px] text-black/30">{previewHost}</div>
               </div>
               {!mockDismissed && (
                 <div className="relative border-b border-black/8">
@@ -784,18 +878,23 @@ function Landing() {
                   )}
                 </div>
               )}
-              <div className="bg-black/[0.02] px-6 py-8 sm:px-10 sm:py-14">
-                <div className="mx-auto max-w-xl space-y-3">
-                  <div className="h-4 w-1/3 rounded bg-black/[0.07]" />
-                  <div className="h-3 w-1/2 rounded bg-black/[0.05]" />
-                  <div className="h-3 w-5/12 rounded bg-black/[0.05]" />
+              {previewUrl ? (
+                <SitePreviewSurface url={previewUrl} />
+              ) : (
+                <div className="bg-black/[0.02] px-6 py-8 sm:px-10 sm:py-14">
+                  <div className="mx-auto max-w-xl space-y-3">
+                    <div className="h-4 w-1/3 rounded bg-black/[0.07]" />
+                    <div className="h-3 w-1/2 rounded bg-black/[0.05]" />
+                    <div className="h-3 w-5/12 rounded bg-black/[0.05]" />
+                  </div>
+                  <div className="mx-auto mt-8 grid max-w-xl grid-cols-3 gap-3 sm:mt-12 sm:gap-4">
+                    <div className="h-16 rounded-lg bg-black/[0.05] sm:h-20" />
+                    <div className="h-16 rounded-lg bg-black/[0.04] sm:h-20" />
+                    <div className="h-16 rounded-lg bg-black/[0.05] sm:h-20" />
+                  </div>
                 </div>
-                <div className="mx-auto mt-8 grid max-w-xl grid-cols-3 gap-3 sm:mt-12 sm:gap-4">
-                  <div className="h-16 rounded-lg bg-black/[0.05] sm:h-20" />
-                  <div className="h-16 rounded-lg bg-black/[0.04] sm:h-20" />
-                  <div className="h-16 rounded-lg bg-black/[0.05] sm:h-20" />
-                </div>
-              </div>
+              )}
+
             </div>
           </div>
         </div>
