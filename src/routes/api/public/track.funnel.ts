@@ -22,10 +22,29 @@ export const Route = createFileRoute("/api/public/track/funnel")({
           const url = typeof body?.url === "string" ? body.url.slice(0, 300) : null;
 
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+          // Resolve the signed-in founder (if any) from a verified bearer so
+          // abandoned applications become a contactable audience.
+          let userId: string | null = null;
+          let userEmail: string | null = null;
+          const authHeader = request.headers.get("authorization") ?? "";
+          const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+          if (token) {
+            try {
+              const { data: authData } = await supabaseAdmin.auth.getUser(token);
+              userId = authData?.user?.id ?? null;
+              userEmail = authData?.user?.email ?? null;
+            } catch {
+              // ignore — stay anonymous
+            }
+          }
+
           const { error } = await supabaseAdmin.from("application_events").insert({
             startup_name: name || "(not entered)",
             website_url: url,
             event_type: event,
+            applicant_user_id: userId,
+            applicant_email: userEmail,
             metadata: { step },
           });
           if (error) {
