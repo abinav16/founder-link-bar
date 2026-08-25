@@ -203,6 +203,7 @@ serve(async (req) => {
             switch (segment) {
               case "all": return true;
               case "no_startup": return statuses.length === 0;
+              case "step2_no_startup": return statuses.length === 0 && reachedStep2.has(u.id);
               case "has_startup": return statuses.length > 0;
               case "approved_only": return statuses.includes("approved");
               case "pending_only": return statuses.includes("pending") && !statuses.includes("approved");
