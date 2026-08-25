@@ -1,5 +1,6 @@
 // Lightweight apply-funnel breadcrumbs. Without these, an abandoned
 // application is invisible: we only ever learn about people who finish.
+import { supabase } from "@/integrations/supabase/client";
 
 export type FunnelEvent = "apply_opened" | "apply_step";
 
@@ -15,10 +16,25 @@ export function trackFunnel(event: FunnelEvent, data?: { step?: number; name?: s
     // ignore storage failures and still send once
   }
 
-  fetch("/api/public/track/funnel", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ event, ...data }),
-    keepalive: true,
-  }).catch(() => {});
+  // Attach the session bearer when signed in so the server can record WHICH
+  // founder reached a step — that's what makes "reached step 2, never
+  // installed" an emailable audience instead of an anonymous count.
+  void (async () => {
+    let token: string | undefined;
+    try {
+      const { data: s } = await supabase.auth.getSession();
+      token = s.session?.access_token;
+    } catch {
+      // anonymous visitor
+    }
+    fetch("/api/public/track/funnel", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ event, ...data }),
+      keepalive: true,
+    }).catch(() => {});
+  })();
 }

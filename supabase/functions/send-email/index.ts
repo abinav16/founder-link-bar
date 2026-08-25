@@ -186,6 +186,21 @@ serve(async (req) => {
         }
 
         const { data: startups } = await supabase.from("startups").select("user_id,status");
+
+        // Founders who reached step 2 of apply ("install the script") — the
+        // audience that got all the way to the install wall and stopped.
+        const reachedStep2 = new Set<string>();
+        if (segment === "step2_no_startup") {
+          const { data: ev } = await supabase
+            .from("application_events")
+            .select("applicant_user_id,metadata")
+            .eq("event_type", "apply_step")
+            .not("applicant_user_id", "is", null)
+            .limit(5000);
+          for (const e of (ev as { applicant_user_id: string; metadata: any }[] | null) ?? []) {
+            if (Number(e?.metadata?.step ?? 0) >= 2) reachedStep2.add(e.applicant_user_id);
+          }
+        }
         const byUser = new Map<string, string[]>();
         for (const s of (startups as { user_id: string; status: string }[] | null) ?? []) {
           const arr = byUser.get(s.user_id) ?? [];
@@ -203,6 +218,7 @@ serve(async (req) => {
             switch (segment) {
               case "all": return true;
               case "no_startup": return statuses.length === 0;
+              case "step2_no_startup": return statuses.length === 0 && reachedStep2.has(u.id);
               case "has_startup": return statuses.length > 0;
               case "approved_only": return statuses.includes("approved");
               case "pending_only": return statuses.includes("pending") && !statuses.includes("approved");

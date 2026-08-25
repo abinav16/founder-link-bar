@@ -726,6 +726,7 @@ function AdminPage() {
 const SEGMENTS: { value: string; label: string; hint: string }[] = [
   { value: "all", label: "All users", hint: "Every signed-up user" },
   { value: "no_startup", label: "Signed up · no startup yet", hint: "Users who never submitted a startup" },
+  { value: "step2_no_startup", label: "Reached step 2 · never installed", hint: "Got to the install-script step in apply but never submitted" },
   { value: "has_startup", label: "Any startup submitted", hint: "Users with at least one startup (any status)" },
   { value: "approved_only", label: "Approved founders", hint: "Users with ≥1 approved startup" },
   { value: "pending_only", label: "Pending only", hint: "Have pending startup, none approved" },
