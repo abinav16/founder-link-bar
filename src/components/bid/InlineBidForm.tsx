@@ -161,6 +161,10 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
       setError(existing ? "Minimum top-up is $1." : "Minimum bid is $5.");
       return;
     }
+    if (!signedIn && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) {
+      setError("Enter your email so we can send the receipt.");
+      return;
+    }
     setBusy(true);
     try {
       const { data: sess } = await supabase.auth.getSession();
