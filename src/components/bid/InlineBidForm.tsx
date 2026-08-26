@@ -32,6 +32,9 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [myStartups, setMyStartups] = useState<{ name: string; website_url: string }[]>([]);
+  // Guests must give a real email so the receipt isn't sent to a placeholder.
+  const [signedIn, setSignedIn] = useState(true);
+  const [email, setEmail] = useState("");
   const [flash, setFlash] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const urlRef = useRef<HTMLInputElement | null>(null);
@@ -61,6 +64,7 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
     (async () => {
       const { data } = await supabase.auth.getSession();
       const uid = data.session?.user?.id;
+      if (!cancelled) setSignedIn(Boolean(uid));
       if (!uid || cancelled) return;
       const { data: rows } = await supabase
         .from("startups")
@@ -157,6 +161,10 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
       setError(existing ? "Minimum top-up is $1." : "Minimum bid is $5.");
       return;
     }
+    if (!signedIn && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) {
+      setError("Enter your email so we can send the receipt.");
+      return;
+    }
     setBusy(true);
     try {
       const { data: sess } = await supabase.auth.getSession();
@@ -171,6 +179,7 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
           url,
           amount_cents: amountCents,
           name: existing?.name || undefined,
+          email: signedIn ? undefined : email.trim(),
         }),
       });
       const json = await res.json().catch(() => null);
@@ -240,6 +249,24 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
           </button>
         </div>
       </div>
+
+      {!signedIn && (
+        <div className="mt-2 flex justify-center">
+          <input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") submit();
+            }}
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            placeholder="you@email.com — for your receipt"
+            aria-label="Your email"
+            className="w-full max-w-sm rounded-full border border-black/[0.09] bg-white px-4 py-2.5 text-[14px] text-black outline-none placeholder:text-black/30 focus:border-black/40"
+          />
+        </div>
+      )}
 
       {projected && (
         <div className="mt-2 flex items-center justify-center gap-1.5 sm:hidden">

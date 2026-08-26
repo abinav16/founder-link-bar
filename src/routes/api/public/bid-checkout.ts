@@ -108,6 +108,16 @@ export const Route = createFileRoute("/api/public/bid-checkout")({
           }
         }
 
+        // Guests supply their own email so receipts (and the Dodo dashboard)
+        // show a real address instead of a synthetic bidder+... placeholder.
+        if (!email) {
+          const provided = String(body?.email ?? "").trim().toLowerCase();
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(provided)) {
+            return json({ error: "Enter a valid email for your receipt." }, 400);
+          }
+          email = provided;
+        }
+
         // New listings still pay the $5 floor; only existing entries may top up
         // with less. Checked server-side so the client cannot bypass it.
         if (amountCents < MIN_CENTS) {
@@ -162,9 +172,7 @@ export const Route = createFileRoute("/api/public/bid-checkout")({
           headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
           body: JSON.stringify({
             billing: { city: "", country: "US", state: "", street: "", zipcode: "" },
-            customer: email
-              ? { email, name: displayName }
-              : { email: `bidder+${bid.id.slice(0, 8)}@startupbar.co`, name: displayName },
+            customer: { email, name: displayName },
             payment_link: true,
             product_cart: [{ product_id: productId, quantity: 1, amount: amountCents }],
             return_url: returnUrl,
