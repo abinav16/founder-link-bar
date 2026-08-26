@@ -267,6 +267,10 @@ const PODIUM = [
   },
 ];
 
+function outbidSuffix(rank: number): string {
+  return rank === 1 ? "· take #1" : `→ #${rank}`;
+}
+
 function PodiumRow({ entry, onOutbid }: { entry: BidEntry; onOutbid: (e: BidEntry) => void }) {
   const s = PODIUM[Math.min(entry.rank, 3) - 1] ?? PODIUM[2];
   return (
