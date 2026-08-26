@@ -172,9 +172,7 @@ export const Route = createFileRoute("/api/public/bid-checkout")({
           headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
           body: JSON.stringify({
             billing: { city: "", country: "US", state: "", street: "", zipcode: "" },
-            customer: email
-              ? { email, name: displayName }
-              : { email: `bidder+${bid.id.slice(0, 8)}@startupbar.co`, name: displayName },
+            customer: { email, name: displayName },
             payment_link: true,
             product_cart: [{ product_id: productId, quantity: 1, amount: amountCents }],
             return_url: returnUrl,
