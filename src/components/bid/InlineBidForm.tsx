@@ -64,6 +64,7 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
     (async () => {
       const { data } = await supabase.auth.getSession();
       const uid = data.session?.user?.id;
+      if (!cancelled) setSignedIn(Boolean(uid));
       if (!uid || cancelled) return;
       const { data: rows } = await supabase
         .from("startups")
