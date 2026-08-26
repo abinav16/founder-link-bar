@@ -32,6 +32,9 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [myStartups, setMyStartups] = useState<{ name: string; website_url: string }[]>([]);
+  // Guests must give a real email so the receipt isn't sent to a placeholder.
+  const [signedIn, setSignedIn] = useState(true);
+  const [email, setEmail] = useState("");
   const [flash, setFlash] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const urlRef = useRef<HTMLInputElement | null>(null);
