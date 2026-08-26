@@ -250,6 +250,24 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
         </div>
       </div>
 
+      {!signedIn && (
+        <div className="mt-2 flex justify-center">
+          <input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") submit();
+            }}
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            placeholder="you@email.com — for your receipt"
+            aria-label="Your email"
+            className="w-full max-w-sm rounded-full border border-black/[0.09] bg-white px-4 py-2.5 text-[14px] text-black outline-none placeholder:text-black/30 focus:border-black/40"
+          />
+        </div>
+      )}
+
       {projected && (
         <div className="mt-2 flex items-center justify-center gap-1.5 sm:hidden">
           <span className="rounded-full bg-black/[0.06] px-2.5 py-1 text-[11px] font-medium text-black/70">
