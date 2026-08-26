@@ -179,6 +179,7 @@ export function InlineBidForm({ board }: { board: BidEntry[] }) {
           url,
           amount_cents: amountCents,
           name: existing?.name || undefined,
+          email: signedIn ? undefined : email.trim(),
         }),
       });
       const json = await res.json().catch(() => null);
