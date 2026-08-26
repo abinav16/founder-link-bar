@@ -327,7 +327,7 @@ function PodiumRow({ entry, onOutbid }: { entry: BidEntry; onOutbid: (e: BidEntr
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onOutbid(entry); }}
             className={`mt-0.5 text-[11.5px] font-medium hover:underline ${s.outbid}`}
           >
-            Outbid · {formatUsd(priceToClaim(entry.total_cents))} → #{entry.rank}
+            Outbid · {formatUsd(priceToClaim(entry.total_cents))} {outbidSuffix(entry.rank)}
           </button>
         </div>
       </div>
