@@ -267,6 +267,10 @@ const PODIUM = [
   },
 ];
 
+function outbidSuffix(rank: number): string {
+  return rank === 1 ? "· take #1" : `→ #${rank}`;
+}
+
 function PodiumRow({ entry, onOutbid }: { entry: BidEntry; onOutbid: (e: BidEntry) => void }) {
   const s = PODIUM[Math.min(entry.rank, 3) - 1] ?? PODIUM[2];
   return (
@@ -323,7 +327,7 @@ function PodiumRow({ entry, onOutbid }: { entry: BidEntry; onOutbid: (e: BidEntr
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onOutbid(entry); }}
             className={`mt-0.5 text-[11.5px] font-medium hover:underline ${s.outbid}`}
           >
-            Outbid · {formatUsd(priceToClaim(entry.total_cents))} → #{entry.rank}
+            Outbid · {formatUsd(priceToClaim(entry.total_cents))} {outbidSuffix(entry.rank)}
           </button>
         </div>
       </div>
@@ -345,7 +349,7 @@ function PodiumRow({ entry, onOutbid }: { entry: BidEntry; onOutbid: (e: BidEntr
                 : "bg-black text-white"
             }`}
           >
-            Outbid · {formatUsd(priceToClaim(entry.total_cents))} → #{entry.rank}
+            Outbid · {formatUsd(priceToClaim(entry.total_cents))} {outbidSuffix(entry.rank)}
           </button>
         </div>
       </div>
@@ -409,7 +413,7 @@ function BidRow({ entry, onOutbid }: { entry: BidEntry; onOutbid: (e: BidEntry) 
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); onOutbid(entry); }}
           className="whitespace-nowrap rounded-full border border-black/12 px-2.5 py-1 text-[11px] font-medium text-black/60 transition-colors hover:border-black hover:text-black sm:border-0 sm:px-0 sm:py-0 sm:hover:underline"
         >
-          Outbid · {formatUsd(priceToClaim(entry.total_cents))} → #{entry.rank}
+          Outbid · {formatUsd(priceToClaim(entry.total_cents))} {outbidSuffix(entry.rank)}
         </button>
       </div>
 
