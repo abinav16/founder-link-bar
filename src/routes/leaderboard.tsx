@@ -555,8 +555,8 @@ function LeaderboardPage() {
                       hint={`Impressions this startup received back from the network (${rangeSuffix}).`}
                     />
                   </div>
-                  <div className="w-14 flex justify-end">
-                    <ColHeader label="Ratio" hint="Impressions given ÷ impressions received. Above 1.0x means this site gives more than it gets." />
+                  <div className="w-16 flex justify-end">
+                    <ColHeader label="Given / Recv." hint="How many impressions this site gave to others for every one it got back. It's normal for this to be above 1.0x — each impression reaches a different startup, so a heavy contributor can't receive all the traffic it sends. That's how new and small members get traffic too." />
                   </div>
                 </div>
               )}
@@ -677,7 +677,7 @@ function LeaderboardPage() {
                         <div className="text-[9px] tabular-nums text-black/25 mt-0.5">{row.impressions.toLocaleString()} all-time</div>
                       )}
                     </div>
-                    <div className="hidden sm:block sm:w-14">
+                    <div className="hidden sm:block sm:w-16">
                       <div className="text-base font-bold tabular-nums text-black">{ratio(row)}</div>
                     </div>
                   </div>
