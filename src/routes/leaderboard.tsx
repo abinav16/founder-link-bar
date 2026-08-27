@@ -677,7 +677,7 @@ function LeaderboardPage() {
                         <div className="text-[9px] tabular-nums text-black/25 mt-0.5">{row.impressions.toLocaleString()} all-time</div>
                       )}
                     </div>
-                    <div className="hidden sm:block sm:w-14">
+                    <div className="hidden sm:block sm:w-16">
                       <div className="text-base font-bold tabular-nums text-black">{ratio(row)}</div>
                     </div>
                   </div>
