@@ -3,7 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { LiveVisitorMap } from "@/components/LiveVisitorMap";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { ArrowRight, Settings, LogOut, LayoutDashboard, Eye, MousePointerClick, Globe, BarChart2, Users, TrendingUp, Info, X, Trophy, Gavel } from "lucide-react";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useBidBoard, formatUsd } from "@/lib/bid";
 
@@ -23,6 +23,40 @@ function useInView(threshold = 0.12) {
     return () => obs.disconnect();
   }, [threshold]);
   return { ref, visible };
+}
+
+function Reveal({
+  children,
+  delay = 0,
+  from = "up",
+  className = "",
+  threshold = 0.15,
+}: {
+  children: ReactNode;
+  delay?: number;
+  from?: "up" | "left" | "right" | "scale";
+  className?: string;
+  threshold?: number;
+}) {
+  const { ref, visible } = useInView(threshold);
+  const hidden =
+    from === "left" ? "translateX(-32px)"
+    : from === "right" ? "translateX(32px)"
+    : from === "scale" ? "scale(0.96)"
+    : "translateY(28px)";
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-[800ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${className}`}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "none" : hidden,
+        transitionDelay: `${delay}ms`,
+      }}
+    >
+      {children}
+    </div>
+  );
 }
 
 
@@ -383,7 +417,9 @@ function HowItWorks() {
   return (
     <section id="how" className="border-t border-black/8 bg-white px-6 py-14 sm:py-20 md:py-28 overflow-hidden">
       <div className="mx-auto max-w-5xl">
-        <p className="mb-12 text-xs font-semibold uppercase tracking-[0.18em] text-black/35">How it works</p>
+        <Reveal>
+          <p className="mb-12 text-xs font-semibold uppercase tracking-[0.18em] text-black/35">How it works</p>
+        </Reveal>
 
         <div className="space-y-20 md:space-y-28">
           {STEPS.map((s, i) => (
@@ -391,7 +427,7 @@ function HowItWorks() {
               key={s.step}
               className="grid items-start gap-10 md:grid-cols-2 md:gap-16"
             >
-              <div className={`min-w-0 md:pt-1 ${i % 2 === 1 ? "md:order-2" : ""}`}>
+              <Reveal from={i % 2 === 1 ? "right" : "left"} className={`min-w-0 md:pt-1 ${i % 2 === 1 ? "md:order-2" : ""}`}>
                 <span className="block text-xs font-semibold uppercase tracking-[0.18em] text-black/25">STEP {s.step}</span>
                 
                 <h2
@@ -425,8 +461,8 @@ function HowItWorks() {
                     </Link>
                   </div>
                 )}
-              </div>
-              <div className={`min-w-0 overflow-hidden ${i % 2 === 1 ? "md:order-1" : ""}`}>{s.visual}</div>
+              </Reveal>
+              <Reveal from={i % 2 === 1 ? "left" : "right"} delay={120} className={`min-w-0 overflow-hidden ${i % 2 === 1 ? "md:order-1" : ""}`}>{s.visual}</Reveal>
             </div>
           ))}
         </div>
@@ -898,19 +934,21 @@ function Landing() {
       {/* Live Network Map */}
       <section className="border-t border-black/8 px-6 py-16 sm:py-24">
         <div className="mx-auto max-w-6xl">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Live network</span>
-          <h2
-            className="mt-4 text-3xl font-medium leading-tight tracking-tight sm:text-4xl"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            Track where your visitors<br className="hidden sm:block" /> come from. In real time.
-          </h2>
-          <p className="mt-4 text-base text-black/45 max-w-xl">
-            Every founder in the network shares their traffic. Watch the world light up as visitors discover startups like yours.
-          </p>
-          <div className="mt-10">
+          <Reveal>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Live network</span>
+            <h2
+              className="mt-4 text-3xl font-medium leading-tight tracking-tight sm:text-4xl"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              Track where your visitors<br className="hidden sm:block" /> come from. In real time.
+            </h2>
+            <p className="mt-4 text-base text-black/45 max-w-xl">
+              Every founder in the network shares their traffic. Watch the world light up as visitors discover startups like yours.
+            </p>
+          </Reveal>
+          <Reveal from="scale" delay={150} className="mt-10" threshold={0.1}>
             <LiveVisitorMap networkMode title="Live network activity" startupName="StartupBar" startupLogoUrl={startupBarLogo ?? undefined} />
-          </div>
+          </Reveal>
         </div>
       </section>
 
