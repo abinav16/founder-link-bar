@@ -417,7 +417,9 @@ function HowItWorks() {
   return (
     <section id="how" className="border-t border-black/8 bg-white px-6 py-14 sm:py-20 md:py-28 overflow-hidden">
       <div className="mx-auto max-w-5xl">
-        <p className="mb-12 text-xs font-semibold uppercase tracking-[0.18em] text-black/35">How it works</p>
+        <Reveal>
+          <p className="mb-12 text-xs font-semibold uppercase tracking-[0.18em] text-black/35">How it works</p>
+        </Reveal>
 
         <div className="space-y-20 md:space-y-28">
           {STEPS.map((s, i) => (
@@ -425,7 +427,7 @@ function HowItWorks() {
               key={s.step}
               className="grid items-start gap-10 md:grid-cols-2 md:gap-16"
             >
-              <div className={`min-w-0 md:pt-1 ${i % 2 === 1 ? "md:order-2" : ""}`}>
+              <Reveal from={i % 2 === 1 ? "right" : "left"} className={`min-w-0 md:pt-1 ${i % 2 === 1 ? "md:order-2" : ""}`}>
                 <span className="block text-xs font-semibold uppercase tracking-[0.18em] text-black/25">STEP {s.step}</span>
                 
                 <h2
