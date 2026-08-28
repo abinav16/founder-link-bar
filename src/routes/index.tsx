@@ -32,7 +32,7 @@ function Reveal({
   className = "",
   threshold = 0.15,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   delay?: number;
   from?: "up" | "left" | "right" | "scale";
   className?: string;
