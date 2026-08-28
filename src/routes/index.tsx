@@ -934,19 +934,21 @@ function Landing() {
       {/* Live Network Map */}
       <section className="border-t border-black/8 px-6 py-16 sm:py-24">
         <div className="mx-auto max-w-6xl">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Live network</span>
-          <h2
-            className="mt-4 text-3xl font-medium leading-tight tracking-tight sm:text-4xl"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            Track where your visitors<br className="hidden sm:block" /> come from. In real time.
-          </h2>
-          <p className="mt-4 text-base text-black/45 max-w-xl">
-            Every founder in the network shares their traffic. Watch the world light up as visitors discover startups like yours.
-          </p>
-          <div className="mt-10">
+          <Reveal>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Live network</span>
+            <h2
+              className="mt-4 text-3xl font-medium leading-tight tracking-tight sm:text-4xl"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              Track where your visitors<br className="hidden sm:block" /> come from. In real time.
+            </h2>
+            <p className="mt-4 text-base text-black/45 max-w-xl">
+              Every founder in the network shares their traffic. Watch the world light up as visitors discover startups like yours.
+            </p>
+          </Reveal>
+          <Reveal from="scale" delay={150} className="mt-10" threshold={0.1}>
             <LiveVisitorMap networkMode title="Live network activity" startupName="StartupBar" startupLogoUrl={startupBarLogo ?? undefined} />
-          </div>
+          </Reveal>
         </div>
       </section>
 
