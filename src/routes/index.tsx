@@ -25,6 +25,40 @@ function useInView(threshold = 0.12) {
   return { ref, visible };
 }
 
+function Reveal({
+  children,
+  delay = 0,
+  from = "up",
+  className = "",
+  threshold = 0.15,
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  from?: "up" | "left" | "right" | "scale";
+  className?: string;
+  threshold?: number;
+}) {
+  const { ref, visible } = useInView(threshold);
+  const hidden =
+    from === "left" ? "translateX(-32px)"
+    : from === "right" ? "translateX(32px)"
+    : from === "scale" ? "scale(0.96)"
+    : "translateY(28px)";
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-[800ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${className}`}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "none" : hidden,
+        transitionDelay: `${delay}ms`,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 
 
 
