@@ -461,8 +461,8 @@ function HowItWorks() {
                     </Link>
                   </div>
                 )}
-              </div>
-              <div className={`min-w-0 overflow-hidden ${i % 2 === 1 ? "md:order-1" : ""}`}>{s.visual}</div>
+              </Reveal>
+              <Reveal from={i % 2 === 1 ? "left" : "right"} delay={120} className={`min-w-0 overflow-hidden ${i % 2 === 1 ? "md:order-1" : ""}`}>{s.visual}</Reveal>
             </div>
           ))}
         </div>
