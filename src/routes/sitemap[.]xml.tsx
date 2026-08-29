@@ -30,8 +30,9 @@ export const Route = createFileRoute("/sitemap.xml")({
   server: {
     handlers: {
       GET: async () => {
+        const today = new Date().toISOString().slice(0, 10);
         const entries: SitemapEntry[] = [
-          { path: "/", changefreq: "weekly", priority: "1.0" },
+          { path: "/", changefreq: "weekly", priority: "1.0", lastmod: today },
           { path: "/network", changefreq: "daily", priority: "0.9" },
           { path: "/leaderboard", changefreq: "daily", priority: "0.9" },
           { path: "/startupbid", changefreq: "hourly", priority: "0.9" },
