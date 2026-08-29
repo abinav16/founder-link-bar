@@ -557,6 +557,7 @@ function StartupBidPage() {
     };
   }, []);
 
+  const [howStep, setHowStep] = useState(0);
   const [dialog, setDialog] = useState<{ open: boolean; url?: string; amount?: number }>({
     open: false,
   });
