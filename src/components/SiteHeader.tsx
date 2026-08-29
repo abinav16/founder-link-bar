@@ -21,13 +21,20 @@ const activeCls = "!text-black font-semibold bg-black/[0.05]";
 export function SiteHeader() {
   const navigate = useNavigate();
   const [authed, setAuthed] = useState<boolean | null>(null);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setAuthed(!!data.session));
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) =>
       setAuthed(!!session),
     );
-    return () => subscription.unsubscribe();
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   async function signOut() {
