@@ -782,6 +782,18 @@ function StartupBidPage() {
               ))}
             </ol>
 
+            {/* Mobile swipe dots */}
+            <div aria-hidden className="mt-3 flex items-center justify-center gap-1.5 sm:hidden">
+              {[0, 1, 2].map((i) => (
+                <span
+                  key={i}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    howStep === i ? "w-4 bg-black" : "w-1.5 bg-black/20"
+                  }`}
+                />
+              ))}
+            </div>
+
             <div className="mt-4 flex items-center justify-center gap-2 text-[11.5px] font-medium text-black/40">
               <MousePointerClick className="h-3.5 w-3.5" />
               Clicks from the board are counted and shown publicly.
