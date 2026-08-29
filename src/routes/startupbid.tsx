@@ -20,7 +20,18 @@ import {
   type BidActivity,
   type BidTrending,
 } from "@/lib/bid";
-import { ArrowUpRight, CheckCircle2, Clock3, Flame, Gavel, Loader2 } from "lucide-react";
+import {
+  ArrowUpRight,
+  CheckCircle2,
+  Clock3,
+  CreditCard,
+  Flame,
+  Gavel,
+  Globe,
+  Loader2,
+  MousePointerClick,
+  Trophy,
+} from "lucide-react";
 
 
 const TITLE = "StartupBid — Pay-to-rank leaderboard for startups | StartupBar";
