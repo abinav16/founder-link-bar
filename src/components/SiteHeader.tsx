@@ -14,9 +14,9 @@ function Logo() {
 }
 
 const linkCls =
-  "relative flex items-center gap-1.5 rounded-full px-3 py-2 text-[13px] font-medium text-black/50 transition-all duration-200 hover:bg-black/[0.045] hover:text-black";
+  "relative flex items-center gap-1.5 rounded-full px-3 py-2 text-[13px] font-medium text-black/50 transition-all duration-200 hover:bg-black/[0.045] hover:text-black active:scale-[0.97] after:absolute after:-bottom-px after:left-1/2 after:h-1 after:w-1 after:-translate-x-1/2 after:rounded-full after:bg-black after:opacity-0 after:transition-opacity after:duration-200";
 
-const activeCls = "!text-black font-semibold bg-black/[0.05]";
+const activeCls = "!text-black font-semibold bg-black/[0.05] after:opacity-100";
 
 export function SiteHeader() {
   const navigate = useNavigate();
@@ -45,7 +45,12 @@ export function SiteHeader() {
 
   return (
     <header
-      className="sticky top-0 z-30 border-b border-black/[0.06] bg-white/80 backdrop-blur-xl"
+      className={cn(
+        "sticky top-0 z-30 border-b bg-white/80 backdrop-blur-xl transition-all duration-300",
+        scrolled
+          ? "border-black/[0.08] shadow-[0_8px_24px_-12px_rgba(0,0,0,0.18)]"
+          : "border-black/[0.06] shadow-none",
+      )}
       suppressHydrationWarning
     >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
