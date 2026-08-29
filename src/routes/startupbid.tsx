@@ -557,6 +557,7 @@ function StartupBidPage() {
     };
   }, []);
 
+  const [howStep, setHowStep] = useState(0);
   const [dialog, setDialog] = useState<{ open: boolean; url?: string; amount?: number }>({
     open: false,
   });
@@ -729,7 +730,16 @@ function StartupBidPage() {
               How it works
             </h3>
 
-            <ol className="mt-5 grid grid-cols-1 gap-3 sm:mt-6 sm:grid-cols-3 sm:gap-4">
+            <ol
+              onScroll={(e) => {
+                const el = e.currentTarget;
+                const card = el.querySelector("li");
+                if (!card) return;
+                const w = (card as HTMLElement).offsetWidth + 12;
+                setHowStep(Math.min(2, Math.max(0, Math.round(el.scrollLeft / w))));
+              }}
+              className="scrollbar-none -mx-5 mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-1 sm:mx-0 sm:mt-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0"
+            >
               {[
                 {
                   icon: Globe,
@@ -752,7 +762,7 @@ function StartupBidPage() {
               ].map((s) => (
                 <li
                   key={s.step}
-                  className="group relative flex items-start gap-3.5 rounded-xl border border-black/[0.06] bg-[#fafafa] p-4 transition-all duration-200 hover:border-black/[0.12] hover:bg-white hover:shadow-[0_6px_20px_-10px_rgba(0,0,0,0.12)] sm:flex-col sm:gap-0 sm:p-5"
+                  className="group relative flex w-[86%] shrink-0 snap-center items-start gap-3.5 rounded-xl border border-black/[0.06] bg-[#fafafa] p-4 transition-all duration-200 first:ml-0 last:mr-0 hover:border-black/[0.12] hover:bg-white hover:shadow-[0_6px_20px_-10px_rgba(0,0,0,0.12)] sm:w-auto sm:shrink sm:flex-col sm:gap-0 sm:p-5"
                 >
                   <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-black text-white transition-transform duration-200 group-hover:scale-110 sm:h-11 sm:w-11">
                     <s.icon className="h-[18px] w-[18px]" />
@@ -771,6 +781,18 @@ function StartupBidPage() {
                 </li>
               ))}
             </ol>
+
+            {/* Mobile swipe dots */}
+            <div aria-hidden className="mt-3 flex items-center justify-center gap-1.5 sm:hidden">
+              {[0, 1, 2].map((i) => (
+                <span
+                  key={i}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    howStep === i ? "w-4 bg-black" : "w-1.5 bg-black/20"
+                  }`}
+                />
+              ))}
+            </div>
 
             <div className="mt-4 flex items-center justify-center gap-2 text-[11.5px] font-medium text-black/40">
               <MousePointerClick className="h-3.5 w-3.5" />
