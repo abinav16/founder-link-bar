@@ -20,7 +20,18 @@ import {
   type BidActivity,
   type BidTrending,
 } from "@/lib/bid";
-import { ArrowUpRight, CheckCircle2, Clock3, Flame, Gavel, Loader2 } from "lucide-react";
+import {
+  ArrowUpRight,
+  CheckCircle2,
+  Clock3,
+  CreditCard,
+  Flame,
+  Gavel,
+  Globe,
+  Loader2,
+  MousePointerClick,
+  Trophy,
+} from "lucide-react";
 
 
 const TITLE = "StartupBid — Pay-to-rank leaderboard for startups | StartupBar";
@@ -713,17 +724,60 @@ function StartupBidPage() {
 
         {/* How it works */}
         <section className="mt-10 sm:mt-12">
-          <div className="rounded-2xl border border-black/[0.07] bg-white p-5">
-            <h3 className="text-[12px] font-semibold uppercase tracking-[0.14em] text-black/40">
+          <div className="rounded-2xl border border-black/[0.07] bg-white p-5 sm:p-6">
+            <h3 className="text-center text-[12px] font-semibold uppercase tracking-[0.14em] text-black/40">
               How it works
             </h3>
-            <ol className="mt-3 space-y-2 text-[12.5px] leading-relaxed text-black/55">
-              <li>1. Enter any site or @handle — yours or one you back.</li>
-              <li>2. Pay any amount from $5. It adds to that entry&apos;s total.</li>
-              <li>3. Ranking is pure total spend. Outbid anyone, anytime.</li>
-              <li>4. Clicks from the board are counted and shown publicly.</li>
+
+            <ol className="mt-5 grid grid-cols-1 gap-3 sm:mt-6 sm:grid-cols-3 sm:gap-4">
+              {[
+                {
+                  icon: Globe,
+                  step: "01",
+                  title: "Add a site or @handle",
+                  body: "Enter any website or X handle — yours or one you back. No account needed.",
+                },
+                {
+                  icon: CreditCard,
+                  step: "02",
+                  title: "Bid from $5",
+                  body: "Every payment stacks onto that entry's lifetime total. Bids are cumulative.",
+                },
+                {
+                  icon: Trophy,
+                  step: "03",
+                  title: "Climb the board",
+                  body: "Ranking is pure total spend. Outbid anyone, anytime to take their spot.",
+                },
+              ].map((s) => (
+                <li
+                  key={s.step}
+                  className="group relative flex items-start gap-3.5 rounded-xl border border-black/[0.06] bg-[#fafafa] p-4 transition-all duration-200 hover:border-black/[0.12] hover:bg-white hover:shadow-[0_6px_20px_-10px_rgba(0,0,0,0.12)] sm:flex-col sm:gap-0 sm:p-5"
+                >
+                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-black text-white transition-transform duration-200 group-hover:scale-110 sm:h-11 sm:w-11">
+                    <s.icon className="h-[18px] w-[18px]" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-baseline gap-2 sm:mt-3.5">
+                      <span className="font-mono text-[10px] font-semibold tracking-widest text-black/30">
+                        {s.step}
+                      </span>
+                      <h4 className="truncate text-[13.5px] font-semibold tracking-tight text-black">
+                        {s.title}
+                      </h4>
+                    </div>
+                    <p className="mt-1 text-[12.5px] leading-relaxed text-black/50">{s.body}</p>
+                  </div>
+                </li>
+              ))}
             </ol>
-            <p className="mt-3 text-[11px] leading-relaxed text-black/30">
+
+            <div className="mt-4 flex items-center justify-center gap-2 text-[11.5px] font-medium text-black/40">
+              <MousePointerClick className="h-3.5 w-3.5" />
+              Clicks from the board are counted and shown publicly.
+            </div>
+
+            <p className="mt-4 border-t border-black/[0.05] pt-4 text-[11px] leading-relaxed text-black/30">
               StartupBid is a paid advertising placement, not a contest, prize draw or game of
               chance. Your listing goes live immediately after payment and stays on the board with
               public click tracking. Ranking is decided purely by the total amount paid. Payments
