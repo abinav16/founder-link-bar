@@ -40,7 +40,7 @@ serve(async (req) => {
       });
     }
 
-    const mode = "test";
+    const mode = "live";
     const baseUrl = mode === "test" ? "https://test.dodopayments.com" : "https://live.dodopayments.com";
 
     const res = await fetch(`${baseUrl}/payments/${payment_id}`, {
