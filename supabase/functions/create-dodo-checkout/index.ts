@@ -36,9 +36,8 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    // TEST MODE: checkout runs against Dodo test (sandbox) so payments can be
-    // exercised without real money. Set back to "live" to accept real payments.
-    const mode: "test" | "live" = "test";
+    // LIVE MODE: real payments. Switch to "test" only for sandbox testing.
+    const mode: "test" | "live" = "live";
 
 
 
