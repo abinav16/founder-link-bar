@@ -115,6 +115,44 @@ function StartupProfileLink({ slug, children, className }: { slug: string; child
   );
 }
 
+function SaveButton({ startupId, className }: { startupId: string; className?: string }) {
+  const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    let cancel = false;
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data.user) { setReady(true); return; }
+      isStartupSaved({ data: { startup_id: startupId } })
+        .then((v) => { if (!cancel) { setSaved(v); setReady(true); } })
+        .catch(() => { if (!cancel) setReady(true); });
+    });
+    return () => { cancel = true; };
+  }, [startupId]);
+  if (!ready) return null;
+  return (
+    <button
+      type="button"
+      onClick={async (e) => {
+        e.stopPropagation();
+        if (loading) return;
+        setLoading(true);
+        try {
+          const next = !saved;
+          await toggleSavedStartup({ data: { startup_id: startupId, save: next } });
+          setSaved(next);
+        } finally {
+          setLoading(false);
+        }
+      }}
+      aria-label={saved ? "Unsave" : "Save"}
+      title={saved ? "Unsave" : "Save"}
+      className={className}
+    >
+      <Bookmark className={`h-3.5 w-3.5 ${saved ? "fill-current" : ""}`} />
+    </button>
+  );
+}
 
 function StartupCard({ s }: { s: Card }) {
 
