@@ -202,6 +202,15 @@ function StartupCard({ s }: { s: Card }) {
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
+            <SaveButton
+              startupId={s.id}
+              className={[
+                "pointer-events-auto inline-flex h-7 w-7 items-center justify-center rounded-full border transition-colors",
+                sponsored
+                  ? "border-white/20 bg-white/10 text-white/70 hover:border-white/40 hover:bg-white/20 hover:text-white"
+                  : "border-black/10 bg-white text-black/50 hover:border-black/30 hover:text-black",
+              ].join(" ")}
+            />
             <a
               href={visitHref}
               target="_blank"
