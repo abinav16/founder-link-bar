@@ -723,6 +723,10 @@ function LeaderboardPage() {
                   </div>
                 )}
 
+                <SaveButton
+                  startupId={row.id}
+                  className="shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity inline-flex h-7 w-7 items-center justify-center rounded-full border border-black/10 bg-white text-black/40 hover:border-black/30 hover:text-amber-500 hover:bg-amber-50"
+                />
                 <a
                   href={`/api/public/widget/click?id=${row.id}`}
                   target="_blank"
