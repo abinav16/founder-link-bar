@@ -1,12 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Copy, Check, Code2, ArrowRight, BarChart2, MousePointerClick, Layers, Percent, ChevronDown, Globe2, Smartphone, Monitor, Tablet, User, Eye } from "lucide-react";
+import { Copy, Check, Code2, ArrowRight, BarChart2, MousePointerClick, Layers, Percent, ChevronDown, Globe2, Smartphone, Monitor, Tablet, User, Eye, Bookmark } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { PromoteButton } from "@/components/FeaturedBookingDialog";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { LiveVisitorMap } from "@/components/LiveVisitorMap";
+import { getSavedStartups, type SavedStartup } from "@/lib/saved-startups.functions";
 
 function DashboardPending() {
   return (
