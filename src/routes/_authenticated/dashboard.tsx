@@ -393,7 +393,11 @@ function SavedStartupsCard({ items, onRemove }: { items: SavedStartup[]; onRemov
               <>
                 <StartupFavicon url={item.startup.website_url} name={item.startup.name} size={36} className="rounded-lg shrink-0" />
                 <div className="min-w-0 flex-1">
-                  <Link to={`/startup/${item.startup.slug ?? item.startup.id}`} className="block truncate text-sm font-medium text-black hover:underline">
+                  <Link
+                    to="/startup/$slug"
+                    params={{ slug: item.startup.slug ?? item.startup.id }}
+                    className="block truncate text-sm font-medium text-black hover:underline"
+                  >
                     {item.startup.name}
                   </Link>
                   <p className="truncate text-[11px] text-black/40">{item.startup.description || item.startup.website_url}</p>
