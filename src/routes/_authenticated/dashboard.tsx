@@ -1033,6 +1033,8 @@ function DashboardPage() {
                 )}
               </div>
             </div>
+
+            <SavedStartupsCard items={savedStartups} onRemove={(id) => setSavedStartups((prev) => prev.filter((s) => s.startup?.id !== id))} />
           </div>
         )}
       </div>
