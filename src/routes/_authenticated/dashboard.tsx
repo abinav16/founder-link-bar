@@ -464,7 +464,7 @@ function DashboardPage() {
 
   useEffect(() => {
     let cancel = false;
-    getSavedStartups({ data: {} })
+    getSavedStartups()
       .then((rows) => { if (!cancel) setSavedStartups(rows); })
       .catch(() => {});
     return () => { cancel = true; };
