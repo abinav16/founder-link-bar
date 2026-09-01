@@ -757,6 +757,8 @@ function DashboardPage() {
             <Link to="/leaderboard" className="mt-8 inline-flex items-center gap-1.5 text-xs text-black/35 hover:text-black transition-colors">
               See who's already in the network →
             </Link>
+
+            <SavedStartupsCard items={savedStartups} onRemove={(id) => setSavedStartups((prev) => prev.filter((s) => s.startup?.id !== id))} />
           </div>
         ) : (
           <div className="space-y-6">
