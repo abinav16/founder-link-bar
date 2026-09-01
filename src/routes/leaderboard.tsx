@@ -4,8 +4,9 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { SponsoredRail } from "@/components/SponsoredRail";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { getLeaderboard, getNetworkActivity, type LeaderboardRow } from "@/lib/leaderboard.functions";
+import { isStartupSaved, toggleSavedStartup } from "@/lib/saved-startups.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { Trophy, ExternalLink, Info } from "lucide-react";
+import { Trophy, ExternalLink, Info, Bookmark } from "lucide-react";
 import { useFeaturedStartupIds } from "@/lib/featured";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
