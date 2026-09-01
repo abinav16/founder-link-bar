@@ -460,6 +460,15 @@ function DashboardPage() {
   const [breakdown, setBreakdown] = useState<TrafficBreakdown>(loaderData.breakdown);
   const [liveTicker, setLiveTicker] = useState<{ country: string; device: string; ts: number } | null>(null);
   const [isLive, setIsLive] = useState(false);
+  const [savedStartups, setSavedStartups] = useState<SavedStartup[]>([]);
+
+  useEffect(() => {
+    let cancel = false;
+    getSavedStartups({ data: {} })
+      .then((rows) => { if (!cancel) setSavedStartups(rows); })
+      .catch(() => {});
+    return () => { cancel = true; };
+  }, []);
 
   useEffect(() => {
     if (!startup) return;
