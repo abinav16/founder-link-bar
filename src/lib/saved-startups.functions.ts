@@ -2,15 +2,29 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+export type SavedStartup = {
+  savedAt: string;
+  startup: {
+    id: string;
+    name: string;
+    slug: string | null;
+    website_url: string;
+    logo_url: string | null;
+    description: string | null;
+    status: string;
+  } | null;
+};
+
 export const getSavedStartups = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .handler(async ({ context }): Promise<SavedStartup[]> => {
     const { data, error } = await context.supabase
       .from("saved_startups")
-      .select("startup_id, created_at, startups(id, name, slug, website_url, logo_url, description, status)")
+      .select("created_at, startup_id, startups(id, name, slug, website_url, logo_url, description, status)")
+      .eq("user_id", context.userId)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return (data ?? []).map((row) => ({
+    return (data ?? []).map((row: any) => ({
       savedAt: row.created_at,
       startup: row.startups,
     }));
@@ -23,6 +37,7 @@ export const isStartupSaved = createServerFn({ method: "GET" })
     const { data: rows, error } = await context.supabase
       .from("saved_startups")
       .select("id")
+      .eq("user_id", context.userId)
       .eq("startup_id", data.startup_id)
       .limit(1);
     if (error) throw new Error(error.message);
@@ -36,7 +51,7 @@ export const toggleSavedStartup = createServerFn({ method: "POST" })
     if (data.save) {
       const { error } = await context.supabase
         .from("saved_startups")
-        .insert({ startup_id: data.startup_id })
+        .insert({ user_id: context.userId, startup_id: data.startup_id })
         .select("id")
         .single();
       if (error && error.code !== "23505") throw new Error(error.message);
@@ -45,6 +60,7 @@ export const toggleSavedStartup = createServerFn({ method: "POST" })
     const { error } = await context.supabase
       .from("saved_startups")
       .delete()
+      .eq("user_id", context.userId)
       .eq("startup_id", data.startup_id);
     if (error) throw new Error(error.message);
     return false;
