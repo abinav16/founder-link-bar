@@ -4,7 +4,9 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { SponsoredRail } from "@/components/SponsoredRail";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { getNetworkDashboard, type NetworkDashboardResult } from "@/lib/network-dashboard.functions";
-import { ArrowUpRight, ArrowRight, Eye, Globe, Search, X } from "lucide-react";
+import { isStartupSaved, toggleSavedStartup } from "@/lib/saved-startups.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { ArrowUpRight, ArrowRight, Eye, Globe, Search, X, Bookmark } from "lucide-react";
 import { useFeaturedStartupIds } from "@/lib/featured";
 
 
