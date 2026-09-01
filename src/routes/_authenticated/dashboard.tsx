@@ -377,6 +377,45 @@ function rollingLabels(): string[] {
   });
 }
 
+function SavedStartupsCard({ items, onRemove }: { items: SavedStartup[]; onRemove: (id: string) => void }) {
+  if (items.length === 0) return null;
+  return (
+    <div className="rounded-xl border border-black/8 bg-white p-6">
+      <div className="flex items-center gap-2">
+        <Bookmark className="h-4 w-4 text-amber-500" />
+        <p className="text-sm font-semibold text-black">Saved startups</p>
+      </div>
+      <p className="mt-1 text-xs text-black/40">Startups you bookmarked from the network or leaderboard.</p>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {items.map((item) => (
+          <div key={item.startup?.id ?? item.savedAt} className="group relative flex items-center gap-3 rounded-xl border border-black/8 bg-black/[0.02] p-3 hover:border-black/20 transition-all">
+            {item.startup ? (
+              <>
+                <StartupFavicon url={item.startup.website_url} name={item.startup.name} size={36} className="rounded-lg shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <Link to={`/startup/${item.startup.slug ?? item.startup.id}`} className="block truncate text-sm font-medium text-black hover:underline">
+                    {item.startup.name}
+                  </Link>
+                  <p className="truncate text-[11px] text-black/40">{item.startup.description || item.startup.website_url}</p>
+                </div>
+                <button
+                  onClick={() => item.startup && onRemove(item.startup.id)}
+                  aria-label="Unsave"
+                  className="shrink-0 rounded-lg p-2 text-black/30 hover:bg-amber-50 hover:text-amber-500 transition-colors"
+                >
+                  <Bookmark className="h-3.5 w-3.5 fill-current" />
+                </button>
+              </>
+            ) : (
+              <p className="text-xs text-black/35">Startup no longer available</p>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Sparkline({ data, labels }: { data: number[]; labels: string[] }) {
   const max = Math.max(...data, 1);
   const [tooltip, setTooltip] = useState<{ idx: number } | null>(null);
