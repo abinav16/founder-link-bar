@@ -233,10 +233,27 @@ function StartupPage() {
               </div>
             </div>
           </div>
-          <a href={`/api/public/widget/click?id=${s.id}&source=profile`} target="_blank" rel="noopener noreferrer"
-            className="inline-flex w-full md:w-auto justify-center shrink-0 items-center gap-1.5 rounded-xl bg-black px-4 py-2.5 text-sm font-medium text-white hover:bg-black/85">
-            Visit site <ExternalLink className="h-3.5 w-3.5" />
-          </a>
+          <div className="flex w-full md:w-auto shrink-0 items-center gap-2">
+            {isSignedIn && (
+              <button
+                onClick={toggleSave}
+                disabled={saving}
+                aria-label={saved ? "Unsave this startup" : "Save this startup"}
+                title={saved ? "Unsave" : "Save"}
+                className={`inline-flex h-11 w-11 items-center justify-center rounded-xl border transition-all ${
+                  saved
+                    ? "border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100"
+                    : "border-black/10 bg-white text-black/50 hover:border-black/30 hover:text-black"
+                }`}
+              >
+                <Bookmark className={`h-4 w-4 ${saved ? "fill-current" : ""}`} />
+              </button>
+            )}
+            <a href={`/api/public/widget/click?id=${s.id}&source=profile`} target="_blank" rel="noopener noreferrer"
+              className="inline-flex flex-1 md:flex-none justify-center shrink-0 items-center gap-1.5 rounded-xl bg-black px-4 py-2.5 text-sm font-medium text-white hover:bg-black/85">
+              Visit site <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          </div>
         </div>
 
         {/* STATS */}
