@@ -162,6 +162,28 @@ function StartupPage() {
   const isSignedIn = !!authState.userId;
   const isOwner = isSignedIn && !!s.user_id && authState.userId === s.user_id;
 
+  const [saved, setSaved] = useState<boolean>(false);
+  const [saving, setSaving] = useState(false);
+  useEffect(() => {
+    if (!isSignedIn) return;
+    let cancel = false;
+    isStartupSaved({ data: { startup_id: s.id } })
+      .then((v) => { if (!cancel) setSaved(v); })
+      .catch(() => {});
+    return () => { cancel = true; };
+  }, [isSignedIn, s.id]);
+  async function toggleSave() {
+    if (!isSignedIn || saving) return;
+    setSaving(true);
+    try {
+      const next = !saved;
+      await toggleSavedStartup({ data: { startup_id: s.id, save: next } });
+      setSaved(next);
+    } finally {
+      setSaving(false);
+    }
+  }
+
   const pulseQ = useQuery({
     queryKey: ["startup-pulse", s.id],
     queryFn: () => getStartupPulse({ data: { id: s.id } }),
