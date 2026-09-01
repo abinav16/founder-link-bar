@@ -7,7 +7,7 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { PromoteButton } from "@/components/FeaturedBookingDialog";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { LiveVisitorMap } from "@/components/LiveVisitorMap";
-import { getSavedStartups, type SavedStartup } from "@/lib/saved-startups.functions";
+import { getSavedStartups, toggleSavedStartup, type SavedStartup } from "@/lib/saved-startups.functions";
 
 function DashboardPending() {
   return (
