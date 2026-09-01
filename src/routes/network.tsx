@@ -4,7 +4,9 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { SponsoredRail } from "@/components/SponsoredRail";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { getNetworkDashboard, type NetworkDashboardResult } from "@/lib/network-dashboard.functions";
-import { ArrowUpRight, ArrowRight, Eye, Globe, Search, X } from "lucide-react";
+import { isStartupSaved, toggleSavedStartup } from "@/lib/saved-startups.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { ArrowUpRight, ArrowRight, Eye, Globe, Search, X, Bookmark } from "lucide-react";
 import { useFeaturedStartupIds } from "@/lib/featured";
 
 
@@ -113,6 +115,44 @@ function StartupProfileLink({ slug, children, className }: { slug: string; child
   );
 }
 
+function SaveButton({ startupId, className }: { startupId: string; className?: string }) {
+  const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    let cancel = false;
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data.user) { setReady(true); return; }
+      isStartupSaved({ data: { startup_id: startupId } })
+        .then((v) => { if (!cancel) { setSaved(v); setReady(true); } })
+        .catch(() => { if (!cancel) setReady(true); });
+    });
+    return () => { cancel = true; };
+  }, [startupId]);
+  if (!ready) return null;
+  return (
+    <button
+      type="button"
+      onClick={async (e) => {
+        e.stopPropagation();
+        if (loading) return;
+        setLoading(true);
+        try {
+          const next = !saved;
+          await toggleSavedStartup({ data: { startup_id: startupId, save: next } });
+          setSaved(next);
+        } finally {
+          setLoading(false);
+        }
+      }}
+      aria-label={saved ? "Unsave" : "Save"}
+      title={saved ? "Unsave" : "Save"}
+      className={className}
+    >
+      <Bookmark className={`h-3.5 w-3.5 ${saved ? "fill-current" : ""}`} />
+    </button>
+  );
+}
 
 function StartupCard({ s }: { s: Card }) {
 
@@ -162,6 +202,15 @@ function StartupCard({ s }: { s: Card }) {
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
+            <SaveButton
+              startupId={s.id}
+              className={[
+                "pointer-events-auto inline-flex h-7 w-7 items-center justify-center rounded-full border transition-colors",
+                sponsored
+                  ? "border-white/20 bg-white/10 text-white/70 hover:border-white/40 hover:bg-white/20 hover:text-white"
+                  : "border-black/10 bg-white text-black/50 hover:border-black/30 hover:text-black",
+              ].join(" ")}
+            />
             <a
               href={visitHref}
               target="_blank"

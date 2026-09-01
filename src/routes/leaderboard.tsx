@@ -4,8 +4,9 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { SponsoredRail } from "@/components/SponsoredRail";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { getLeaderboard, getNetworkActivity, type LeaderboardRow } from "@/lib/leaderboard.functions";
+import { isStartupSaved, toggleSavedStartup } from "@/lib/saved-startups.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { Trophy, ExternalLink, Info } from "lucide-react";
+import { Trophy, ExternalLink, Info, Bookmark } from "lucide-react";
 import { useFeaturedStartupIds } from "@/lib/featured";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -93,6 +94,45 @@ function NewBadge({ className = "" }: { className?: string }) {
     <span className={`text-[9px] font-semibold tracking-[0.12em] uppercase px-1.5 py-0.5 rounded-full bg-black text-white leading-none ${className}`}>
       New
     </span>
+  );
+}
+
+function SaveButton({ startupId, className }: { startupId: string; className?: string }) {
+  const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    let cancel = false;
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data.user) { setReady(true); return; }
+      isStartupSaved({ data: { startup_id: startupId } })
+        .then((v) => { if (!cancel) { setSaved(v); setReady(true); } })
+        .catch(() => { if (!cancel) setReady(true); });
+    });
+    return () => { cancel = true; };
+  }, [startupId]);
+  if (!ready) return null;
+  return (
+    <button
+      type="button"
+      onClick={async (e) => {
+        e.stopPropagation();
+        if (loading) return;
+        setLoading(true);
+        try {
+          const next = !saved;
+          await toggleSavedStartup({ data: { startup_id: startupId, save: next } });
+          setSaved(next);
+        } finally {
+          setLoading(false);
+        }
+      }}
+      aria-label={saved ? "Unsave" : "Save"}
+      title={saved ? "Unsave" : "Save"}
+      className={className}
+    >
+      <Bookmark className={`h-3.5 w-3.5 ${saved ? "fill-current" : ""}`} />
+    </button>
   );
 }
 
@@ -683,6 +723,10 @@ function LeaderboardPage() {
                   </div>
                 )}
 
+                <SaveButton
+                  startupId={row.id}
+                  className="shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity inline-flex h-7 w-7 items-center justify-center rounded-full border border-black/10 bg-white text-black/40 hover:border-black/30 hover:text-amber-500 hover:bg-amber-50"
+                />
                 <a
                   href={`/api/public/widget/click?id=${row.id}`}
                   target="_blank"
