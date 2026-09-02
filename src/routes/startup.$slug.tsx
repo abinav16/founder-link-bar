@@ -2,14 +2,13 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { getStartupPage, getStartupPulse } from "@/lib/startup-page.functions";
-import { isStartupSaved, toggleSavedStartup } from "@/lib/saved-startups.functions";
 import { StartupEmbed } from "@/components/StartupEmbed";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { SponsoredRail } from "@/components/SponsoredRail";
 
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { supabase } from "@/integrations/supabase/client";
-import { ExternalLink, Quote, Activity, ArrowUpRight, Calendar, User, Pencil, LayoutDashboard, Share2, Check, ArrowLeft, Bookmark } from "lucide-react";
+import { ExternalLink, Quote, Activity, ArrowUpRight, Calendar, User, Pencil, LayoutDashboard, Share2, Check, ArrowLeft } from "lucide-react";
 
 
 const pageQuery = (slug: string) =>
@@ -162,28 +161,6 @@ function StartupPage() {
   const isSignedIn = !!authState.userId;
   const isOwner = isSignedIn && !!s.user_id && authState.userId === s.user_id;
 
-  const [saved, setSaved] = useState<boolean>(false);
-  const [saving, setSaving] = useState(false);
-  useEffect(() => {
-    if (!isSignedIn) return;
-    let cancel = false;
-    isStartupSaved({ data: { startup_id: s.id } })
-      .then((v) => { if (!cancel) setSaved(v); })
-      .catch(() => {});
-    return () => { cancel = true; };
-  }, [isSignedIn, s.id]);
-  async function toggleSave() {
-    if (!isSignedIn || saving) return;
-    setSaving(true);
-    try {
-      const next = !saved;
-      await toggleSavedStartup({ data: { startup_id: s.id, save: next } });
-      setSaved(next);
-    } finally {
-      setSaving(false);
-    }
-  }
-
   const pulseQ = useQuery({
     queryKey: ["startup-pulse", s.id],
     queryFn: () => getStartupPulse({ data: { id: s.id } }),
@@ -233,27 +210,10 @@ function StartupPage() {
               </div>
             </div>
           </div>
-          <div className="flex w-full md:w-auto shrink-0 items-center gap-2">
-            {isSignedIn && (
-              <button
-                onClick={toggleSave}
-                disabled={saving}
-                aria-label={saved ? "Unsave this startup" : "Save this startup"}
-                title={saved ? "Unsave" : "Save"}
-                className={`inline-flex h-11 w-11 items-center justify-center rounded-xl border transition-all ${
-                  saved
-                    ? "border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100"
-                    : "border-black/10 bg-white text-black/50 hover:border-black/30 hover:text-black"
-                }`}
-              >
-                <Bookmark className={`h-4 w-4 ${saved ? "fill-current" : ""}`} />
-              </button>
-            )}
-            <a href={`/api/public/widget/click?id=${s.id}&source=profile`} target="_blank" rel="noopener noreferrer"
-              className="inline-flex flex-1 md:flex-none justify-center shrink-0 items-center gap-1.5 rounded-xl bg-black px-4 py-2.5 text-sm font-medium text-white hover:bg-black/85">
-              Visit site <ExternalLink className="h-3.5 w-3.5" />
-            </a>
-          </div>
+          <a href={`/api/public/widget/click?id=${s.id}&source=profile`} target="_blank" rel="noopener noreferrer"
+            className="inline-flex w-full md:w-auto justify-center shrink-0 items-center gap-1.5 rounded-xl bg-black px-4 py-2.5 text-sm font-medium text-white hover:bg-black/85">
+            Visit site <ExternalLink className="h-3.5 w-3.5" />
+          </a>
         </div>
 
         {/* STATS */}

@@ -1,13 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Copy, Check, Code2, ArrowRight, BarChart2, MousePointerClick, Layers, Percent, ChevronDown, Globe2, Smartphone, Monitor, Tablet, User, Eye, Bookmark } from "lucide-react";
+import { Copy, Check, Code2, ArrowRight, BarChart2, MousePointerClick, Layers, Percent, ChevronDown, Globe2, Smartphone, Monitor, Tablet, User, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { PromoteButton } from "@/components/FeaturedBookingDialog";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { LiveVisitorMap } from "@/components/LiveVisitorMap";
-import { getSavedStartups, toggleSavedStartup, type SavedStartup } from "@/lib/saved-startups.functions";
 
 function DashboardPending() {
   return (
@@ -377,60 +376,6 @@ function rollingLabels(): string[] {
   });
 }
 
-function SavedStartupsCard({ items, onRemove }: { items: SavedStartup[]; onRemove: (id: string) => void }) {
-  const [removing, setRemoving] = useState<string | null>(null);
-  if (items.length === 0) return null;
-  async function handleRemove(id: string) {
-    setRemoving(id);
-    try {
-      await toggleSavedStartup({ data: { startup_id: id, save: false } });
-      onRemove(id);
-    } finally {
-      setRemoving(null);
-    }
-  }
-  return (
-    <div className="rounded-xl border border-black/8 bg-white p-6">
-      <div className="flex items-center gap-2">
-        <Bookmark className="h-4 w-4 text-amber-500" />
-        <p className="text-sm font-semibold text-black">Saved startups</p>
-      </div>
-      <p className="mt-1 text-xs text-black/40">Startups you bookmarked from the network or leaderboard.</p>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map((item) => (
-          <div key={item.startup?.id ?? item.savedAt} className="group relative flex items-center gap-3 rounded-xl border border-black/8 bg-black/[0.02] p-3 hover:border-black/20 transition-all">
-            {item.startup ? (
-              <>
-                <StartupFavicon url={item.startup.website_url} name={item.startup.name} size={36} className="rounded-lg shrink-0" />
-                <div className="min-w-0 flex-1">
-                  <Link
-                    to="/startup/$slug"
-                    params={{ slug: item.startup.slug ?? item.startup.id }}
-                    className="block truncate text-sm font-medium text-black hover:underline"
-                  >
-                    {item.startup.name}
-                  </Link>
-                  <p className="truncate text-[11px] text-black/40">{item.startup.description || item.startup.website_url}</p>
-                </div>
-                <button
-                  onClick={() => item.startup && handleRemove(item.startup.id)}
-                  disabled={removing === item.startup?.id}
-                  aria-label="Unsave"
-                  className="shrink-0 rounded-lg p-2 text-black/30 hover:bg-amber-50 hover:text-amber-500 transition-colors disabled:opacity-50"
-                >
-                  <Bookmark className="h-3.5 w-3.5 fill-current" />
-                </button>
-              </>
-            ) : (
-              <p className="text-xs text-black/35">Startup no longer available</p>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function Sparkline({ data, labels }: { data: number[]; labels: string[] }) {
   const max = Math.max(...data, 1);
   const [tooltip, setTooltip] = useState<{ idx: number } | null>(null);
@@ -514,15 +459,6 @@ function DashboardPage() {
   const [breakdown, setBreakdown] = useState<TrafficBreakdown>(loaderData.breakdown);
   const [liveTicker, setLiveTicker] = useState<{ country: string; device: string; ts: number } | null>(null);
   const [isLive, setIsLive] = useState(false);
-  const [savedStartups, setSavedStartups] = useState<SavedStartup[]>([]);
-
-  useEffect(() => {
-    let cancel = false;
-    getSavedStartups()
-      .then((rows) => { if (!cancel) setSavedStartups(rows); })
-      .catch(() => {});
-    return () => { cancel = true; };
-  }, []);
 
   useEffect(() => {
     if (!startup) return;
@@ -768,8 +704,6 @@ function DashboardPage() {
             <Link to="/leaderboard" className="mt-8 inline-flex items-center gap-1.5 text-xs text-black/35 hover:text-black transition-colors">
               See who's already in the network →
             </Link>
-
-            <SavedStartupsCard items={savedStartups} onRemove={(id) => setSavedStartups((prev) => prev.filter((s) => s.startup?.id !== id))} />
           </div>
         ) : (
           <div className="space-y-6">
@@ -1044,8 +978,6 @@ function DashboardPage() {
                 )}
               </div>
             </div>
-
-            <SavedStartupsCard items={savedStartups} onRemove={(id) => setSavedStartups((prev) => prev.filter((s) => s.startup?.id !== id))} />
           </div>
         )}
       </div>

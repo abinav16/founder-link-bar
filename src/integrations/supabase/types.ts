@@ -513,35 +513,6 @@ export type Database = {
         }
         Relationships: []
       }
-      saved_startups: {
-        Row: {
-          created_at: string
-          id: string
-          startup_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          startup_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          startup_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "saved_startups_startup_id_fkey"
-            columns: ["startup_id"]
-            isOneToOne: false
-            referencedRelation: "startups"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       startups: {
         Row: {
           banned: boolean
