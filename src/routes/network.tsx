@@ -122,7 +122,7 @@ function StartupCard({ s }: { s: Card }) {
   return (
     <div
       className={[
-        "group relative flex flex-col gap-2.5 sm:gap-3 rounded-2xl border p-4 sm:p-5 transition-all duration-300 h-full overflow-hidden",
+        "group relative flex flex-col gap-2.5 sm:gap-3 rounded-2xl border p-4 sm:p-5 transition-all duration-300 h-full overflow-hidden sb-lift",
         sponsored
           ? "sb-sponsored border-[oklch(0.72_0.13_75)] hover:shadow-[0_12px_48px_oklch(0.65_0.15_68_/_0.18)]"
           : "bg-white border-black/[0.06] hover:border-black/[0.12] hover:shadow-[0_12px_48px_rgba(0,0,0,0.07)]",
