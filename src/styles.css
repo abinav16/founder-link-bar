@@ -292,3 +292,20 @@
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
+
+/* --- Micro-interactions --- */
+@utility sb-lift {
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  &:hover { transform: translateY(-3px); }
+  &:active { transform: translateY(-1px); }
+}
+
+@utility sb-press {
+  transition: transform 140ms cubic-bezier(0.22, 1, 0.36, 1), opacity 140ms ease;
+  &:active { transform: scale(0.97); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sb-lift, .sb-press { transition: none; }
+  .sb-lift:hover, .sb-lift:active, .sb-press:active { transform: none; }
+}

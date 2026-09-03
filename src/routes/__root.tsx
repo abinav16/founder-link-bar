@@ -15,6 +15,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { trackPageView } from "@/lib/analytics";
 import { trackSiteVisit } from "@/lib/site-visit";
+import { BackToTop } from "@/components/BackToTop";
 
 
 function NotFoundComponent() {
@@ -184,6 +185,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
+      <BackToTop />
       <Toaster />
     </QueryClientProvider>
   );
