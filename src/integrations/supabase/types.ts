@@ -1048,6 +1048,15 @@ export type Database = {
           startup_id: string
         }[]
       }
+      public_startup_dashboard_summary: {
+        Args: { _startup_id: string }
+        Returns: {
+          clicks: number
+          daily_impressions: number[]
+          impressions: number
+          rank: number
+        }[]
+      }
       public_startup_hourly: {
         Args: { _ids: string[] }
         Returns: {
@@ -1073,6 +1082,15 @@ export type Database = {
         Returns: number
       }
       public_startup_pulse: { Args: { _startup_id: string }; Returns: number }
+      public_startup_range_data: {
+        Args: { _range: string; _startup_id: string }
+        Returns: {
+          chart_data: number[]
+          clicks: number
+          impressions: number
+          labels: string[]
+        }[]
+      }
       public_startup_referrers: {
         Args: { _startup_id: string }
         Returns: {
@@ -1092,6 +1110,14 @@ export type Database = {
           impressions: number
           impressions_given: number
           startup_id: string
+        }[]
+      }
+      public_startup_traffic_breakdown: {
+        Args: { _startup_id: string }
+        Returns: {
+          countries: Json
+          devices: Json
+          top_referrers: Json
         }[]
       }
       read_email_batch: {
