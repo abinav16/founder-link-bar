@@ -459,6 +459,27 @@ export type Database = {
           },
         ]
       }
+      network_stats_daily: {
+        Row: {
+          clicks: number
+          date: string
+          impressions: number
+          updated_at: string
+        }
+        Insert: {
+          clicks?: number
+          date: string
+          impressions?: number
+          updated_at?: string
+        }
+        Update: {
+          clicks?: number
+          date?: string
+          impressions?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           consumed_at: string | null
@@ -537,6 +558,79 @@ export type Database = {
             foreignKeyName: "saved_startups_startup_id_fkey"
             columns: ["startup_id"]
             isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      startup_stats_daily: {
+        Row: {
+          clicks_given: number
+          clicks_received: number
+          date: string
+          impressions_given: number
+          impressions_received: number
+          startup_id: string
+          updated_at: string
+        }
+        Insert: {
+          clicks_given?: number
+          clicks_received?: number
+          date: string
+          impressions_given?: number
+          impressions_received?: number
+          startup_id: string
+          updated_at?: string
+        }
+        Update: {
+          clicks_given?: number
+          clicks_received?: number
+          date?: string
+          impressions_given?: number
+          impressions_received?: number
+          startup_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_stats_daily_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      startup_stats_totals: {
+        Row: {
+          clicks_given: number
+          clicks_received: number
+          impressions_given: number
+          impressions_received: number
+          startup_id: string
+          updated_at: string
+        }
+        Insert: {
+          clicks_given?: number
+          clicks_received?: number
+          impressions_given?: number
+          impressions_received?: number
+          startup_id: string
+          updated_at?: string
+        }
+        Update: {
+          clicks_given?: number
+          clicks_received?: number
+          impressions_given?: number
+          impressions_received?: number
+          startup_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_stats_totals_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: true
             referencedRelation: "startups"
             referencedColumns: ["id"]
           },
