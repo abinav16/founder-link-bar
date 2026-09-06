@@ -132,33 +132,23 @@ async function loadTrafficBreakdown(startupId: string): Promise<TrafficBreakdown
 }
 
 async function loadDashboardData(startupId: string) {
-  const since = new Date();
-  since.setDate(since.getDate() - 6);
-  since.setHours(0, 0, 0, 0);
-
-  const [impsR, clksR, dailyR, rankR, current, breakdown] = await Promise.all([
-    supabase.from("impressions").select("*", { count: "exact", head: true }).eq("shown_startup_id", startupId).neq("referrer", "dev-simulate"),
-    supabase.from("clicks").select("*", { count: "exact", head: true }).eq("shown_startup_id", startupId),
-    supabase.from("impressions").select("created_at").eq("shown_startup_id", startupId).neq("referrer", "dev-simulate").gte("created_at", since.toISOString()),
-    supabase.rpc("get_startup_rank", { _startup_id: startupId }),
+  const [summaryR, current, breakdown] = await Promise.all([
+    supabase.rpc("public_startup_dashboard_summary", { _startup_id: startupId }),
     fetch(`/api/public/widget/pick?host=${startupId}&preview=true`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
     loadTrafficBreakdown(startupId),
   ]);
 
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  const chartData = [0, 0, 0, 0, 0, 0, 0];
-  (dailyR.data ?? []).forEach((row: { created_at: string }) => {
-    const d = new Date(row.created_at); d.setHours(0, 0, 0, 0);
-    const diff = Math.round((today.getTime() - d.getTime()) / 86400000);
-    if (diff >= 0 && diff <= 6) chartData[6 - diff]++;
-  });
-
-  const rank = typeof rankR.data === "number" ? rankR.data : 1;
+  const row = (summaryR.data ?? [])[0] ?? {
+    impressions: 0,
+    clicks: 0,
+    rank: 1,
+    daily_impressions: [0, 0, 0, 0, 0, 0, 0],
+  };
 
   return {
-    stats: { impressions: impsR.count ?? 0, clicks: clksR.count ?? 0 },
-    chartData,
-    rank,
+    stats: { impressions: row.impressions, clicks: row.clicks },
+    chartData: row.daily_impressions,
+    rank: row.rank,
     current: current as Startup | null,
     breakdown,
   };
@@ -197,97 +187,23 @@ const RANGE_CHART_TITLE: Record<RangeKey, string> = {
   all: "last 12 months",
 };
 
-const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-// Windowed totals + chart buckets. Counts use head+exact so they aren't
-// capped by PostgREST's default row limit; only the bucket rows are fetched.
+// Windowed totals + chart buckets now come from trigger-maintained rollups,
+// so the dashboard no longer scans the raw impressions/clicks tables.
 async function loadRangeData(startupId: string, range: RangeKey) {
-  if (range === "all") {
-    const monthStart = new Date();
-    monthStart.setHours(0, 0, 0, 0);
-    monthStart.setDate(1);
-    monthStart.setMonth(monthStart.getMonth() - 11);
-
-    const [base, monthlyR] = await Promise.all([
-      loadDashboardData(startupId),
-      supabase.from("impressions").select("created_at")
-        .eq("shown_startup_id", startupId).neq("referrer", "dev-simulate")
-        .gte("created_at", monthStart.toISOString())
-        .order("created_at", { ascending: true }).limit(50000),
-    ]);
-
-    const chartData = Array.from({ length: 12 }, () => 0);
-    const labels = Array.from({ length: 12 }, (_, i) => {
-      const d = new Date(monthStart);
-      d.setMonth(monthStart.getMonth() + i);
-      return MONTH_NAMES[d.getMonth()];
-    });
-    ((monthlyR.data ?? []) as { created_at: string }[]).forEach((row) => {
-      const d = new Date(row.created_at);
-      const idx = (d.getFullYear() - monthStart.getFullYear()) * 12 + (d.getMonth() - monthStart.getMonth());
-      if (idx >= 0 && idx < 12) chartData[idx]++;
-    });
-
-    return { stats: base.stats, chartData, labels };
-  }
-
-  const now = new Date();
-  const since = new Date();
-  if (range === "24h") {
-    since.setTime(now.getTime() - 24 * 3600 * 1000);
-  } else {
-    since.setDate(now.getDate() - (range === "7d" ? 6 : 29));
-    since.setHours(0, 0, 0, 0);
-  }
-
-  const [impsR, clksR, dailyR] = await Promise.all([
-    supabase.from("impressions").select("*", { count: "exact", head: true })
-      .eq("shown_startup_id", startupId).neq("referrer", "dev-simulate")
-      .gte("created_at", since.toISOString()),
-    supabase.from("clicks").select("*", { count: "exact", head: true })
-      .eq("shown_startup_id", startupId).gte("created_at", since.toISOString()),
-    supabase.from("impressions").select("created_at")
-      .eq("shown_startup_id", startupId).neq("referrer", "dev-simulate")
-      .gte("created_at", since.toISOString()).order("created_at", { ascending: true }).limit(20000),
-  ]);
-
-  const rows = (dailyR.data ?? []) as { created_at: string }[];
-  let chartData: number[];
-  let labels: string[];
-
-  if (range === "24h") {
-    chartData = Array.from({ length: 12 }, () => 0);
-    labels = Array.from({ length: 12 }, (_, i) => {
-      const d = new Date(now.getTime() - (11 - i) * 2 * 3600 * 1000);
-      return i % 3 === 0 ? `${d.getHours()}:00` : "";
-    });
-    rows.forEach((row) => {
-      const diff = now.getTime() - new Date(row.created_at).getTime();
-      const idx = 11 - Math.floor(diff / (2 * 3600 * 1000));
-      if (idx >= 0 && idx <= 11) chartData[idx]++;
-    });
-  } else {
-    const days = range === "7d" ? 7 : 30;
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    chartData = Array.from({ length: days }, () => 0);
-    labels = Array.from({ length: days }, (_, i) => {
-      const d = new Date(today);
-      d.setDate(today.getDate() - (days - 1 - i));
-      if (days === 7) return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d.getDay()];
-      return i % 5 === 0 || i === days - 1 ? `${d.getDate()}` : "";
-    });
-    rows.forEach((row) => {
-      const d = new Date(row.created_at); d.setHours(0, 0, 0, 0);
-      const diff = Math.round((today.getTime() - d.getTime()) / 86400000);
-      const idx = days - 1 - diff;
-      if (idx >= 0 && idx < days) chartData[idx]++;
-    });
-  }
-
+  const { data } = await supabase.rpc("public_startup_range_data", {
+    _startup_id: startupId,
+    _range: range,
+  });
+  const row = (data ?? [])[0] ?? {
+    impressions: 0,
+    clicks: 0,
+    chart_data: [],
+    labels: [],
+  };
   return {
-    stats: { impressions: impsR.count ?? 0, clicks: clksR.count ?? 0 },
-    chartData,
-    labels,
+    stats: { impressions: row.impressions, clicks: row.clicks },
+    chartData: row.chart_data,
+    labels: row.labels,
   };
 }
 
