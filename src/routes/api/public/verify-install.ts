@@ -72,7 +72,18 @@ export const Route = createFileRoute("/api/public/verify-install")({
           let idMismatch = false;
 
           const html = await res.text();
+          // Some sites don't use our loader.js at all — they render the
+          // /widget/bar iframe natively (React/Vue component, CSP-friendly).
+          // Those pages carry our slot marker and/or allow startupbar.co in
+          // frame-src, but none of the loader markers, so the plain check
+          // used to report them as "removed" while the bar is clearly live.
+          const headerCspRaw = res.headers.get("content-security-policy") ?? "";
+          const nativeEmbed =
+            /data-startupbar-slot/i.test(html) ||
+            /startupbar\.co\/widget\/bar/i.test(html) ||
+            (/frame-src[^;]*startupbar\.co/i.test(headerCspRaw) && /startupbar/i.test(html));
           const installed =
+            nativeEmbed ||
             html.includes("startupbar.co/widget") ||
             html.includes("widget/loader.js") ||
             html.includes("data-startup-id");
