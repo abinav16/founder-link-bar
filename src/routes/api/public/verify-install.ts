@@ -281,7 +281,8 @@ export const Route = createFileRoute("/api/public/verify-install")({
             };
 
             if (policies.length > 0) {
-              cspBlocked = policies.some((p) => !allowsStartupbarScript(p));
+              // Native iframe embeds never load our script, so script-src is irrelevant.
+              cspBlocked = !nativeEmbed && policies.some((p) => !allowsStartupbarScript(p));
               cspFrameBlocked = policies.some((p) => !allowsStartupbarFrame(p));
               cspImgBlocked = policies.some((p) => !allowsStartupbarImg(p));
             }
@@ -299,6 +300,7 @@ export const Route = createFileRoute("/api/public/verify-install")({
               consentBlocked,
               consentVendor,
               conditionalInstall,
+              nativeEmbed,
             },
 
             { headers: NO_STORE },
