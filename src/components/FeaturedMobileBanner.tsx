@@ -21,7 +21,7 @@ export function FeaturedMobileBanner(_props: { slots?: number[] }) {
   if (booked.length === 0) return null;
 
   return (
-    <div className="sticky top-16 z-20 -mx-4 -mt-6 mb-3 border-b border-black/[0.06] bg-[#f7f7f6]/90 px-4 py-2 backdrop-blur-xl sm:-mx-6 sm:-mt-8 sm:px-6 xl:hidden">
+    <div className="sticky top-16 z-20 -mx-4 -mt-6 mb-3 border-b border-black/[0.06] bg-[#f7f7f6] px-4 py-2 sm:-mx-6 sm:-mt-8 sm:px-6 xl:hidden">
       <div className="flex items-center gap-2">
         <Popover>
           <PopoverTrigger
