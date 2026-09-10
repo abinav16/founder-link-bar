@@ -682,7 +682,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
       }
 
       // Seed feed from the 30 most recent records (already sorted newest-first)
-      const seedFeed: FeedEvent[] = data.slice(0, 30).map((row) => {
+      const seedFeed: FeedEvent[] = data.slice(0, 200).map((row) => {
         const code = row.country?.toUpperCase() ?? "US";
         const referrerName = resolveReferrerSync(effectiveHost(row.host_startup_id), row.referrer);
         return {
@@ -1039,7 +1039,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
                   // (so you can switch), other dimensions recompute from the filtered feed subset.
                   const filteredSlice = activeFilter ? feed.filter((f) => matchesFilter(f, activeFilter)) : null;
 
-                  const xRefCounts: Map<string, number> = activeFilter?.type === "referrer"
+                  const xRefCounts: Map<string, number> = !activeFilter || activeFilter.type === "referrer"
                     ? referrerCounts
                     : (() => {
                         const m = new Map<string, number>();
@@ -1047,7 +1047,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
                         return m;
                       })();
 
-                  const xCtryCounts: Map<string, { flag: string; count: number }> = activeFilter?.type === "country"
+                  const xCtryCounts: Map<string, { flag: string; count: number }> = !activeFilter || activeFilter.type === "country"
                     ? countryCounts
                     : (() => {
                         const m = new Map<string, { flag: string; count: number }>();
@@ -1058,7 +1058,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
                         return m;
                       })();
 
-                  const xDevCounts: Map<string, number> = activeFilter?.type === "device"
+                  const xDevCounts: Map<string, number> = !activeFilter || activeFilter.type === "device"
                     ? deviceCounts
                     : (() => {
                         const m = new Map<string, number>();
@@ -1245,9 +1245,9 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
           {/* ── Mobile: stats left + feed right, below map ── */}
           {isMobile && (() => {
             const filteredSlice = activeFilter ? feed.filter((f) => matchesFilter(f, activeFilter)) : null;
-            const xRefCounts: Map<string, number> = activeFilter?.type === "referrer" ? referrerCounts : (() => { const m = new Map<string, number>(); for (const f of filteredSlice ?? feed) m.set(f.referrerName, (m.get(f.referrerName) ?? 0) + 1); return m; })();
-            const xCtryCounts: Map<string, { flag: string; count: number }> = activeFilter?.type === "country" ? countryCounts : (() => { const m = new Map<string, { flag: string; count: number }>(); for (const f of filteredSlice ?? feed) { const prev = m.get(f.country); m.set(f.country, { flag: f.flag, count: (prev?.count ?? 0) + 1 }); } return m; })();
-            const xDevCounts: Map<string, number> = activeFilter?.type === "device" ? deviceCounts : (() => { const m = new Map<string, number>(); for (const f of filteredSlice ?? feed) m.set(f.device, (m.get(f.device) ?? 0) + 1); return m; })();
+            const xRefCounts: Map<string, number> = !activeFilter || activeFilter.type === "referrer" ? referrerCounts : (() => { const m = new Map<string, number>(); for (const f of filteredSlice ?? feed) m.set(f.referrerName, (m.get(f.referrerName) ?? 0) + 1); return m; })();
+            const xCtryCounts: Map<string, { flag: string; count: number }> = !activeFilter || activeFilter.type === "country" ? countryCounts : (() => { const m = new Map<string, { flag: string; count: number }>(); for (const f of filteredSlice ?? feed) { const prev = m.get(f.country); m.set(f.country, { flag: f.flag, count: (prev?.count ?? 0) + 1 }); } return m; })();
+            const xDevCounts: Map<string, number> = !activeFilter || activeFilter.type === "device" ? deviceCounts : (() => { const m = new Map<string, number>(); for (const f of filteredSlice ?? feed) m.set(f.device, (m.get(f.device) ?? 0) + 1); return m; })();
             const filteredFeed = feed.filter((f) => matchesFilter(f, activeFilter));
             const livePinIdSet = new Set(livePinIds);
             const activeCount = filteredFeed.filter((f) => livePinIdSet.has(f.id)).length;
