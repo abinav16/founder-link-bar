@@ -463,7 +463,8 @@ function DashboardPage() {
           if (payload.eventType === "DELETE") {
             setStartup(null);
             setStats({ impressions: 0, clicks: 0 });
-            setCurrent(null);
+            setRecentShown([]);
+            setRecentHosts([]);
           } else if (payload.eventType === "UPDATE") {
             setStartup(payload.new as Startup);
           }
@@ -475,7 +476,8 @@ function DashboardPage() {
       setAllStartups([]);
       setStartup(null);
       setStats({ impressions: 0, clicks: 0 });
-      setCurrent(null);
+      setRecentShown([]);
+      setRecentHosts([]);
     };
     window.addEventListener("startup-deleted", onDeleted);
 
@@ -576,7 +578,8 @@ function DashboardPage() {
     // The range effect owns stats + chart for every window — don't clobber it here.
 
     setRank(extra.rank);
-    setCurrent(extra.current);
+    setRecentShown(extra.recentShown);
+    setRecentHosts(extra.recentHosts);
     setBreakdown(extra.breakdown);
   }
 
