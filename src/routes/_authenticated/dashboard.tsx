@@ -132,9 +132,10 @@ async function loadTrafficBreakdown(startupId: string): Promise<TrafficBreakdown
 }
 
 async function loadDashboardData(startupId: string) {
-  const [summaryR, current, breakdown] = await Promise.all([
+  const [summaryR, shownR, hostsR, breakdown] = await Promise.all([
     supabase.rpc("public_startup_dashboard_summary", { _startup_id: startupId }),
-    fetch(`/api/public/widget/pick?host=${startupId}&preview=true`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+    supabase.rpc("public_host_recent_shown" as never, { _host: startupId, _limit: 5 } as never),
+    supabase.rpc("public_startup_recent_hosts" as never, { _startup: startupId, _limit: 5 } as never),
     loadTrafficBreakdown(startupId),
   ]);
 
@@ -149,10 +150,43 @@ async function loadDashboardData(startupId: string) {
     stats: { impressions: row.impressions, clicks: row.clicks },
     chartData: row.daily_impressions,
     rank: row.rank,
-    current: current as Startup | null,
+    recentShown: ((shownR.data as unknown as RecentShown[] | null) ?? []),
+    recentHosts: ((hostsR.data as unknown as RecentHost[] | null) ?? []),
     breakdown,
   };
 }
+
+/** A member that was actually displayed by this startup's own bar. */
+interface RecentShown {
+  startup_id: string;
+  name: string;
+  description: string;
+  website_url: string;
+  logo_url: string | null;
+  last_shown_at: string;
+}
+
+/** A site where this startup's own listing was displayed. */
+interface RecentHost {
+  host_id: string;
+  name: string;
+  slug: string | null;
+  website_url: string;
+  logo_url: string | null;
+  last_shown_at: string;
+}
+
+/** "2 min ago" style label for the recent-activity lists. */
+function timeAgo(iso: string): string {
+  const secs = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
+  if (secs < 60) return "just now";
+  const mins = Math.floor(secs / 60);
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
 
 type RangeKey = "24h" | "7d" | "30d" | "all";
 
