@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Info } from "lucide-react";
 import { StartupFavicon } from "@/components/StartupFavicon";
@@ -7,11 +7,44 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { fetchFeaturedSlots, FEATURED_PRICE_USD, FEATURED_BILLING_LABEL, FEATURED_SLOT_COUNT } from "@/lib/featured";
 
 /**
+ * Tracks the bottom edge of the sticky site header. When the StartupBar widget
+ * runs on our own site it pushes sticky headers down (header.style.top = 36px),
+ * so a hardcoded sticky offset makes this strip slide behind the header.
+ */
+function useHeaderOffset() {
+  const [offset, setOffset] = useState(64);
+  useEffect(() => {
+    const header = document.querySelector("header");
+    if (!header) return;
+    const measure = () => {
+      const cs = getComputedStyle(header);
+      const top = parseFloat(cs.top);
+      setOffset(Math.round((Number.isFinite(top) ? top : 0) + header.getBoundingClientRect().height));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(header);
+    const mo = new MutationObserver(measure);
+    mo.observe(header, { attributes: true, attributeFilter: ["style", "class"] });
+    window.addEventListener("resize", measure);
+    const t = window.setTimeout(measure, 1500);
+    return () => {
+      ro.disconnect();
+      mo.disconnect();
+      window.removeEventListener("resize", measure);
+      window.clearTimeout(t);
+    };
+  }, []);
+  return offset;
+}
+
+/**
  * Compact featured rail for small screens (the side rails are xl-only).
  * Sticks under the header while scrolling and scrolls horizontally.
  */
 export function FeaturedMobileBanner(_props: { slots?: number[] }) {
   const [open, setOpen] = useState(false);
+  const headerOffset = useHeaderOffset();
   const { data: booked = [], refetch } = useQuery({
     queryKey: ["featured-slots"],
     queryFn: fetchFeaturedSlots,
@@ -21,7 +54,11 @@ export function FeaturedMobileBanner(_props: { slots?: number[] }) {
   if (booked.length === 0) return null;
 
   return (
-    <div className="sticky top-16 z-20 -mx-4 -mt-6 mb-3 border-b border-black/[0.06] bg-[#f7f7f6] px-4 py-2 sm:-mx-6 sm:-mt-8 sm:px-6 xl:hidden">
+    <div
+      style={{ top: headerOffset }}
+      className="sticky z-20 -mx-4 -mt-6 mb-3 border-b border-black/[0.06] bg-[#f7f7f6] px-4 py-2 sm:-mx-6 sm:-mt-8 sm:px-6 xl:hidden"
+    >
+
       <div className="flex items-center gap-2">
         <Popover>
           <PopoverTrigger
