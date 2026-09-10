@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { supabase } from "@/integrations/supabase/client";
-import { COUNTRY_CENTROIDS, COUNTRY_NAMES, flagEmoji, jitter } from "@/lib/geo-centroids";
+import { COUNTRY_CENTROIDS, COUNTRY_NAMES, flagEmoji, jitter, pinPosition } from "@/lib/geo-centroids";
 import { funName, avatarUrl } from "@/lib/fun-name";
 import { Globe, Map as MapIcon, Eye, RotateCcw, Minimize2, Maximize2, Palette, UserPlus } from "lucide-react";
 
