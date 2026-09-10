@@ -326,11 +326,10 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
     createdAtMs?: number
   ) {
 
-    const centroid = COUNTRY_CENTROIDS[country];
-    if (!centroid || !mapRef.current) return;
+    const position = pinPosition(country, id);
+    if (!position || !mapRef.current) return;
 
-    const lat = jitter(centroid[0], 3);
-    const lng = jitter(centroid[1], 3);
+    const [lat, lng] = position;
     const color = DEVICE_COLORS[device] ?? DEVICE_COLORS.unknown;
     const { name: referrerName, websiteUrl } = await resolveReferrer(hostStartupId, rawReferrer);
     const referrerFavicon = faviconFor(websiteUrl);
