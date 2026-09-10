@@ -857,13 +857,21 @@ function DashboardPage() {
               </div>
             )}
 
-            <div className="grid gap-4 lg:grid-cols-2 min-w-0">
-              <div className="rounded-xl border border-black/8 bg-white p-6 min-w-0 overflow-hidden">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Code2 className="h-4 w-4 text-black/30" />
-                    <p className="text-sm font-semibold text-black">Embed script</p>
+            <section className="grid min-w-0 grid-cols-12 gap-4" aria-label="Widget setup and recent activity">
+              <div className="col-span-12 rounded-xl border border-black/8 bg-white p-5 shadow-sm sm:p-6">
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-black/[0.04]">
+                      <Code2 className="h-4 w-4 text-black/55" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-black">Embed script</p>
+                      <p className="mt-0.5 text-xs text-black/40">
+                        Paste once in the <code className="rounded bg-black/5 px-1 py-0.5 font-mono">&lt;head&gt;</code> of your site.
+                      </p>
+                    </div>
                   </div>
+                  <div className="shrink-0">
                   {installStatus === "checking" && (
                     <span className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-black/[0.03] px-2.5 py-1 text-[11px] font-medium text-black/40">
                       <span className="h-1.5 w-1.5 rounded-full bg-black/20 animate-pulse" />
@@ -885,20 +893,19 @@ function DashboardPage() {
                       Not detected
                     </span>
                   )}
+                  </div>
                 </div>
-                <p className="mt-1 text-xs text-black/40">
-                  Paste once in the <code className="rounded bg-black/5 px-1 py-0.5 font-mono">&lt;head&gt;</code> of your site.
-                </p>
-                <div className="mt-3 overflow-x-auto rounded-lg bg-black/[0.04] p-3">
-                  <code className="whitespace-nowrap font-mono text-[11px] text-black/60">{snippet}</code>
-                </div>
-                <div className="mt-3 flex items-center gap-2">
+                <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                  <div className="min-w-0 overflow-x-auto rounded-lg border border-black/8 bg-black/[0.025] px-3 py-2.5">
+                    <code className="whitespace-nowrap font-mono text-[11px] text-black/55">{snippet}</code>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
                   <button
                     onClick={copy}
                     disabled={startup.status !== "approved"}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-black/10 bg-white px-3 py-1.5 text-xs font-medium text-black transition hover:bg-black/[0.04] disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="sb-press inline-flex items-center gap-1.5 rounded-lg bg-black px-3 py-2.5 text-xs font-medium text-white transition hover:bg-black/85 disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                    {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                     {startup.status === "approved" ? (copied ? "Copied!" : "Copy script") : "Available after approval"}
                   </button>
                   {installStatus === "disconnected" && (
@@ -909,20 +916,24 @@ function DashboardPage() {
                       Re-check
                     </button>
                   )}
+                  </div>
                 </div>
               </div>
 
-              <div className="rounded-xl border border-black/8 bg-white p-6 min-w-0 overflow-hidden">
-                <p className="text-sm font-semibold text-black">Recently shown on your site</p>
-                <p className="mt-1 text-xs text-black/40">
-                  Your bar rotates every 30 seconds, so each visitor sees a different member.
-                </p>
+              <div className="col-span-12 min-w-0 overflow-hidden rounded-xl border border-black/8 bg-white shadow-sm lg:col-span-6">
+                <div className="border-b border-black/8 px-5 py-4 sm:px-6">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-semibold text-black">Recently shown on your site</p>
+                    <span className="shrink-0 rounded-md bg-black/[0.04] px-2 py-1 text-[10px] font-medium uppercase text-black/40">Last 7 days</span>
+                  </div>
+                  <p className="mt-1 text-xs text-black/40">Your bar rotates every 30 seconds, so each visitor can see a different member.</p>
+                </div>
                 {recentShown.length > 0 ? (
-                  <ul className="mt-3 space-y-2">
+                  <ul className="divide-y divide-black/[0.06]">
                     {recentShown.map((s) => (
                       <li
                         key={s.startup_id}
-                        className="flex items-center justify-between gap-3 rounded-lg border border-black/8 bg-black/[0.02] px-4 py-2.5"
+                        className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-5 py-3 transition-colors hover:bg-black/[0.02] sm:px-6"
                       >
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium">{s.name}</p>
@@ -930,54 +941,57 @@ function DashboardPage() {
                         </div>
                         <div className="flex shrink-0 items-center gap-3">
                           <span className="text-[11px] text-black/30">{timeAgo(s.last_shown_at)}</span>
-                          <a href={s.website_url} target="_blank" rel="noopener noreferrer"
-                            className="text-xs text-black/30 hover:text-black transition-colors flex items-center gap-1">
-                            Visit <span className="text-[10px]">↗</span>
+                           <a href={s.website_url} target="_blank" rel="noopener noreferrer" aria-label={`Visit ${s.name}`}
+                             className="grid h-7 w-7 place-items-center rounded-md text-black/30 transition-colors hover:bg-black/[0.05] hover:text-black">
+                             <ArrowRight className="h-3.5 w-3.5 -rotate-45" />
                           </a>
                         </div>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <p className="mt-3 text-sm text-black/35">
+                  <p className="px-5 py-6 text-sm text-black/35 sm:px-6">
                     {startup.status === "approved"
                       ? "Nothing shown yet — this fills in as visitors land on your site."
                       : "Will appear once your startup is approved."}
                   </p>
                 )}
 
-                <div className="mt-5 border-t border-black/8 pt-4">
-                  <p className="text-sm font-semibold text-black">Where your bar appears</p>
-                  <p className="mt-1 text-xs text-black/40">
-                    Sites that showed your listing recently. Your own site never shows you.
-                  </p>
+              </div>
+
+              <div className="col-span-12 min-w-0 overflow-hidden rounded-xl border border-black/8 bg-white shadow-sm lg:col-span-6">
+                <div className="border-b border-black/8 px-5 py-4 sm:px-6">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-semibold text-black">Where your bar appears</p>
+                    <span className="shrink-0 rounded-md bg-black/[0.04] px-2 py-1 text-[10px] font-medium uppercase text-black/40">Last 7 days</span>
+                  </div>
+                  <p className="mt-1 text-xs text-black/40">Sites that showed your listing. Your own site never shows you.</p>
+                </div>
                   {recentHosts.length > 0 ? (
-                    <ul className="mt-3 space-y-2">
+                    <ul className="divide-y divide-black/[0.06]">
                       {recentHosts.map((h) => (
                         <li
                           key={h.host_id}
-                          className="flex items-center justify-between gap-3 rounded-lg border border-black/8 bg-black/[0.02] px-4 py-2.5"
+                          className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-5 py-3 transition-colors hover:bg-black/[0.02] sm:px-6"
                         >
                           <p className="min-w-0 truncate text-sm font-medium">{h.name}</p>
                           <div className="flex shrink-0 items-center gap-3">
                             <span className="text-[11px] text-black/30">{timeAgo(h.last_shown_at)}</span>
-                            <a href={h.website_url} target="_blank" rel="noopener noreferrer"
-                              className="text-xs text-black/30 hover:text-black transition-colors flex items-center gap-1">
-                              Visit <span className="text-[10px]">↗</span>
+                            <a href={h.website_url} target="_blank" rel="noopener noreferrer" aria-label={`Visit ${h.name}`}
+                              className="grid h-7 w-7 place-items-center rounded-md text-black/30 transition-colors hover:bg-black/[0.05] hover:text-black">
+                              <ArrowRight className="h-3.5 w-3.5 -rotate-45" />
                             </a>
                           </div>
                         </li>
                       ))}
                     </ul>
                   ) : (
-                    <p className="mt-3 text-sm text-black/35">
+                    <p className="px-5 py-6 text-sm text-black/35 sm:px-6">
                       No placements in the last 7 days yet.
                     </p>
                   )}
-                </div>
               </div>
-
-            </div>
+            </section>
           </div>
         )}
       </div>
