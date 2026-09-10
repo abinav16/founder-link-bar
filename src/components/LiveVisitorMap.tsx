@@ -682,7 +682,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
       }
 
       // Seed feed from the 30 most recent records (already sorted newest-first)
-      const seedFeed: FeedEvent[] = data.slice(0, 30).map((row) => {
+      const seedFeed: FeedEvent[] = data.slice(0, 200).map((row) => {
         const code = row.country?.toUpperCase() ?? "US";
         const referrerName = resolveReferrerSync(effectiveHost(row.host_startup_id), row.referrer);
         return {
