@@ -946,7 +946,7 @@ function DashboardPage() {
                             {s.appearance_count.toLocaleString()}× shown
                           </span>
                           <span className="text-[11px] text-black/30">{timeAgo(s.last_shown_at)}</span>
-                           <a href={s.website_url} target="_blank" rel="noopener noreferrer" aria-label={`Visit ${s.name}`}
+                           <a href={`/api/public/widget/click?id=${s.startup_id}&source=dashboard`} target="_blank" rel="noopener noreferrer" aria-label={`Visit ${s.name}`}
                              className="grid h-7 w-7 place-items-center rounded-md text-black/30 transition-colors hover:bg-black/[0.05] hover:text-black">
                              <ArrowRight className="h-3.5 w-3.5 -rotate-45" />
                           </a>
@@ -985,7 +985,7 @@ function DashboardPage() {
                               {h.appearance_count.toLocaleString()}× shown
                             </span>
                             <span className="text-[11px] text-black/30">{timeAgo(h.last_shown_at)}</span>
-                            <a href={h.website_url} target="_blank" rel="noopener noreferrer" aria-label={`Visit ${h.name}`}
+                            <a href={`/api/public/widget/click?id=${h.host_id}&source=dashboard`} target="_blank" rel="noopener noreferrer" aria-label={`Visit ${h.name}`}
                               className="grid h-7 w-7 place-items-center rounded-md text-black/30 transition-colors hover:bg-black/[0.05] hover:text-black">
                               <ArrowRight className="h-3.5 w-3.5 -rotate-45" />
                             </a>

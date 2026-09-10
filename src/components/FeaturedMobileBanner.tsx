@@ -30,7 +30,7 @@ export function FeaturedMobileBanner({ slots }: { slots: number[] }) {
           mine.map((s) => (
             <a
               key={s.slot_index}
-              href={s.website_url}
+              href={s.startup_id ? `/api/public/widget/click?id=${s.startup_id}&source=featured` : s.website_url}
               target="_blank"
               rel="noopener noreferrer"
               className="sb-sponsored relative flex shrink-0 snap-start items-center gap-2 overflow-hidden rounded-xl border px-3 py-2"
