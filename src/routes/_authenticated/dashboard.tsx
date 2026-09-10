@@ -261,7 +261,8 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
         stats: { impressions: 0, clicks: 0 },
         chartData: [0, 0, 0, 0, 0, 0, 0],
         rank: null as number | null,
-        current: null as Startup | null,
+        recentShown: [] as RecentShown[],
+        recentHosts: [] as RecentHost[],
         breakdown: { countries: [], devices: [], topReferrers: [] } as TrafficBreakdown,
       };
     }
@@ -371,7 +372,8 @@ function DashboardPage() {
   const [startup, setStartup] = useState<Startup | null>(loaderData.startup);
   const [stats, setStats] = useState<{ impressions: number; clicks: number }>(loaderData.stats);
   const [profileViews, setProfileViews] = useState<number | null>(null);
-  const [current, setCurrent] = useState<Startup | null>(loaderData.current);
+  const [recentShown, setRecentShown] = useState<RecentShown[]>(loaderData.recentShown ?? []);
+  const [recentHosts, setRecentHosts] = useState<RecentHost[]>(loaderData.recentHosts ?? []);
   const [copied, setCopied] = useState(false);
   const [userName] = useState(loaderData.userName);
   const [switcherOpen, setSwitcherOpen] = useState(false);
@@ -565,7 +567,8 @@ function DashboardPage() {
     setSwitcherOpen(false);
     setStartup(s);
     setStats({ impressions: 0, clicks: 0 });
-    setCurrent(null);
+    setRecentShown([]);
+    setRecentHosts([]);
     setChartData(chartData.map(() => 0));
     setBreakdown({ countries: [], devices: [], topReferrers: [] });
     checkInstall(s.website_url);
