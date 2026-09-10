@@ -699,14 +699,14 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
       // isn't empty when opening a dashboard for a startup that already
       // has historical activity today.
       if (mapRef.current) {
-        // Only pin visitors from the "active now" window (last 5 minutes) so the
-        // globe reflects who's actually live — not everyone from today.
+        // Pin everyone from today. Visitors inside the 5-minute "active now"
+        // window pulse; earlier ones are dimmed dots, so the globe matches the
+        // list of recent visitors instead of looking empty.
         const nowMs = Date.now();
         for (const row of data.slice(0, 200).reverse()) {
           const code = row.country?.toUpperCase();
           if (!code) continue;
           const createdAtMs = new Date((row as { created_at?: string }).created_at ?? nowMs).getTime();
-          if (nowMs - createdAtMs >= PIN_LIFETIME_MS) continue;
           addPin(
             row.id,
             code,
