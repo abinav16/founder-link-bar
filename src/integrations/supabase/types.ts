@@ -515,6 +515,7 @@ export type Database = {
           id: string
           twitter_handle: string | null
           updated_at: string
+          welcome_email_sent_at: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -523,6 +524,7 @@ export type Database = {
           id: string
           twitter_handle?: string | null
           updated_at?: string
+          welcome_email_sent_at?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -531,6 +533,7 @@ export type Database = {
           id?: string
           twitter_handle?: string | null
           updated_at?: string
+          welcome_email_sent_at?: string | null
         }
         Relationships: []
       }
@@ -641,6 +644,8 @@ export type Database = {
           banned: boolean
           created_at: string
           description: string
+          edit_status: string
+          edit_submitted_at: string | null
           founder_avatar_url: string | null
           founder_name: string | null
           founder_quote: string | null
@@ -648,6 +653,8 @@ export type Database = {
           iframe_blocked: boolean | null
           logo_url: string | null
           name: string
+          pending_description: string | null
+          pending_name: string | null
           rejection_reason: string | null
           slug: string | null
           sponsored: boolean
@@ -668,6 +675,8 @@ export type Database = {
           banned?: boolean
           created_at?: string
           description: string
+          edit_status?: string
+          edit_submitted_at?: string | null
           founder_avatar_url?: string | null
           founder_name?: string | null
           founder_quote?: string | null
@@ -675,6 +684,8 @@ export type Database = {
           iframe_blocked?: boolean | null
           logo_url?: string | null
           name: string
+          pending_description?: string | null
+          pending_name?: string | null
           rejection_reason?: string | null
           slug?: string | null
           sponsored?: boolean
@@ -695,6 +706,8 @@ export type Database = {
           banned?: boolean
           created_at?: string
           description?: string
+          edit_status?: string
+          edit_submitted_at?: string | null
           founder_avatar_url?: string | null
           founder_name?: string | null
           founder_quote?: string | null
@@ -702,6 +715,8 @@ export type Database = {
           iframe_blocked?: boolean | null
           logo_url?: string | null
           name?: string
+          pending_description?: string | null
+          pending_name?: string | null
           rejection_reason?: string | null
           slug?: string | null
           sponsored?: boolean
@@ -755,6 +770,8 @@ export type Database = {
           banned: boolean
           created_at: string
           description: string
+          edit_status: string
+          edit_submitted_at: string | null
           founder_avatar_url: string | null
           founder_name: string | null
           founder_quote: string | null
@@ -762,6 +779,8 @@ export type Database = {
           iframe_blocked: boolean | null
           logo_url: string | null
           name: string
+          pending_description: string | null
+          pending_name: string | null
           rejection_reason: string | null
           slug: string | null
           sponsored: boolean
@@ -848,6 +867,8 @@ export type Database = {
           banned: boolean
           created_at: string
           description: string
+          edit_status: string
+          edit_submitted_at: string | null
           founder_avatar_url: string | null
           founder_name: string | null
           founder_quote: string | null
@@ -855,6 +876,8 @@ export type Database = {
           iframe_blocked: boolean | null
           logo_url: string | null
           name: string
+          pending_description: string | null
+          pending_name: string | null
           rejection_reason: string | null
           slug: string | null
           sponsored: boolean

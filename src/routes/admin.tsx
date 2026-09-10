@@ -55,6 +55,10 @@ interface Startup {
   strike_count: number;
   rejection_reason: string | null;
   banned: boolean;
+  pending_name?: string | null;
+  pending_description?: string | null;
+  edit_status?: string;
+  edit_submitted_at?: string | null;
 }
 
 /** Founder identity for the admin table. Email comes from an admin-only,
@@ -121,7 +125,7 @@ type EmbedState =
   | { state: "error" };
 
 
-const STATUS_TABS = ["all", "pending", "approved", "warned", "rejected"] as const;
+const STATUS_TABS = ["all", "pending", "edits", "approved", "warned", "rejected"] as const;
 type Tab = typeof STATUS_TABS[number];
 
 const STATUS_STYLES = {
@@ -254,6 +258,29 @@ function AdminPage() {
     setUpdating(null);
   }
 
+  /** Approve or reject a pending name/one-liner edit on an already-live listing. */
+  async function resolveEdit(s: Startup, accept: boolean) {
+    setUpdating(s.id);
+    const patch = accept
+      ? {
+          name: (s.pending_name ?? s.name).trim(),
+          description: (s.pending_description ?? s.description).trim(),
+          pending_name: null,
+          pending_description: null,
+          edit_status: "none",
+          edit_submitted_at: null,
+        }
+      : { pending_name: null, pending_description: null, edit_status: "none", edit_submitted_at: null };
+    const { error } = await supabase.from("startups").update(patch as never).eq("id", s.id);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success(accept ? "Changes applied" : "Changes rejected");
+      setStartups((prev) => prev.map((x) => x.id === s.id ? { ...x, ...(patch as Partial<Startup>) } : x));
+    }
+    setUpdating(null);
+  }
+
   async function warnStartup(s: Startup) {
     if (!confirm(`Send 48h warning email to the founder of "${s.name}"?`)) return;
     setUpdating(s.id);
@@ -276,13 +303,16 @@ function AdminPage() {
   }
 
   const isWarned = (s: Startup) => s.status === "approved" && !!s.warn_expires_at;
+  const hasEdit = (s: Startup) => s.edit_status === "pending";
   const filtered =
     tab === "all" ? startups :
     tab === "warned" ? startups.filter(isWarned) :
+    tab === "edits" ? startups.filter(hasEdit) :
     startups.filter((s) => s.status === tab);
   const counts: Record<Tab, number> = {
     all: startups.length,
     pending: startups.filter((s) => s.status === "pending").length,
+    edits: startups.filter(hasEdit).length,
     approved: startups.filter((s) => s.status === "approved").length,
     warned: startups.filter(isWarned).length,
     rejected: startups.filter((s) => s.status === "rejected").length,
@@ -449,6 +479,30 @@ function AdminPage() {
                       </td>
                       <td className="hidden max-w-xs px-5 py-4 lg:table-cell">
                         <p className="line-clamp-2 text-sm text-black/60">{s.description}</p>
+                        {s.edit_status === "pending" && (
+                          <div className="mt-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2">
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-700">Proposed edit</p>
+                            {(s.pending_name ?? s.name) !== s.name && (
+                              <p className="mt-1 text-xs text-black/70">
+                                <span className="text-black/35 line-through">{s.name}</span>{" → "}
+                                <span className="font-medium">{s.pending_name}</span>
+                              </p>
+                            )}
+                            {(s.pending_description ?? s.description) !== s.description && (
+                              <p className="mt-1 text-xs text-black/70">{s.pending_description}</p>
+                            )}
+                            <div className="mt-2 flex gap-1.5">
+                              <button onClick={() => resolveEdit(s, true)} disabled={updating === s.id}
+                                className="rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 text-[11px] font-medium text-emerald-700 hover:bg-emerald-100 transition-colors disabled:opacity-50">
+                                Approve changes
+                              </button>
+                              <button onClick={() => resolveEdit(s, false)} disabled={updating === s.id}
+                                className="rounded-md border border-black/12 bg-white px-2 py-1 text-[11px] font-medium text-black/60 hover:text-black transition-colors disabled:opacity-50">
+                                Reject
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </td>
 
                       <td className="px-4 py-4 sm:px-5">

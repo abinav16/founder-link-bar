@@ -416,7 +416,31 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
     }
     pinRecord.marker = marker;
     pinsRef.current.push(pinRecord);
-    setLivePinIds(pinsRef.current.map((p) => p.id));
+    // Visitors from earlier today stay on the globe, just dimmed, so the map
+    // never looks empty while the list below still shows them.
+    if (Date.now() - pinRecord.createdAt >= PIN_LIFETIME_MS) markPinStale(pinRecord);
+    syncLivePinIds();
+  }
+
+  /** Dim a pin once it leaves the 5-minute "active now" window. */
+  function markPinStale(p: LivePin) {
+    const el = p.marker?.getElement?.() as HTMLElement | undefined;
+    if (!el || el.dataset.stale === "1") return;
+    el.dataset.stale = "1";
+    el.style.opacity = "0.4";
+    el.style.transform = `${el.style.transform ?? ""} scale(0.6)`;
+    el.style.transformOrigin = "center";
+    const pulse = el.querySelector("div > div") as HTMLElement | null;
+    if (pulse) pulse.style.display = "none";
+  }
+
+  /** Ids of pins inside the "active now" window — drives the live counter. */
+  function syncLivePinIds() {
+    const now = Date.now();
+    const next = pinsRef.current.filter((p) => now - p.createdAt < PIN_LIFETIME_MS).map((p) => p.id);
+    setLivePinIds((prev) =>
+      prev.length === next.length && prev.every((id, i) => id === next[i]) ? prev : next,
+    );
   }
 
   useEffect(() => {
@@ -676,14 +700,14 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
       // isn't empty when opening a dashboard for a startup that already
       // has historical activity today.
       if (mapRef.current) {
-        // Only pin visitors from the "active now" window (last 5 minutes) so the
-        // globe reflects who's actually live — not everyone from today.
+        // Pin everyone from today. Visitors inside the 5-minute "active now"
+        // window pulse; earlier ones are dimmed dots, so the globe matches the
+        // list of recent visitors instead of looking empty.
         const nowMs = Date.now();
         for (const row of data.slice(0, 200).reverse()) {
           const code = row.country?.toUpperCase();
           if (!code) continue;
           const createdAtMs = new Date((row as { created_at?: string }).created_at ?? nowMs).getTime();
-          if (nowMs - createdAtMs >= PIN_LIFETIME_MS) continue;
           addPin(
             row.id,
             code,
@@ -784,17 +808,24 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
   }, [scopeStartupId, networkMode]);
 
   useEffect(() => {
+    const MAX_PINS = 200;
     const t = setInterval(() => {
       const now = Date.now();
-      const before = pinsRef.current.length;
-      pinsRef.current = pinsRef.current.filter((p) => {
-        const expired = now - p.createdAt >= PIN_LIFETIME_MS;
-        if (expired) { p.marker.remove(); p.popup?.remove(); }
-        return !expired;
-      });
-      if (pinsRef.current.length !== before) {
-        setLivePinIds(pinsRef.current.map((p) => p.id));
+      // Pins are never dropped for age — they fade to a dim dot instead. Only
+      // the oldest are removed once the globe would get too crowded.
+      for (const p of pinsRef.current) {
+        if (now - p.createdAt >= PIN_LIFETIME_MS) markPinStale(p);
       }
+      if (pinsRef.current.length > MAX_PINS) {
+        const drop = pinsRef.current
+          .slice()
+          .sort((a, b) => a.createdAt - b.createdAt)
+          .slice(0, pinsRef.current.length - MAX_PINS);
+        const dropIds = new Set(drop.map((p) => p.id));
+        for (const p of drop) { p.marker.remove(); p.popup?.remove(); }
+        pinsRef.current = pinsRef.current.filter((p) => !dropIds.has(p.id));
+      }
+      syncLivePinIds();
     }, 1000);
     return () => clearInterval(t);
   }, []);

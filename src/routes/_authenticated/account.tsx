@@ -32,6 +32,10 @@ interface Startup {
   founder_quote: string | null;
   founder_avatar_url: string | null;
   widget_placement: "top" | "bottom" | null;
+  pending_name?: string | null;
+  pending_description?: string | null;
+  edit_status?: string | null;
+  edit_submitted_at?: string | null;
 }
 
 
@@ -64,9 +68,10 @@ function StartupCard({ startup, onUpdate, onDelete }: {
   onUpdate: (id: string, data: Partial<Startup>) => void;
   onDelete: (id: string) => void;
 }) {
+  const editPending = startup.edit_status === "pending";
   const [expanded, setExpanded] = useState(false);
-  const [sName, setSName] = useState(startup.name);
-  const [sDesc, setSDesc] = useState(startup.description);
+  const [sName, setSName] = useState(startup.pending_name ?? startup.name);
+  const [sDesc, setSDesc] = useState(startup.pending_description ?? startup.description);
   const [fQuote, setFQuote] = useState(startup.founder_quote ?? "");
   const [placement, setPlacement] = useState<"top" | "bottom">(startup.widget_placement === "bottom" ? "bottom" : "top");
   const [savingPlacement, setSavingPlacement] = useState(false);
@@ -80,8 +85,12 @@ function StartupCard({ startup, onUpdate, onDelete }: {
   const [reviewOpen, setReviewOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const hasChanges = sName.trim() !== startup.name || sDesc.trim() !== startup.description;
+  const baseName = startup.pending_name ?? startup.name;
+  const baseDesc = startup.pending_description ?? startup.description;
+  const hasChanges = sName.trim() !== baseName || sDesc.trim() !== baseDesc;
   const founderChanged = fQuote.trim() !== (startup.founder_quote ?? "");
+  // An already-approved listing stays live while an edit waits for review.
+  const keepsLive = startup.status === "approved";
 
   function onSubmitClick(e: React.FormEvent) {
     e.preventDefault();
@@ -91,16 +100,40 @@ function StartupCard({ startup, onUpdate, onDelete }: {
 
   async function confirmSubmit() {
     setSaving(true);
-    const { error } = await supabase.from("startups").update({
-      name: sName.trim(),
-      description: sDesc.trim(),
-      status: "pending",
-    }).eq("id", startup.id);
+    const patch = keepsLive
+      ? {
+          pending_name: sName.trim(),
+          pending_description: sDesc.trim(),
+          edit_status: "pending",
+          edit_submitted_at: new Date().toISOString(),
+        }
+      : { name: sName.trim(), description: sDesc.trim(), status: "pending" as const };
+    const { error } = await supabase.from("startups").update(patch as never).eq("id", startup.id);
     setSaving(false);
     setReviewOpen(false);
     if (error) { toast.error(error.message); return; }
-    toast.success("Sent for review", { description: "We usually review within 24 hours." });
-    onUpdate(startup.id, { name: sName.trim(), description: sDesc.trim(), status: "pending" });
+    toast.success("Sent for review", {
+      description: keepsLive
+        ? "Your listing stays live with its current text until we approve the change."
+        : "We usually review within 24 hours.",
+    });
+    onUpdate(startup.id, patch as Partial<Startup>);
+  }
+
+  async function withdrawEdit() {
+    setSaving(true);
+    const { error } = await supabase.from("startups").update({
+      pending_name: null,
+      pending_description: null,
+      edit_status: "none",
+      edit_submitted_at: null,
+    } as never).eq("id", startup.id);
+    setSaving(false);
+    if (error) { toast.error(error.message); return; }
+    setSName(startup.name);
+    setSDesc(startup.description);
+    toast.success("Changes withdrawn");
+    onUpdate(startup.id, { pending_name: null, pending_description: null, edit_status: "none", edit_submitted_at: null });
   }
 
   async function saveFounder() {
@@ -267,10 +300,27 @@ function StartupCard({ startup, onUpdate, onDelete }: {
               </div>
             </div>
 
+            {editPending && (
+              <div className="flex flex-wrap items-start gap-2.5 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-700">
+                <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                <span className="min-w-0 flex-1">
+                  Changes under review. Your listing stays live with its current name and one-liner until we approve them.
+                </span>
+                <button type="button" onClick={withdrawEdit} disabled={saving}
+                  className="rounded-md border border-blue-300 px-2 py-1 text-[11px] font-medium text-blue-700 hover:bg-blue-100 transition-colors disabled:opacity-50">
+                  Withdraw
+                </button>
+              </div>
+            )}
+
             {hasChanges && (
               <div className="flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-700">
                 <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                <span>Changing your startup name or one-liner will send it back for review before it goes live again.</span>
+                <span>
+                  {keepsLive
+                    ? "Name and one-liner changes go to us for review. Your listing stays live and unchanged in the meantime."
+                    : "Changing your startup name or one-liner will send it back for review before it goes live again."}
+                </span>
               </div>
             )}
 
@@ -404,12 +454,16 @@ function StartupCard({ startup, onUpdate, onDelete }: {
               </div>
             </div>
             <DialogDescription className="pt-3 text-left text-sm leading-relaxed text-black/60">
-              Your changes will be sent to the StartupBar team for review. During this time <span className="font-medium text-black/80">{sName.trim() || startup.name}</span> will be temporarily removed from the network and won't appear in the widget or leaderboard.
+              {keepsLive ? (
+                <>Your changes will be sent to the StartupBar team for review. <span className="font-medium text-black/80">{startup.name}</span> stays live on the network with its current text until they're approved.</>
+              ) : (
+                <>Your changes will be sent to the StartupBar team for review. During this time <span className="font-medium text-black/80">{sName.trim() || startup.name}</span> will be temporarily removed from the network and won't appear in the widget or leaderboard.</>
+              )}
             </DialogDescription>
           </DialogHeader>
           <div className="flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-xs text-amber-700">
             <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            <span>Reviews usually take under 24 hours. You'll be back live as soon as it's approved.</span>
+            <span>{keepsLive ? "Reviews usually take under 24 hours. Nothing changes on your live listing until then." : "Reviews usually take under 24 hours. You'll be back live as soon as it's approved."}</span>
           </div>
           <DialogFooter className="gap-2 sm:gap-2">
             <button type="button" onClick={() => setReviewOpen(false)} disabled={saving}
@@ -463,7 +517,7 @@ function AccountPage() {
       setAvatarUrl(p?.avatar_url ?? u.user.user_metadata?.avatar_url ?? u.user.user_metadata?.picture ?? null);
 
       const { data } = await supabase
-        .from("startups").select("id, name, website_url, description, status, logo_url, user_id, slug, founder_name, founder_quote, founder_avatar_url, widget_placement").eq("user_id", u.user.id).order("created_at", { ascending: true });
+        .from("startups").select("id, name, website_url, description, status, logo_url, user_id, slug, founder_name, founder_quote, founder_avatar_url, widget_placement, pending_name, pending_description, edit_status, edit_submitted_at").eq("user_id", u.user.id).order("created_at", { ascending: true });
       if (data) setStartups(data as Startup[]);
     })();
   }, []);
