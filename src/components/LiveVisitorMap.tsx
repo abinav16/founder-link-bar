@@ -1039,7 +1039,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
                   // (so you can switch), other dimensions recompute from the filtered feed subset.
                   const filteredSlice = activeFilter ? feed.filter((f) => matchesFilter(f, activeFilter)) : null;
 
-                  const xRefCounts: Map<string, number> = activeFilter?.type === "referrer"
+                  const xRefCounts: Map<string, number> = !activeFilter || activeFilter.type === "referrer"
                     ? referrerCounts
                     : (() => {
                         const m = new Map<string, number>();
@@ -1047,7 +1047,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
                         return m;
                       })();
 
-                  const xCtryCounts: Map<string, { flag: string; count: number }> = activeFilter?.type === "country"
+                  const xCtryCounts: Map<string, { flag: string; count: number }> = !activeFilter || activeFilter.type === "country"
                     ? countryCounts
                     : (() => {
                         const m = new Map<string, { flag: string; count: number }>();
@@ -1058,7 +1058,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
                         return m;
                       })();
 
-                  const xDevCounts: Map<string, number> = activeFilter?.type === "device"
+                  const xDevCounts: Map<string, number> = !activeFilter || activeFilter.type === "device"
                     ? deviceCounts
                     : (() => {
                         const m = new Map<string, number>();
