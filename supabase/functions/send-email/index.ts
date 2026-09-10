@@ -455,6 +455,34 @@ serve(async (req) => {
       // request body, or anyone could send fake confirmations to any address.
       const email = caller.email;
       if (!email) return new Response("No email", { status: 400, headers: corsHeaders });
+
+      // The welcome email is once per account, ever. Claim it atomically so a
+      // second browser, device or private window can't trigger a duplicate.
+      if (type === "welcome") {
+        const stamp = new Date().toISOString();
+        // Not every account has a profile row yet, so try to create one first.
+        // A unique-violation means the row exists — fall back to a conditional
+        // claim that only succeeds when nobody has been welcomed yet.
+        const ins = await supabase
+          .from("profiles")
+          .insert({ id: caller.id, welcome_email_sent_at: stamp })
+          .select("id");
+        let claimedIt = !ins.error && (ins.data?.length ?? 0) > 0;
+        if (ins.error) {
+          const upd = await supabase
+            .from("profiles")
+            .update({ welcome_email_sent_at: stamp })
+            .eq("id", caller.id)
+            .is("welcome_email_sent_at", null)
+            .select("id");
+          claimedIt = !upd.error && (upd.data?.length ?? 0) > 0;
+        }
+        if (!claimedIt) {
+          return new Response(JSON.stringify({ ok: true, skipped: "already-welcomed" }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      }
       const founderNameRaw = ((data?.name as string | undefined) ?? (caller.user_metadata?.full_name as string | undefined) ?? "");
       const founderName = escapeHtml(founderNameRaw.split(" ")[0] || "Founder");
       const startupName = escapeHtml(data?.startupName ?? "your startup");

@@ -416,7 +416,30 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
     }
     pinRecord.marker = marker;
     pinsRef.current.push(pinRecord);
-    setLivePinIds(pinsRef.current.map((p) => p.id));
+    // Visitors from earlier today stay on the globe, just dimmed, so the map
+    // never looks empty while the list below still shows them.
+    if (Date.now() - pinRecord.createdAt >= PIN_LIFETIME_MS) markPinStale(pinRecord);
+    syncLivePinIds();
+  }
+
+  /** Dim a pin once it leaves the 5-minute "active now" window. */
+  function markPinStale(p: LivePin) {
+    const el = p.marker?.getElement?.() as HTMLElement | undefined;
+    if (!el || el.dataset.stale === "1") return;
+    el.dataset.stale = "1";
+    el.style.opacity = "0.4";
+    el.style.transform = `${el.style.transform ?? ""} scale(0.6)`;
+    el.style.transformOrigin = "center";
+    const pulse = el.querySelector("div > div") as HTMLElement | null;
+    if (pulse) pulse.style.display = "none";
+  }
+
+  /** Ids of pins inside the "active now" window — drives the live counter. */
+  function syncLivePinIds() {
+    const now = Date.now();
+    setLivePinIds(
+      pinsRef.current.filter((p) => now - p.createdAt < PIN_LIFETIME_MS).map((p) => p.id),
+    );
   }
 
   useEffect(() => {
