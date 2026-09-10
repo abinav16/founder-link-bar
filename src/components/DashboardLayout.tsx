@@ -2,7 +2,6 @@ import { Link, useRouterState } from "@tanstack/react-router";
 
 import { SponsoredRail } from "@/components/SponsoredRail";
 import { FeaturedMobileBanner } from "@/components/FeaturedMobileBanner";
-import { FEATURED_SLOT_COUNT } from "@/lib/featured";
 import { FeaturedReturnWatcher } from "@/components/FeaturedBookingDialog";
 import { SiteHeader } from "@/components/SiteHeader";
 
