@@ -833,6 +833,30 @@ export type Database = {
         }[]
       }
       consume_prepaid_listing: { Args: { _user_id: string }; Returns: string }
+      dashboard_host_shown_7d: {
+        Args: { _host: string }
+        Returns: {
+          appearance_count: number
+          description: string
+          last_shown_at: string
+          logo_url: string
+          name: string
+          startup_id: string
+          website_url: string
+        }[]
+      }
+      dashboard_startup_hosts_7d: {
+        Args: { _startup: string }
+        Returns: {
+          appearance_count: number
+          host_id: string
+          last_shown_at: string
+          logo_url: string
+          name: string
+          slug: string
+          website_url: string
+        }[]
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean

@@ -134,8 +134,8 @@ async function loadTrafficBreakdown(startupId: string): Promise<TrafficBreakdown
 async function loadDashboardData(startupId: string) {
   const [summaryR, shownR, hostsR, breakdown] = await Promise.all([
     supabase.rpc("public_startup_dashboard_summary", { _startup_id: startupId }),
-    supabase.rpc("public_host_recent_shown" as never, { _host: startupId, _limit: 5 } as never),
-    supabase.rpc("public_startup_recent_hosts" as never, { _startup: startupId, _limit: 5 } as never),
+    supabase.rpc("dashboard_host_shown_7d" as never, { _host: startupId } as never),
+    supabase.rpc("dashboard_startup_hosts_7d" as never, { _startup: startupId } as never),
     loadTrafficBreakdown(startupId),
   ]);
 
@@ -163,6 +163,7 @@ interface RecentShown {
   description: string;
   website_url: string;
   logo_url: string | null;
+  appearance_count: number;
   last_shown_at: string;
 }
 
@@ -173,6 +174,7 @@ interface RecentHost {
   slug: string | null;
   website_url: string;
   logo_url: string | null;
+  appearance_count: number;
   last_shown_at: string;
 }
 
@@ -924,12 +926,12 @@ function DashboardPage() {
                 <div className="border-b border-black/8 px-5 py-4 sm:px-6">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-semibold text-black">Recently shown on your site</p>
-                    <span className="shrink-0 rounded-md bg-black/[0.04] px-2 py-1 text-[10px] font-medium uppercase text-black/40">Last 7 days</span>
+                    <span className="shrink-0 rounded-md bg-black/[0.04] px-2 py-1 text-[10px] font-medium uppercase text-black/40">All · Last 7 days</span>
                   </div>
                   <p className="mt-1 text-xs text-black/40">Your bar rotates every 30 seconds, so each visitor can see a different member.</p>
                 </div>
                 {recentShown.length > 0 ? (
-                  <ul className="divide-y divide-black/[0.06]">
+                  <ul className="max-h-[420px] divide-y divide-black/[0.06] overflow-y-auto">
                     {recentShown.map((s) => (
                       <li
                         key={s.startup_id}
@@ -939,7 +941,10 @@ function DashboardPage() {
                           <p className="truncate text-sm font-medium">{s.name}</p>
                           <p className="truncate text-xs text-black/40">{s.description}</p>
                         </div>
-                        <div className="flex shrink-0 items-center gap-3">
+                        <div className="flex shrink-0 items-center gap-2.5">
+                          <span className="rounded-md bg-black/[0.05] px-2 py-1 text-[11px] font-semibold tabular-nums text-black/55">
+                            {s.appearance_count.toLocaleString()}× shown
+                          </span>
                           <span className="text-[11px] text-black/30">{timeAgo(s.last_shown_at)}</span>
                            <a href={s.website_url} target="_blank" rel="noopener noreferrer" aria-label={`Visit ${s.name}`}
                              className="grid h-7 w-7 place-items-center rounded-md text-black/30 transition-colors hover:bg-black/[0.05] hover:text-black">
@@ -963,19 +968,22 @@ function DashboardPage() {
                 <div className="border-b border-black/8 px-5 py-4 sm:px-6">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-semibold text-black">Where your bar appears</p>
-                    <span className="shrink-0 rounded-md bg-black/[0.04] px-2 py-1 text-[10px] font-medium uppercase text-black/40">Last 7 days</span>
+                    <span className="shrink-0 rounded-md bg-black/[0.04] px-2 py-1 text-[10px] font-medium uppercase text-black/40">All · Last 7 days</span>
                   </div>
                   <p className="mt-1 text-xs text-black/40">Sites that showed your listing. Your own site never shows you.</p>
                 </div>
                   {recentHosts.length > 0 ? (
-                    <ul className="divide-y divide-black/[0.06]">
+                    <ul className="max-h-[420px] divide-y divide-black/[0.06] overflow-y-auto">
                       {recentHosts.map((h) => (
                         <li
                           key={h.host_id}
                           className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-5 py-3 transition-colors hover:bg-black/[0.02] sm:px-6"
                         >
                           <p className="min-w-0 truncate text-sm font-medium">{h.name}</p>
-                          <div className="flex shrink-0 items-center gap-3">
+                          <div className="flex shrink-0 items-center gap-2.5">
+                            <span className="rounded-md bg-black/[0.05] px-2 py-1 text-[11px] font-semibold tabular-nums text-black/55">
+                              {h.appearance_count.toLocaleString()}× shown
+                            </span>
                             <span className="text-[11px] text-black/30">{timeAgo(h.last_shown_at)}</span>
                             <a href={h.website_url} target="_blank" rel="noopener noreferrer" aria-label={`Visit ${h.name}`}
                               className="grid h-7 w-7 place-items-center rounded-md text-black/30 transition-colors hover:bg-black/[0.05] hover:text-black">
