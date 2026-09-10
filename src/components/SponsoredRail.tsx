@@ -38,7 +38,7 @@ function FeaturedCard({ slot }: { slot: FeaturedSlot }) {
   const initial = (slot.founder_name || slot.name || "?").trim().charAt(0).toUpperCase();
   return (
     <a
-      href={slot.website_url}
+      href={slot.startup_id ? `/api/public/widget/click?id=${slot.startup_id}&source=featured` : slot.website_url}
       target="_blank"
       rel="noopener noreferrer"
       className="sb-sponsored group relative flex h-full min-h-0 w-full flex-col gap-2 overflow-hidden rounded-2xl border p-3 transition-all duration-500"
