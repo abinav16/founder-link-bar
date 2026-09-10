@@ -73,11 +73,7 @@ export function DashboardLayout({
       >
         {rail ? <SponsoredRail side="left" /> : null}
         <div className="page-enter min-w-0">
-          {rail ? (
-            <div className="mb-4">
-              <FeaturedMobileBanner />
-            </div>
-          ) : null}
+          {rail ? <FeaturedMobileBanner /> : null}
           {children}
         </div>
         {rail ? <SponsoredRail side="right" /> : null}
