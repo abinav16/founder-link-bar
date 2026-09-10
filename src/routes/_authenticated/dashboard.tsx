@@ -132,9 +132,10 @@ async function loadTrafficBreakdown(startupId: string): Promise<TrafficBreakdown
 }
 
 async function loadDashboardData(startupId: string) {
-  const [summaryR, current, breakdown] = await Promise.all([
+  const [summaryR, shownR, hostsR, breakdown] = await Promise.all([
     supabase.rpc("public_startup_dashboard_summary", { _startup_id: startupId }),
-    fetch(`/api/public/widget/pick?host=${startupId}&preview=true`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+    supabase.rpc("public_host_recent_shown" as never, { _host: startupId, _limit: 5 } as never),
+    supabase.rpc("public_startup_recent_hosts" as never, { _startup: startupId, _limit: 5 } as never),
     loadTrafficBreakdown(startupId),
   ]);
 
@@ -149,10 +150,43 @@ async function loadDashboardData(startupId: string) {
     stats: { impressions: row.impressions, clicks: row.clicks },
     chartData: row.daily_impressions,
     rank: row.rank,
-    current: current as Startup | null,
+    recentShown: ((shownR.data as unknown as RecentShown[] | null) ?? []),
+    recentHosts: ((hostsR.data as unknown as RecentHost[] | null) ?? []),
     breakdown,
   };
 }
+
+/** A member that was actually displayed by this startup's own bar. */
+interface RecentShown {
+  startup_id: string;
+  name: string;
+  description: string;
+  website_url: string;
+  logo_url: string | null;
+  last_shown_at: string;
+}
+
+/** A site where this startup's own listing was displayed. */
+interface RecentHost {
+  host_id: string;
+  name: string;
+  slug: string | null;
+  website_url: string;
+  logo_url: string | null;
+  last_shown_at: string;
+}
+
+/** "2 min ago" style label for the recent-activity lists. */
+function timeAgo(iso: string): string {
+  const secs = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
+  if (secs < 60) return "just now";
+  const mins = Math.floor(secs / 60);
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
 
 type RangeKey = "24h" | "7d" | "30d" | "all";
 
@@ -227,7 +261,8 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
         stats: { impressions: 0, clicks: 0 },
         chartData: [0, 0, 0, 0, 0, 0, 0],
         rank: null as number | null,
-        current: null as Startup | null,
+        recentShown: [] as RecentShown[],
+        recentHosts: [] as RecentHost[],
         breakdown: { countries: [], devices: [], topReferrers: [] } as TrafficBreakdown,
       };
     }
@@ -337,7 +372,8 @@ function DashboardPage() {
   const [startup, setStartup] = useState<Startup | null>(loaderData.startup);
   const [stats, setStats] = useState<{ impressions: number; clicks: number }>(loaderData.stats);
   const [profileViews, setProfileViews] = useState<number | null>(null);
-  const [current, setCurrent] = useState<Startup | null>(loaderData.current);
+  const [recentShown, setRecentShown] = useState<RecentShown[]>(loaderData.recentShown ?? []);
+  const [recentHosts, setRecentHosts] = useState<RecentHost[]>(loaderData.recentHosts ?? []);
   const [copied, setCopied] = useState(false);
   const [userName] = useState(loaderData.userName);
   const [switcherOpen, setSwitcherOpen] = useState(false);
@@ -427,7 +463,8 @@ function DashboardPage() {
           if (payload.eventType === "DELETE") {
             setStartup(null);
             setStats({ impressions: 0, clicks: 0 });
-            setCurrent(null);
+            setRecentShown([]);
+            setRecentHosts([]);
           } else if (payload.eventType === "UPDATE") {
             setStartup(payload.new as Startup);
           }
@@ -439,7 +476,8 @@ function DashboardPage() {
       setAllStartups([]);
       setStartup(null);
       setStats({ impressions: 0, clicks: 0 });
-      setCurrent(null);
+      setRecentShown([]);
+      setRecentHosts([]);
     };
     window.addEventListener("startup-deleted", onDeleted);
 
@@ -531,7 +569,8 @@ function DashboardPage() {
     setSwitcherOpen(false);
     setStartup(s);
     setStats({ impressions: 0, clicks: 0 });
-    setCurrent(null);
+    setRecentShown([]);
+    setRecentHosts([]);
     setChartData(chartData.map(() => 0));
     setBreakdown({ countries: [], devices: [], topReferrers: [] });
     checkInstall(s.website_url);
@@ -539,7 +578,8 @@ function DashboardPage() {
     // The range effect owns stats + chart for every window — don't clobber it here.
 
     setRank(extra.rank);
-    setCurrent(extra.current);
+    setRecentShown(extra.recentShown);
+    setRecentHosts(extra.recentHosts);
     setBreakdown(extra.breakdown);
   }
 
@@ -873,26 +913,70 @@ function DashboardPage() {
               </div>
 
               <div className="rounded-xl border border-black/8 bg-white p-6 min-w-0 overflow-hidden">
-                <p className="text-sm font-semibold text-black">Currently showing on your site</p>
-                {current ? (
-                  <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-black/8 bg-black/[0.02] px-4 py-3">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">{current.name}</p>
-                      <p className="truncate text-xs text-black/40">{current.description}</p>
-                    </div>
-                    <a href={current.website_url} target="_blank" rel="noopener noreferrer"
-                      className="shrink-0 text-xs text-black/30 hover:text-black transition-colors flex items-center gap-1">
-                      Visit <span className="text-[10px]">↗</span>
-                    </a>
-                  </div>
+                <p className="text-sm font-semibold text-black">Recently shown on your site</p>
+                <p className="mt-1 text-xs text-black/40">
+                  Your bar rotates every 30 seconds, so each visitor sees a different member.
+                </p>
+                {recentShown.length > 0 ? (
+                  <ul className="mt-3 space-y-2">
+                    {recentShown.map((s) => (
+                      <li
+                        key={s.startup_id}
+                        className="flex items-center justify-between gap-3 rounded-lg border border-black/8 bg-black/[0.02] px-4 py-2.5"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium">{s.name}</p>
+                          <p className="truncate text-xs text-black/40">{s.description}</p>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-3">
+                          <span className="text-[11px] text-black/30">{timeAgo(s.last_shown_at)}</span>
+                          <a href={s.website_url} target="_blank" rel="noopener noreferrer"
+                            className="text-xs text-black/30 hover:text-black transition-colors flex items-center gap-1">
+                            Visit <span className="text-[10px]">↗</span>
+                          </a>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
                 ) : (
                   <p className="mt-3 text-sm text-black/35">
                     {startup.status === "approved"
-                      ? "No partner assigned yet — check back as the network grows."
+                      ? "Nothing shown yet — this fills in as visitors land on your site."
                       : "Will appear once your startup is approved."}
                   </p>
                 )}
+
+                <div className="mt-5 border-t border-black/8 pt-4">
+                  <p className="text-sm font-semibold text-black">Where your bar appears</p>
+                  <p className="mt-1 text-xs text-black/40">
+                    Sites that showed your listing recently. Your own site never shows you.
+                  </p>
+                  {recentHosts.length > 0 ? (
+                    <ul className="mt-3 space-y-2">
+                      {recentHosts.map((h) => (
+                        <li
+                          key={h.host_id}
+                          className="flex items-center justify-between gap-3 rounded-lg border border-black/8 bg-black/[0.02] px-4 py-2.5"
+                        >
+                          <p className="min-w-0 truncate text-sm font-medium">{h.name}</p>
+                          <div className="flex shrink-0 items-center gap-3">
+                            <span className="text-[11px] text-black/30">{timeAgo(h.last_shown_at)}</span>
+                            <a href={h.website_url} target="_blank" rel="noopener noreferrer"
+                              className="text-xs text-black/30 hover:text-black transition-colors flex items-center gap-1">
+                              Visit <span className="text-[10px]">↗</span>
+                            </a>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-3 text-sm text-black/35">
+                      No placements in the last 7 days yet.
+                    </p>
+                  )}
+                </div>
               </div>
+
             </div>
           </div>
         )}

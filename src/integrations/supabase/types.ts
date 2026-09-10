@@ -1020,6 +1020,17 @@ export type Database = {
           user_id: string
         }[]
       }
+      public_host_recent_shown: {
+        Args: { _host: string; _limit?: number }
+        Returns: {
+          description: string
+          last_shown_at: string
+          logo_url: string
+          name: string
+          startup_id: string
+          website_url: string
+        }[]
+      }
       public_network_activity: {
         Args: never
         Returns: {
@@ -1112,6 +1123,17 @@ export type Database = {
           clicks: number
           impressions: number
           labels: string[]
+        }[]
+      }
+      public_startup_recent_hosts: {
+        Args: { _limit?: number; _startup: string }
+        Returns: {
+          host_id: string
+          last_shown_at: string
+          logo_url: string
+          name: string
+          slug: string
+          website_url: string
         }[]
       }
       public_startup_referrers: {
