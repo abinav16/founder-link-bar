@@ -807,17 +807,24 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
   }, [scopeStartupId, networkMode]);
 
   useEffect(() => {
+    const MAX_PINS = 200;
     const t = setInterval(() => {
       const now = Date.now();
-      const before = pinsRef.current.length;
-      pinsRef.current = pinsRef.current.filter((p) => {
-        const expired = now - p.createdAt >= PIN_LIFETIME_MS;
-        if (expired) { p.marker.remove(); p.popup?.remove(); }
-        return !expired;
-      });
-      if (pinsRef.current.length !== before) {
-        setLivePinIds(pinsRef.current.map((p) => p.id));
+      // Pins are never dropped for age — they fade to a dim dot instead. Only
+      // the oldest are removed once the globe would get too crowded.
+      for (const p of pinsRef.current) {
+        if (now - p.createdAt >= PIN_LIFETIME_MS) markPinStale(p);
       }
+      if (pinsRef.current.length > MAX_PINS) {
+        const drop = pinsRef.current
+          .slice()
+          .sort((a, b) => a.createdAt - b.createdAt)
+          .slice(0, pinsRef.current.length - MAX_PINS);
+        const dropIds = new Set(drop.map((p) => p.id));
+        for (const p of drop) { p.marker.remove(); p.popup?.remove(); }
+        pinsRef.current = pinsRef.current.filter((p) => !dropIds.has(p.id));
+      }
+      syncLivePinIds();
     }, 1000);
     return () => clearInterval(t);
   }, []);
