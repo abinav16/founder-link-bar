@@ -913,26 +913,70 @@ function DashboardPage() {
               </div>
 
               <div className="rounded-xl border border-black/8 bg-white p-6 min-w-0 overflow-hidden">
-                <p className="text-sm font-semibold text-black">Currently showing on your site</p>
-                {current ? (
-                  <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-black/8 bg-black/[0.02] px-4 py-3">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">{current.name}</p>
-                      <p className="truncate text-xs text-black/40">{current.description}</p>
-                    </div>
-                    <a href={current.website_url} target="_blank" rel="noopener noreferrer"
-                      className="shrink-0 text-xs text-black/30 hover:text-black transition-colors flex items-center gap-1">
-                      Visit <span className="text-[10px]">↗</span>
-                    </a>
-                  </div>
+                <p className="text-sm font-semibold text-black">Recently shown on your site</p>
+                <p className="mt-1 text-xs text-black/40">
+                  Your bar rotates every 30 seconds, so each visitor sees a different member.
+                </p>
+                {recentShown.length > 0 ? (
+                  <ul className="mt-3 space-y-2">
+                    {recentShown.map((s) => (
+                      <li
+                        key={s.startup_id}
+                        className="flex items-center justify-between gap-3 rounded-lg border border-black/8 bg-black/[0.02] px-4 py-2.5"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium">{s.name}</p>
+                          <p className="truncate text-xs text-black/40">{s.description}</p>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-3">
+                          <span className="text-[11px] text-black/30">{timeAgo(s.last_shown_at)}</span>
+                          <a href={s.website_url} target="_blank" rel="noopener noreferrer"
+                            className="text-xs text-black/30 hover:text-black transition-colors flex items-center gap-1">
+                            Visit <span className="text-[10px]">↗</span>
+                          </a>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
                 ) : (
                   <p className="mt-3 text-sm text-black/35">
                     {startup.status === "approved"
-                      ? "No partner assigned yet — check back as the network grows."
+                      ? "Nothing shown yet — this fills in as visitors land on your site."
                       : "Will appear once your startup is approved."}
                   </p>
                 )}
+
+                <div className="mt-5 border-t border-black/8 pt-4">
+                  <p className="text-sm font-semibold text-black">Where your bar appears</p>
+                  <p className="mt-1 text-xs text-black/40">
+                    Sites that showed your listing recently. Your own site never shows you.
+                  </p>
+                  {recentHosts.length > 0 ? (
+                    <ul className="mt-3 space-y-2">
+                      {recentHosts.map((h) => (
+                        <li
+                          key={h.host_id}
+                          className="flex items-center justify-between gap-3 rounded-lg border border-black/8 bg-black/[0.02] px-4 py-2.5"
+                        >
+                          <p className="min-w-0 truncate text-sm font-medium">{h.name}</p>
+                          <div className="flex shrink-0 items-center gap-3">
+                            <span className="text-[11px] text-black/30">{timeAgo(h.last_shown_at)}</span>
+                            <a href={h.website_url} target="_blank" rel="noopener noreferrer"
+                              className="text-xs text-black/30 hover:text-black transition-colors flex items-center gap-1">
+                              Visit <span className="text-[10px]">↗</span>
+                            </a>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-3 text-sm text-black/35">
+                      No placements in the last 7 days yet.
+                    </p>
+                  )}
+                </div>
               </div>
+
             </div>
           </div>
         )}
