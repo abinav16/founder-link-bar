@@ -263,7 +263,11 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
         hostname.endsWith("lovableproject.com") ||
         hostname.endsWith("lovable.app") ||
         hostname === "lovable.dev" ||
-        hostname.endsWith(".lovable.dev")
+        hostname.endsWith(".lovable.dev") ||
+        // Payment/checkout hops are part of our own flow, not an acquisition source
+        hostname.endsWith("dodopayments.com") ||
+        hostname.endsWith("checkout.stripe.com") ||
+        hostname.endsWith("paddle.com")
       ) return null;
       const name = KNOWN_REFERRERS[hostname] ?? hostname;
       return { name, websiteUrl: href };
