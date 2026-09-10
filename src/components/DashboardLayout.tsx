@@ -76,7 +76,7 @@ export function DashboardLayout({
         <div className="page-enter min-w-0">
           {rail ? (
             <div className="mb-4">
-              <FeaturedMobileBanner slots={Array.from({ length: FEATURED_SLOT_COUNT }, (_, i) => i)} />
+              <FeaturedMobileBanner />
             </div>
           ) : null}
           {children}
