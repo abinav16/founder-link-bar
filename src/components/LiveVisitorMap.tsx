@@ -347,7 +347,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
     // nested markup, which Mapbox's marker/globe layering can swallow.
     el.innerHTML = `
       <div style="position:relative;width:36px;height:36px;pointer-events:none;">
-        <div style="position:absolute;inset:-10px;border-radius:9999px;background:${color}40;animation:sb-pin-pulse 2s ease-out infinite;"></div>
+        <div class="sb-pin-halo" style="position:absolute;inset:-10px;border-radius:9999px;background:${color}40;animation:sb-pin-pulse 2s ease-out infinite;"></div>
         <div style="position:absolute;inset:0;border-radius:9999px;overflow:hidden;border:2px solid ${color};box-shadow:0 2px 10px rgba(0,0,0,0.5), 0 0 10px ${color}80;background:#18181b;">
           <img src="${avatar}" width="32" height="32" style="display:block;width:100%;height:100%;object-fit:cover;" />
         </div>
@@ -427,12 +427,19 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
     const el = p.marker?.getElement?.() as HTMLElement | undefined;
     if (!el || el.dataset.stale === "1") return;
     el.dataset.stale = "1";
-    el.style.opacity = "0.4";
-    el.style.transform = `${el.style.transform ?? ""} scale(0.6)`;
-    el.style.transformOrigin = "center";
-    const pulse = el.querySelector("div > div") as HTMLElement | null;
-    if (pulse) pulse.style.display = "none";
+    // Mapbox rewrites the marker's inline transform/opacity every frame, so the
+    // dimming lives on the inner wrapper instead — that one is ours to keep.
+    const inner = el.firstElementChild as HTMLElement | null;
+    if (inner) {
+      inner.style.opacity = "0.45";
+      inner.style.transform = "scale(0.6)";
+      inner.style.transformOrigin = "center";
+    }
+    // Only the pulsing halo is removed — never the avatar itself.
+    const halo = el.querySelector(".sb-pin-halo") as HTMLElement | null;
+    if (halo) halo.style.display = "none";
   }
+
 
   /** Ids of pins inside the "active now" window — drives the live counter. */
   function syncLivePinIds() {
