@@ -2,6 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 
 import { SponsoredRail } from "@/components/SponsoredRail";
 import { FeaturedMobileBanner } from "@/components/FeaturedMobileBanner";
+import { FEATURED_SLOT_COUNT } from "@/lib/featured";
 import { FeaturedReturnWatcher } from "@/components/FeaturedBookingDialog";
 import { SiteHeader } from "@/components/SiteHeader";
 
@@ -73,6 +74,11 @@ export function DashboardLayout({
       >
         {rail ? <SponsoredRail side="left" /> : null}
         <div className="page-enter min-w-0">
+          {rail ? (
+            <div className="mb-4">
+              <FeaturedMobileBanner slots={Array.from({ length: FEATURED_SLOT_COUNT }, (_, i) => i)} />
+            </div>
+          ) : null}
           {children}
         </div>
         {rail ? <SponsoredRail side="right" /> : null}
