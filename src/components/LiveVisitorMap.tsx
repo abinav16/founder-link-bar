@@ -347,7 +347,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
     // nested markup, which Mapbox's marker/globe layering can swallow.
     el.innerHTML = `
       <div style="position:relative;width:36px;height:36px;pointer-events:none;">
-        <div style="position:absolute;inset:-10px;border-radius:9999px;background:${color}40;animation:sb-pin-pulse 2s ease-out infinite;"></div>
+        <div class="sb-pin-halo" style="position:absolute;inset:-10px;border-radius:9999px;background:${color}40;animation:sb-pin-pulse 2s ease-out infinite;"></div>
         <div style="position:absolute;inset:0;border-radius:9999px;overflow:hidden;border:2px solid ${color};box-shadow:0 2px 10px rgba(0,0,0,0.5), 0 0 10px ${color}80;background:#18181b;">
           <img src="${avatar}" width="32" height="32" style="display:block;width:100%;height:100%;object-fit:cover;" />
         </div>
