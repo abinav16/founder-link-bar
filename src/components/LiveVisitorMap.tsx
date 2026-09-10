@@ -437,8 +437,9 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
   /** Ids of pins inside the "active now" window — drives the live counter. */
   function syncLivePinIds() {
     const now = Date.now();
-    setLivePinIds(
-      pinsRef.current.filter((p) => now - p.createdAt < PIN_LIFETIME_MS).map((p) => p.id),
+    const next = pinsRef.current.filter((p) => now - p.createdAt < PIN_LIFETIME_MS).map((p) => p.id);
+    setLivePinIds((prev) =>
+      prev.length === next.length && prev.every((id, i) => id === next[i]) ? prev : next,
     );
   }
 
