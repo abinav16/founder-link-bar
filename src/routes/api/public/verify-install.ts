@@ -127,6 +127,7 @@ export const Route = createFileRoute("/api/public/verify-install")({
             (/frame-src[^;]*startupbar\.co/i.test(headerCspRaw) && /startupbar/i.test(html));
           const installed =
             nativeEmbed ||
+            bundleInstall ||
             html.includes("startupbar.co/widget") ||
             html.includes("widget/loader.js") ||
             html.includes("data-startup-id");
