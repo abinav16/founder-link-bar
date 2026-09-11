@@ -104,7 +104,9 @@ export const Route = createFileRoute("/api/public/verify-install")({
                 const js = (await jsRes.text()).slice(0, 3_000_000);
                 if (markerRe.test(js)) {
                   bundleInstall = true;
-                  const idm = js.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
+                  const at = js.search(markerRe);
+                  const window_ = js.slice(Math.max(0, at - 800), at + 800);
+                  const idm = window_.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
                   if (idm) bundleId = idm[1];
                   break;
                 }
