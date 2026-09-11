@@ -185,6 +185,7 @@ export const Route = createFileRoute("/api/public/verify-install")({
               const inlineMatch = html.match(inlineIdRe);
               if (inlineMatch) installedId = inlineMatch[1] ?? inlineMatch[2] ?? null;
             }
+            if (!installedId && bundleId) installedId = bundleId;
             if (expectedId && installedId && installedId !== expectedId) {
               idMismatch = true;
             }
