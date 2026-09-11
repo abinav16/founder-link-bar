@@ -72,6 +72,49 @@ export const Route = createFileRoute("/api/public/verify-install")({
           let idMismatch = false;
 
           const html = await res.text();
+
+          // Some sites (Vite/React/Next SPAs) don't put the snippet in the
+          // served HTML at all — the app bundle injects the loader at runtime.
+          // Scan the site's own JS bundles for our markers so those installs
+          // aren't reported as "not found".
+          let bundleInstall = false;
+          let bundleId: string | null = null;
+          const markerRe = /startupbar\.co\/widget|widget\/loader\.js|data-startup(?:bar)?-(?:id|slot)|startupbar-loader/i;
+          if (!markerRe.test(html)) {
+            try {
+              const pageUrl = new URL(targetUrl);
+              const srcs = Array.from(html.matchAll(/<script[^>]+src=["']([^"']+)["']/gi))
+                .map((m) => m[1])
+                .map((s) => {
+                  try {
+                    return new URL(s, pageUrl);
+                  } catch {
+                    return null;
+                  }
+                })
+                .filter((u): u is URL => !!u && u.origin === pageUrl.origin)
+                .slice(0, 4);
+
+              for (const u of srcs) {
+                const jsRes = await fetch(u.href, {
+                  headers: { "User-Agent": "StartupBar-Verifier/1.0 (+https://startupbar.co)" },
+                  signal: AbortSignal.timeout(8000),
+                });
+                if (!jsRes.ok) continue;
+                const js = (await jsRes.text()).slice(0, 3_000_000);
+                if (markerRe.test(js)) {
+                  bundleInstall = true;
+                  const at = js.search(markerRe);
+                  const window_ = js.slice(Math.max(0, at - 800), at + 800);
+                  const idm = window_.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
+                  if (idm) bundleId = idm[1];
+                  break;
+                }
+              }
+            } catch {
+              /* bundle scan is best-effort */
+            }
+          }
           // Some sites don't use our loader.js at all — they render the
           // /widget/bar iframe natively (React/Vue component, CSP-friendly).
           // Those pages carry our slot marker and/or allow startupbar.co in
@@ -84,6 +127,7 @@ export const Route = createFileRoute("/api/public/verify-install")({
             (/frame-src[^;]*startupbar\.co/i.test(headerCspRaw) && /startupbar/i.test(html));
           const installed =
             nativeEmbed ||
+            bundleInstall ||
             html.includes("startupbar.co/widget") ||
             html.includes("widget/loader.js") ||
             html.includes("data-startup-id");
@@ -141,6 +185,7 @@ export const Route = createFileRoute("/api/public/verify-install")({
               const inlineMatch = html.match(inlineIdRe);
               if (inlineMatch) installedId = inlineMatch[1] ?? inlineMatch[2] ?? null;
             }
+            if (!installedId && bundleId) installedId = bundleId;
             if (expectedId && installedId && installedId !== expectedId) {
               idMismatch = true;
             }
