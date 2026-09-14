@@ -21,6 +21,7 @@ export type FeaturedSlot = {
   description: string;
   founder_name: string | null;
   founder_avatar_url: string | null;
+  twitter_handle: string | null;
   expires_at: string;
 };
 
