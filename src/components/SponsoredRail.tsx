@@ -119,7 +119,7 @@ function FeaturedCard({ slot }: { slot: FeaturedSlot }) {
         {slot.description}
       </p>
 
-      {/* Bottom action row: primary CTA + quiet profile / social links */}
+      {/* Bottom action row: primary CTA + quiet profile link */}
       <div className="mt-auto flex min-w-0 items-center gap-2.5 border-t border-white/10 pt-2">
         <span className="shrink-0 text-[11px] font-semibold text-[oklch(0.85_0.12_85)] transition-transform duration-300 group-hover:translate-x-0.5">
           Visit site →
@@ -137,21 +137,6 @@ function FeaturedCard({ slot }: { slot: FeaturedSlot }) {
             className="shrink-0 cursor-pointer text-[10px] text-white/45 transition-colors hover:text-white/90"
           >
             View profile
-          </span>
-        )}
-        {handle && (
-          <span
-            role="link"
-            aria-label={`Founder on X: @${handle}`}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              window.open(`https://x.com/${handle}`, "_blank", "noopener,noreferrer");
-            }}
-            className="flex shrink-0 cursor-pointer items-center gap-1 text-[10px] text-white/45 transition-colors hover:text-white/90"
-          >
-            <XIcon className="h-2.5 w-2.5" />
-            <span className="max-w-[4.5rem] truncate">@{handle}</span>
           </span>
         )}
       </div>
