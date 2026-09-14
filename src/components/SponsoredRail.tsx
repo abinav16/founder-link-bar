@@ -34,11 +34,28 @@ function SlotMark() {
   );
 }
 
+/** Minimal X (Twitter) brand mark — lucide has no brand X icon. */
+function XIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  );
+}
+
+function cleanHandle(handle: string): string {
+  return handle.replace(/^@/, "").trim();
+}
+
 function FeaturedCard({ slot }: { slot: FeaturedSlot }) {
   const initial = (slot.founder_name || slot.name || "?").trim().charAt(0).toUpperCase();
+  const visitUrl = slot.startup_id
+    ? `/api/public/widget/click?id=${slot.startup_id}&source=featured`
+    : slot.website_url;
+  const handle = slot.twitter_handle ? cleanHandle(slot.twitter_handle) : null;
   return (
     <a
-      href={slot.startup_id ? `/api/public/widget/click?id=${slot.startup_id}&source=featured` : slot.website_url}
+      href={visitUrl}
       target="_blank"
       rel="noopener noreferrer"
       className="sb-sponsored group relative flex h-full min-h-0 w-full flex-col gap-2 overflow-hidden rounded-2xl border p-3 transition-all duration-500"
@@ -78,6 +95,21 @@ function FeaturedCard({ slot }: { slot: FeaturedSlot }) {
             <span className="min-w-0 truncate text-[10px] text-white/45">
               {slot.founder_name ?? "Founder"}
             </span>
+            {handle && (
+              <span
+                role="link"
+                aria-label={`Founder on X: @${handle}`}
+                title={`@${handle} on X`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  window.open(`https://x.com/${handle}`, "_blank", "noopener,noreferrer");
+                }}
+                className="grid h-4 w-4 shrink-0 cursor-pointer place-items-center rounded-full text-white/40 transition-colors hover:bg-white/10 hover:text-white/90"
+              >
+                <XIcon className="h-2.5 w-2.5" />
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -87,7 +119,42 @@ function FeaturedCard({ slot }: { slot: FeaturedSlot }) {
         {slot.description}
       </p>
 
-
+      {/* Bottom action row: primary CTA + quiet profile / social links */}
+      <div className="mt-auto flex min-w-0 items-center gap-2.5 border-t border-white/10 pt-2">
+        <span className="shrink-0 text-[11px] font-semibold text-[oklch(0.85_0.12_85)] transition-transform duration-300 group-hover:translate-x-0.5">
+          Visit site →
+        </span>
+        <span className="flex-1" />
+        {slot.slug && (
+          <span
+            role="link"
+            aria-label={`View ${slot.name} profile`}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              window.open(`/startup/${slot.slug}`, "_blank", "noopener,noreferrer");
+            }}
+            className="shrink-0 cursor-pointer text-[10px] text-white/45 transition-colors hover:text-white/90"
+          >
+            View profile
+          </span>
+        )}
+        {handle && (
+          <span
+            role="link"
+            aria-label={`Founder on X: @${handle}`}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              window.open(`https://x.com/${handle}`, "_blank", "noopener,noreferrer");
+            }}
+            className="flex shrink-0 cursor-pointer items-center gap-1 text-[10px] text-white/45 transition-colors hover:text-white/90"
+          >
+            <XIcon className="h-2.5 w-2.5" />
+            <span className="max-w-[4.5rem] truncate">@{handle}</span>
+          </span>
+        )}
+      </div>
     </a>
   );
 }

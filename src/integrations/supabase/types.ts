@@ -1025,6 +1025,7 @@ export type Database = {
           slot_index: number
           slug: string
           startup_id: string
+          twitter_handle: string
           website_url: string
         }[]
       }
