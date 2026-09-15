@@ -868,6 +868,7 @@ function Apply() {
               <p className="text-sm font-semibold text-black">1 · Your embed code</p>
               <p className="mt-1 text-xs text-black/45">This is your unique startup ID — it won't change after you apply.</p>
               <CopyableCode code={snippet} />
+              <AgentPromptCard prompt={agentPrompt} />
             </div>
 
             {/* Verify */}
