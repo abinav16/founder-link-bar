@@ -10,6 +10,7 @@ import { SitePreviewSurface } from "@/components/SitePreviewSurface";
 import {
   ArrowRight, ArrowLeft, ExternalLink,
   Copy, Check, CheckCircle2, XCircle, Loader2, ShieldAlert, ChevronDown,
+  Sparkles,
 } from "lucide-react";
 
 
@@ -137,6 +138,30 @@ function CopyableCode({ code, label = "HTML", tone = "neutral" }: { code: string
       <div className="overflow-x-auto px-3 py-2.5">
         <pre className={`whitespace-pre font-mono text-[11.5px] leading-relaxed ${preCls}`}>{code}</pre>
       </div>
+    </div>
+  );
+}
+
+/** "Copy prompt" card for non-technical users who build with an AI agent (Lovable, Cursor, v0…). */
+function AgentPromptCard({ prompt }: { prompt: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <div className="mt-3 flex items-start gap-3 rounded-lg border border-black/8 bg-black/[0.015] px-4 py-3.5">
+      <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-black/35" />
+      <div className="min-w-0 flex-1">
+        <p className="text-[13px] font-medium text-black">Let your AI agent install it</p>
+        <p className="mt-0.5 text-xs text-black/45">
+          Using Lovable, Cursor, v0 or another AI builder? Copy this prompt and give it to your agent —
+          it installs the exact same embed code.
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={() => { navigator.clipboard.writeText(prompt); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
+        className="shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-black/15 px-3 py-1.5 text-xs font-medium text-black transition-colors hover:bg-black/[0.04]"
+      >
+        {copied ? <><Check className="h-3 w-3 text-emerald-500" /> Copied!</> : <><Copy className="h-3 w-3" /> Copy prompt</>}
+      </button>
     </div>
   );
 }
