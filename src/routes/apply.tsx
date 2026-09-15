@@ -508,9 +508,18 @@ function Apply() {
     "1. Paste this script tag inside the <head> tag of every page:",
     `   ${snippet}`,
     "",
-    "2. The widget is a 36px bar pinned to the very top of the page. If my site has a",
-    "   fixed or sticky header, push it down by 36px (e.g. header { top: 36px }) so",
-    "   nothing hides behind the bar.",
+    ...(placement === "bottom"
+      ? [
+          "2. The widget is a 36px bar pinned to the very bottom of the page. It reserves",
+          "   its own space automatically, so do NOT add any extra CSS, padding or offsets.",
+          "   Only make sure nothing else of mine is fixed to the bottom of the screen",
+          "   (cookie banners, chat bubbles); if something is, lift it by 36px.",
+        ]
+      : [
+          "2. The widget is a 36px bar pinned to the very top of the page. The loader already",
+          "   shifts most fixed/sticky headers down automatically. Only if my header still",
+          "   hides behind the bar, push it down by 36px (e.g. header { top: 36px }).",
+        ]),
     "",
     "3. If the site has a Content-Security-Policy, add these directives:",
     "   script-src https://startupbar.co;",
@@ -519,6 +528,7 @@ function Apply() {
     "",
     "4. Do not change anything else on the site.",
   ].join("\n");
+
 
   function copySnippet() {
     navigator.clipboard.writeText(snippet);
