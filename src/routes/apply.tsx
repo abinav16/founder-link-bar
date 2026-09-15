@@ -500,6 +500,25 @@ function Apply() {
 
   const snippet = `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}"></script>`;
 
+  // Ready-to-paste prompt for founders who build with an AI agent (Lovable, Cursor, v0…).
+  const agentPrompt = [
+    "Add the StartupBar widget to my website.",
+    "",
+    "1. Paste this script tag inside the <head> tag of every page:",
+    `   ${snippet}`,
+    "",
+    "2. The widget is a 36px bar pinned to the very top of the page. If my site has a",
+    "   fixed or sticky header, push it down by 36px (e.g. header { top: 36px }) so",
+    "   nothing hides behind the bar.",
+    "",
+    "3. If the site has a Content-Security-Policy, add these directives:",
+    "   script-src https://startupbar.co;",
+    "   frame-src https://startupbar.co;",
+    "   img-src 'self' data: https://www.google.com https://*.googleusercontent.com;",
+    "",
+    "4. Do not change anything else on the site.",
+  ].join("\n");
+
   function copySnippet() {
     navigator.clipboard.writeText(snippet);
     setCopied(true);
