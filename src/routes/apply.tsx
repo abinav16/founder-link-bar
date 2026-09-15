@@ -508,9 +508,18 @@ function Apply() {
     "1. Paste this script tag inside the <head> tag of every page:",
     `   ${snippet}`,
     "",
-    "2. The widget is a 36px bar pinned to the very top of the page. If my site has a",
-    "   fixed or sticky header, push it down by 36px (e.g. header { top: 36px }) so",
-    "   nothing hides behind the bar.",
+    ...(placement === "bottom"
+      ? [
+          "2. The widget is a 36px bar pinned to the very bottom of the page. It reserves",
+          "   its own space automatically, so do NOT add any extra CSS, padding or offsets.",
+          "   Only make sure nothing else of mine is fixed to the bottom of the screen",
+          "   (cookie banners, chat bubbles); if something is, lift it by 36px.",
+        ]
+      : [
+          "2. The widget is a 36px bar pinned to the very top of the page. The loader already",
+          "   shifts most fixed/sticky headers down automatically. Only if my header still",
+          "   hides behind the bar, push it down by 36px (e.g. header { top: 36px }).",
+        ]),
     "",
     "3. If the site has a Content-Security-Policy, add these directives:",
     "   script-src https://startupbar.co;",
@@ -519,6 +528,7 @@ function Apply() {
     "",
     "4. Do not change anything else on the site.",
   ].join("\n");
+
 
   function copySnippet() {
     navigator.clipboard.writeText(snippet);
@@ -1030,15 +1040,28 @@ function Apply() {
                   <p className="mt-2 text-black/50">Values: <code className="font-mono">"light"</code> or <code className="font-mono">"dark"</code>.</p>
                 </GuideItem>
 
-                <GuideItem title="Keep your header from hiding behind the bar">
-                  <p>The widget is <strong>36px tall</strong> and pinned to the top of the page. Our loader tries to shift <code className="font-mono">fixed</code>/<code className="font-mono">sticky</code> headers automatically, but if yours still sits underneath, add this CSS as a manual fallback:</p>
-                  <div className="mt-2">
-                    <CopyableCode
-                      code={`/* Push a fixed/sticky header down */\nheader { top: 36px; }\n\n/* Or give the whole page breathing room */\nbody { padding-top: 36px; }`}
-                    />
-                  </div>
-                  <p className="mt-2 text-black/50">On mobile, if the page appears to "jump" once on load, that's the auto-shift kicking in — setting the padding yourself removes the jump.</p>
-                </GuideItem>
+                {placement === "bottom" ? (
+                  <GuideItem title="Keep the bar clear of floating elements">
+                    <p>The widget is <strong>36px tall</strong> and pinned to the bottom of the page. The loader reserves that space for you, so no extra CSS is normally needed. If you have something else fixed to the bottom (cookie banner, chat bubble), lift it:</p>
+                    <div className="mt-2">
+                      <CopyableCode
+                        code={`/* Lift a bottom-fixed element above the bar */\n.my-chat-bubble { bottom: 36px; }`}
+                      />
+                    </div>
+                    <p className="mt-2 text-black/50">Your header needs no change with bottom placement.</p>
+                  </GuideItem>
+                ) : (
+                  <GuideItem title="Keep your header from hiding behind the bar">
+                    <p>The widget is <strong>36px tall</strong> and pinned to the top of the page. Our loader tries to shift <code className="font-mono">fixed</code>/<code className="font-mono">sticky</code> headers automatically, but if yours still sits underneath, add this CSS as a manual fallback:</p>
+                    <div className="mt-2">
+                      <CopyableCode
+                        code={`/* Push a fixed/sticky header down */\nheader { top: 36px; }\n\n/* Or give the whole page breathing room */\nbody { padding-top: 36px; }`}
+                      />
+                    </div>
+                    <p className="mt-2 text-black/50">On mobile, if the page appears to "jump" once on load, that's the auto-shift kicking in — setting the padding yourself removes the jump.</p>
+                  </GuideItem>
+                )}
+
 
                 <GuideItem title="Troubleshooting">
                   <ul className="list-disc space-y-1.5 pl-4">
