@@ -1040,15 +1040,28 @@ function Apply() {
                   <p className="mt-2 text-black/50">Values: <code className="font-mono">"light"</code> or <code className="font-mono">"dark"</code>.</p>
                 </GuideItem>
 
-                <GuideItem title="Keep your header from hiding behind the bar">
-                  <p>The widget is <strong>36px tall</strong> and pinned to the top of the page. Our loader tries to shift <code className="font-mono">fixed</code>/<code className="font-mono">sticky</code> headers automatically, but if yours still sits underneath, add this CSS as a manual fallback:</p>
-                  <div className="mt-2">
-                    <CopyableCode
-                      code={`/* Push a fixed/sticky header down */\nheader { top: 36px; }\n\n/* Or give the whole page breathing room */\nbody { padding-top: 36px; }`}
-                    />
-                  </div>
-                  <p className="mt-2 text-black/50">On mobile, if the page appears to "jump" once on load, that's the auto-shift kicking in — setting the padding yourself removes the jump.</p>
-                </GuideItem>
+                {placement === "bottom" ? (
+                  <GuideItem title="Keep the bar clear of floating elements">
+                    <p>The widget is <strong>36px tall</strong> and pinned to the bottom of the page. The loader reserves that space for you, so no extra CSS is normally needed. If you have something else fixed to the bottom (cookie banner, chat bubble), lift it:</p>
+                    <div className="mt-2">
+                      <CopyableCode
+                        code={`/* Lift a bottom-fixed element above the bar */\n.my-chat-bubble { bottom: 36px; }`}
+                      />
+                    </div>
+                    <p className="mt-2 text-black/50">Your header needs no change with bottom placement.</p>
+                  </GuideItem>
+                ) : (
+                  <GuideItem title="Keep your header from hiding behind the bar">
+                    <p>The widget is <strong>36px tall</strong> and pinned to the top of the page. Our loader tries to shift <code className="font-mono">fixed</code>/<code className="font-mono">sticky</code> headers automatically, but if yours still sits underneath, add this CSS as a manual fallback:</p>
+                    <div className="mt-2">
+                      <CopyableCode
+                        code={`/* Push a fixed/sticky header down */\nheader { top: 36px; }\n\n/* Or give the whole page breathing room */\nbody { padding-top: 36px; }`}
+                      />
+                    </div>
+                    <p className="mt-2 text-black/50">On mobile, if the page appears to "jump" once on load, that's the auto-shift kicking in — setting the padding yourself removes the jump.</p>
+                  </GuideItem>
+                )}
+
 
                 <GuideItem title="Troubleshooting">
                   <ul className="list-disc space-y-1.5 pl-4">
