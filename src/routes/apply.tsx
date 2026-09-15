@@ -151,8 +151,7 @@ function AgentPromptCard({ prompt }: { prompt: string }) {
       <div className="min-w-0 flex-1">
         <p className="text-[13px] font-medium text-black">Let your AI agent install it</p>
         <p className="mt-0.5 text-xs text-black/45">
-          Using Lovable, Cursor, v0 or another AI builder? Copy this prompt and give it to your agent —
-          it installs the exact same embed code.
+          Using Lovable, Cursor, Claude Code, Codex, Replit or another AI builder? Copy this prompt and give it to your agent it installs the exact same embed code with no hassle
         </p>
       </div>
       <button
