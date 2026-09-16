@@ -1197,14 +1197,22 @@ function Apply() {
               const needsPayment = !resubmitId && existingCount >= 1 && !hasPrepaid;
               const verified = verifyStatus === "live" || verifyStatus === "csp-img";
               const busy = loading || paymentLoading || verifyingPayment;
-              const disabled = !verified || busy;
-              const onClick = needsPayment ? handlePayment : onSubmit;
+              // Supporters pay instead of showing the bar, so verification is
+              // never a gate for them — the snippet is optional.
+              const disabled = isSupporter ? busy : (!verified || busy);
+              const onClick = isSupporter
+                ? handleSupporterPayment
+                : needsPayment
+                ? handlePayment
+                : () => onSubmit();
               const label = verifyingPayment
                 ? "Verifying payment…"
                 : loading
                 ? "Submitting…"
                 : paymentLoading
                 ? "Redirecting to payment…"
+                : isSupporter
+                ? "Pay $1,499 / year & submit →"
                 : needsPayment
                 ? "Pay $9.99 & submit →"
                 : "Submit application";
@@ -1219,7 +1227,9 @@ function Apply() {
               );
             })()}
             <p className="text-center text-xs text-black/30">
-              {verifyStatus !== "live" && verifyStatus !== "csp-img"
+              {isSupporter
+                ? "The analytics line is optional — you can add it later from your dashboard."
+                : verifyStatus !== "live" && verifyStatus !== "csp-img"
                 ? "Install the script and verify it's live to continue."
                 : !resubmitId && existingCount >= 1 && !hasPrepaid
                 ? "Script verified ✓ — one-time $9.99 for additional listings."
