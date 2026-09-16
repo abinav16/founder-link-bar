@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -315,6 +315,14 @@ function Apply() {
     if (typeof window === "undefined") return "top";
     try { return JSON.parse(readRawDraft() ?? "{}")?.placement === "bottom" ? "bottom" : "top"; } catch { return "top"; }
   });
+  // "widget" = show the bar on your own site (free). "supporter" = pay yearly
+  // instead of showing the bar; the snippet is optional and only powers the
+  // founder's own dashboard stats.
+  const [mode, setMode] = useState<"widget" | "supporter">(() => {
+    if (typeof window === "undefined") return "widget";
+    try { return JSON.parse(readRawDraft() ?? "{}")?.mode === "supporter" ? "supporter" : "widget"; } catch { return "widget"; }
+  });
+  const isSupporter = mode === "supporter";
 
   const [resubmitId, setResubmitId] = useState<string>(initial.resubmitId);
   const [startupId, setStartupId] = useState<string>(() => initial.resubmitId || initial.startupId || crypto.randomUUID());
@@ -491,18 +499,61 @@ function Apply() {
   }, [autoSubmitPending, hasPrepaid, loading, name, url, desc]);
 
 
+  // Return from the supporter checkout: create the listing, then confirm the
+  // subscription so the paid year lands on it.
+  const supporterHandled = useRef(false);
+  useEffect(() => {
+    if (typeof window === "undefined" || !authed || supporterHandled.current) return;
+    const p = new URLSearchParams(window.location.search);
+    if (p.get("supporter") !== "1") return;
+    const subId = p.get("subscription_id") ?? "";
+    supporterHandled.current = true;
+    window.history.replaceState({}, "", "/apply");
+    if (!subId) return;
+    if (!name.trim() || !url.trim() || !desc.trim()) {
+      setPaidNeedsForm(true);
+      setStep(1);
+      return;
+    }
+    setMode("supporter");
+    onSubmit({ supporterSubscriptionId: subId });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authed, name, url, desc]);
+
   // Persist draft so the form survives the sign-in round-trip.
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (resubmitId) return; // resubmits are URL-driven — don't overwrite the fresh-apply draft
     if (!name && !url && !desc && !quote) return;
-    writeDraft({ step, name, url, desc, quote, placement, startupId });
-  }, [step, name, url, desc, quote, placement, resubmitId]);
+    writeDraft({ step, name, url, desc, quote, placement, mode, startupId });
+  }, [step, name, url, desc, quote, placement, mode, resubmitId]);
 
-  const snippet = `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}"></script>`;
+  // Supporters get a tracking-only snippet: it renders nothing, no bar, no
+  // layout shift — it only powers their own dashboard stats.
+  const snippet = isSupporter
+    ? `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}" data-mode="track"></script>`
+    : `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}"></script>`;
 
   // Ready-to-paste prompt for founders who build with an AI agent (Lovable, Cursor, v0…).
-  const agentPrompt = [
+  const agentPrompt = isSupporter
+    ? [
+        "Add the StartupBar analytics snippet to my website.",
+        "",
+        "1. Paste this script tag inside the <head> tag of every page:",
+        `   ${snippet}`,
+        "",
+        "2. It renders nothing on the page — no bar, no banner, no layout change.",
+        "   Do NOT add any CSS, padding or offsets for it.",
+        "",
+        "3. If the site has a Content-Security-Policy, add:",
+        "   script-src https://startupbar.co;",
+        "",
+        "4. Do not change anything else on the site.",
+        "",
+        "IMPORTANT: Make sure to publish the website after installing the code.",
+        "Publishing is required so the installation can be detected and verified.",
+      ].join("\n")
+    : [
     "Add the StartupBar widget to my website.",
     "",
     "1. Paste this script tag inside the <head> tag of every page:",
@@ -545,7 +596,7 @@ function Apply() {
     }
     if (!authed) {
       // Save draft at step 1 — user must sign in before reaching the install step.
-      writeDraft({ step: 1, name, url, desc, quote, placement, startupId });
+      writeDraft({ step: 1, name, url, desc, quote, placement, mode, startupId });
       sessionStorage.setItem("startupbar:auth-next", "/apply");
       navigate({ to: "/auth" });
       return;
@@ -558,12 +609,38 @@ function Apply() {
     setPaymentLoading(true);
     // Persist the draft so we can restore state after Dodo redirects back —
     // we deliberately keep the return URL tiny (no PII in query string).
-    writeDraft({ step: 2, name, url, desc, quote, placement, startupId });
+    writeDraft({ step: 2, name, url, desc, quote, placement, mode, startupId });
 
     const { data: u } = await supabase.auth.getUser();
     const returnUrl = `${window.location.origin}/apply?paid=true&sid=${encodeURIComponent(startupId)}`;
     const { data, error } = await supabase.functions.invoke("create-dodo-checkout", {
       body: { email: u.user?.email, name: u.user?.user_metadata?.full_name, return_url: returnUrl },
+    });
+    setPaymentLoading(false);
+    if (error || !data?.payment_link) {
+      toast.error("Could not create payment session. Please try again.");
+      return;
+    }
+    window.location.href = data.payment_link;
+  }
+
+  // Supporter membership: $1,499/year annual subscription. The listing row is
+  // created after the buyer returns, then the subscription is confirmed and
+  // stamped onto it.
+  async function handleSupporterPayment() {
+    setPaymentLoading(true);
+    writeDraft({ step: 2, name, url, desc, quote, placement, mode: "supporter", startupId });
+
+    const { data: u } = await supabase.auth.getUser();
+    const returnUrl = `${window.location.origin}/apply?supporter=1&sid=${encodeURIComponent(startupId)}`;
+    const { data, error } = await supabase.functions.invoke("create-dodo-checkout", {
+      body: {
+        kind: "supporter",
+        startup_id: startupId,
+        email: u.user?.email,
+        name: u.user?.user_metadata?.full_name,
+        return_url: returnUrl,
+      },
     });
     setPaymentLoading(false);
     if (error || !data?.payment_link) {
@@ -624,7 +701,8 @@ function Apply() {
 
   }
 
-  async function onSubmit() {
+  async function onSubmit(opts?: { supporterSubscriptionId?: string }) {
+    const supporterSub = opts?.supporterSubscriptionId;
     setLoading(true);
     try {
       const { data: userData } = await supabase.auth.getUser();
@@ -652,7 +730,8 @@ function Apply() {
         if (updErr) { toast.error(updErr.message); return; }
       } else {
         // If this is a paid additional listing, atomically consume one prepaid slot first.
-        if (existingCount >= 1) {
+        // Supporter memberships are paid separately, so they skip this gate.
+        if (existingCount >= 1 && !supporterSub) {
           const { data: consumedId, error: consumeErr } = await supabase.rpc(
             "consume_prepaid_listing",
             { _user_id: user_id },
@@ -670,6 +749,17 @@ function Apply() {
         setLoading(false);
         if (error) { toast.error(error.message); return; }
       }
+
+      // Supporter: stamp the paid year onto the listing we just created.
+      if (supporterSub) {
+        const { data: conf, error: confErr } = await supabase.functions.invoke("create-dodo-checkout", {
+          body: { action: "confirm_supporter", subscription_id: supporterSub, startup_id: startupId },
+        });
+        if (confErr || (!conf?.activated && !conf?.pending)) {
+          toast.info("Payment received — we'll activate your supporter membership shortly.", { duration: 8000 });
+        }
+      }
+
 
       supabase.functions.invoke("send-email", { body: { type: "startup-submitted", data: { email: userData.user!.email, name: userData.user!.user_metadata?.full_name ?? "", startupName: parsed.name } } }).catch(() => {});
       supabase.functions.invoke("send-email", { body: { type: "admin-new-application", data: { startupName: parsed.name, startupUrl: parsed.website_url, description: parsed.description, applicantEmail: userData.user!.email } } }).catch(() => {});
@@ -805,28 +895,54 @@ function Apply() {
                   </div>
                 </Field>
                 <Field label="Bar placement" hint="Where the bar sits on your own site. You can change this anytime in your account.">
-                  <div className="inline-flex rounded-lg border border-black/12 bg-black/[0.02] p-1">
+                  <div className="inline-flex flex-wrap rounded-lg border border-black/12 bg-black/[0.02] p-1">
                     {(["top", "bottom"] as const).map((p) => (
                       <button
                         key={p}
                         type="button"
-                        onClick={() => setPlacement(p)}
-                        aria-pressed={placement === p}
-                        className={`rounded-md px-4 py-1.5 text-sm font-medium capitalize transition ${placement === p ? "bg-white text-black shadow-sm" : "text-black/45 hover:text-black/70"}`}
+                        onClick={() => { setPlacement(p); setMode("widget"); }}
+                        aria-pressed={!isSupporter && placement === p}
+                        className={`rounded-md px-4 py-1.5 text-sm font-medium capitalize transition ${!isSupporter && placement === p ? "bg-white text-black shadow-sm" : "text-black/45 hover:text-black/70"}`}
                       >
                         {p}
                       </button>
                     ))}
+                    <button
+                      type="button"
+                      onClick={() => setMode("supporter")}
+                      aria-pressed={isSupporter}
+                      className={`rounded-md px-4 py-1.5 text-sm font-medium transition ${isSupporter ? "bg-white text-black shadow-sm" : "text-black/45 hover:text-black/70"}`}
+                    >
+                      No bar — Supporter
+                    </button>
                   </div>
-                  <p className="mt-2 text-xs leading-relaxed text-black/40">
-                    Top placement earns you more free impressions from the network. Our reciprocity algorithm rewards the most visible bars with more visibility in return. Bottom is still supported if it fits your layout.
-                  </p>
+                  {isSupporter ? (
+                    <div className="mt-3 rounded-xl border border-black/10 bg-black/[0.02] p-4">
+                      <p className="text-sm font-medium text-black">Supporter — $1,499 / year</p>
+                      <ul className="mt-2 space-y-1 text-xs leading-relaxed text-black/50">
+                        <li>· No bar on your site. Nothing is shown to your visitors.</li>
+                        <li>· You still appear across the network at an average member's share — never more, never starved.</li>
+                        <li>· Full profile, leaderboard presence, dashboard and a subtle Supporter badge.</li>
+                        <li>· Cancel any time; your paid year keeps running. No refunds.</li>
+                        <li>· You can switch back to showing the bar (free) whenever you like.</li>
+                      </ul>
+                      <p className="mt-2 text-xs text-black/40">
+                        Next step is one optional line of analytics code — it shows nothing on your site and only unlocks your own visitor stats.
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-xs leading-relaxed text-black/40">
+                      Top placement earns you more free impressions from the network. Our reciprocity algorithm rewards the most visible bars with more visibility in return. Bottom is still supported if it fits your layout.
+                    </p>
+                  )}
                 </Field>
                 <button type="submit" className="group flex w-full items-center justify-center gap-2 rounded-lg bg-black py-3.5 text-sm font-medium text-white transition-all hover:bg-black/80">
-                  Next — Install the script
+                  {isSupporter ? "Next — Supporter setup" : "Next — Install the script"}
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </button>
-                <p className="text-center text-xs text-black/30">Free forever · We review within 24h · No commitment</p>
+                <p className="text-center text-xs text-black/30">
+                  {isSupporter ? "$1,499 / year · Cancel anytime · We review within 24h" : "Free forever · We review within 24h · No commitment"}
+                </p>
               </form>
             </div>
 
@@ -861,18 +977,29 @@ function Apply() {
 
           <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Step 2 of 2</span>
           <h1 className="mt-4 text-3xl font-medium leading-tight tracking-tight md:text-4xl" style={{ fontFamily: "var(--font-display)" }}>
-            Install the script.
+            {isSupporter ? "Your analytics line (optional)." : "Install the script."}
           </h1>
           <p className="mt-3 text-[15px] leading-relaxed text-black/45">
-            Paste this once inside the <code className="rounded bg-black/8 px-1.5 py-0.5 font-mono text-sm">&lt;head&gt;</code> of your site, then verify it's live.
+            {isSupporter
+              ? <>This one line shows <strong>nothing</strong> on your site — no bar, no banner, no layout change. It only unlocks your own visitor map, visits and click attribution. You can skip it and add it later.</>
+              : <>Paste this once inside the <code className="rounded bg-black/8 px-1.5 py-0.5 font-mono text-sm">&lt;head&gt;</code> of your site, then verify it's live.</>}
           </p>
+
+          {isSupporter && (
+            <div className="mt-5 rounded-xl border border-black/10 bg-black/[0.02] p-4 text-xs leading-relaxed text-black/50">
+              <p className="text-sm font-medium text-black">If you skip it</p>
+              <p className="mt-1">
+                Your listing, rotation share, profile, badge and network stats (impressions received, clicks, CTR, rank, leaderboard) all work exactly the same. Only your own on-site panels stay locked: the visitor globe, visits and where your traffic lands.
+              </p>
+            </div>
+          )}
 
           {/* Progress pills */}
           <div className="mt-6 flex items-center gap-2 text-[11px] font-medium text-black/50">
             {[
               { n: 1, label: "Paste", active: true },
               { n: 2, label: "Verify", active: verifyStatus !== "idle" },
-              { n: 3, label: "Submit", active: verifyStatus === "live" || verifyStatus === "csp-img" },
+              { n: 3, label: isSupporter ? "Pay & submit" : "Submit", active: isSupporter || verifyStatus === "live" || verifyStatus === "csp-img" },
             ].map((s, i) => (
               <div key={s.n} className="flex items-center gap-2">
                 <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-semibold ${s.active ? "bg-black text-white" : "bg-black/8 text-black/40"}`}>{s.n}</span>
@@ -895,7 +1022,9 @@ function Apply() {
           <div className="mt-6 overflow-hidden rounded-2xl border border-black/10 bg-white">
             {/* Embed code */}
             <div className="border-b border-black/8 p-5 sm:p-6">
-              <p className="text-sm font-semibold text-black">1 · Your embed code</p>
+              <p className="text-sm font-semibold text-black">
+                {isSupporter ? "1 · Your analytics code (optional)" : "1 · Your embed code"}
+              </p>
               <p className="mt-1 text-xs text-black/45">This is your unique startup ID — it won't change after you apply.</p>
               <CopyableCode code={snippet} />
               <AgentPromptCard prompt={agentPrompt} />
@@ -913,7 +1042,9 @@ function Apply() {
             }`}>
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-black">2 · Verify installation</p>
+                  <p className="text-sm font-semibold text-black">
+                    {isSupporter ? "2 · Verify installation (optional)" : "2 · Verify installation"}
+                  </p>
                   <p className="mt-0.5 text-xs text-black/40 truncate">We'll check if the script is live on <span className="font-medium text-black/60">{url}</span></p>
                 </div>
                 <button
@@ -1081,14 +1212,22 @@ function Apply() {
               const needsPayment = !resubmitId && existingCount >= 1 && !hasPrepaid;
               const verified = verifyStatus === "live" || verifyStatus === "csp-img";
               const busy = loading || paymentLoading || verifyingPayment;
-              const disabled = !verified || busy;
-              const onClick = needsPayment ? handlePayment : onSubmit;
+              // Supporters pay instead of showing the bar, so verification is
+              // never a gate for them — the snippet is optional.
+              const disabled = isSupporter ? busy : (!verified || busy);
+              const onClick = isSupporter
+                ? handleSupporterPayment
+                : needsPayment
+                ? handlePayment
+                : () => onSubmit();
               const label = verifyingPayment
                 ? "Verifying payment…"
                 : loading
                 ? "Submitting…"
                 : paymentLoading
                 ? "Redirecting to payment…"
+                : isSupporter
+                ? "Pay $1,499 / year & submit →"
                 : needsPayment
                 ? "Pay $9.99 & submit →"
                 : "Submit application";
@@ -1103,7 +1242,9 @@ function Apply() {
               );
             })()}
             <p className="text-center text-xs text-black/30">
-              {verifyStatus !== "live" && verifyStatus !== "csp-img"
+              {isSupporter
+                ? "The analytics line is optional — you can add it later from your dashboard."
+                : verifyStatus !== "live" && verifyStatus !== "csp-img"
                 ? "Install the script and verify it's live to continue."
                 : !resubmitId && existingCount >= 1 && !hasPrepaid
                 ? "Script verified ✓ — one-time $9.99 for additional listings."

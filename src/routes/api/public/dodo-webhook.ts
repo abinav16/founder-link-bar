@@ -114,6 +114,30 @@ export const Route = createFileRoute("/api/public/dodo-webhook")({
         if (isSubscriptionEvent && isCancelEvent) {
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const endsNow = type === "subscription.expired" || status === "expired";
+
+          // Supporter memberships live on the startup row. Cancelling only
+          // turns off auto-renewal; the term keeps running until it expires,
+          // and only then does the listing revert to widget mode.
+          const { data: supporterRows } = await supabaseAdmin
+            .from("startups")
+            .select("id")
+            .eq("supporter_subscription_id", paymentId);
+          if (supporterRows && supporterRows.length > 0) {
+            await supabaseAdmin
+              .from("startups")
+              .update(
+                (endsNow
+                  ? {
+                      supporter_cancel_at_period_end: true,
+                      supporter_until: new Date().toISOString(),
+                      membership_mode: "widget",
+                    }
+                  : { supporter_cancel_at_period_end: true }) as never,
+              )
+              .eq("supporter_subscription_id", paymentId);
+            return new Response("ok", { status: 200 });
+          }
+
           await supabaseAdmin
             .from("featured_slots")
             .update(
@@ -165,6 +189,40 @@ export const Route = createFileRoute("/api/public/dodo-webhook")({
         if (!userId) {
           console.error("[dodo-webhook] Cannot resolve user for", { paymentId, customerEmail });
           // Return 200 so Dodo doesn't hammer retries; log for manual recovery.
+          return new Response("ok", { status: 200 });
+        }
+
+        // Supporter memberships: an annual subscription that replaces showing
+        // the bar. Sets the listing's mode and term on the startup row.
+        if (data.metadata?.kind === "supporter") {
+          const startupId: string | null = data.metadata?.startup_id ?? null;
+          if (!startupId) return new Response("ok", { status: 200 });
+
+          const { data: row } = await supabaseAdmin
+            .from("startups")
+            .select("id, supporter_until, supporter_subscription_id")
+            .eq("id", startupId)
+            .eq("user_id", userId)
+            .maybeSingle();
+          if (!row) return new Response("ok", { status: 200 });
+
+          const current = row.supporter_until ? new Date(row.supporter_until).getTime() : 0;
+          const alreadyFulfilled = row.supporter_subscription_id === paymentId;
+          // First purchase starts a year from now; a renewal extends from the
+          // later of "now" and the current end date so nothing is lost.
+          if (alreadyFulfilled && !isRenewal) return new Response("ok", { status: 200 });
+          const from = Math.max(current, Date.now());
+
+          await supabaseAdmin
+            .from("startups")
+            .update({
+              membership_mode: "supporter",
+              supporter_until: new Date(from + 365 * 86_400_000).toISOString(),
+              supporter_subscription_id: paymentId,
+              supporter_cancel_at_period_end: false,
+            } as never)
+            .eq("id", startupId);
+
           return new Response("ok", { status: 200 });
         }
 

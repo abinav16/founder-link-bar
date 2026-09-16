@@ -81,7 +81,114 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const name: string = typeof body?.name === "string" ? body.name : "";
     const return_url: unknown = body?.return_url;
-    const kind: string = body?.kind === "featured" ? "featured" : "listing";
+    const kind: string = body?.kind === "featured"
+      ? "featured"
+      : body?.kind === "supporter"
+      ? "supporter"
+      : "listing";
+
+    // Supporter membership: confirm the annual subscription after the buyer
+    // returns from Dodo and stamp the term onto their listing. The listing row
+    // is created by the app right before this call, so the webhook alone can't
+    // fulfil the first purchase.
+    if (body?.action === "confirm_supporter") {
+      const subId = typeof body?.subscription_id === "string" ? body.subscription_id.trim() : "";
+      const startupId = typeof body?.startup_id === "string" ? body.startup_id.trim() : "";
+      if (!subId || !startupId) {
+        return new Response(JSON.stringify({ error: "Missing subscription or startup" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const baseUrl = mode === "test"
+        ? "https://test.dodopayments.com"
+        : "https://live.dodopayments.com";
+
+      const subRes = await fetch(`${baseUrl}/subscriptions/${encodeURIComponent(subId)}`, {
+        headers: { "Authorization": `Bearer ${apiKey}` },
+      });
+      const subRaw = await subRes.text();
+      let sub: any = null;
+      try { sub = subRaw ? JSON.parse(subRaw) : null; } catch { sub = null; }
+
+      if (!sub || sub?.metadata?.kind !== "supporter" || sub?.metadata?.user_id !== userData.user.id) {
+        return new Response(JSON.stringify({ error: "Subscription not found" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const subStatus = String(sub.status ?? "").toLowerCase();
+      if (!["active", "succeeded", "completed"].includes(subStatus)) {
+        return new Response(JSON.stringify({ pending: true, status: subStatus }), {
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const admin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+      const { data: owned } = await admin
+        .from("startups")
+        .select("id, supporter_until")
+        .eq("id", startupId)
+        .eq("user_id", userData.user.id)
+        .maybeSingle();
+      if (!owned) {
+        return new Response(JSON.stringify({ error: "Listing not found" }), {
+          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const current = owned.supporter_until ? new Date(owned.supporter_until).getTime() : 0;
+      const from = Math.max(current, Date.now());
+      const { error: updErr } = await admin
+        .from("startups")
+        .update({
+          membership_mode: "supporter",
+          supporter_until: new Date(from + 365 * 86_400_000).toISOString(),
+          supporter_subscription_id: subId,
+          supporter_cancel_at_period_end: false,
+        })
+        .eq("id", startupId);
+      if (updErr) {
+        return new Response(JSON.stringify({ error: "Could not activate supporter membership" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify({ activated: true }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Cancel a supporter membership: auto-renewal off, term keeps running.
+    if (body?.action === "cancel_supporter") {
+      const startupId = typeof body?.startup_id === "string" ? body.startup_id.trim() : "";
+      const { data: row } = await userClient
+        .from("startups")
+        .select("id, supporter_subscription_id")
+        .eq("id", startupId)
+        .maybeSingle();
+      if (!row) {
+        return new Response(JSON.stringify({ error: "Listing not found" }), {
+          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const baseUrl = mode === "test"
+        ? "https://test.dodopayments.com"
+        : "https://live.dodopayments.com";
+      if (row.supporter_subscription_id) {
+        await fetch(`${baseUrl}/subscriptions/${encodeURIComponent(row.supporter_subscription_id)}`, {
+          method: "PATCH",
+          headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ cancel_at_next_billing_date: true }),
+        }).catch(() => {});
+      }
+      const admin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+      await admin
+        .from("startups")
+        .update({ supporter_cancel_at_period_end: true })
+        .eq("id", startupId)
+        .eq("user_id", userData.user.id);
+      return new Response(JSON.stringify({ cancelled: true }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Payment-return fallback: verify the subscription directly with Dodo and
     // fulfil the slot. This makes activation resilient when a webhook is late
@@ -353,8 +460,13 @@ serve(async (req) => {
     const listingId = mode === "test"
       ? (Deno.env.get("DODO_TEST_PRODUCT_ID") ?? Deno.env.get("DODO_PRODUCT_ID"))
       : Deno.env.get("DODO_PRODUCT_ID");
+    const supporterId = mode === "test"
+      ? (Deno.env.get("DODO_TEST_SUPPORTER_PRODUCT_ID") ?? Deno.env.get("DODO_SUPPORTER_PRODUCT_ID"))
+      : Deno.env.get("DODO_SUPPORTER_PRODUCT_ID");
     const productId = kind === "featured"
       ? (featuredId ?? listingId)
+      : kind === "supporter"
+      ? supporterId
       : listingId;
     if (!productId) {
       return new Response(JSON.stringify({ error: "Missing Dodo product id" }), {
@@ -387,6 +499,17 @@ serve(async (req) => {
       metadata.slot_index = String(slotIndex);
       metadata.startup_id = startupId;
     }
+    if (kind === "supporter") {
+      // The listing row may not exist yet (new application), so the id is
+      // simply carried through for the webhook / confirm step.
+      const startupId = body?.startup_id;
+      if (typeof startupId !== "string" || !startupId) {
+        return new Response(JSON.stringify({ error: "Invalid supporter request" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      metadata.startup_id = startupId;
+    }
 
 
     // Default to live; set DODO_MODE=test in secrets to use the test endpoint.
@@ -396,7 +519,7 @@ serve(async (req) => {
     // Featured slots are a recurring subscription product in Dodo; listings are
     // a one-time payment. The two use different endpoints and return different
     // id fields on the redirect.
-    const isSubscription = kind === "featured";
+    const isSubscription = kind === "featured" || kind === "supporter";
     const sep = return_url.includes("?") ? "&" : "?";
     const finalReturnUrl = isSubscription
       ? `${return_url}${sep}subscription_id={subscription_id}`
