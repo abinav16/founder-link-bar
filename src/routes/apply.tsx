@@ -262,9 +262,7 @@ function AgentPromptCard({ prompt }: { prompt: string }) {
       <div className="min-w-0 flex-1">
         <p className="text-[13px] font-medium text-black">Let your AI agent install it</p>
         <p className="mt-0.5 text-xs text-black/45">
-          Using Lovable, Cursor, Claude Code, Codex, Replit or another AI builder? Copy this prompt and give it to your agent it installs the exact same embed code with no hassle.&nbsp;
-
-          IMPORTANT: Make sure to publish your website after installing the code. Publishing is required so we can detect and verify that the embed code has been installed correctly.
+          Using Lovable, Cursor, Claude Code or another AI builder? Copy the prompt — your agent installs the code for you. Just publish your site afterwards so we can verify the install.
         </p>
       </div>
       <button
@@ -1090,15 +1088,14 @@ function Apply() {
           </h1>
           <p className="mt-3 text-[15px] leading-relaxed text-black/45">
             {isSupporter
-              ? <>This one line shows <strong>nothing</strong> on your site — no bar, no banner, no layout change. It only unlocks your own visitor map, visits and click attribution. You can skip it and add it later.</>
+              ? <>One invisible line. It shows <strong>nothing</strong> on your site — it only unlocks your visitor map, visits and click stats. Skip it or add it later.</>
               : <>Paste this once inside the <code className="rounded bg-black/8 px-1.5 py-0.5 font-mono text-sm">&lt;head&gt;</code> of your site, then verify it's live.</>}
           </p>
 
           {isSupporter && (
-            <div className="mt-5 rounded-xl border border-black/10 bg-black/[0.02] p-4 text-xs leading-relaxed text-black/50">
-              <p className="text-sm font-medium text-black">If you skip it</p>
-              <p className="mt-1">
-                Your listing, rotation share, profile, badge and network stats (impressions received, clicks, CTR, rank, leaderboard) all work exactly the same. Only your own on-site panels stay locked: the visitor globe, visits and where your traffic lands.
+            <div className="mt-5 flex items-start gap-3 rounded-xl border border-black/10 bg-black/[0.02] px-4 py-3 text-xs leading-relaxed text-black/50">
+              <p>
+                <strong className="font-medium text-black">If you skip it:</strong> your listing, rotation, profile, badge and network stats all work exactly the same. Only your visitor map and on-site stats stay locked.
               </p>
             </div>
           )}
