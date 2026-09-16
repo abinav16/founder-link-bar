@@ -897,6 +897,37 @@ function DashboardPage() {
               </div>
             )}
 
+            {isSupporter && (
+              <div className="rounded-xl border border-black/8 bg-white p-5 shadow-sm sm:p-6">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold text-black">Membership</p>
+                      <span className="rounded-full border border-black/10 bg-black/[0.04] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-black/45">
+                        Supporter
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-black/45">
+                      You fund the network instead of showing the bar. Your listing rotates on member sites at an average share.
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[11px] uppercase tracking-wide text-black/35">
+                      {startup.supporter_cancel_at_period_end ? "Ends on" : "Renews on"}
+                    </p>
+                    <p className="text-sm font-semibold text-black">
+                      {startup.supporter_until
+                        ? new Date(startup.supporter_until).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })
+                        : "—"}
+                    </p>
+                  </div>
+                </div>
+                <p className="mt-3 text-xs text-black/40">
+                  Manage or cancel your membership from your account page.
+                </p>
+              </div>
+            )}
+
             <section className="grid min-w-0 grid-cols-12 gap-4" aria-label="Widget setup and recent activity">
               <div className="col-span-12 rounded-xl border border-black/8 bg-white p-5 shadow-sm sm:p-6">
                 <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
