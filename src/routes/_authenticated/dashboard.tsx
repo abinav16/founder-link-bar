@@ -285,6 +285,10 @@ interface Startup {
   rejection_reason?: string | null;
   logo_url?: string | null;
   widget_last_heartbeat_at?: string | null;
+  membership_mode?: string | null;
+  supporter_until?: string | null;
+  supporter_cancel_at_period_end?: boolean | null;
+  tracking_last_seen_at?: string | null;
 }
 
 function StatusPill({ status }: { status: Startup["status"] }) {
