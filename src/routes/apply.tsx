@@ -839,6 +839,49 @@ function Apply() {
       const parsed = validated.data;
       const payload = { ...parsed, founder_quote: quote.trim() || null, widget_placement: placement };
 
+      // Duplicate guard: the same listing can come back here twice (a second
+      // payment, a refreshed return URL, a re-run auto-submit). Detect it
+      // before consuming a credit or hitting the primary-key conflict, and
+      // tell the founder plainly what happened to their money.
+      async function handleDuplicate() {
+        const { data: unconsumed } = await supabase
+          .from("payments")
+          .select("id")
+          .eq("user_id", user_id!)
+          .eq("status", "succeeded")
+          .is("consumed_at", null)
+          .limit(1);
+        clearDraft();
+        setLoading(false);
+        setPaidNeedsForm(false);
+        if ((unconsumed?.length ?? 0) > 0) {
+          toast.success("Payment successful — but this startup is already submitted.", {
+            description:
+              "You haven't been charged twice for the same listing. The extra payment is saved as credit for your next listing, and we'll refund it on request — just reply to your receipt email.",
+            duration: 12000,
+          });
+        } else {
+          toast.info("This startup is already submitted.", {
+            description: "We review every application within 24 hours — no need to submit again.",
+            duration: 8000,
+          });
+        }
+        navigate({ to: "/dashboard" });
+      }
+
+      if (!resubmitId) {
+        const { data: dupe } = await supabase
+          .from("startups")
+          .select("id")
+          .eq("user_id", user_id)
+          .or(`id.eq.${startupId},website_url.eq.${parsed.website_url}`)
+          .limit(1);
+        if ((dupe?.length ?? 0) > 0) {
+          await handleDuplicate();
+          return;
+        }
+      }
+
       // Resubmit path: update the existing rejected row back to pending — no new row, no payment gate.
       if (resubmitId) {
         const { error: updErr } = await supabase
@@ -866,8 +909,15 @@ function Apply() {
         const { error } = await supabase.from("startups").insert(
           { id: startupId, user_id, ...payload }
         );
+        if (error) {
+          const isDupe = (error as { code?: string }).code === "23505" ||
+            /duplicate key value/i.test(error.message);
+          if (isDupe) { await handleDuplicate(); return; }
+          setLoading(false);
+          toast.error(error.message);
+          return;
+        }
         setLoading(false);
-        if (error) { toast.error(error.message); return; }
       }
 
       // Supporter: stamp the paid year onto the listing we just created.
@@ -902,8 +952,23 @@ function Apply() {
   }
 
 
+  const finalizing = verifyingPayment || autoSubmitPending || (loading && (hasPrepaid || paidNeedsForm));
+
   return (
     <div className="min-h-dvh bg-white text-black">
+      {finalizing && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-white/92 px-6 backdrop-blur-sm">
+          <div className="w-full max-w-sm text-center">
+            <div className="mx-auto mb-5 h-8 w-8 animate-spin rounded-full border-2 border-black/15 border-t-black" />
+            <p className="text-lg font-semibold tracking-tight">
+              {verifyingPayment ? "Confirming your payment…" : "Finishing your application…"}
+            </p>
+            <p className="mt-2 text-sm text-black/55">
+              Payment received. Hold on a few seconds — we're submitting your listing and taking you to your dashboard. Don't close this tab.
+            </p>
+          </div>
+        </div>
+      )}
       <header className="sticky top-0 z-40 border-b border-black/8 bg-white/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
           <Link to="/" className="flex items-center gap-2 sb-press">
