@@ -274,10 +274,15 @@ serve(async (req) => {
       if (type === "admin-broadcast-recipients") {
         const list = await getRecipients();
         const unsubscribed = await segmentSuppressedCount();
+        const batch = sliceBatch(list);
         return new Response(JSON.stringify({
-          count: list.length,
+          count: batch.length,
+          total: list.length,
+          batchSize,
+          batchIndex,
+          batches: batchSize ? Math.max(1, Math.ceil(list.length / batchSize)) : 1,
           unsubscribed,
-          sample: list.slice(0, 5).map((r) => r.email),
+          sample: batch.slice(0, 5).map((r) => r.email),
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
