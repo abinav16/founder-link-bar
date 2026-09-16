@@ -460,8 +460,13 @@ serve(async (req) => {
     const listingId = mode === "test"
       ? (Deno.env.get("DODO_TEST_PRODUCT_ID") ?? Deno.env.get("DODO_PRODUCT_ID"))
       : Deno.env.get("DODO_PRODUCT_ID");
+    const supporterId = mode === "test"
+      ? (Deno.env.get("DODO_TEST_SUPPORTER_PRODUCT_ID") ?? Deno.env.get("DODO_SUPPORTER_PRODUCT_ID"))
+      : Deno.env.get("DODO_SUPPORTER_PRODUCT_ID");
     const productId = kind === "featured"
       ? (featuredId ?? listingId)
+      : kind === "supporter"
+      ? supporterId
       : listingId;
     if (!productId) {
       return new Response(JSON.stringify({ error: "Missing Dodo product id" }), {
