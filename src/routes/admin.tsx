@@ -841,15 +841,16 @@ function BroadcastPanel() {
     if (!subject.trim() || !body.trim()) { toast.error("Subject and body required"); return; }
     if (!testOnly) {
       const n = count ?? 0;
-      if (n === 0) { toast.error("No recipients in this segment"); return; }
-      if (!confirm(`Send to ${n} recipient${n === 1 ? "" : "s"}? Each gets their own email with you in BCC.`)) return;
+      if (n === 0) { toast.error("No recipients in this batch"); return; }
+      const label = batchSize ? ` (batch ${batchIndex} of ${batches})` : "";
+      if (!confirm(`Send to ${n} recipient${n === 1 ? "" : "s"}${label}? Each gets their own email with you in BCC.`)) return;
     }
     setSending(true);
     const toastId = toast.loading(testOnly ? "Sending test…" : `Sending to ${count} recipients…`);
     setLastErrors([]);
     try {
       const { data, error } = await supabase.functions.invoke("send-email", {
-        body: { type: "admin-broadcast", data: { segment, subject, headline, bodyMarkdown: body, testOnly } },
+        body: { type: "admin-broadcast", data: { segment, subject, headline, bodyMarkdown: body, testOnly, batchSize, batchIndex } },
       });
       if (error) throw error;
       const r = data as { sent: number; failed: number; total: number; queued?: boolean; errors: { email: string; error: string }[] };
