@@ -729,6 +729,17 @@ function Apply() {
         if (error) { toast.error(error.message); return; }
       }
 
+      // Supporter: stamp the paid year onto the listing we just created.
+      if (supporterSub) {
+        const { data: conf, error: confErr } = await supabase.functions.invoke("create-dodo-checkout", {
+          body: { action: "confirm_supporter", subscription_id: supporterSub, startup_id: startupId },
+        });
+        if (confErr || (!conf?.activated && !conf?.pending)) {
+          toast.info("Payment received — we'll activate your supporter membership shortly.", { duration: 8000 });
+        }
+      }
+
+
       supabase.functions.invoke("send-email", { body: { type: "startup-submitted", data: { email: userData.user!.email, name: userData.user!.user_metadata?.full_name ?? "", startupName: parsed.name } } }).catch(() => {});
       supabase.functions.invoke("send-email", { body: { type: "admin-new-application", data: { startupName: parsed.name, startupUrl: parsed.website_url, description: parsed.description, applicantEmail: userData.user!.email } } }).catch(() => {});
 
