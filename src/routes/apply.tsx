@@ -315,6 +315,14 @@ function Apply() {
     if (typeof window === "undefined") return "top";
     try { return JSON.parse(readRawDraft() ?? "{}")?.placement === "bottom" ? "bottom" : "top"; } catch { return "top"; }
   });
+  // "widget" = show the bar on your own site (free). "supporter" = pay yearly
+  // instead of showing the bar; the snippet is optional and only powers the
+  // founder's own dashboard stats.
+  const [mode, setMode] = useState<"widget" | "supporter">(() => {
+    if (typeof window === "undefined") return "widget";
+    try { return JSON.parse(readRawDraft() ?? "{}")?.mode === "supporter" ? "supporter" : "widget"; } catch { return "widget"; }
+  });
+  const isSupporter = mode === "supporter";
 
   const [resubmitId, setResubmitId] = useState<string>(initial.resubmitId);
   const [startupId, setStartupId] = useState<string>(() => initial.resubmitId || initial.startupId || crypto.randomUUID());
