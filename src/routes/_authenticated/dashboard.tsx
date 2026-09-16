@@ -565,11 +565,28 @@ function DashboardPage() {
       }
 
       const json = await res.json();
-      setInstallStatus(json.installed ? "live" : "disconnected");
+      const installed = !!json.installed;
+      setInstallStatus(installed ? "live" : "disconnected");
+
+      // Supporters unlock their map from the tracking beacon. Re-read the row so
+      // a freshly pasted snippet lifts the lock straight away.
+      if (installed && startup) {
+        const { data: fresh } = await supabase
+          .from("startups")
+          .select("tracking_last_seen_at")
+          .eq("id", startup.id)
+          .maybeSingle();
+        if (fresh?.tracking_last_seen_at) {
+          setStartup((prev) =>
+            prev ? { ...prev, tracking_last_seen_at: fresh.tracking_last_seen_at } : prev,
+          );
+        }
+      }
     } catch {
       setInstallStatus("unknown");
     }
   }
+
 
   async function switchStartup(s: Startup) {
     setSwitcherOpen(false);
