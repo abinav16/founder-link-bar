@@ -866,16 +866,20 @@ function DashboardPage() {
               </div>
             </div>
 
-            {isSupporter && !startup.tracking_last_seen_at ? (
+            {mapLocked ? (
               <div className="relative overflow-hidden rounded-xl border border-black/8 bg-white">
                 <div className="pointer-events-none select-none blur-[5px] opacity-60" aria-hidden="true">
                   <LiveVisitorMap scopeStartupId={startup.id} title="Live visitors on your startup" startupName={startup.name} startupLogoUrl={startup.logo_url ?? undefined} />
                 </div>
                 <div className="absolute inset-0 grid place-items-center bg-white/55 px-6 text-center">
                   <div className="max-w-sm">
-                    <p className="text-sm font-semibold text-black">Your visitor map is locked</p>
+                    <p className="text-sm font-semibold text-black">
+                      {needsInstall ? "Your visitor map turns on with the script" : "Your visitor map is locked"}
+                    </p>
                     <p className="mt-1 text-xs text-black/50">
-                      Paste one line of code on your site to unlock your visitor map and on-site stats. Nothing is shown to your visitors.
+                      {needsInstall
+                        ? "We can't see visitors on your site until the StartupBar script is live there. Paste it once and this fills in within minutes."
+                        : "Paste one line of code on your site to unlock your visitor map and on-site stats. Nothing is shown to your visitors."}
                     </p>
                     <div className="mt-3 flex items-center justify-center gap-2">
                       <button
