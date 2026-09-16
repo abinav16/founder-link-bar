@@ -114,6 +114,30 @@ export const Route = createFileRoute("/api/public/dodo-webhook")({
         if (isSubscriptionEvent && isCancelEvent) {
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const endsNow = type === "subscription.expired" || status === "expired";
+
+          // Supporter memberships live on the startup row. Cancelling only
+          // turns off auto-renewal; the term keeps running until it expires,
+          // and only then does the listing revert to widget mode.
+          const { data: supporterRows } = await supabaseAdmin
+            .from("startups")
+            .select("id")
+            .eq("supporter_subscription_id", paymentId);
+          if (supporterRows && supporterRows.length > 0) {
+            await supabaseAdmin
+              .from("startups")
+              .update(
+                (endsNow
+                  ? {
+                      supporter_cancel_at_period_end: true,
+                      supporter_until: new Date().toISOString(),
+                      membership_mode: "widget",
+                    }
+                  : { supporter_cancel_at_period_end: true }) as never,
+              )
+              .eq("supporter_subscription_id", paymentId);
+            return new Response("ok", { status: 200 });
+          }
+
           await supabaseAdmin
             .from("featured_slots")
             .update(
