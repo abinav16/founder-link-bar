@@ -6,6 +6,65 @@
     if (!id) return;
     var origin = new URL(s.src).origin;
 
+    // Supporter mode: render nothing at all. No bar, no spacing, no layout
+    // shift — only the anonymous pageview beacon so the founder's dashboard
+    // globe and on-site stats work.
+    if (s.getAttribute('data-mode') === 'track') {
+      var sbSid = '';
+      try {
+        sbSid = sessionStorage.getItem('startupbar:sid') || '';
+        if (!sbSid) {
+          sbSid = Math.random().toString(36).slice(2) + Date.now().toString(36);
+          sessionStorage.setItem('startupbar:sid', sbSid);
+        }
+      } catch (e) {}
+
+      var sbLastPath = null;
+      var sbBeacon = function () {
+        try {
+          var p = (window.location.pathname || '/') + (window.location.search || '');
+          if (p.length > 200) p = p.slice(0, 200);
+          if (p === sbLastPath) return;
+          sbLastPath = p;
+          var ref = '';
+          try { ref = document.referrer || ''; } catch (e2) {}
+          var img = new Image();
+          img.src =
+            origin + '/api/public/track/supporter?id=' + encodeURIComponent(id) +
+            '&path=' + encodeURIComponent(p) +
+            (ref ? '&ref=' + encodeURIComponent(ref.slice(0, 500)) : '') +
+            (sbSid ? '&sid=' + encodeURIComponent(sbSid) : '');
+        } catch (e2) {}
+      };
+
+      var sbWrap = function (name) {
+        var orig = history[name];
+        if (typeof orig !== 'function') return;
+        history[name] = function () {
+          var ret = orig.apply(this, arguments);
+          try { window.dispatchEvent(new Event('startupbar:locationchange')); } catch (e2) {}
+          return ret;
+        };
+      };
+      try {
+        sbWrap('pushState');
+        sbWrap('replaceState');
+        window.addEventListener('popstate', sbBeacon);
+        window.addEventListener('startupbar:locationchange', sbBeacon);
+        document.addEventListener('turbo:load', sbBeacon);
+        document.addEventListener('astro:page-load', sbBeacon);
+        document.addEventListener('livewire:navigated', sbBeacon);
+      } catch (e) {}
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', sbBeacon);
+      } else {
+        sbBeacon();
+      }
+      return;
+    }
+
+
     function detectTheme() {
       var dataTheme = s.getAttribute('data-theme');
       if (dataTheme === 'dark' || dataTheme === 'light') return dataTheme;
