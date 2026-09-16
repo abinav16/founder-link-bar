@@ -43,6 +43,14 @@ export const Route = createFileRoute("/pricing")({
             },
             {
               "@type": "Offer",
+              name: "Supporter membership",
+              price: "1999",
+              priceCurrency: "USD",
+              url: "https://startupbar.co/pricing",
+              availability: "https://schema.org/InStock",
+            },
+            {
+              "@type": "Offer",
               name: "Featured spot promotion",
               price: String(FEATURED_PRICE_USD),
               priceCurrency: "USD",
@@ -261,6 +269,38 @@ function PricingPage() {
             <li className="flex gap-2"><Check />Gold highlight on your card in the network list, Trending and New this week</li>
             <li className="flex gap-2"><Check />Gold highlight on the leaderboard, including the top podium if you rank there</li>
             <li className="flex gap-2"><Check />Renews every {FEATURED_DAYS} days until you cancel</li>
+          </ul>
+        </div>
+
+        {/* Supporter membership */}
+        <div className="mt-4 rounded-xl border border-black/10 p-6">
+          <div className="flex flex-wrap items-baseline justify-between gap-3">
+            <div>
+              <div className="text-xs font-medium uppercase tracking-wide text-black/40">Supporter membership — no bar on your site</div>
+              <div className="mt-2 flex items-baseline gap-1">
+                <span className="text-4xl font-semibold tracking-tight text-black">$1,999</span>
+                <span className="text-sm text-black/40">USD per year, cancel anytime</span>
+              </div>
+            </div>
+            <Link
+              to="/apply"
+              className="inline-flex h-10 items-center rounded-md border border-black px-4 text-sm font-medium text-black hover:bg-black hover:text-white transition-colors"
+            >
+              Become a Supporter
+            </Link>
+          </div>
+          <p className="mt-4 text-sm leading-relaxed text-black/60">
+            For founders who want to be listed without showing the bar on their own site. You pay instead of
+            contributing impressions, and you are shown across the network at an average member&rsquo;s share —
+            never more, never starved. It does not buy extra reach, featured spots or leaderboard position.
+          </p>
+          <ul className="mt-5 grid gap-2 text-sm text-black/65 sm:grid-cols-2">
+            <li className="flex gap-2"><Check />Nothing is shown to your visitors — no bar, no layout change</li>
+            <li className="flex gap-2"><Check />Full listing, profile page, leaderboard presence and dashboard</li>
+            <li className="flex gap-2"><Check />A subtle Supporter badge on your listing</li>
+            <li className="flex gap-2"><Check />Optional one-line analytics code unlocks your own visitor map and on-site stats</li>
+            <li className="flex gap-2"><Check />Switch back to the free bar at any time</li>
+            <li className="flex gap-2"><Check />Renews yearly until you cancel. No refunds; your paid year keeps running</li>
           </ul>
         </div>
 

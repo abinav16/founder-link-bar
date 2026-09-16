@@ -32,6 +32,10 @@ interface Startup {
   founder_quote: string | null;
   founder_avatar_url: string | null;
   widget_placement: "top" | "bottom" | null;
+  membership_mode?: string | null;
+  supporter_until?: string | null;
+  supporter_cancel_at_period_end?: boolean | null;
+  tracking_last_seen_at?: string | null;
   pending_name?: string | null;
   pending_description?: string | null;
   edit_status?: string | null;
@@ -63,12 +67,105 @@ function LogoPreview({ logoUrl, websiteUrl, size = 40 }: { logoUrl: string | nul
   );
 }
 
+function MembershipSection({ startup, onUpdate }: {
+  startup: Startup;
+  onUpdate: (id: string, data: Partial<Startup>) => void;
+}) {
+  const isSupporter = startup.membership_mode === "supporter";
+  const [busy, setBusy] = useState(false);
+  const [copied, setCopied] = useState(false);
+  if (!isSupporter) return null;
+
+  const until = startup.supporter_until ? new Date(startup.supporter_until) : null;
+  const renews = until ? until.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : null;
+  const cancelling = !!startup.supporter_cancel_at_period_end;
+  const seen = startup.tracking_last_seen_at ? new Date(startup.tracking_last_seen_at) : null;
+  const trackingLive = !!seen && Date.now() - seen.getTime() < 7 * 24 * 60 * 60 * 1000;
+  const snippet = `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startup.id}" data-mode="track"></script>`;
+
+  async function cancelRenewal() {
+    if (busy) return;
+    setBusy(true);
+    const { data, error } = await supabase.functions.invoke("create-dodo-checkout", {
+      body: { action: "cancel_supporter", startup_id: startup.id },
+    });
+    setBusy(false);
+    if (error || (data as any)?.error) { toast.error("Could not cancel right now — please try again."); return; }
+    toast.success("Auto-renewal cancelled", { description: renews ? `Your Supporter year runs until ${renews}.` : undefined });
+    onUpdate(startup.id, { supporter_cancel_at_period_end: true });
+  }
+
+  async function switchToWidget() {
+    if (busy) return;
+    setBusy(true);
+    const { error } = await supabase.from("startups").update({ membership_mode: "widget" } as never).eq("id", startup.id);
+    setBusy(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Switched to the free bar", { description: "Install the bar snippet on your site. Your paid year keeps running." });
+    onUpdate(startup.id, { membership_mode: "widget" });
+  }
+
+  return (
+    <div className="mt-6 border-t border-black/6 pt-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-medium text-black">Membership · Supporter</p>
+          <p className="mt-0.5 text-[11px] text-black/45">
+            No bar on your site. You're shown across the network at an average member's share.
+          </p>
+        </div>
+        <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-medium text-amber-700">
+          Supporter
+        </span>
+      </div>
+
+      <div className="mt-3 rounded-lg border border-black/10 bg-black/[0.02] px-4 py-3 text-[11px] leading-relaxed text-black/60">
+        {renews && (
+          <p>{cancelling ? "Ends on" : "Renews on"} <span className="font-medium text-black/75">{renews}</span>{cancelling ? " — auto-renewal is off." : " · $1,999 / year"}</p>
+        )}
+        <p className="mt-1.5">
+          Analytics code: {trackingLive
+            ? <span className="font-medium text-emerald-700">detected — your visitor map and on-site stats are live.</span>
+            : <span className="font-medium text-black/70">not detected — your own visitor map and on-site stats stay locked.</span>}
+        </p>
+        {!trackingLive && (
+          <div className="mt-2">
+            <code className="block overflow-x-auto rounded-md border border-black/10 bg-white px-3 py-2 text-[10px] text-black/70">{snippet}</code>
+            <button
+              type="button"
+              onClick={() => { navigator.clipboard.writeText(snippet); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
+              className="mt-2 rounded-lg border border-black/12 px-3 py-1.5 text-[11px] font-medium text-black/70 hover:text-black transition-all"
+            >
+              {copied ? "Copied" : "Copy snippet"}
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        {!cancelling && (
+          <button type="button" disabled={busy} onClick={cancelRenewal}
+            className="rounded-lg border border-black/12 px-3 py-1.5 text-[11px] font-medium text-black/60 hover:text-black transition-all disabled:opacity-60">
+            Cancel auto-renewal
+          </button>
+        )}
+        <button type="button" disabled={busy} onClick={switchToWidget}
+          className="rounded-lg border border-black/12 px-3 py-1.5 text-[11px] font-medium text-black/60 hover:text-black transition-all disabled:opacity-60">
+          Switch to the free bar
+        </button>
+      </div>
+      <p className="mt-1.5 text-[11px] text-black/35">Cancelling stops the next renewal. No refunds — your paid year keeps running.</p>
+    </div>
+  );
+}
+
 function StartupCard({ startup, onUpdate, onDelete }: {
   startup: Startup;
   onUpdate: (id: string, data: Partial<Startup>) => void;
   onDelete: (id: string) => void;
 }) {
   const editPending = startup.edit_status === "pending";
+  const isSupporterMode = startup.membership_mode === "supporter";
   const [expanded, setExpanded] = useState(false);
   const [sName, setSName] = useState(startup.pending_name ?? startup.name);
   const [sDesc, setSDesc] = useState(startup.pending_description ?? startup.description);
@@ -371,6 +468,9 @@ function StartupCard({ startup, onUpdate, onDelete }: {
             </div>
           </form>
 
+          <MembershipSection startup={startup} onUpdate={onUpdate} />
+
+          {!isSupporterMode && (
           <div className="mt-6 border-t border-black/6 pt-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-1.5">
@@ -411,6 +511,8 @@ function StartupCard({ startup, onUpdate, onDelete }: {
               </div>
             )}
           </div>
+          )}
+
 
           <div className="mt-6 border-t border-black/6 pt-5">
             <div className="mb-3 flex items-center justify-between">
@@ -517,7 +619,7 @@ function AccountPage() {
       setAvatarUrl(p?.avatar_url ?? u.user.user_metadata?.avatar_url ?? u.user.user_metadata?.picture ?? null);
 
       const { data } = await supabase
-        .from("startups").select("id, name, website_url, description, status, logo_url, user_id, slug, founder_name, founder_quote, founder_avatar_url, widget_placement, pending_name, pending_description, edit_status, edit_submitted_at").eq("user_id", u.user.id).order("created_at", { ascending: true });
+        .from("startups").select("id, name, website_url, description, status, logo_url, user_id, slug, founder_name, founder_quote, founder_avatar_url, widget_placement, pending_name, pending_description, edit_status, edit_submitted_at, membership_mode, supporter_until, supporter_cancel_at_period_end, tracking_last_seen_at").eq("user_id", u.user.id).order("created_at", { ascending: true });
       if (data) setStartups(data as Startup[]);
     })();
   }, []);

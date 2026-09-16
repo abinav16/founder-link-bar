@@ -285,6 +285,10 @@ interface Startup {
   rejection_reason?: string | null;
   logo_url?: string | null;
   widget_last_heartbeat_at?: string | null;
+  membership_mode?: string | null;
+  supporter_until?: string | null;
+  supporter_cancel_at_period_end?: boolean | null;
+  tracking_last_seen_at?: string | null;
 }
 
 function StatusPill({ status }: { status: Startup["status"] }) {
@@ -585,8 +589,11 @@ function DashboardPage() {
     setBreakdown(extra.breakdown);
   }
 
+  const isSupporter = startup?.membership_mode === "supporter";
   const snippet = startup
-    ? `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startup.id}"></script>`
+    ? isSupporter
+      ? `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startup.id}" data-mode="track"></script>`
+      : `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startup.id}"></script>`
     : "";
 
   const ctr = stats.impressions > 0
@@ -811,7 +818,38 @@ function DashboardPage() {
               </div>
             </div>
 
-            <LiveVisitorMap scopeStartupId={startup.id} title="Live visitors on your startup" startupName={startup.name} startupLogoUrl={startup.logo_url ?? undefined} />
+            {isSupporter && !startup.tracking_last_seen_at ? (
+              <div className="relative overflow-hidden rounded-xl border border-black/8 bg-white">
+                <div className="pointer-events-none select-none blur-[5px] opacity-60" aria-hidden="true">
+                  <LiveVisitorMap scopeStartupId={startup.id} title="Live visitors on your startup" startupName={startup.name} startupLogoUrl={startup.logo_url ?? undefined} />
+                </div>
+                <div className="absolute inset-0 grid place-items-center bg-white/55 px-6 text-center">
+                  <div className="max-w-sm">
+                    <p className="text-sm font-semibold text-black">Your visitor map is locked</p>
+                    <p className="mt-1 text-xs text-black/50">
+                      Paste one line of code on your site to unlock your visitor map and on-site stats. Nothing is shown to your visitors.
+                    </p>
+                    <div className="mt-3 flex items-center justify-center gap-2">
+                      <button
+                        onClick={copy}
+                        className="sb-press inline-flex items-center gap-1.5 rounded-lg bg-black px-3 py-2 text-xs font-medium text-white transition hover:bg-black/85"
+                      >
+                        {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                        {copied ? "Copied!" : "Copy snippet"}
+                      </button>
+                      <button
+                        onClick={() => checkInstall(startup.website_url)}
+                        className="rounded-lg border border-black/10 px-3 py-2 text-xs font-medium text-black/60 transition hover:border-black/25 hover:text-black"
+                      >
+                        Check now
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <LiveVisitorMap scopeStartupId={startup.id} title="Live visitors on your startup" startupName={startup.name} startupLogoUrl={startup.logo_url ?? undefined} />
+            )}
 
             {(breakdown.countries.length > 0 || breakdown.topReferrers.length > 0) && (
               <div className="space-y-3">
@@ -859,6 +897,37 @@ function DashboardPage() {
               </div>
             )}
 
+            {isSupporter && (
+              <div className="rounded-xl border border-black/8 bg-white p-5 shadow-sm sm:p-6">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold text-black">Membership</p>
+                      <span className="rounded-full border border-black/10 bg-black/[0.04] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-black/45">
+                        Supporter
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-black/45">
+                      You fund the network instead of showing the bar. Your listing rotates on member sites at an average share.
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[11px] uppercase tracking-wide text-black/35">
+                      {startup.supporter_cancel_at_period_end ? "Ends on" : "Renews on"}
+                    </p>
+                    <p className="text-sm font-semibold text-black">
+                      {startup.supporter_until
+                        ? new Date(startup.supporter_until).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })
+                        : "—"}
+                    </p>
+                  </div>
+                </div>
+                <p className="mt-3 text-xs text-black/40">
+                  Manage or cancel your membership from your account page.
+                </p>
+              </div>
+            )}
+
             <section className="grid min-w-0 grid-cols-12 gap-4" aria-label="Widget setup and recent activity">
               <div className="col-span-12 rounded-xl border border-black/8 bg-white p-5 shadow-sm sm:p-6">
                 <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
@@ -867,9 +936,13 @@ function DashboardPage() {
                       <Code2 className="h-4 w-4 text-black/55" />
                     </span>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-black">Embed script</p>
+                      <p className="text-sm font-semibold text-black">
+                        {isSupporter ? "Analytics script (optional)" : "Embed script"}
+                      </p>
                       <p className="mt-0.5 text-xs text-black/40">
-                        Paste once in the <code className="rounded bg-black/5 px-1 py-0.5 font-mono">&lt;head&gt;</code> of your site.
+                        {isSupporter
+                          ? <>Optional. Paste once in the <code className="rounded bg-black/5 px-1 py-0.5 font-mono">&lt;head&gt;</code> of your site — it shows nothing to your visitors and unlocks your visitor map and on-site stats.</>
+                          : <>Paste once in the <code className="rounded bg-black/5 px-1 py-0.5 font-mono">&lt;head&gt;</code> of your site.</>}
                       </p>
                     </div>
                   </div>
@@ -890,10 +963,17 @@ function DashboardPage() {
                     </span>
                   )}
                   {installStatus === "disconnected" && (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-[11px] font-medium text-red-600">
-                      <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
-                      Not detected
-                    </span>
+                    isSupporter ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-black/[0.03] px-2.5 py-1 text-[11px] font-medium text-black/45">
+                        <span className="h-1.5 w-1.5 rounded-full bg-black/25" />
+                        Not installed — optional
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-[11px] font-medium text-red-600">
+                        <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                        Not detected
+                      </span>
+                    )
                   )}
                   </div>
                 </div>
