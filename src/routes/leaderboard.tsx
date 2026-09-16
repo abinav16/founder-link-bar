@@ -338,23 +338,28 @@ function LeaderboardPage() {
                 <div className="grid grid-cols-3 gap-3 items-end">
                   {podiumDisplay.map((row: LeaderboardRow) => {
                     const originalIndex = podium.findIndex((r: LeaderboardRow) => r.id === row.id);
+                    const dark = originalIndex === 0 && !row.supporter;
                     return (
                       <div
                         key={row.id}
                         className={`rounded-2xl border flex flex-col items-center text-center p-3 transition-all relative overflow-hidden ${
                           row.sponsored
                             ? "sb-sponsored border-[oklch(0.72_0.13_75)]"
-                            : originalIndex === 0
-                              ? "bg-black border-black lg:-mt-3 shadow-xl shadow-black/15 z-10"
-                              : "bg-white border-black/8"
+                            : row.supporter
+                              ? "sb-featured-row"
+                              : dark
+                                ? "bg-black border-black lg:-mt-3 shadow-xl shadow-black/15 z-10"
+                                : "bg-white border-black/8"
                         }`}
                       >
-                        {originalIndex === 0 && !row.sponsored && (
+                        {dark && !row.sponsored && (
                           <p className="text-[8px] font-bold tracking-[0.15em] uppercase text-white/40 mb-1">Leader</p>
                         )}
-                        {row.sponsored && (
+                        {row.sponsored ? (
                           <span className="absolute top-2 left-1/2 -translate-x-1/2 text-[8px] font-bold uppercase tracking-[0.12em] text-[oklch(0.82_0.13_75)]">Featured</span>
-                        )}
+                        ) : row.supporter ? (
+                          <span className="absolute top-2 left-1/2 -translate-x-1/2 text-[8px] font-bold uppercase tracking-[0.12em] text-[oklch(0.5_0.11_70)]">Supporter</span>
+                        ) : null}
                         {isNew(row.created_at) && (
                           <NewBadge className="absolute top-2 right-2" />
                         )}
