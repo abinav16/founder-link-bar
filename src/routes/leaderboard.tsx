@@ -570,7 +570,9 @@ function LeaderboardPage() {
                 className={`group flex items-center gap-4 rounded-2xl border px-5 py-4 transition-all overflow-hidden ${
                   row.sponsored
                     ? "sb-featured-row relative hover:shadow-[0_8px_24px_-12px_oklch(0.65_0.15_68_/_0.3)]"
-                    : row.id === myId
+                    : row.supporter
+                      ? "sb-featured-row relative hover:shadow-[0_8px_24px_-12px_oklch(0.65_0.15_68_/_0.3)]"
+                      : row.id === myId
                       ? "bg-white border-black/20 ring-1 ring-black/8 hover:border-black/20 hover:shadow-sm"
                       : "bg-white border-black/8 hover:border-black/20 hover:shadow-sm"
                 }`}
@@ -599,9 +601,11 @@ function LeaderboardPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-sm text-black truncate group-hover/link:underline underline-offset-2">{row.name}</span>
-                        {row.sponsored && (
+                        {row.sponsored ? (
                           <span className="rounded-full bg-[oklch(0.65_0.15_68)] px-1.5 py-0.5 text-[8px] font-bold text-white uppercase tracking-wide shrink-0">Featured</span>
-                        )}
+                        ) : row.supporter ? (
+                          <span className="rounded-full border border-[oklch(0.72_0.13_75_/_0.6)] bg-[oklch(0.9_0.1_85_/_0.5)] px-1.5 py-0.5 text-[8px] font-bold text-[oklch(0.45_0.1_70)] uppercase tracking-wide shrink-0">Supporter</span>
+                        ) : null}
                         {isNew(row.created_at) && <NewBadge />}
                         {row.id === myId && (
                           <span className="rounded-full bg-black px-1.5 py-0.5 text-[8px] font-bold text-white uppercase tracking-wide shrink-0">You</span>
@@ -622,9 +626,11 @@ function LeaderboardPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-sm text-black truncate">{row.name}</span>
-                        {row.sponsored && (
+                        {row.sponsored ? (
                           <span className="rounded-full bg-[oklch(0.65_0.15_68)] px-1.5 py-0.5 text-[8px] font-bold text-white uppercase tracking-wide shrink-0">Featured</span>
-                        )}
+                        ) : row.supporter ? (
+                          <span className="rounded-full border border-[oklch(0.72_0.13_75_/_0.6)] bg-[oklch(0.9_0.1_85_/_0.5)] px-1.5 py-0.5 text-[8px] font-bold text-[oklch(0.45_0.1_70)] uppercase tracking-wide shrink-0">Supporter</span>
+                        ) : null}
                         {isNew(row.created_at) && <NewBadge />}
                         {row.id === myId && (
                           <span className="rounded-full bg-black px-1.5 py-0.5 text-[8px] font-bold text-white uppercase tracking-wide shrink-0">You</span>
