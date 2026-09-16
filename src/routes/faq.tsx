@@ -35,6 +35,24 @@ const FAQS: Faq[] = [
     a: "Yes. Your first startup listing is completely free — you only need to keep the widget installed on your site. Additional listings for the same founder are paid.",
   },
   {
+    id: "supporter-tier",
+    cat: "Membership & approval",
+    q: "Can I be listed without showing the bar on my site?",
+    a: "Yes — that's the Supporter membership, $1,999 per year. You pay instead of contributing impressions, and you're shown across the network at an average member's share: never more than an average contributing member, never starved. Nothing is rendered on your own site. You keep your listing, profile page, leaderboard presence and dashboard, plus a subtle Supporter badge. It does not buy extra reach, featured spots or leaderboard position.",
+  },
+  {
+    id: "supporter-tracking-code",
+    cat: "Membership & approval",
+    q: "Do Supporters have to install anything?",
+    a: "No. There is one optional line of analytics code that renders nothing on your page — no bar, no banner, no layout change. If you install it, your own visitor map, visits, clicks and referral attribution unlock in your dashboard. If you skip it, everything else works exactly the same; only your own on-site panels stay locked. You can add it later at any time from your account.",
+  },
+  {
+    id: "supporter-cancel",
+    cat: "Billing",
+    q: "Can I cancel the Supporter membership?",
+    a: "Yes, any time from your account. Cancelling stops the next renewal; there are no refunds and your paid year keeps running until it ends. You can also switch back to the free bar at any point — install the bar snippet and your paid term simply continues in the background.",
+  },
+  {
     id: "how-to-join",
     cat: "Getting started",
     q: "How do I join?",
