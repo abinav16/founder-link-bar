@@ -32,6 +32,7 @@ export interface StartupCard {
   founder_name: string | null;
   founder_avatar_url: string | null;
   sponsored: boolean;
+  supporter: boolean;
 }
 
 
