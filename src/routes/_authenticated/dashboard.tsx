@@ -1129,7 +1129,9 @@ function DashboardPage() {
                     </ul>
                   ) : (
                     <p className="px-5 py-6 text-sm text-black/35 sm:px-6">
-                      No placements in the last 7 days yet.
+                      {needsInstall
+                        ? "No placements yet — your listing starts rotating on other members' sites once your script is live."
+                        : "No placements in the last 7 days yet."}
                     </p>
                   )}
               </div>
