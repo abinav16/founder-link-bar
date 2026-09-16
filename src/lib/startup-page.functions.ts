@@ -40,6 +40,8 @@ export interface StartupPageData {
   founder_avatar_url: string | null;
   founder_twitter: string | null;
   iframe_blocked: boolean | null;
+  membership_mode: string | null;
+  supporter_until: string | null;
   impressions: number;
   clicks: number;
   impressions_given: number;
@@ -85,7 +87,7 @@ export const getStartupPage = createServerFn({ method: "GET" })
     const supabase = getClient();
     const { data: s } = await supabase
       .from("startups")
-      .select("id, slug, name, website_url, description, logo_url, created_at, user_id, founder_name, founder_quote, founder_avatar_url, iframe_blocked" as any)
+      .select("id, slug, name, website_url, description, logo_url, created_at, user_id, founder_name, founder_quote, founder_avatar_url, iframe_blocked, membership_mode, supporter_until" as any)
       .eq("slug", data.slug)
       .eq("status", "approved")
       .maybeSingle();
@@ -138,6 +140,8 @@ export const getStartupPage = createServerFn({ method: "GET" })
       founder_avatar_url: founderAvatar,
       founder_twitter: founderTwitter,
       iframe_blocked: row.iframe_blocked ?? null,
+      membership_mode: (row.membership_mode as string) ?? null,
+      supporter_until: (row.supporter_until as string) ?? null,
       impressions: Number(t.impressions ?? 0),
       clicks: Number(t.clicks ?? 0),
       impressions_given: Number(t.impressions_given ?? 0),
