@@ -504,13 +504,35 @@ function Apply() {
     if (typeof window === "undefined") return;
     if (resubmitId) return; // resubmits are URL-driven — don't overwrite the fresh-apply draft
     if (!name && !url && !desc && !quote) return;
-    writeDraft({ step, name, url, desc, quote, placement, startupId });
-  }, [step, name, url, desc, quote, placement, resubmitId]);
+    writeDraft({ step, name, url, desc, quote, placement, mode, startupId });
+  }, [step, name, url, desc, quote, placement, mode, resubmitId]);
 
-  const snippet = `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}"></script>`;
+  // Supporters get a tracking-only snippet: it renders nothing, no bar, no
+  // layout shift — it only powers their own dashboard stats.
+  const snippet = isSupporter
+    ? `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}" data-mode="track"></script>`
+    : `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}"></script>`;
 
   // Ready-to-paste prompt for founders who build with an AI agent (Lovable, Cursor, v0…).
-  const agentPrompt = [
+  const agentPrompt = isSupporter
+    ? [
+        "Add the StartupBar analytics snippet to my website.",
+        "",
+        "1. Paste this script tag inside the <head> tag of every page:",
+        `   ${snippet}`,
+        "",
+        "2. It renders nothing on the page — no bar, no banner, no layout change.",
+        "   Do NOT add any CSS, padding or offsets for it.",
+        "",
+        "3. If the site has a Content-Security-Policy, add:",
+        "   script-src https://startupbar.co;",
+        "",
+        "4. Do not change anything else on the site.",
+        "",
+        "IMPORTANT: Make sure to publish the website after installing the code.",
+        "Publishing is required so the installation can be detected and verified.",
+      ].join("\n")
+    : [
     "Add the StartupBar widget to my website.",
     "",
     "1. Paste this script tag inside the <head> tag of every page:",
