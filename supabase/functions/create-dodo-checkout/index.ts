@@ -499,6 +499,17 @@ serve(async (req) => {
       metadata.slot_index = String(slotIndex);
       metadata.startup_id = startupId;
     }
+    if (kind === "supporter") {
+      // The listing row may not exist yet (new application), so the id is
+      // simply carried through for the webhook / confirm step.
+      const startupId = body?.startup_id;
+      if (typeof startupId !== "string" || !startupId) {
+        return new Response(JSON.stringify({ error: "Invalid supporter request" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      metadata.startup_id = startupId;
+    }
 
 
     // Default to live; set DODO_MODE=test in secrets to use the test endpoint.
