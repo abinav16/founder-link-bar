@@ -909,8 +909,15 @@ function Apply() {
         const { error } = await supabase.from("startups").insert(
           { id: startupId, user_id, ...payload }
         );
+        if (error) {
+          const isDupe = (error as { code?: string }).code === "23505" ||
+            /duplicate key value/i.test(error.message);
+          if (isDupe) { await handleDuplicate(); return; }
+          setLoading(false);
+          toast.error(error.message);
+          return;
+        }
         setLoading(false);
-        if (error) { toast.error(error.message); return; }
       }
 
       // Supporter: stamp the paid year onto the listing we just created.
