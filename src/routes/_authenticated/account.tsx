@@ -375,6 +375,9 @@ function StartupCard({ startup, onUpdate, onDelete }: {
             </div>
           </form>
 
+          <MembershipSection startup={startup} onUpdate={onUpdate} />
+
+          {!isSupporterMode && (
           <div className="mt-6 border-t border-black/6 pt-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-1.5">
