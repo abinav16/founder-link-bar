@@ -10,7 +10,7 @@ import { SitePreviewSurface } from "@/components/SitePreviewSurface";
 import {
   ArrowRight, ArrowLeft, ExternalLink,
   Copy, Check, CheckCircle2, XCircle, Loader2, ShieldAlert, ChevronDown,
-  Sparkles,
+  Sparkles, EyeOff, Globe2, ChartNoAxesCombined, RefreshCw, ChevronLeft, ChevronRight,
 } from "lucide-react";
 
 
@@ -110,6 +110,107 @@ function BarPreview({ name, url, desc, placement = "top", noBar = false }: { nam
       </div>
       {!noBar && placement === "bottom" && bar}
     </div>
+  );
+}
+
+const supporterSlides = [
+  {
+    icon: EyeOff,
+    eyebrow: "Your site stays yours",
+    title: "You don’t have to display a widget or bar.",
+    body: "Nothing appears to your visitors. No layout changes, no extra space and no visual distraction.",
+  },
+  {
+    icon: Globe2,
+    eyebrow: "Visibility included",
+    title: "Your startup still appears across the network.",
+    body: "Get a fair, average member’s share of exposure without placing StartupBar on your own website.",
+  },
+  {
+    icon: ChartNoAxesCombined,
+    eyebrow: "Analytics are optional",
+    title: "Unlock your visitor insights when you’re ready.",
+    body: "Add one invisible line of code for your visitor map and on-site stats—or skip it and keep your listing active.",
+  },
+  {
+    icon: RefreshCw,
+    eyebrow: "Always flexible",
+    title: "Change your mind at any time.",
+    body: "Switch to the free bar whenever you like. Cancelling stops renewal while your paid year continues.",
+  },
+] as const;
+
+function SupporterStory() {
+  const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    if (paused) return;
+    const timer = window.setInterval(() => {
+      setActive((current) => (current + 1) % supporterSlides.length);
+    }, 4800);
+    return () => window.clearInterval(timer);
+  }, [paused]);
+
+  const show = (index: number) => setActive((index + supporterSlides.length) % supporterSlides.length);
+  const slide = supporterSlides[active];
+  const Icon = slide.icon;
+
+  return (
+    <section
+      className="mt-4 overflow-hidden rounded-xl border border-black/10 bg-white shadow-[0_18px_50px_-30px_rgba(0,0,0,0.28)]"
+      aria-label="Supporter membership benefits"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setPaused(false);
+      }}
+    >
+      <div className="flex items-center justify-between gap-4 border-b border-black/8 bg-black/[0.018] px-5 py-4">
+        <div>
+          <p className="text-[11px] font-semibold uppercase text-black/35">Supporter membership</p>
+          <h3 className="mt-0.5 text-lg font-semibold text-black">Supporter — $1,999 / year</h3>
+        </div>
+        <span className="shrink-0 rounded-full border border-emerald-700/15 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase text-emerald-800">No bar</span>
+      </div>
+
+      <div className="relative min-h-[238px] px-5 pb-5 pt-6 sm:min-h-[224px] sm:px-6">
+        <div key={active} className="sb-supporter-slide">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full border border-black/8 bg-black/[0.035]">
+            <Icon className="h-5 w-5 text-black/70" aria-hidden="true" />
+          </div>
+          <p className="mt-5 text-[10px] font-semibold uppercase text-black/35">{slide.eyebrow}</p>
+          <h4 className="mt-1.5 max-w-md text-xl font-semibold leading-snug text-black">{slide.title}</h4>
+          <p className="mt-2 max-w-lg text-[13px] leading-relaxed text-black/50">{slide.body}</p>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between border-t border-black/8 px-4 py-3">
+        <div className="flex items-center gap-1.5" role="tablist" aria-label="Choose a benefit">
+          {supporterSlides.map((item, index) => (
+            <button
+              key={item.eyebrow}
+              type="button"
+              role="tab"
+              aria-selected={active === index}
+              aria-label={`Show benefit ${index + 1}: ${item.eyebrow}`}
+              onClick={() => show(index)}
+              className={`h-1.5 rounded-full transition-all duration-300 ${active === index ? "w-7 bg-black" : "w-1.5 bg-black/15 hover:bg-black/30"}`}
+            />
+          ))}
+        </div>
+        <div className="flex items-center gap-1">
+          <button type="button" onClick={() => show(active - 1)} aria-label="Previous benefit" className="flex h-8 w-8 items-center justify-center rounded-full text-black/45 transition hover:bg-black/5 hover:text-black">
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <span className="min-w-9 text-center text-[11px] tabular-nums text-black/30">{active + 1} / {supporterSlides.length}</span>
+          <button type="button" onClick={() => show(active + 1)} aria-label="Next benefit" className="flex h-8 w-8 items-center justify-center rounded-full text-black/45 transition hover:bg-black/5 hover:text-black">
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -927,19 +1028,7 @@ function Apply() {
                     </button>
                   </div>
                   {isSupporter ? (
-                    <div className="mt-3 rounded-xl border border-black/10 bg-black/[0.02] p-4">
-                      <p className="text-sm font-medium text-black">Supporter — $1,999 / year</p>
-                      <ul className="mt-2 space-y-1 text-xs leading-relaxed text-black/50">
-                        <li>· No bar on your site. Nothing is shown to your visitors.</li>
-                        <li>· You still appear across the network at an average member's share — never more, never starved.</li>
-                        <li>· Full profile, leaderboard presence, dashboard and a subtle Supporter badge.</li>
-                        <li>· Cancel any time; your paid year keeps running. No refunds.</li>
-                        <li>· You can switch back to showing the bar (free) whenever you like.</li>
-                      </ul>
-                      <p className="mt-2 text-xs text-black/40">
-                        Next step is one optional line of analytics code — it shows nothing on your site and only unlocks your own visitor stats.
-                      </p>
-                    </div>
+                    <SupporterStory />
                   ) : (
                     <p className="mt-2 text-xs leading-relaxed text-black/40">
                       Top placement earns you more free impressions from the network. Our reciprocity algorithm rewards the most visible bars with more visibility in return. Bottom is still supported if it fits your layout.
