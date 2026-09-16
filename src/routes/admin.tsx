@@ -794,22 +794,28 @@ function BroadcastPanel() {
   const [headline, setHeadline] = useState("");
   const [body, setBody] = useState("");
   const [count, setCount] = useState<number | null>(null);
+  const [total, setTotal] = useState<number | null>(null);
+  const [batches, setBatches] = useState<number>(1);
+  const [batchSize, setBatchSize] = useState<number>(80);
+  const [batchIndex, setBatchIndex] = useState<number>(1);
   const [unsubscribed, setUnsubscribed] = useState<number>(0);
   const [loadingCount, setLoadingCount] = useState(false);
   const [previewHtml, setPreviewHtml] = useState<string>("");
   const [sending, setSending] = useState(false);
   const [lastErrors, setLastErrors] = useState<{ email: string; error: string }[]>([]);
 
-  async function refreshCount(seg: string) {
+  async function refreshCount(seg: string, size: number, index: number) {
     setLoadingCount(true);
     setCount(null);
     try {
       const { data, error } = await supabase.functions.invoke("send-email", {
-        body: { type: "admin-broadcast-recipients", data: { segment: seg } },
+        body: { type: "admin-broadcast-recipients", data: { segment: seg, batchSize: size, batchIndex: index } },
       });
       if (error) throw error;
-      const r = data as { count: number; unsubscribed?: number };
+      const r = data as { count: number; total?: number; batches?: number; unsubscribed?: number };
       setCount(r?.count ?? 0);
+      setTotal(r?.total ?? r?.count ?? 0);
+      setBatches(Math.max(1, r?.batches ?? 1));
       setUnsubscribed(r?.unsubscribed ?? 0);
     } catch (e) {
       toast.error("Couldn't load recipient count");
@@ -818,7 +824,9 @@ function BroadcastPanel() {
     }
   }
 
-  useEffect(() => { if (open) refreshCount(segment); }, [segment, open]);
+  useEffect(() => { if (open) refreshCount(segment, batchSize, batchIndex); }, [segment, open, batchSize, batchIndex]);
+  // Changing segment or batch size restarts at batch 1.
+  useEffect(() => { setBatchIndex(1); }, [segment, batchSize]);
 
   async function refreshPreview() {
     if (!subject.trim() || !body.trim()) { toast.error("Subject and body required"); return; }
