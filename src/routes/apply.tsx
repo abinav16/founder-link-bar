@@ -839,6 +839,49 @@ function Apply() {
       const parsed = validated.data;
       const payload = { ...parsed, founder_quote: quote.trim() || null, widget_placement: placement };
 
+      // Duplicate guard: the same listing can come back here twice (a second
+      // payment, a refreshed return URL, a re-run auto-submit). Detect it
+      // before consuming a credit or hitting the primary-key conflict, and
+      // tell the founder plainly what happened to their money.
+      async function handleDuplicate() {
+        const { data: unconsumed } = await supabase
+          .from("payments")
+          .select("id")
+          .eq("user_id", user_id!)
+          .eq("status", "succeeded")
+          .is("consumed_at", null)
+          .limit(1);
+        clearDraft();
+        setLoading(false);
+        setPaidNeedsForm(false);
+        if ((unconsumed?.length ?? 0) > 0) {
+          toast.success("Payment successful — but this startup is already submitted.", {
+            description:
+              "You haven't been charged twice for the same listing. The extra payment is saved as credit for your next listing, and we'll refund it on request — just reply to your receipt email.",
+            duration: 12000,
+          });
+        } else {
+          toast.info("This startup is already submitted.", {
+            description: "We review every application within 24 hours — no need to submit again.",
+            duration: 8000,
+          });
+        }
+        navigate({ to: "/dashboard" });
+      }
+
+      if (!resubmitId) {
+        const { data: dupe } = await supabase
+          .from("startups")
+          .select("id")
+          .eq("user_id", user_id)
+          .or(`id.eq.${startupId},website_url.eq.${parsed.website_url}`)
+          .limit(1);
+        if ((dupe?.length ?? 0) > 0) {
+          await handleDuplicate();
+          return;
+        }
+      }
+
       // Resubmit path: update the existing rejected row back to pending — no new row, no payment gate.
       if (resubmitId) {
         const { error: updErr } = await supabase
