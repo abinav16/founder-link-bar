@@ -32,6 +32,10 @@ interface Startup {
   founder_quote: string | null;
   founder_avatar_url: string | null;
   widget_placement: "top" | "bottom" | null;
+  membership_mode?: string | null;
+  supporter_until?: string | null;
+  supporter_cancel_at_period_end?: boolean | null;
+  tracking_last_seen_at?: string | null;
   pending_name?: string | null;
   pending_description?: string | null;
   edit_status?: string | null;
