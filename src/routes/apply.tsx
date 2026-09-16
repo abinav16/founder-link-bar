@@ -977,18 +977,29 @@ function Apply() {
 
           <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Step 2 of 2</span>
           <h1 className="mt-4 text-3xl font-medium leading-tight tracking-tight md:text-4xl" style={{ fontFamily: "var(--font-display)" }}>
-            Install the script.
+            {isSupporter ? "Your analytics line (optional)." : "Install the script."}
           </h1>
           <p className="mt-3 text-[15px] leading-relaxed text-black/45">
-            Paste this once inside the <code className="rounded bg-black/8 px-1.5 py-0.5 font-mono text-sm">&lt;head&gt;</code> of your site, then verify it's live.
+            {isSupporter
+              ? <>This one line shows <strong>nothing</strong> on your site — no bar, no banner, no layout change. It only unlocks your own visitor map, visits and click attribution. You can skip it and add it later.</>
+              : <>Paste this once inside the <code className="rounded bg-black/8 px-1.5 py-0.5 font-mono text-sm">&lt;head&gt;</code> of your site, then verify it's live.</>}
           </p>
+
+          {isSupporter && (
+            <div className="mt-5 rounded-xl border border-black/10 bg-black/[0.02] p-4 text-xs leading-relaxed text-black/50">
+              <p className="text-sm font-medium text-black">If you skip it</p>
+              <p className="mt-1">
+                Your listing, rotation share, profile, badge and network stats (impressions received, clicks, CTR, rank, leaderboard) all work exactly the same. Only your own on-site panels stay locked: the visitor globe, visits and where your traffic lands.
+              </p>
+            </div>
+          )}
 
           {/* Progress pills */}
           <div className="mt-6 flex items-center gap-2 text-[11px] font-medium text-black/50">
             {[
               { n: 1, label: "Paste", active: true },
               { n: 2, label: "Verify", active: verifyStatus !== "idle" },
-              { n: 3, label: "Submit", active: verifyStatus === "live" || verifyStatus === "csp-img" },
+              { n: 3, label: isSupporter ? "Pay & submit" : "Submit", active: isSupporter || verifyStatus === "live" || verifyStatus === "csp-img" },
             ].map((s, i) => (
               <div key={s.n} className="flex items-center gap-2">
                 <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-semibold ${s.active ? "bg-black text-white" : "bg-black/8 text-black/40"}`}>{s.n}</span>
