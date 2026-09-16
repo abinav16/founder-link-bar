@@ -874,9 +874,13 @@ function DashboardPage() {
                       <Code2 className="h-4 w-4 text-black/55" />
                     </span>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-black">Embed script</p>
+                      <p className="text-sm font-semibold text-black">
+                        {isSupporter ? "Analytics script (optional)" : "Embed script"}
+                      </p>
                       <p className="mt-0.5 text-xs text-black/40">
-                        Paste once in the <code className="rounded bg-black/5 px-1 py-0.5 font-mono">&lt;head&gt;</code> of your site.
+                        {isSupporter
+                          ? <>Optional. Paste once in the <code className="rounded bg-black/5 px-1 py-0.5 font-mono">&lt;head&gt;</code> of your site — it shows nothing to your visitors and unlocks your visitor map and on-site stats.</>
+                          : <>Paste once in the <code className="rounded bg-black/5 px-1 py-0.5 font-mono">&lt;head&gt;</code> of your site.</>}
                       </p>
                     </div>
                   </div>
