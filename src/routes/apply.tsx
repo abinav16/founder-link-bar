@@ -1042,7 +1042,9 @@ function Apply() {
             }`}>
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-black">2 · Verify installation</p>
+                  <p className="text-sm font-semibold text-black">
+                    {isSupporter ? "2 · Verify installation (optional)" : "2 · Verify installation"}
+                  </p>
                   <p className="mt-0.5 text-xs text-black/40 truncate">We'll check if the script is live on <span className="font-medium text-black/60">{url}</span></p>
                 </div>
                 <button
