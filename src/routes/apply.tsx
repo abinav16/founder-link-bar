@@ -1022,7 +1022,9 @@ function Apply() {
           <div className="mt-6 overflow-hidden rounded-2xl border border-black/10 bg-white">
             {/* Embed code */}
             <div className="border-b border-black/8 p-5 sm:p-6">
-              <p className="text-sm font-semibold text-black">1 · Your embed code</p>
+              <p className="text-sm font-semibold text-black">
+                {isSupporter ? "1 · Your analytics code (optional)" : "1 · Your embed code"}
+              </p>
               <p className="mt-1 text-xs text-black/45">This is your unique startup ID — it won't change after you apply.</p>
               <CopyableCode code={snippet} />
               <AgentPromptCard prompt={agentPrompt} />
