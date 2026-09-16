@@ -143,6 +143,7 @@ const supporterSlides = [
 function SupporterStory() {
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
+  const touchX = useRef<number | null>(null);
 
   useEffect(() => {
     if (paused) return;
