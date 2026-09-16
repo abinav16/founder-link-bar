@@ -171,6 +171,8 @@ function StartupPage() {
   const joined = new Date(s.created_at).toLocaleDateString(undefined, { month: "long", year: "numeric" });
   const ctr = s.impressions > 0 ? ((s.clicks / s.impressions) * 100).toFixed(1) : "0.0";
   const external = s.website_url.startsWith("http") ? s.website_url : `https://${s.website_url}`;
+  const isSupporter =
+    s.membership_mode === "supporter" && (!s.supporter_until || new Date(s.supporter_until).getTime() > Date.now());
 
   return (
     <DashboardLayout rail={<SponsoredRail />}>
@@ -216,14 +218,23 @@ function StartupPage() {
           </a>
         </div>
 
-        {/* STATS */}
-        <div className="mt-8 sm:mt-10 grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-5">
-          <Stat label="Impressions received" value={fmt(s.impressions)} sub="in others' bars" />
-          <Stat label="Impressions contributed" value={fmt(s.impressions_given)} sub="shown from this site" />
-          <Stat label="Clicks received" value={fmt(s.clicks)} sub="landings via StartupBar" />
-          <Stat label="Clicks contributed" value={fmt(s.clicks_given)} sub="outbound via this site" />
-          <Stat label="Network CTR" value={`${ctr}%`} sub="clicks ÷ impressions" />
-        </div>
+        {isSupporter ? (
+          <div className="mt-8 sm:mt-10 grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3">
+            <Stat label="Impressions received" value={fmt(s.impressions)} sub="in others' bars" />
+            <Stat label="Clicks received" value={fmt(s.clicks)} sub="landings via StartupBar" />
+            <div className="col-span-2 md:col-span-1">
+              <Stat label="Network CTR" value={`${ctr}%`} sub="clicks ÷ impressions" />
+            </div>
+          </div>
+        ) : (
+          <div className="mt-8 sm:mt-10 grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-5">
+            <Stat label="Impressions received" value={fmt(s.impressions)} sub="in others' bars" />
+            <Stat label="Impressions contributed" value={fmt(s.impressions_given)} sub="shown from this site" />
+            <Stat label="Clicks received" value={fmt(s.clicks)} sub="landings via StartupBar" />
+            <Stat label="Clicks contributed" value={fmt(s.clicks_given)} sub="outbound via this site" />
+            <Stat label="Network CTR" value={`${ctr}%`} sub="clicks ÷ impressions" />
+          </div>
+        )}
 
         {/* LIVE EMBED */}
         <div className="mt-12">

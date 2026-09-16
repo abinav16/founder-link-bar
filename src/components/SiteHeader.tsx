@@ -14,7 +14,7 @@ function Logo() {
 }
 
 const linkCls =
-  "relative flex items-center gap-1.5 rounded-full px-3 py-2 text-[13px] font-medium text-black/50 transition-all duration-200 hover:bg-black/[0.045] hover:text-black active:scale-[0.97] after:absolute after:-bottom-px after:left-1/2 after:h-1 after:w-1 after:-translate-x-1/2 after:rounded-full after:bg-black after:opacity-0 after:transition-opacity after:duration-200";
+  "relative flex items-center gap-1.5 rounded-full px-2.5 py-2 text-[13px] font-medium text-black/50 transition-all duration-200 hover:bg-black/[0.045] hover:text-black active:scale-[0.97] sm:px-3 after:absolute after:-bottom-px after:left-1/2 after:h-1 after:w-1 after:-translate-x-1/2 after:rounded-full after:bg-black after:opacity-0 after:transition-opacity after:duration-200";
 
 const activeCls = "!text-black font-semibold bg-black/[0.05] after:opacity-100";
 
@@ -89,7 +89,7 @@ export function SiteHeader() {
               <button
                 onClick={signOut}
                 aria-label="Sign out"
-                className="ml-1 flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-3.5 py-1.5 text-[13px] font-medium text-black/60 transition-all duration-200 hover:border-black hover:bg-black hover:text-white sm:px-4"
+                className="ml-0.5 flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-3 py-1.5 text-[13px] font-medium text-black/60 transition-all duration-200 hover:border-black hover:bg-black hover:text-white sm:ml-1 sm:px-4"
               >
                 <LogOut className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Sign out</span>
