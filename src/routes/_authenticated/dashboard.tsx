@@ -565,11 +565,28 @@ function DashboardPage() {
       }
 
       const json = await res.json();
-      setInstallStatus(json.installed ? "live" : "disconnected");
+      const installed = !!json.installed;
+      setInstallStatus(installed ? "live" : "disconnected");
+
+      // Supporters unlock their map from the tracking beacon. Re-read the row so
+      // a freshly pasted snippet lifts the lock straight away.
+      if (installed && startup) {
+        const { data: fresh } = await supabase
+          .from("startups")
+          .select("tracking_last_seen_at")
+          .eq("id", startup.id)
+          .maybeSingle();
+        if (fresh?.tracking_last_seen_at) {
+          setStartup((prev) =>
+            prev ? { ...prev, tracking_last_seen_at: fresh.tracking_last_seen_at } : prev,
+          );
+        }
+      }
     } catch {
       setInstallStatus("unknown");
     }
   }
+
 
   async function switchStartup(s: Startup) {
     setSwitcherOpen(false);
@@ -600,7 +617,10 @@ function DashboardPage() {
   // is on their site. Until then every number is a truthful zero — say why.
   const needsInstall =
     !!startup && startup.status === "approved" && !isSupporter && installStatus === "disconnected";
-  const mapLocked = needsInstall || (isSupporter && !startup?.tracking_last_seen_at);
+  const mapLocked =
+    needsInstall ||
+    (isSupporter && !startup?.tracking_last_seen_at && installStatus !== "live");
+
 
   const ctr = stats.impressions > 0
     ? ((stats.clicks / stats.impressions) * 100).toFixed(1)
@@ -890,11 +910,14 @@ function DashboardPage() {
                         {copied ? "Copied!" : "Copy snippet"}
                       </button>
                       <button
+                        type="button"
+                        disabled={installStatus === "checking"}
                         onClick={() => checkInstall(startup.website_url)}
-                        className="rounded-lg border border-black/10 px-3 py-2 text-xs font-medium text-black/60 transition hover:border-black/25 hover:text-black"
+                        className="sb-press rounded-lg border border-black/10 bg-white px-3 py-2 text-xs font-medium text-black/60 transition hover:border-black/25 hover:text-black disabled:opacity-60"
                       >
-                        Check now
+                        {installStatus === "checking" ? "Checking…" : "Check now"}
                       </button>
+
                     </div>
                   </div>
                 </div>
