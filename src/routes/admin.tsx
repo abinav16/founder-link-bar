@@ -913,6 +913,33 @@ function BroadcastPanel() {
           </div>
 
           <div>
+            <label className="text-[11px] uppercase tracking-[0.15em] text-black/40 font-semibold">Daily batch</label>
+            <div className="mt-1.5 grid grid-cols-[1fr_auto] gap-2">
+              <select value={batchIndex} onChange={(e) => setBatchIndex(Number(e.target.value))}
+                disabled={!batchSize}
+                className="w-full rounded-lg border border-black/12 bg-white px-3 py-2 text-sm text-black focus:border-black focus:outline-none disabled:opacity-50">
+                {Array.from({ length: batches }, (_, i) => i + 1).map((n) => {
+                  const start = (n - 1) * batchSize + 1;
+                  const end = Math.min(n * batchSize, total ?? n * batchSize);
+                  return <option key={n} value={n}>{`Batch ${n} of ${batches} · ${start}–${end}`}</option>;
+                })}
+              </select>
+              <select value={batchSize} onChange={(e) => setBatchSize(Number(e.target.value))}
+                className="rounded-lg border border-black/12 bg-white px-3 py-2 text-sm text-black focus:border-black focus:outline-none">
+                {[50, 80, 100, 150].map((n) => <option key={n} value={n}>{n} / day</option>)}
+                <option value={0}>No limit</option>
+              </select>
+            </div>
+            <div className="mt-1.5 text-[11px] text-black/40">
+              {total === null
+                ? "—"
+                : batchSize
+                  ? `${total} in this segment · sending batch ${batchIndex} today, pick the next batch tomorrow.`
+                  : `${total} in this segment · sending everyone at once.`}
+            </div>
+          </div>
+
+          <div>
             <label className="text-[11px] uppercase tracking-[0.15em] text-black/40 font-semibold">Subject</label>
             <input value={subject} onChange={(e) => setSubject(e.target.value)} maxLength={140} placeholder="e.g. Your StartupBar spot is waiting"
               className="mt-1.5 w-full rounded-lg border border-black/12 bg-white px-3 py-2 text-sm text-black placeholder:text-black/45 focus:border-black focus:outline-none" />
