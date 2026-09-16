@@ -519,7 +519,7 @@ serve(async (req) => {
     // Featured slots are a recurring subscription product in Dodo; listings are
     // a one-time payment. The two use different endpoints and return different
     // id fields on the redirect.
-    const isSubscription = kind === "featured";
+    const isSubscription = kind === "featured" || kind === "supporter";
     const sep = return_url.includes("?") ? "&" : "?";
     const finalReturnUrl = isSubscription
       ? `${return_url}${sep}subscription_id={subscription_id}`
