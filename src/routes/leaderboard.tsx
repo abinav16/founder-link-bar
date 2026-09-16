@@ -372,9 +372,9 @@ function LeaderboardPage() {
                                 name={row.name}
                                 logoUrl={row.logo_url}
                                 size={28}
-                                className={`rounded-lg mb-2 bg-white ${originalIndex === 0 ? "ring-2 ring-white/20" : "ring-1 ring-black/8"}`}
+                                className={`rounded-lg mb-2 bg-white ${dark ? "ring-2 ring-white/20" : "ring-1 ring-black/8"}`}
                               />
-                              <p className={`font-semibold text-xs truncate w-full ${originalIndex === 0 ? "text-white" : "text-black"}`}>
+                              <p className={`font-semibold text-xs truncate w-full ${dark ? "text-white" : "text-black"}`}>
                                 {row.name}
                               </p>
                             </>
@@ -394,34 +394,34 @@ function LeaderboardPage() {
 
                         {row.id === myId && (
                           <span className={`mt-0.5 rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase ${
-                            originalIndex === 0 ? "bg-white/20 text-white" : "bg-black text-white"
+                            dark ? "bg-white/20 text-white" : "bg-black text-white"
                           }`}>You</span>
                         )}
                         <div className="mt-2 w-full">
-                          <div className={`text-xl font-bold tabular-nums ${originalIndex === 0 ? "text-white" : "text-black"}`}>
+                          <div className={`text-xl font-bold tabular-nums ${dark ? "text-white" : "text-black"}`}>
                             {primaryMetric(row).toLocaleString()}
                           </div>
-                          <div className={`text-[8px] uppercase tracking-widest font-semibold mt-0.5 ${originalIndex === 0 ? "text-white/40" : "text-black/30"}`}>
+                          <div className={`text-[8px] uppercase tracking-widest font-semibold mt-0.5 ${dark ? "text-white/40" : "text-black/30"}`}>
                             {(tab === "received" ? "impressions" : "given") +
                               (range === "today" ? " today" : range === "week" ? " · 7d" : "")}
                           </div>
                         </div>
-                        <div className={`mt-2 pt-2 border-t w-full flex gap-3 justify-center ${originalIndex === 0 ? "border-white/10" : "border-black/6"}`}>
+                        <div className={`mt-2 pt-2 border-t w-full flex gap-3 justify-center ${dark ? "border-white/10" : "border-black/6"}`}>
                           {tab === "received" ? (
                             <>
                               <div>
-                                <div className={`text-xs font-semibold ${originalIndex === 0 ? "text-white" : "text-black"}`}>{clicksMetric(row)}</div>
-                                <div className={`text-[8px] uppercase tracking-wide ${originalIndex === 0 ? "text-white/35" : "text-black/30"}`}>Clicks</div>
+                                <div className={`text-xs font-semibold ${dark ? "text-white" : "text-black"}`}>{clicksMetric(row)}</div>
+                                <div className={`text-[8px] uppercase tracking-wide ${dark ? "text-white/35" : "text-black/30"}`}>Clicks</div>
                               </div>
                               <div>
-                                <div className={`text-xs font-semibold ${originalIndex === 0 ? "text-white" : "text-black"}`}>{ctr(row)}</div>
-                                <div className={`text-[8px] uppercase tracking-wide ${originalIndex === 0 ? "text-white/35" : "text-black/30"}`}>CTR</div>
+                                <div className={`text-xs font-semibold ${dark ? "text-white" : "text-black"}`}>{ctr(row)}</div>
+                                <div className={`text-[8px] uppercase tracking-wide ${dark ? "text-white/35" : "text-black/30"}`}>CTR</div>
                               </div>
                             </>
                           ) : (
                             <div>
-                              <div className={`text-xs font-semibold ${originalIndex === 0 ? "text-white" : "text-black"}`}>{receivedMetric(row)}</div>
-                              <div className={`text-[8px] uppercase tracking-wide ${originalIndex === 0 ? "text-white/35" : "text-black/30"}`}>Received</div>
+                              <div className={`text-xs font-semibold ${dark ? "text-white" : "text-black"}`}>{receivedMetric(row)}</div>
+                              <div className={`text-[8px] uppercase tracking-wide ${dark ? "text-white/35" : "text-black/30"}`}>Received</div>
                             </div>
                           )}
                         </div>
@@ -430,7 +430,7 @@ function LeaderboardPage() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className={`mt-2 inline-flex items-center gap-1 text-[10px] font-semibold transition-opacity hover:opacity-70 ${
-                            originalIndex === 0 ? "text-white/60" : "text-black/40"
+                            dark ? "text-white/60" : "text-black/40"
                           }`}
                         >
                           Visit site <ExternalLink className="h-2.5 w-2.5" />
