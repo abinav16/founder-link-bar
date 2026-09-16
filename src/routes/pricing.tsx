@@ -126,7 +126,16 @@ function PricingPage() {
       <header className="border-b border-black/8">
         <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-6">
           <Logo />
-          <Link to="/" className="text-sm text-black/40 hover:text-black transition-colors">← Back</Link>
+          <button
+            type="button"
+            onClick={() => {
+              if (window.history.length > 1) window.history.back();
+              else window.location.href = "/";
+            }}
+            className="text-sm text-black/40 hover:text-black transition-colors"
+          >
+            ← Back
+          </button>
         </div>
       </header>
 
@@ -273,7 +282,7 @@ function PricingPage() {
         </div>
 
         {/* Supporter membership */}
-        <div className="mt-4 rounded-xl border border-black/10 p-6">
+        <div id="supporter" className="mt-4 scroll-mt-24 rounded-xl border border-black/10 p-6">
           <div className="flex flex-wrap items-baseline justify-between gap-3">
             <div>
               <div className="text-xs font-medium uppercase tracking-wide text-black/40">Supporter membership — no bar on your site</div>
