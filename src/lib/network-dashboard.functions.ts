@@ -134,6 +134,9 @@ export const getNetworkDashboard = createServerFn({ method: "GET" }).handler(
       founder_name: founderMap[s.user_id]?.name ?? null,
       founder_avatar_url: founderMap[s.user_id]?.avatar ?? null,
       sponsored: Boolean(s.sponsored),
+      supporter:
+        s.membership_mode === "supporter" &&
+        (!s.supporter_until || new Date(s.supporter_until).getTime() > Date.now()),
     }));
 
 
