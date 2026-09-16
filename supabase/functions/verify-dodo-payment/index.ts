@@ -40,7 +40,7 @@ serve(async (req) => {
       });
     }
 
-    const mode = "live";
+    const mode = Deno.env.get("DODO_MODE") === "live" ? "live" : "test";
     const baseUrl = mode === "test" ? "https://test.dodopayments.com" : "https://live.dodopayments.com";
 
     const res = await fetch(`${baseUrl}/payments/${payment_id}`, {
