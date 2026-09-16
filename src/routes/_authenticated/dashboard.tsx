@@ -901,10 +901,17 @@ function DashboardPage() {
                     </span>
                   )}
                   {installStatus === "disconnected" && (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-[11px] font-medium text-red-600">
-                      <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
-                      Not detected
-                    </span>
+                    isSupporter ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-black/[0.03] px-2.5 py-1 text-[11px] font-medium text-black/45">
+                        <span className="h-1.5 w-1.5 rounded-full bg-black/25" />
+                        Not installed — optional
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-[11px] font-medium text-red-600">
+                        <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                        Not detected
+                      </span>
+                    )
                   )}
                   </div>
                 </div>
