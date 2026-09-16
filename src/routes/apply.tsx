@@ -1088,7 +1088,7 @@ function Apply() {
           </h1>
           <p className="mt-3 text-[15px] leading-relaxed text-black/45">
             {isSupporter
-              ? <>One invisible line. It shows <strong>nothing</strong> on your site — it only unlocks your visitor map, visits and click stats. Skip it or add it later.</>
+               ? <>One invisible line. It shows nothing on your site it only unlocks your visitor map, visits and click stats. Skip it or add it later.</>
               : <>Paste this once inside the <code className="rounded bg-black/8 px-1.5 py-0.5 font-mono text-sm">&lt;head&gt;</code> of your site, then verify it's live.</>}
           </p>
 
