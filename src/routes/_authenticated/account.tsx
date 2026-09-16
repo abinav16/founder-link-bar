@@ -116,7 +116,7 @@ function MembershipSection({ startup, onUpdate }: {
               className="rounded-lg bg-black px-3.5 py-2 text-[11px] font-medium text-white hover:opacity-90 transition-all disabled:opacity-60">
               {busy ? "Opening checkout…" : "Go Bar Free"}
             </button>
-            <a href="/pricing" className="text-[11px] font-medium text-black/45 hover:text-black transition-all">
+            <a href="/pricing#supporter" className="text-[11px] font-medium text-black/45 hover:text-black transition-all">
               How it works
             </a>
           </div>
