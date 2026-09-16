@@ -73,6 +73,7 @@ function StartupCard({ startup, onUpdate, onDelete }: {
   onDelete: (id: string) => void;
 }) {
   const editPending = startup.edit_status === "pending";
+  const isSupporterMode = startup.membership_mode === "supporter";
   const [expanded, setExpanded] = useState(false);
   const [sName, setSName] = useState(startup.pending_name ?? startup.name);
   const [sDesc, setSDesc] = useState(startup.pending_description ?? startup.description);
