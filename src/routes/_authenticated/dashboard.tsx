@@ -787,6 +787,48 @@ function DashboardPage() {
               </div>
             )}
 
+            {needsInstall && (
+              <div className="relative overflow-hidden rounded-2xl border border-black/10 bg-[radial-gradient(120%_120%_at_0%_0%,#1b1b1b_0%,#000_55%)] p-6 text-white shadow-sm sm:p-8">
+                <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-white/[0.06] blur-2xl" />
+                <div className="relative">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.06] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/70">
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+                    One step left
+                  </span>
+                  <h2 className="mt-4 text-[22px] font-semibold leading-tight tracking-tight sm:text-[26px]">
+                    Your stats are at zero because the bar isn&rsquo;t live yet
+                  </h2>
+                  <p className="mt-2 max-w-xl text-sm leading-relaxed text-white/60">
+                    You&rsquo;re approved — the last step is pasting one line of code on {startup.name}. The moment it&rsquo;s live, your listing starts rotating across the network and impressions, clicks and your visitor map begin filling in.
+                  </p>
+                  <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                    <div className="min-w-0 overflow-x-auto rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2.5">
+                      <code className="whitespace-nowrap font-mono text-[11px] text-white/70">{snippet}</code>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <button
+                        onClick={copy}
+                        className="sb-press inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2.5 text-xs font-semibold text-black transition hover:bg-white/90"
+                      >
+                        {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                        {copied ? "Copied!" : "Copy script"}
+                      </button>
+                      <button
+                        onClick={() => checkInstall(startup.website_url)}
+                        className="rounded-xl border border-white/15 px-4 py-2.5 text-xs font-medium text-white/70 transition hover:border-white/35 hover:text-white"
+                      >
+                        Check now
+                      </button>
+                    </div>
+                  </div>
+                  <p className="mt-3 text-[11px] text-white/35">
+                    Paste it in the <code className="rounded bg-white/10 px-1 py-0.5 font-mono">&lt;head&gt;</code> of your site, publish, then hit Check now.
+                  </p>
+                </div>
+              </div>
+            )}
+
+
             <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
               {RANGE_OPTIONS.map((opt) => (
                 <button
