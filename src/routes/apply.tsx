@@ -133,6 +133,12 @@ const supporterSlides = [
     body: "Add one invisible line of code for your visitor map and on-site stats—or skip it and keep your listing active.",
   },
   {
+    icon: Sparkles,
+    eyebrow: "You stand out",
+    title: "Your listing gets the gold highlight.",
+    body: "Supporters glow gold on the network page and the leaderboard, the same highlight featured startups get.",
+  },
+  {
     icon: RefreshCw,
     eyebrow: "Always flexible",
     title: "Change your mind at any time.",
@@ -1131,6 +1137,7 @@ function Apply() {
                     ? [
                         "Your startup will appear across the network at an average member's share.",
                         "Nothing is shown on your website: No bar and no layout changes.",
+                        "Your listing is highlighted in gold on the network page and the leaderboard.",
                         "The optional analytics code unlocks your visitor map and on-site stats. Your listing works without it.",
                       ]
                     : [

@@ -292,12 +292,14 @@ function PricingPage() {
           <p className="mt-4 text-sm leading-relaxed text-black/60">
             For founders who want to be listed without showing the bar on their own site. You pay instead of
             contributing impressions, and you are shown across the network at an average member&rsquo;s share —
-            never more, never starved. It does not buy extra reach, featured spots or leaderboard position.
+            never more, never starved. Your listing is highlighted in gold across the network page and the
+            leaderboard, the same visual treatment featured startups get. It does not buy extra reach, featured
+            spots or leaderboard position.
           </p>
           <ul className="mt-5 grid gap-2 text-sm text-black/65 sm:grid-cols-2">
             <li className="flex gap-2"><Check />Nothing is shown to your visitors — no bar, no layout change</li>
             <li className="flex gap-2"><Check />Full listing, profile page, leaderboard presence and dashboard</li>
-            <li className="flex gap-2"><Check />A subtle Supporter badge on your listing</li>
+            <li className="flex gap-2"><Check />Gold highlight on the network page and the leaderboard, with a Supporter tag</li>
             <li className="flex gap-2"><Check />Optional one-line analytics code unlocks your own visitor map and on-site stats</li>
             <li className="flex gap-2"><Check />Switch back to the free bar at any time</li>
             <li className="flex gap-2"><Check />Renews yearly until you cancel. No refunds; your paid year keeps running</li>
