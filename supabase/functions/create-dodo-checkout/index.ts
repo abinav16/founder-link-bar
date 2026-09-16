@@ -36,8 +36,9 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    // LIVE MODE: real payments. Switch to "test" only for sandbox testing.
-    const mode: "test" | "live" = "live";
+    // TEST MODE: sandbox payments. Set DODO_MODE=live in secrets for real payments.
+    const mode: "test" | "live" =
+      Deno.env.get("DODO_MODE") === "live" ? "live" : "test";
 
 
 
