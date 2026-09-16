@@ -624,7 +624,7 @@ function Apply() {
     window.location.href = data.payment_link;
   }
 
-  // Supporter membership: $1,499/year annual subscription. The listing row is
+  // Supporter membership: $1,999/year annual subscription. The listing row is
   // created after the buyer returns, then the subscription is confirmed and
   // stamped onto it.
   async function handleSupporterPayment() {
@@ -918,7 +918,7 @@ function Apply() {
                   </div>
                   {isSupporter ? (
                     <div className="mt-3 rounded-xl border border-black/10 bg-black/[0.02] p-4">
-                      <p className="text-sm font-medium text-black">Supporter — $1,499 / year</p>
+                      <p className="text-sm font-medium text-black">Supporter — $1,999 / year</p>
                       <ul className="mt-2 space-y-1 text-xs leading-relaxed text-black/50">
                         <li>· No bar on your site. Nothing is shown to your visitors.</li>
                         <li>· You still appear across the network at an average member's share — never more, never starved.</li>
@@ -941,7 +941,7 @@ function Apply() {
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </button>
                 <p className="text-center text-xs text-black/30">
-                  {isSupporter ? "$1,499 / year · Cancel anytime · We review within 24h" : "Free forever · We review within 24h · No commitment"}
+                  {isSupporter ? "$1,999 / year · Cancel anytime · We review within 24h" : "Free forever · We review within 24h · No commitment"}
                 </p>
               </form>
             </div>
@@ -1227,7 +1227,7 @@ function Apply() {
                 : paymentLoading
                 ? "Redirecting to payment…"
                 : isSupporter
-                ? "Pay $1,499 / year & submit →"
+                ? "Pay $1,999 / year & submit →"
                 : needsPayment
                 ? "Pay $9.99 & submit →"
                 : "Submit application";
