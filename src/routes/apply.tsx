@@ -1056,7 +1056,7 @@ function Apply() {
                   {(isSupporter
                     ? [
                         "Your startup will appear across the network at an average member's share.",
-                        "Nothing is shown on your website — no bar and no layout changes.",
+                        "Nothing is shown on your website: No bar and no layout changes.",
                         "The optional analytics code unlocks your visitor map and on-site stats. Your listing works without it.",
                       ]
                     : [
