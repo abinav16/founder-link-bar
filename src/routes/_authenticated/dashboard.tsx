@@ -818,7 +818,38 @@ function DashboardPage() {
               </div>
             </div>
 
-            <LiveVisitorMap scopeStartupId={startup.id} title="Live visitors on your startup" startupName={startup.name} startupLogoUrl={startup.logo_url ?? undefined} />
+            {isSupporter && !startup.tracking_last_seen_at ? (
+              <div className="relative overflow-hidden rounded-xl border border-black/8 bg-white">
+                <div className="pointer-events-none select-none blur-[5px] opacity-60" aria-hidden="true">
+                  <LiveVisitorMap scopeStartupId={startup.id} title="Live visitors on your startup" startupName={startup.name} startupLogoUrl={startup.logo_url ?? undefined} />
+                </div>
+                <div className="absolute inset-0 grid place-items-center bg-white/55 px-6 text-center">
+                  <div className="max-w-sm">
+                    <p className="text-sm font-semibold text-black">Your visitor map is locked</p>
+                    <p className="mt-1 text-xs text-black/50">
+                      Paste one line of code on your site to unlock your visitor map and on-site stats. Nothing is shown to your visitors.
+                    </p>
+                    <div className="mt-3 flex items-center justify-center gap-2">
+                      <button
+                        onClick={copy}
+                        className="sb-press inline-flex items-center gap-1.5 rounded-lg bg-black px-3 py-2 text-xs font-medium text-white transition hover:bg-black/85"
+                      >
+                        {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                        {copied ? "Copied!" : "Copy snippet"}
+                      </button>
+                      <button
+                        onClick={() => checkInstall(startup.website_url)}
+                        className="rounded-lg border border-black/10 px-3 py-2 text-xs font-medium text-black/60 transition hover:border-black/25 hover:text-black"
+                      >
+                        Check now
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <LiveVisitorMap scopeStartupId={startup.id} title="Live visitors on your startup" startupName={startup.name} startupLogoUrl={startup.logo_url ?? undefined} />
+            )}
 
             {(breakdown.countries.length > 0 || breakdown.topReferrers.length > 0) && (
               <div className="space-y-3">
