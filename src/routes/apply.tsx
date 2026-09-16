@@ -709,7 +709,8 @@ function Apply() {
         if (updErr) { toast.error(updErr.message); return; }
       } else {
         // If this is a paid additional listing, atomically consume one prepaid slot first.
-        if (existingCount >= 1) {
+        // Supporter memberships are paid separately, so they skip this gate.
+        if (existingCount >= 1 && !supporterSub) {
           const { data: consumedId, error: consumeErr } = await supabase.rpc(
             "consume_prepaid_listing",
             { _user_id: user_id },
