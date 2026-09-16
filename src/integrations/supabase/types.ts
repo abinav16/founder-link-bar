@@ -652,6 +652,7 @@ export type Database = {
           id: string
           iframe_blocked: boolean | null
           logo_url: string | null
+          membership_mode: string
           name: string
           pending_description: string | null
           pending_name: string | null
@@ -660,6 +661,10 @@ export type Database = {
           sponsored: boolean
           status: Database["public"]["Enums"]["startup_status"]
           strike_count: number
+          supporter_cancel_at_period_end: boolean
+          supporter_subscription_id: string | null
+          supporter_until: string | null
+          tracking_last_seen_at: string | null
           updated_at: string
           user_id: string
           warn_expires_at: string | null
@@ -683,6 +688,7 @@ export type Database = {
           id?: string
           iframe_blocked?: boolean | null
           logo_url?: string | null
+          membership_mode?: string
           name: string
           pending_description?: string | null
           pending_name?: string | null
@@ -691,6 +697,10 @@ export type Database = {
           sponsored?: boolean
           status?: Database["public"]["Enums"]["startup_status"]
           strike_count?: number
+          supporter_cancel_at_period_end?: boolean
+          supporter_subscription_id?: string | null
+          supporter_until?: string | null
+          tracking_last_seen_at?: string | null
           updated_at?: string
           user_id: string
           warn_expires_at?: string | null
@@ -714,6 +724,7 @@ export type Database = {
           id?: string
           iframe_blocked?: boolean | null
           logo_url?: string | null
+          membership_mode?: string
           name?: string
           pending_description?: string | null
           pending_name?: string | null
@@ -722,6 +733,10 @@ export type Database = {
           sponsored?: boolean
           status?: Database["public"]["Enums"]["startup_status"]
           strike_count?: number
+          supporter_cancel_at_period_end?: boolean
+          supporter_subscription_id?: string | null
+          supporter_until?: string | null
+          tracking_last_seen_at?: string | null
           updated_at?: string
           user_id?: string
           warn_expires_at?: string | null
@@ -778,6 +793,7 @@ export type Database = {
           id: string
           iframe_blocked: boolean | null
           logo_url: string | null
+          membership_mode: string
           name: string
           pending_description: string | null
           pending_name: string | null
@@ -786,6 +802,10 @@ export type Database = {
           sponsored: boolean
           status: Database["public"]["Enums"]["startup_status"]
           strike_count: number
+          supporter_cancel_at_period_end: boolean
+          supporter_subscription_id: string | null
+          supporter_until: string | null
+          tracking_last_seen_at: string | null
           updated_at: string
           user_id: string
           warn_expires_at: string | null
@@ -899,6 +919,7 @@ export type Database = {
           id: string
           iframe_blocked: boolean | null
           logo_url: string | null
+          membership_mode: string
           name: string
           pending_description: string | null
           pending_name: string | null
@@ -907,6 +928,10 @@ export type Database = {
           sponsored: boolean
           status: Database["public"]["Enums"]["startup_status"]
           strike_count: number
+          supporter_cancel_at_period_end: boolean
+          supporter_subscription_id: string | null
+          supporter_until: string | null
+          tracking_last_seen_at: string | null
           updated_at: string
           user_id: string
           warn_expires_at: string | null
@@ -928,6 +953,7 @@ export type Database = {
       get_startup_rank: { Args: { _startup_id: string }; Returns: number }
       is_approved_host: { Args: { _id: string }; Returns: boolean }
       is_approved_startup: { Args: { _id: string }; Returns: boolean }
+      is_supporter: { Args: { _id: string }; Returns: boolean }
       move_to_dlq: {
         Args: {
           dlq_name: string
