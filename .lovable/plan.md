@@ -115,8 +115,10 @@ plainly on the apply page that the snippet is for *their* stats, not for earning
 
 1. **Apply page, step 1** — a third choice beside "bar at top / bar at bottom":
    "Supporter — no bar on my site ($1499/year)". Picking it swaps step 2 from the embed
-   snippet to the tracking snippet and adds a Dodo checkout before submission.
-2. **Dashboard** — a Mode card showing current mode, renewal date, and a switch control.
+   snippet to the optional tracking snippet (with a "Skip for now" link) and adds a Dodo
+   checkout before submission.
+2. **Dashboard** — a Mode card showing current mode, renewal date, and a switch control,
+   plus the locked-stats state when no tracking code is installed.
 3. **Account** — cancel auto-renewal, same pattern as featured slots.
 4. **Network + profile** — subtle Supporter badge.
 5. **Pricing + FAQ** — a Supporter section explaining the deal and that it buys no
@@ -138,6 +140,11 @@ plainly on the apply page that the snippet is for *their* stats, not for earning
   pattern as featured slots.
 - `public_featured_slots`-style RPCs untouched; network/profile reads gain a
   `supporter` boolean.
+- Tracking install state: reuse `widget_last_heartbeat_at` (or a parallel
+  `tracking_last_seen_at`) as the unlock signal — dashboard panels render locked when it
+  is null or stale, unlocked otherwise. `verify-install.ts` gains a track-mode marker so
+  "Check now" works for the snippet too. No warning, strike or status change is triggered
+  by a missing tracking snippet.
 
 ## Suggested rollout
 
