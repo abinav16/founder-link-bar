@@ -596,6 +596,12 @@ function DashboardPage() {
       : `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startup.id}"></script>`
     : "";
 
+  // Approved widget-mode listings only start collecting data once the script
+  // is on their site. Until then every number is a truthful zero — say why.
+  const needsInstall =
+    !!startup && startup.status === "approved" && !isSupporter && installStatus === "disconnected";
+  const mapLocked = needsInstall || (isSupporter && !startup?.tracking_last_seen_at);
+
   const ctr = stats.impressions > 0
     ? ((stats.clicks / stats.impressions) * 100).toFixed(1)
     : "0.0";
@@ -781,6 +787,48 @@ function DashboardPage() {
               </div>
             )}
 
+            {needsInstall && (
+              <div className="relative overflow-hidden rounded-2xl border border-black/10 bg-[radial-gradient(120%_120%_at_0%_0%,#1b1b1b_0%,#000_55%)] p-6 text-white shadow-sm sm:p-8">
+                <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-white/[0.06] blur-2xl" />
+                <div className="relative">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.06] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/70">
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+                    One step left
+                  </span>
+                  <h2 className="mt-4 text-[22px] font-semibold leading-tight tracking-tight sm:text-[26px]">
+                    Your stats are at zero because the bar isn&rsquo;t live yet
+                  </h2>
+                  <p className="mt-2 max-w-xl text-sm leading-relaxed text-white/60">
+                    You&rsquo;re approved — the last step is pasting one line of code on {startup.name}. The moment it&rsquo;s live, your listing starts rotating across the network and impressions, clicks and your visitor map begin filling in.
+                  </p>
+                  <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                    <div className="min-w-0 overflow-x-auto rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2.5">
+                      <code className="whitespace-nowrap font-mono text-[11px] text-white/70">{snippet}</code>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <button
+                        onClick={copy}
+                        className="sb-press inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2.5 text-xs font-semibold text-black transition hover:bg-white/90"
+                      >
+                        {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                        {copied ? "Copied!" : "Copy script"}
+                      </button>
+                      <button
+                        onClick={() => checkInstall(startup.website_url)}
+                        className="rounded-xl border border-white/15 px-4 py-2.5 text-xs font-medium text-white/70 transition hover:border-white/35 hover:text-white"
+                      >
+                        Check now
+                      </button>
+                    </div>
+                  </div>
+                  <p className="mt-3 text-[11px] text-white/35">
+                    Paste it in the <code className="rounded bg-white/10 px-1 py-0.5 font-mono">&lt;head&gt;</code> of your site, publish, then hit Check now.
+                  </p>
+                </div>
+              </div>
+            )}
+
+
             <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
               {RANGE_OPTIONS.map((opt) => (
                 <button
@@ -818,16 +866,20 @@ function DashboardPage() {
               </div>
             </div>
 
-            {isSupporter && !startup.tracking_last_seen_at ? (
+            {mapLocked ? (
               <div className="relative overflow-hidden rounded-xl border border-black/8 bg-white">
                 <div className="pointer-events-none select-none blur-[5px] opacity-60" aria-hidden="true">
                   <LiveVisitorMap scopeStartupId={startup.id} title="Live visitors on your startup" startupName={startup.name} startupLogoUrl={startup.logo_url ?? undefined} />
                 </div>
                 <div className="absolute inset-0 grid place-items-center bg-white/55 px-6 text-center">
                   <div className="max-w-sm">
-                    <p className="text-sm font-semibold text-black">Your visitor map is locked</p>
+                    <p className="text-sm font-semibold text-black">
+                      {needsInstall ? "Your visitor map turns on with the script" : "Your visitor map is locked"}
+                    </p>
                     <p className="mt-1 text-xs text-black/50">
-                      Paste one line of code on your site to unlock your visitor map and on-site stats. Nothing is shown to your visitors.
+                      {needsInstall
+                        ? "We can't see visitors on your site until the StartupBar script is live there. Paste it once and this fills in within minutes."
+                        : "Paste one line of code on your site to unlock your visitor map and on-site stats. Nothing is shown to your visitors."}
                     </p>
                     <div className="mt-3 flex items-center justify-center gap-2">
                       <button
@@ -1037,7 +1089,9 @@ function DashboardPage() {
                 ) : (
                   <p className="px-5 py-6 text-sm text-black/35 sm:px-6">
                     {startup.status === "approved"
-                      ? "Nothing shown yet — this fills in as visitors land on your site."
+                      ? needsInstall
+                        ? "Nothing yet — this fills in once the script is live on your site."
+                        : "Nothing shown yet — this fills in as visitors land on your site."
                       : "Will appear once your startup is approved."}
                   </p>
                 )}
@@ -1075,7 +1129,9 @@ function DashboardPage() {
                     </ul>
                   ) : (
                     <p className="px-5 py-6 text-sm text-black/35 sm:px-6">
-                      No placements in the last 7 days yet.
+                      {needsInstall
+                        ? "No placements yet — your listing starts rotating on other members' sites once your script is live."
+                        : "No placements in the last 7 days yet."}
                     </p>
                   )}
               </div>
