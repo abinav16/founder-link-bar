@@ -36,7 +36,7 @@ const schema = z.object({
   founder_quote: z.string().trim().max(280).optional(),
 });
 
-function BarPreview({ name, url, desc, placement = "top" }: { name: string; url: string; desc: string; placement?: "top" | "bottom" }) {
+function BarPreview({ name, url, desc, placement = "top", noBar = false }: { name: string; url: string; desc: string; placement?: "top" | "bottom"; noBar?: boolean }) {
   const displayName = name || "Your Startup";
   const displayDesc = desc || "Your one-liner goes here";
   const favicon = url ? `https://www.google.com/s2/favicons?domain=${url}&sz=32` : null;
@@ -77,15 +77,15 @@ function BarPreview({ name, url, desc, placement = "top" }: { name: string; url:
     </div>
   );
   return (
-    <div className="overflow-hidden rounded-xl border border-black/10 bg-white shadow-[0_8px_40px_-12px_rgba(0,0,0,0.12)]">
+    <div className="relative overflow-hidden rounded-xl border border-black/10 bg-white shadow-[0_8px_40px_-12px_rgba(0,0,0,0.12)]">
       <div className="flex h-8 items-center gap-1.5 border-b border-black/6 bg-black/[0.02] px-3">
         <div className="h-2 w-2 rounded-full bg-red-400/70" />
         <div className="h-2 w-2 rounded-full bg-yellow-400/70" />
         <div className="h-2 w-2 rounded-full bg-green-400/70" />
         <div className="ml-2 truncate text-[10px] text-black/25">{previewHost}</div>
       </div>
-      {placement === "top" && bar}
-      <div className="h-[260px] w-full overflow-hidden">
+      {!noBar && placement === "top" && bar}
+      <div className="relative h-[260px] w-full overflow-hidden">
         {previewUrl ? (
           <SitePreviewSurface url={previewUrl} heightCls="h-[260px]" />
         ) : (
@@ -97,8 +97,18 @@ function BarPreview({ name, url, desc, placement = "top" }: { name: string; url:
             <div className="h-3 w-4/6 rounded-full bg-black/5" />
           </div>
         )}
+        {noBar && (
+          <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden" aria-hidden="true">
+            <div className="sb-no-bar-label absolute inset-0 flex items-center justify-center">
+              <span className="rounded-full border border-black/10 bg-white/95 px-6 py-3 text-lg font-bold text-black shadow-lg backdrop-blur-sm">No Bar</span>
+            </div>
+            <div className="sb-confetti-burst absolute inset-0">
+              {Array.from({ length: 18 }, (_, index) => <span key={index} className="sb-confetti-piece" />)}
+            </div>
+          </div>
+        )}
       </div>
-      {placement === "bottom" && bar}
+      {!noBar && placement === "bottom" && bar}
     </div>
   );
 }
@@ -913,7 +923,7 @@ function Apply() {
                       aria-pressed={isSupporter}
                       className={`rounded-md px-4 py-1.5 text-sm font-medium transition ${isSupporter ? "bg-white text-black shadow-sm" : "text-black/45 hover:text-black/70"}`}
                     >
-                      No bar — Supporter
+                      No Bar
                     </button>
                   </div>
                   {isSupporter ? (
@@ -951,10 +961,20 @@ function Apply() {
                 <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Live preview</span>
                 <p className="mt-1.5 text-sm text-black/40">This is how your startup will appear on other founders' sites.</p>
                 <div className="mt-5">
-                  <BarPreview name={name} url={url} desc={desc} placement={placement} />
+                  <BarPreview key={isSupporter ? "no-bar" : placement} name={name} url={url} desc={desc} placement={placement} noBar={isSupporter} />
                 </div>
                 <div className="mt-8 space-y-4 border-t border-black/8 pt-8">
-                  {["Your bar will show on sites across the network as soon as you're approved.", "In return, you'll show one other startup on your site — completely automatic.", "Cancel anytime by removing the script tag. No lock-in, no fees."].map((t) => (
+                  {(isSupporter
+                    ? [
+                        "Your startup will appear across the network at an average member's share.",
+                        "Nothing is shown on your website — no bar and no layout changes.",
+                        "The optional analytics code unlocks your visitor map and on-site stats. Your listing works without it.",
+                      ]
+                    : [
+                        "Your bar will show on sites across the network as soon as you're approved.",
+                        "In return, you'll show one other startup on your site — completely automatic.",
+                        "Cancel anytime by removing the script tag. No lock-in, no fees.",
+                      ]).map((t) => (
                     <div key={t} className="flex items-start gap-3">
                       <div className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
                       <p className="text-[13px] leading-relaxed text-black/45">{t}</p>
