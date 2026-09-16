@@ -596,6 +596,12 @@ function DashboardPage() {
       : `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startup.id}"></script>`
     : "";
 
+  // Approved widget-mode listings only start collecting data once the script
+  // is on their site. Until then every number is a truthful zero — say why.
+  const needsInstall =
+    !!startup && startup.status === "approved" && !isSupporter && installStatus === "disconnected";
+  const mapLocked = needsInstall || (isSupporter && !startup?.tracking_last_seen_at);
+
   const ctr = stats.impressions > 0
     ? ((stats.clicks / stats.impressions) * 100).toFixed(1)
     : "0.0";
