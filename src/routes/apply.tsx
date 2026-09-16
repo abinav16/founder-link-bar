@@ -952,8 +952,23 @@ function Apply() {
   }
 
 
+  const finalizing = verifyingPayment || autoSubmitPending || (loading && (hasPrepaid || paidNeedsForm));
+
   return (
     <div className="min-h-dvh bg-white text-black">
+      {finalizing && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-white/92 px-6 backdrop-blur-sm">
+          <div className="w-full max-w-sm text-center">
+            <div className="mx-auto mb-5 h-8 w-8 animate-spin rounded-full border-2 border-black/15 border-t-black" />
+            <p className="text-lg font-semibold tracking-tight">
+              {verifyingPayment ? "Confirming your payment…" : "Finishing your application…"}
+            </p>
+            <p className="mt-2 text-sm text-black/55">
+              Payment received. Hold on a few seconds — we're submitting your listing and taking you to your dashboard. Don't close this tab.
+            </p>
+          </div>
+        </div>
+      )}
       <header className="sticky top-0 z-40 border-b border-black/8 bg-white/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
           <Link to="/" className="flex items-center gap-2 sb-press">
