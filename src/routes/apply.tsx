@@ -895,28 +895,54 @@ function Apply() {
                   </div>
                 </Field>
                 <Field label="Bar placement" hint="Where the bar sits on your own site. You can change this anytime in your account.">
-                  <div className="inline-flex rounded-lg border border-black/12 bg-black/[0.02] p-1">
+                  <div className="inline-flex flex-wrap rounded-lg border border-black/12 bg-black/[0.02] p-1">
                     {(["top", "bottom"] as const).map((p) => (
                       <button
                         key={p}
                         type="button"
-                        onClick={() => setPlacement(p)}
-                        aria-pressed={placement === p}
-                        className={`rounded-md px-4 py-1.5 text-sm font-medium capitalize transition ${placement === p ? "bg-white text-black shadow-sm" : "text-black/45 hover:text-black/70"}`}
+                        onClick={() => { setPlacement(p); setMode("widget"); }}
+                        aria-pressed={!isSupporter && placement === p}
+                        className={`rounded-md px-4 py-1.5 text-sm font-medium capitalize transition ${!isSupporter && placement === p ? "bg-white text-black shadow-sm" : "text-black/45 hover:text-black/70"}`}
                       >
                         {p}
                       </button>
                     ))}
+                    <button
+                      type="button"
+                      onClick={() => setMode("supporter")}
+                      aria-pressed={isSupporter}
+                      className={`rounded-md px-4 py-1.5 text-sm font-medium transition ${isSupporter ? "bg-white text-black shadow-sm" : "text-black/45 hover:text-black/70"}`}
+                    >
+                      No bar — Supporter
+                    </button>
                   </div>
-                  <p className="mt-2 text-xs leading-relaxed text-black/40">
-                    Top placement earns you more free impressions from the network. Our reciprocity algorithm rewards the most visible bars with more visibility in return. Bottom is still supported if it fits your layout.
-                  </p>
+                  {isSupporter ? (
+                    <div className="mt-3 rounded-xl border border-black/10 bg-black/[0.02] p-4">
+                      <p className="text-sm font-medium text-black">Supporter — $1,499 / year</p>
+                      <ul className="mt-2 space-y-1 text-xs leading-relaxed text-black/50">
+                        <li>· No bar on your site. Nothing is shown to your visitors.</li>
+                        <li>· You still appear across the network at an average member's share — never more, never starved.</li>
+                        <li>· Full profile, leaderboard presence, dashboard and a subtle Supporter badge.</li>
+                        <li>· Cancel any time; your paid year keeps running. No refunds.</li>
+                        <li>· You can switch back to showing the bar (free) whenever you like.</li>
+                      </ul>
+                      <p className="mt-2 text-xs text-black/40">
+                        Next step is one optional line of analytics code — it shows nothing on your site and only unlocks your own visitor stats.
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-xs leading-relaxed text-black/40">
+                      Top placement earns you more free impressions from the network. Our reciprocity algorithm rewards the most visible bars with more visibility in return. Bottom is still supported if it fits your layout.
+                    </p>
+                  )}
                 </Field>
                 <button type="submit" className="group flex w-full items-center justify-center gap-2 rounded-lg bg-black py-3.5 text-sm font-medium text-white transition-all hover:bg-black/80">
-                  Next — Install the script
+                  {isSupporter ? "Next — Supporter setup" : "Next — Install the script"}
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </button>
-                <p className="text-center text-xs text-black/30">Free forever · We review within 24h · No commitment</p>
+                <p className="text-center text-xs text-black/30">
+                  {isSupporter ? "$1,499 / year · Cancel anytime · We review within 24h" : "Free forever · We review within 24h · No commitment"}
+                </p>
               </form>
             </div>
 
