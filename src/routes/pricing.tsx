@@ -43,6 +43,14 @@ export const Route = createFileRoute("/pricing")({
             },
             {
               "@type": "Offer",
+              name: "Supporter membership",
+              price: "1999",
+              priceCurrency: "USD",
+              url: "https://startupbar.co/pricing",
+              availability: "https://schema.org/InStock",
+            },
+            {
+              "@type": "Offer",
               name: "Featured spot promotion",
               price: String(FEATURED_PRICE_USD),
               priceCurrency: "USD",
