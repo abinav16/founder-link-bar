@@ -227,7 +227,19 @@ serve(async (req) => {
             }
           })
           .filter((u) => !suppressedSet.has(u.email.toLowerCase()))
-          .map((u) => ({ email: u.email, name: u.name, userId: u.id }));
+          .map((u) => ({ email: u.email, name: u.name, userId: u.id }))
+          // Stable order so "batch 2" means the same people tomorrow as today.
+          .sort((a, b) => a.email.toLowerCase().localeCompare(b.email.toLowerCase()));
+      }
+
+      // Daily-limit batching: the admin picks a batch size (default 80) and a
+      // 1-based batch number; 0 means "everyone".
+      const batchSize = Math.max(0, Math.min(1000, Number(data?.batchSize ?? 0) || 0));
+      const batchIndex = Math.max(1, Number(data?.batchIndex ?? 1) || 1);
+      function sliceBatch<T>(list: T[]): T[] {
+        if (!batchSize) return list;
+        const start = (batchIndex - 1) * batchSize;
+        return list.slice(start, start + batchSize);
       }
 
       // Recipient counts (post-suppression) plus a raw pre-suppression total
@@ -262,10 +274,15 @@ serve(async (req) => {
       if (type === "admin-broadcast-recipients") {
         const list = await getRecipients();
         const unsubscribed = await segmentSuppressedCount();
+        const batch = sliceBatch(list);
         return new Response(JSON.stringify({
-          count: list.length,
+          count: batch.length,
+          total: list.length,
+          batchSize,
+          batchIndex,
+          batches: batchSize ? Math.max(1, Math.ceil(list.length / batchSize)) : 1,
           unsubscribed,
-          sample: list.slice(0, 5).map((r) => r.email),
+          sample: batch.slice(0, 5).map((r) => r.email),
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
@@ -319,7 +336,7 @@ serve(async (req) => {
       const testOnly: boolean = !!data?.testOnly;
       const recipients = testOnly
         ? [{ email: ADMIN_EMAIL, name: "Admin", userId: "" }]
-        : await getRecipients();
+        : sliceBatch(await getRecipients());
 
       // Send one email, returning {ok, status, message}. Retries once on 429.
       async function sendOne(toAddr: string, subj: string, htmlBody: string, extraHeaders: Record<string, string>): Promise<{ ok: boolean; status: number; message: string }> {

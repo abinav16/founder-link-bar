@@ -794,22 +794,28 @@ function BroadcastPanel() {
   const [headline, setHeadline] = useState("");
   const [body, setBody] = useState("");
   const [count, setCount] = useState<number | null>(null);
+  const [total, setTotal] = useState<number | null>(null);
+  const [batches, setBatches] = useState<number>(1);
+  const [batchSize, setBatchSize] = useState<number>(80);
+  const [batchIndex, setBatchIndex] = useState<number>(1);
   const [unsubscribed, setUnsubscribed] = useState<number>(0);
   const [loadingCount, setLoadingCount] = useState(false);
   const [previewHtml, setPreviewHtml] = useState<string>("");
   const [sending, setSending] = useState(false);
   const [lastErrors, setLastErrors] = useState<{ email: string; error: string }[]>([]);
 
-  async function refreshCount(seg: string) {
+  async function refreshCount(seg: string, size: number, index: number) {
     setLoadingCount(true);
     setCount(null);
     try {
       const { data, error } = await supabase.functions.invoke("send-email", {
-        body: { type: "admin-broadcast-recipients", data: { segment: seg } },
+        body: { type: "admin-broadcast-recipients", data: { segment: seg, batchSize: size, batchIndex: index } },
       });
       if (error) throw error;
-      const r = data as { count: number; unsubscribed?: number };
+      const r = data as { count: number; total?: number; batches?: number; unsubscribed?: number };
       setCount(r?.count ?? 0);
+      setTotal(r?.total ?? r?.count ?? 0);
+      setBatches(Math.max(1, r?.batches ?? 1));
       setUnsubscribed(r?.unsubscribed ?? 0);
     } catch (e) {
       toast.error("Couldn't load recipient count");
@@ -818,7 +824,9 @@ function BroadcastPanel() {
     }
   }
 
-  useEffect(() => { if (open) refreshCount(segment); }, [segment, open]);
+  useEffect(() => { if (open) refreshCount(segment, batchSize, batchIndex); }, [segment, open, batchSize, batchIndex]);
+  // Changing segment or batch size restarts at batch 1.
+  useEffect(() => { setBatchIndex(1); }, [segment, batchSize]);
 
   async function refreshPreview() {
     if (!subject.trim() || !body.trim()) { toast.error("Subject and body required"); return; }
@@ -833,15 +841,16 @@ function BroadcastPanel() {
     if (!subject.trim() || !body.trim()) { toast.error("Subject and body required"); return; }
     if (!testOnly) {
       const n = count ?? 0;
-      if (n === 0) { toast.error("No recipients in this segment"); return; }
-      if (!confirm(`Send to ${n} recipient${n === 1 ? "" : "s"}? Each gets their own email with you in BCC.`)) return;
+      if (n === 0) { toast.error("No recipients in this batch"); return; }
+      const label = batchSize ? ` (batch ${batchIndex} of ${batches})` : "";
+      if (!confirm(`Send to ${n} recipient${n === 1 ? "" : "s"}${label}? Each gets their own email with you in BCC.`)) return;
     }
     setSending(true);
     const toastId = toast.loading(testOnly ? "Sending test…" : `Sending to ${count} recipients…`);
     setLastErrors([]);
     try {
       const { data, error } = await supabase.functions.invoke("send-email", {
-        body: { type: "admin-broadcast", data: { segment, subject, headline, bodyMarkdown: body, testOnly } },
+        body: { type: "admin-broadcast", data: { segment, subject, headline, bodyMarkdown: body, testOnly, batchSize, batchIndex } },
       });
       if (error) throw error;
       const r = data as { sent: number; failed: number; total: number; queued?: boolean; errors: { email: string; error: string }[] };
@@ -901,6 +910,33 @@ function BroadcastPanel() {
               {unsubscribed > 0 && (
                 <span className="text-black/40">· {unsubscribed} opted out</span>
               )}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[11px] uppercase tracking-[0.15em] text-black/40 font-semibold">Daily batch</label>
+            <div className="mt-1.5 grid grid-cols-[1fr_auto] gap-2">
+              <select value={batchIndex} onChange={(e) => setBatchIndex(Number(e.target.value))}
+                disabled={!batchSize}
+                className="w-full rounded-lg border border-black/12 bg-white px-3 py-2 text-sm text-black focus:border-black focus:outline-none disabled:opacity-50">
+                {Array.from({ length: batches }, (_, i) => i + 1).map((n) => {
+                  const start = (n - 1) * batchSize + 1;
+                  const end = Math.min(n * batchSize, total ?? n * batchSize);
+                  return <option key={n} value={n}>{`Batch ${n} of ${batches} · ${start}–${end}`}</option>;
+                })}
+              </select>
+              <select value={batchSize} onChange={(e) => setBatchSize(Number(e.target.value))}
+                className="rounded-lg border border-black/12 bg-white px-3 py-2 text-sm text-black focus:border-black focus:outline-none">
+                {[50, 80, 100, 150].map((n) => <option key={n} value={n}>{n} / day</option>)}
+                <option value={0}>No limit</option>
+              </select>
+            </div>
+            <div className="mt-1.5 text-[11px] text-black/40">
+              {total === null
+                ? "—"
+                : batchSize
+                  ? `${total} in this segment · sending batch ${batchIndex} today, pick the next batch tomorrow.`
+                  : `${total} in this segment · sending everyone at once.`}
             </div>
           </div>
 
