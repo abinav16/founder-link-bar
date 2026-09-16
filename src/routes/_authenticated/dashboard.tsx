@@ -617,7 +617,10 @@ function DashboardPage() {
   // is on their site. Until then every number is a truthful zero — say why.
   const needsInstall =
     !!startup && startup.status === "approved" && !isSupporter && installStatus === "disconnected";
-  const mapLocked = needsInstall || (isSupporter && !startup?.tracking_last_seen_at);
+  const mapLocked =
+    needsInstall ||
+    (isSupporter && !startup?.tracking_last_seen_at && installStatus !== "live");
+
 
   const ctr = stats.impressions > 0
     ? ((stats.clicks / stats.impressions) * 100).toFixed(1)
