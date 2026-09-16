@@ -51,7 +51,7 @@ draining it. That's the story to tell publicly if anyone asks.
 - When the paid year ends and they haven't installed the widget, the listing falls back
   to the normal warning flow: install the bar or pause the listing.
 
-## The tracking snippet
+## The tracking snippet — optional
 
 Same script, new mode. It renders nothing — no bar, no layout shift, no 36px offset —
 and only reports what today's widget already reports:
@@ -60,6 +60,36 @@ and only reports what today's widget already reports:
 - coarse country from IP, never stored as an IP
 - device/OS/browser family
 - referrer, so clicks sent back from StartupBar are attributed
+
+**Pasting it is entirely optional.** A supporter who just wants to exist in the network
+can skip it. Their listing, rotation share, profile and badge are exactly the same —
+the only thing the snippet changes is how much *they* can see.
+
+### What they lose by skipping it
+
+- No globe, no visitor map, no countries or devices.
+- No visits, no on-site sessions, no "where your traffic landed".
+- No end-to-end attribution: we can still count clicks leaving StartupBar, but not
+  whether those visitors actually arrived and stayed.
+
+### How the dashboard handles it
+
+Rather than hiding those panels, show them **locked**: the real cards in place, blurred
+placeholder data behind them, and a single line — "Paste one line of code to unlock your
+visitor map and on-site stats" — with a Copy snippet button and a Check now button, the
+same verification flow the widget install already uses.
+
+The stats that don't need their site (impressions received, clicks, CTR, rank,
+leaderboard, referrers inside the network) stay fully live and unlocked, so the dashboard
+never looks empty or punitive.
+
+Once the snippet is detected, the locks fall away automatically and the globe starts
+filling. If they later remove it, the panels re-lock rather than showing stale data — no
+warning, no strike, no effect on their listing.
+
+At checkout and on the apply page, the choice is stated plainly: "Paste the tracking code
+(recommended — unlocks your visitor map and on-site stats)" or "Skip for now — you can add
+it any time from your dashboard." No pressure, no penalty.
 
 ## Compliance
 
@@ -85,8 +115,10 @@ plainly on the apply page that the snippet is for *their* stats, not for earning
 
 1. **Apply page, step 1** — a third choice beside "bar at top / bar at bottom":
    "Supporter — no bar on my site ($1499/year)". Picking it swaps step 2 from the embed
-   snippet to the tracking snippet and adds a Dodo checkout before submission.
-2. **Dashboard** — a Mode card showing current mode, renewal date, and a switch control.
+   snippet to the optional tracking snippet (with a "Skip for now" link) and adds a Dodo
+   checkout before submission.
+2. **Dashboard** — a Mode card showing current mode, renewal date, and a switch control,
+   plus the locked-stats state when no tracking code is installed.
 3. **Account** — cancel auto-renewal, same pattern as featured slots.
 4. **Network + profile** — subtle Supporter badge.
 5. **Pricing + FAQ** — a Supporter section explaining the deal and that it buys no
@@ -108,6 +140,11 @@ plainly on the apply page that the snippet is for *their* stats, not for earning
   pattern as featured slots.
 - `public_featured_slots`-style RPCs untouched; network/profile reads gain a
   `supporter` boolean.
+- Tracking install state: reuse `widget_last_heartbeat_at` (or a parallel
+  `tracking_last_seen_at`) as the unlock signal — dashboard panels render locked when it
+  is null or stale, unlocked otherwise. `verify-install.ts` gains a track-mode marker so
+  "Check now" works for the snippet too. No warning, strike or status change is triggered
+  by a missing tracking snippet.
 
 ## Suggested rollout
 
