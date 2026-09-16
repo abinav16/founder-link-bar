@@ -74,7 +74,58 @@ function MembershipSection({ startup, onUpdate }: {
   const isSupporter = startup.membership_mode === "supporter";
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
-  if (!isSupporter) return null;
+
+  async function goBarFree() {
+    if (busy) return;
+    setBusy(true);
+    const { data: u } = await supabase.auth.getUser();
+    const returnUrl = `${window.location.origin}/account?supporter=1&sid=${encodeURIComponent(startup.id)}`;
+    const { data, error } = await supabase.functions.invoke("create-dodo-checkout", {
+      body: {
+        kind: "supporter",
+        startup_id: startup.id,
+        email: u.user?.email,
+        name: u.user?.user_metadata?.full_name,
+        return_url: returnUrl,
+      },
+    });
+    setBusy(false);
+    if (error || !data?.payment_link) { toast.error("Could not start checkout. Please try again."); return; }
+    window.location.href = data.payment_link;
+  }
+
+  if (!isSupporter) {
+    return (
+      <div className="mt-6 border-t border-black/6 pt-5">
+        <div className="rounded-xl border border-amber-200/70 bg-gradient-to-br from-amber-50 to-white px-4 py-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-black">Go Bar Free</p>
+              <p className="mt-1 text-[11px] leading-relaxed text-black/55">
+                Keep your listing rotating across the network without showing the bar on your site.
+                You stay visible at an average member's share, get the gold highlight on the network
+                page and the leaderboard, and keep your full dashboard.
+              </p>
+            </div>
+            <span className="shrink-0 rounded-full border border-amber-200 bg-amber-100/70 px-2.5 py-1 text-[10px] font-medium text-amber-800">
+              $1,999 / year
+            </span>
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <button type="button" disabled={busy} onClick={goBarFree}
+              className="rounded-lg bg-black px-3.5 py-2 text-[11px] font-medium text-white hover:opacity-90 transition-all disabled:opacity-60">
+              {busy ? "Opening checkout…" : "Go Bar Free"}
+            </button>
+            <a href="/pricing" className="text-[11px] font-medium text-black/45 hover:text-black transition-all">
+              How it works
+            </a>
+          </div>
+          <p className="mt-2 text-[11px] text-black/35">Billed yearly. Cancel anytime. No refunds.</p>
+        </div>
+      </div>
+    );
+  }
+
 
   const until = startup.supporter_until ? new Date(startup.supporter_until) : null;
   const renews = until ? until.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : null;
@@ -621,6 +672,28 @@ function AccountPage() {
       const { data } = await supabase
         .from("startups").select("id, name, website_url, description, status, logo_url, user_id, slug, founder_name, founder_quote, founder_avatar_url, widget_placement, pending_name, pending_description, edit_status, edit_submitted_at, membership_mode, supporter_until, supporter_cancel_at_period_end, tracking_last_seen_at").eq("user_id", u.user.id).order("created_at", { ascending: true });
       if (data) setStartups(data as Startup[]);
+
+      // Returning from the Supporter checkout: confirm the subscription and
+      // stamp it onto the listing, then refresh the row.
+      const params = new URLSearchParams(window.location.search);
+      const sid = params.get("sid");
+      const sub = params.get("subscription_id");
+      if (params.get("supporter") === "1" && sid) {
+        window.history.replaceState({}, "", "/account");
+        const t = toast.loading("Confirming your membership…");
+        const { data: conf } = await supabase.functions.invoke("create-dodo-checkout", {
+          body: { action: "confirm_supporter", subscription_id: sub, startup_id: sid },
+        });
+        toast.dismiss(t);
+        if ((conf as any)?.activated) {
+          toast.success("You're a Supporter — the bar is off for your site.");
+          const { data: fresh } = await supabase
+            .from("startups").select("id, name, website_url, description, status, logo_url, user_id, slug, founder_name, founder_quote, founder_avatar_url, widget_placement, pending_name, pending_description, edit_status, edit_submitted_at, membership_mode, supporter_until, supporter_cancel_at_period_end, tracking_last_seen_at").eq("user_id", u.user.id).order("created_at", { ascending: true });
+          if (fresh) setStartups(fresh as Startup[]);
+        } else {
+          toast.info("Payment received — we'll activate your membership shortly.", { duration: 8000 });
+        }
+      }
     })();
   }, []);
 
