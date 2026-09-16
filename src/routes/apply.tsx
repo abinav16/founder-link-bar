@@ -499,6 +499,27 @@ function Apply() {
   }, [autoSubmitPending, hasPrepaid, loading, name, url, desc]);
 
 
+  // Return from the supporter checkout: create the listing, then confirm the
+  // subscription so the paid year lands on it.
+  const supporterHandled = useRef(false);
+  useEffect(() => {
+    if (typeof window === "undefined" || !authed || supporterHandled.current) return;
+    const p = new URLSearchParams(window.location.search);
+    if (p.get("supporter") !== "1") return;
+    const subId = p.get("subscription_id") ?? "";
+    supporterHandled.current = true;
+    window.history.replaceState({}, "", "/apply");
+    if (!subId) return;
+    if (!name.trim() || !url.trim() || !desc.trim()) {
+      setPaidNeedsForm(true);
+      setStep(1);
+      return;
+    }
+    setMode("supporter");
+    onSubmit({ supporterSubscriptionId: subId });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authed, name, url, desc]);
+
   // Persist draft so the form survives the sign-in round-trip.
   useEffect(() => {
     if (typeof window === "undefined") return;
