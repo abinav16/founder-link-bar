@@ -672,6 +672,28 @@ function AccountPage() {
       const { data } = await supabase
         .from("startups").select("id, name, website_url, description, status, logo_url, user_id, slug, founder_name, founder_quote, founder_avatar_url, widget_placement, pending_name, pending_description, edit_status, edit_submitted_at, membership_mode, supporter_until, supporter_cancel_at_period_end, tracking_last_seen_at").eq("user_id", u.user.id).order("created_at", { ascending: true });
       if (data) setStartups(data as Startup[]);
+
+      // Returning from the Supporter checkout: confirm the subscription and
+      // stamp it onto the listing, then refresh the row.
+      const params = new URLSearchParams(window.location.search);
+      const sid = params.get("sid");
+      const sub = params.get("subscription_id");
+      if (params.get("supporter") === "1" && sid) {
+        window.history.replaceState({}, "", "/account");
+        const t = toast.loading("Confirming your membership…");
+        const { data: conf } = await supabase.functions.invoke("create-dodo-checkout", {
+          body: { action: "confirm_supporter", subscription_id: sub, startup_id: sid },
+        });
+        toast.dismiss(t);
+        if ((conf as any)?.activated) {
+          toast.success("You're a Supporter — the bar is off for your site.");
+          const { data: fresh } = await supabase
+            .from("startups").select("id, name, website_url, description, status, logo_url, user_id, slug, founder_name, founder_quote, founder_avatar_url, widget_placement, pending_name, pending_description, edit_status, edit_submitted_at, membership_mode, supporter_until, supporter_cancel_at_period_end, tracking_last_seen_at").eq("user_id", u.user.id).order("created_at", { ascending: true });
+          if (fresh) setStartups(fresh as Startup[]);
+        } else {
+          toast.info("Payment received — we'll activate your membership shortly.", { duration: 8000 });
+        }
+      }
     })();
   }, []);
 
