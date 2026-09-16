@@ -575,7 +575,7 @@ function Apply() {
     }
     if (!authed) {
       // Save draft at step 1 — user must sign in before reaching the install step.
-      writeDraft({ step: 1, name, url, desc, quote, placement, startupId });
+      writeDraft({ step: 1, name, url, desc, quote, placement, mode, startupId });
       sessionStorage.setItem("startupbar:auth-next", "/apply");
       navigate({ to: "/auth" });
       return;
@@ -588,12 +588,38 @@ function Apply() {
     setPaymentLoading(true);
     // Persist the draft so we can restore state after Dodo redirects back —
     // we deliberately keep the return URL tiny (no PII in query string).
-    writeDraft({ step: 2, name, url, desc, quote, placement, startupId });
+    writeDraft({ step: 2, name, url, desc, quote, placement, mode, startupId });
 
     const { data: u } = await supabase.auth.getUser();
     const returnUrl = `${window.location.origin}/apply?paid=true&sid=${encodeURIComponent(startupId)}`;
     const { data, error } = await supabase.functions.invoke("create-dodo-checkout", {
       body: { email: u.user?.email, name: u.user?.user_metadata?.full_name, return_url: returnUrl },
+    });
+    setPaymentLoading(false);
+    if (error || !data?.payment_link) {
+      toast.error("Could not create payment session. Please try again.");
+      return;
+    }
+    window.location.href = data.payment_link;
+  }
+
+  // Supporter membership: $1,499/year annual subscription. The listing row is
+  // created after the buyer returns, then the subscription is confirmed and
+  // stamped onto it.
+  async function handleSupporterPayment() {
+    setPaymentLoading(true);
+    writeDraft({ step: 2, name, url, desc, quote, placement, mode: "supporter", startupId });
+
+    const { data: u } = await supabase.auth.getUser();
+    const returnUrl = `${window.location.origin}/apply?supporter=1&sid=${encodeURIComponent(startupId)}`;
+    const { data, error } = await supabase.functions.invoke("create-dodo-checkout", {
+      body: {
+        kind: "supporter",
+        startup_id: startupId,
+        email: u.user?.email,
+        name: u.user?.user_metadata?.full_name,
+        return_url: returnUrl,
+      },
     });
     setPaymentLoading(false);
     if (error || !data?.payment_link) {
