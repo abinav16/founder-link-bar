@@ -38,6 +38,7 @@ import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/e
 import { Route as ApiPublicWidgetPickRouteImport } from './routes/api/public/widget.pick'
 import { Route as ApiPublicWidgetHeartbeatRouteImport } from './routes/api/public/widget.heartbeat'
 import { Route as ApiPublicWidgetClickRouteImport } from './routes/api/public/widget.click'
+import { Route as ApiPublicTrackSupporterRouteImport } from './routes/api/public/track.supporter'
 import { Route as ApiPublicTrackSiteVisitRouteImport } from './routes/api/public/track.site-visit'
 import { Route as ApiPublicTrackFunnelRouteImport } from './routes/api/public/track.funnel'
 
@@ -187,6 +188,11 @@ const ApiPublicWidgetClickRoute = ApiPublicWidgetClickRouteImport.update({
   path: '/api/public/widget/click',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicTrackSupporterRoute = ApiPublicTrackSupporterRouteImport.update({
+  id: '/api/public/track/supporter',
+  path: '/api/public/track/supporter',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicTrackSiteVisitRoute = ApiPublicTrackSiteVisitRouteImport.update({
   id: '/api/public/track/site-visit',
   path: '/api/public/track/site-visit',
@@ -225,6 +231,7 @@ export interface FileRoutesByFullPath {
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
   '/api/public/track/funnel': typeof ApiPublicTrackFunnelRoute
   '/api/public/track/site-visit': typeof ApiPublicTrackSiteVisitRoute
+  '/api/public/track/supporter': typeof ApiPublicTrackSupporterRoute
   '/api/public/widget/click': typeof ApiPublicWidgetClickRoute
   '/api/public/widget/heartbeat': typeof ApiPublicWidgetHeartbeatRoute
   '/api/public/widget/pick': typeof ApiPublicWidgetPickRoute
@@ -257,6 +264,7 @@ export interface FileRoutesByTo {
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
   '/api/public/track/funnel': typeof ApiPublicTrackFunnelRoute
   '/api/public/track/site-visit': typeof ApiPublicTrackSiteVisitRoute
+  '/api/public/track/supporter': typeof ApiPublicTrackSupporterRoute
   '/api/public/widget/click': typeof ApiPublicWidgetClickRoute
   '/api/public/widget/heartbeat': typeof ApiPublicWidgetHeartbeatRoute
   '/api/public/widget/pick': typeof ApiPublicWidgetPickRoute
@@ -291,6 +299,7 @@ export interface FileRoutesById {
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
   '/api/public/track/funnel': typeof ApiPublicTrackFunnelRoute
   '/api/public/track/site-visit': typeof ApiPublicTrackSiteVisitRoute
+  '/api/public/track/supporter': typeof ApiPublicTrackSupporterRoute
   '/api/public/widget/click': typeof ApiPublicWidgetClickRoute
   '/api/public/widget/heartbeat': typeof ApiPublicWidgetHeartbeatRoute
   '/api/public/widget/pick': typeof ApiPublicWidgetPickRoute
@@ -325,6 +334,7 @@ export interface FileRouteTypes {
     | '/api/public/verify-install'
     | '/api/public/track/funnel'
     | '/api/public/track/site-visit'
+    | '/api/public/track/supporter'
     | '/api/public/widget/click'
     | '/api/public/widget/heartbeat'
     | '/api/public/widget/pick'
@@ -357,6 +367,7 @@ export interface FileRouteTypes {
     | '/api/public/verify-install'
     | '/api/public/track/funnel'
     | '/api/public/track/site-visit'
+    | '/api/public/track/supporter'
     | '/api/public/widget/click'
     | '/api/public/widget/heartbeat'
     | '/api/public/widget/pick'
@@ -390,6 +401,7 @@ export interface FileRouteTypes {
     | '/api/public/verify-install'
     | '/api/public/track/funnel'
     | '/api/public/track/site-visit'
+    | '/api/public/track/supporter'
     | '/api/public/widget/click'
     | '/api/public/widget/heartbeat'
     | '/api/public/widget/pick'
@@ -422,6 +434,7 @@ export interface RootRouteChildren {
   ApiPublicVerifyInstallRoute: typeof ApiPublicVerifyInstallRoute
   ApiPublicTrackFunnelRoute: typeof ApiPublicTrackFunnelRoute
   ApiPublicTrackSiteVisitRoute: typeof ApiPublicTrackSiteVisitRoute
+  ApiPublicTrackSupporterRoute: typeof ApiPublicTrackSupporterRoute
   ApiPublicWidgetClickRoute: typeof ApiPublicWidgetClickRoute
   ApiPublicWidgetHeartbeatRoute: typeof ApiPublicWidgetHeartbeatRoute
   ApiPublicWidgetPickRoute: typeof ApiPublicWidgetPickRoute
@@ -633,6 +646,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWidgetClickRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/track/supporter': {
+      id: '/api/public/track/supporter'
+      path: '/api/public/track/supporter'
+      fullPath: '/api/public/track/supporter'
+      preLoaderRoute: typeof ApiPublicTrackSupporterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/track/site-visit': {
       id: '/api/public/track/site-visit'
       path: '/api/public/track/site-visit'
@@ -689,6 +709,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicVerifyInstallRoute: ApiPublicVerifyInstallRoute,
   ApiPublicTrackFunnelRoute: ApiPublicTrackFunnelRoute,
   ApiPublicTrackSiteVisitRoute: ApiPublicTrackSiteVisitRoute,
+  ApiPublicTrackSupporterRoute: ApiPublicTrackSupporterRoute,
   ApiPublicWidgetClickRoute: ApiPublicWidgetClickRoute,
   ApiPublicWidgetHeartbeatRoute: ApiPublicWidgetHeartbeatRoute,
   ApiPublicWidgetPickRoute: ApiPublicWidgetPickRoute,
