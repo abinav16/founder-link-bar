@@ -81,7 +81,11 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const name: string = typeof body?.name === "string" ? body.name : "";
     const return_url: unknown = body?.return_url;
-    const kind: string = body?.kind === "featured" ? "featured" : "listing";
+    const kind: string = body?.kind === "featured"
+      ? "featured"
+      : body?.kind === "supporter"
+      ? "supporter"
+      : "listing";
 
     // Payment-return fallback: verify the subscription directly with Dodo and
     // fulfil the slot. This makes activation resilient when a webhook is late

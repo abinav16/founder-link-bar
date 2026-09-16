@@ -192,6 +192,40 @@ export const Route = createFileRoute("/api/public/dodo-webhook")({
           return new Response("ok", { status: 200 });
         }
 
+        // Supporter memberships: an annual subscription that replaces showing
+        // the bar. Sets the listing's mode and term on the startup row.
+        if (data.metadata?.kind === "supporter") {
+          const startupId: string | null = data.metadata?.startup_id ?? null;
+          if (!startupId) return new Response("ok", { status: 200 });
+
+          const { data: row } = await supabaseAdmin
+            .from("startups")
+            .select("id, supporter_until, supporter_subscription_id")
+            .eq("id", startupId)
+            .eq("user_id", userId)
+            .maybeSingle();
+          if (!row) return new Response("ok", { status: 200 });
+
+          const current = row.supporter_until ? new Date(row.supporter_until).getTime() : 0;
+          const alreadyFulfilled = row.supporter_subscription_id === paymentId;
+          // First purchase starts a year from now; a renewal extends from the
+          // later of "now" and the current end date so nothing is lost.
+          if (alreadyFulfilled && !isRenewal) return new Response("ok", { status: 200 });
+          const from = Math.max(current, Date.now());
+
+          await supabaseAdmin
+            .from("startups")
+            .update({
+              membership_mode: "supporter",
+              supporter_until: new Date(from + 365 * 86_400_000).toISOString(),
+              supporter_subscription_id: paymentId,
+              supporter_cancel_at_period_end: false,
+            } as never)
+            .eq("id", startupId);
+
+          return new Response("ok", { status: 200 });
+        }
+
         // Featured-slot purchases fulfil a sidebar booking instead of a listing credit.
         if (data.metadata?.kind === "featured" || isSubscriptionEvent) {
           const slotIndex = Number(data.metadata?.slot_index);
