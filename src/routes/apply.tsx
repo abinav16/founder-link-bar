@@ -680,7 +680,8 @@ function Apply() {
 
   }
 
-  async function onSubmit() {
+  async function onSubmit(opts?: { supporterSubscriptionId?: string }) {
+    const supporterSub = opts?.supporterSubscriptionId;
     setLoading(true);
     try {
       const { data: userData } = await supabase.auth.getUser();
