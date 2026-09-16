@@ -167,26 +167,36 @@ function SupporterStory() {
         if (!event.currentTarget.contains(event.relatedTarget)) setPaused(false);
       }}
     >
-      <div className="flex items-center justify-between gap-4 border-b border-black/8 bg-black/[0.018] px-5 py-4">
-        <div>
-          <p className="text-[11px] font-semibold uppercase text-black/35">Supporter membership</p>
-          <h3 className="mt-0.5 text-lg font-semibold text-black">Supporter — $1,999 / year</h3>
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-black/8 bg-black/[0.018] px-4 py-3.5 sm:px-5 sm:py-4">
+        <div className="min-w-0">
+          <p className="text-[10px] font-semibold uppercase text-black/35 sm:text-[11px]">Supporter membership</p>
+          <h3 className="mt-0.5 truncate text-base font-semibold text-black sm:text-lg">Supporter — $1,999 / year</h3>
         </div>
         <span className="shrink-0 rounded-full border border-emerald-700/15 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase text-emerald-800">No bar</span>
       </div>
 
-      <div className="relative min-h-[238px] px-5 pb-5 pt-6 sm:min-h-[224px] sm:px-6">
+      <div
+        className="relative min-h-[230px] px-4 pb-5 pt-5 sm:min-h-[224px] sm:px-6 sm:pt-6"
+        onTouchStart={(e) => { touchX.current = e.touches[0]?.clientX ?? null; }}
+        onTouchEnd={(e) => {
+          const start = touchX.current;
+          touchX.current = null;
+          if (start == null) return;
+          const dx = (e.changedTouches[0]?.clientX ?? start) - start;
+          if (Math.abs(dx) > 40) show(active + (dx < 0 ? 1 : -1));
+        }}
+      >
         <div key={active} className="sb-supporter-slide">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full border border-black/8 bg-black/[0.035]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-black/8 bg-black/[0.035] sm:h-11 sm:w-11">
             <Icon className="h-5 w-5 text-black/70" aria-hidden="true" />
           </div>
-          <p className="mt-5 text-[10px] font-semibold uppercase text-black/35">{slide.eyebrow}</p>
-          <h4 className="mt-1.5 max-w-md text-xl font-semibold leading-snug text-black">{slide.title}</h4>
+          <p className="mt-4 text-[10px] font-semibold uppercase text-black/35 sm:mt-5">{slide.eyebrow}</p>
+          <h4 className="mt-1.5 max-w-md text-[17px] font-semibold leading-snug text-black sm:text-xl">{slide.title}</h4>
           <p className="mt-2 max-w-lg text-[13px] leading-relaxed text-black/50">{slide.body}</p>
         </div>
       </div>
 
-      <div className="flex items-center justify-between border-t border-black/8 px-4 py-3">
+      <div className="flex items-center justify-between gap-3 border-t border-black/8 px-3 py-2.5 sm:px-4 sm:py-3">
         <div className="flex items-center gap-1.5" role="tablist" aria-label="Choose a benefit">
           {supporterSlides.map((item, index) => (
             <button
