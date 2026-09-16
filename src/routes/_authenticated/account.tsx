@@ -418,6 +418,8 @@ function StartupCard({ startup, onUpdate, onDelete }: {
               </div>
             )}
           </div>
+          )}
+
 
           <div className="mt-6 border-t border-black/6 pt-5">
             <div className="mb-3 flex items-center justify-between">
