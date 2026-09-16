@@ -1015,7 +1015,7 @@ function Apply() {
                   </div>
                 </Field>
                 <Field label="Bar placement" hint="Where the bar sits on your own site. You can change this anytime in your account.">
-                  <div className="inline-flex flex-wrap rounded-lg border border-black/12 bg-black/[0.02] p-1">
+                  <div className="grid w-full grid-cols-3 gap-1 rounded-lg border border-black/12 bg-black/[0.02] p-1 sm:inline-flex sm:w-auto sm:gap-0">
                     {(["top", "bottom"] as const).map((p) => (
                       <button
                         key={p}
