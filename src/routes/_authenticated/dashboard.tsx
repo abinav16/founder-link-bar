@@ -1089,7 +1089,9 @@ function DashboardPage() {
                 ) : (
                   <p className="px-5 py-6 text-sm text-black/35 sm:px-6">
                     {startup.status === "approved"
-                      ? "Nothing shown yet — this fills in as visitors land on your site."
+                      ? needsInstall
+                        ? "Nothing yet — this fills in once the script is live on your site."
+                        : "Nothing shown yet — this fills in as visitors land on your site."
                       : "Will appear once your startup is approved."}
                   </p>
                 )}
