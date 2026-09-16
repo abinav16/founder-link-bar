@@ -117,6 +117,7 @@ function StartupProfileLink({ slug, children, className }: { slug: string; child
 function StartupCard({ s }: { s: Card }) {
 
   const sponsored = s.sponsored;
+  const supporter = Boolean((s as any).supporter) && !sponsored;
   const profileHref = s.slug ? `/startup/${s.slug}` : undefined;
   const visitHref = `/api/public/widget/click?id=${s.id}&source=dashboard`;
   return (
@@ -125,8 +126,11 @@ function StartupCard({ s }: { s: Card }) {
         "group relative flex flex-col gap-2.5 sm:gap-3 rounded-2xl border p-4 sm:p-5 transition-all duration-300 h-full overflow-hidden sb-lift",
         sponsored
           ? "sb-sponsored border-[oklch(0.72_0.13_75)] hover:shadow-[0_12px_48px_oklch(0.65_0.15_68_/_0.18)]"
-          : "bg-white border-black/[0.06] hover:border-black/[0.12] hover:shadow-[0_12px_48px_rgba(0,0,0,0.07)]",
+          : supporter
+            ? "sb-featured-row hover:shadow-[0_12px_48px_oklch(0.65_0.15_68_/_0.16)]"
+            : "bg-white border-black/[0.06] hover:border-black/[0.12] hover:shadow-[0_12px_48px_rgba(0,0,0,0.07)]",
       ].join(" ")}
+      title={supporter ? "Supporter — funds the network instead of showing the bar" : undefined}
     >
       {profileHref && (
         <StartupProfileLink
@@ -153,13 +157,6 @@ function StartupCard({ s }: { s: Card }) {
               {sponsored ? (
                 <span className="shrink-0 rounded-full bg-[oklch(0.65_0.15_68)] px-1.5 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-[0.12em] text-white shadow-sm">
                   Featured
-                </span>
-              ) : (s as any).supporter ? (
-                <span
-                  title="Supporter — funds the network instead of showing the bar"
-                  className="shrink-0 rounded-full border border-black/10 bg-black/[0.04] px-1.5 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-[0.12em] text-black/45"
-                >
-                  Supporter
                 </span>
               ) : null}
 

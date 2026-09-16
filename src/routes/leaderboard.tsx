@@ -338,23 +338,28 @@ function LeaderboardPage() {
                 <div className="grid grid-cols-3 gap-3 items-end">
                   {podiumDisplay.map((row: LeaderboardRow) => {
                     const originalIndex = podium.findIndex((r: LeaderboardRow) => r.id === row.id);
+                    const dark = originalIndex === 0 && !row.supporter;
                     return (
                       <div
                         key={row.id}
                         className={`rounded-2xl border flex flex-col items-center text-center p-3 transition-all relative overflow-hidden ${
                           row.sponsored
                             ? "sb-sponsored border-[oklch(0.72_0.13_75)]"
-                            : originalIndex === 0
-                              ? "bg-black border-black lg:-mt-3 shadow-xl shadow-black/15 z-10"
-                              : "bg-white border-black/8"
+                            : row.supporter
+                              ? "sb-featured-row"
+                              : dark
+                                ? "bg-black border-black lg:-mt-3 shadow-xl shadow-black/15 z-10"
+                                : "bg-white border-black/8"
                         }`}
                       >
-                        {originalIndex === 0 && !row.sponsored && (
+                        {dark && !row.sponsored && (
                           <p className="text-[8px] font-bold tracking-[0.15em] uppercase text-white/40 mb-1">Leader</p>
                         )}
-                        {row.sponsored && (
+                        {row.sponsored ? (
                           <span className="absolute top-2 left-1/2 -translate-x-1/2 text-[8px] font-bold uppercase tracking-[0.12em] text-[oklch(0.82_0.13_75)]">Featured</span>
-                        )}
+                        ) : row.supporter ? (
+                          <span className="absolute top-2 left-1/2 -translate-x-1/2 text-[8px] font-bold uppercase tracking-[0.12em] text-[oklch(0.5_0.11_70)]">Supporter</span>
+                        ) : null}
                         {isNew(row.created_at) && (
                           <NewBadge className="absolute top-2 right-2" />
                         )}
@@ -367,9 +372,9 @@ function LeaderboardPage() {
                                 name={row.name}
                                 logoUrl={row.logo_url}
                                 size={28}
-                                className={`rounded-lg mb-2 bg-white ${originalIndex === 0 ? "ring-2 ring-white/20" : "ring-1 ring-black/8"}`}
+                                className={`rounded-lg mb-2 bg-white ${dark ? "ring-2 ring-white/20" : "ring-1 ring-black/8"}`}
                               />
-                              <p className={`font-semibold text-xs truncate w-full ${originalIndex === 0 ? "text-white" : "text-black"}`}>
+                              <p className={`font-semibold text-xs truncate w-full ${dark ? "text-white" : "text-black"}`}>
                                 {row.name}
                               </p>
                             </>
@@ -389,34 +394,34 @@ function LeaderboardPage() {
 
                         {row.id === myId && (
                           <span className={`mt-0.5 rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase ${
-                            originalIndex === 0 ? "bg-white/20 text-white" : "bg-black text-white"
+                            dark ? "bg-white/20 text-white" : "bg-black text-white"
                           }`}>You</span>
                         )}
                         <div className="mt-2 w-full">
-                          <div className={`text-xl font-bold tabular-nums ${originalIndex === 0 ? "text-white" : "text-black"}`}>
+                          <div className={`text-xl font-bold tabular-nums ${dark ? "text-white" : "text-black"}`}>
                             {primaryMetric(row).toLocaleString()}
                           </div>
-                          <div className={`text-[8px] uppercase tracking-widest font-semibold mt-0.5 ${originalIndex === 0 ? "text-white/40" : "text-black/30"}`}>
+                          <div className={`text-[8px] uppercase tracking-widest font-semibold mt-0.5 ${dark ? "text-white/40" : "text-black/30"}`}>
                             {(tab === "received" ? "impressions" : "given") +
                               (range === "today" ? " today" : range === "week" ? " · 7d" : "")}
                           </div>
                         </div>
-                        <div className={`mt-2 pt-2 border-t w-full flex gap-3 justify-center ${originalIndex === 0 ? "border-white/10" : "border-black/6"}`}>
+                        <div className={`mt-2 pt-2 border-t w-full flex gap-3 justify-center ${dark ? "border-white/10" : "border-black/6"}`}>
                           {tab === "received" ? (
                             <>
                               <div>
-                                <div className={`text-xs font-semibold ${originalIndex === 0 ? "text-white" : "text-black"}`}>{clicksMetric(row)}</div>
-                                <div className={`text-[8px] uppercase tracking-wide ${originalIndex === 0 ? "text-white/35" : "text-black/30"}`}>Clicks</div>
+                                <div className={`text-xs font-semibold ${dark ? "text-white" : "text-black"}`}>{clicksMetric(row)}</div>
+                                <div className={`text-[8px] uppercase tracking-wide ${dark ? "text-white/35" : "text-black/30"}`}>Clicks</div>
                               </div>
                               <div>
-                                <div className={`text-xs font-semibold ${originalIndex === 0 ? "text-white" : "text-black"}`}>{ctr(row)}</div>
-                                <div className={`text-[8px] uppercase tracking-wide ${originalIndex === 0 ? "text-white/35" : "text-black/30"}`}>CTR</div>
+                                <div className={`text-xs font-semibold ${dark ? "text-white" : "text-black"}`}>{ctr(row)}</div>
+                                <div className={`text-[8px] uppercase tracking-wide ${dark ? "text-white/35" : "text-black/30"}`}>CTR</div>
                               </div>
                             </>
                           ) : (
                             <div>
-                              <div className={`text-xs font-semibold ${originalIndex === 0 ? "text-white" : "text-black"}`}>{receivedMetric(row)}</div>
-                              <div className={`text-[8px] uppercase tracking-wide ${originalIndex === 0 ? "text-white/35" : "text-black/30"}`}>Received</div>
+                              <div className={`text-xs font-semibold ${dark ? "text-white" : "text-black"}`}>{receivedMetric(row)}</div>
+                              <div className={`text-[8px] uppercase tracking-wide ${dark ? "text-white/35" : "text-black/30"}`}>Received</div>
                             </div>
                           )}
                         </div>
@@ -425,7 +430,7 @@ function LeaderboardPage() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className={`mt-2 inline-flex items-center gap-1 text-[10px] font-semibold transition-opacity hover:opacity-70 ${
-                            originalIndex === 0 ? "text-white/60" : "text-black/40"
+                            dark ? "text-white/60" : "text-black/40"
                           }`}
                         >
                           Visit site <ExternalLink className="h-2.5 w-2.5" />
@@ -570,7 +575,9 @@ function LeaderboardPage() {
                 className={`group flex items-center gap-4 rounded-2xl border px-5 py-4 transition-all overflow-hidden ${
                   row.sponsored
                     ? "sb-featured-row relative hover:shadow-[0_8px_24px_-12px_oklch(0.65_0.15_68_/_0.3)]"
-                    : row.id === myId
+                    : row.supporter
+                      ? "sb-featured-row relative hover:shadow-[0_8px_24px_-12px_oklch(0.65_0.15_68_/_0.3)]"
+                      : row.id === myId
                       ? "bg-white border-black/20 ring-1 ring-black/8 hover:border-black/20 hover:shadow-sm"
                       : "bg-white border-black/8 hover:border-black/20 hover:shadow-sm"
                 }`}
@@ -599,9 +606,11 @@ function LeaderboardPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-sm text-black truncate group-hover/link:underline underline-offset-2">{row.name}</span>
-                        {row.sponsored && (
+                        {row.sponsored ? (
                           <span className="rounded-full bg-[oklch(0.65_0.15_68)] px-1.5 py-0.5 text-[8px] font-bold text-white uppercase tracking-wide shrink-0">Featured</span>
-                        )}
+                        ) : row.supporter ? (
+                          <span className="rounded-full border border-[oklch(0.72_0.13_75_/_0.6)] bg-[oklch(0.9_0.1_85_/_0.5)] px-1.5 py-0.5 text-[8px] font-bold text-[oklch(0.45_0.1_70)] uppercase tracking-wide shrink-0">Supporter</span>
+                        ) : null}
                         {isNew(row.created_at) && <NewBadge />}
                         {row.id === myId && (
                           <span className="rounded-full bg-black px-1.5 py-0.5 text-[8px] font-bold text-white uppercase tracking-wide shrink-0">You</span>
@@ -622,9 +631,11 @@ function LeaderboardPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-sm text-black truncate">{row.name}</span>
-                        {row.sponsored && (
+                        {row.sponsored ? (
                           <span className="rounded-full bg-[oklch(0.65_0.15_68)] px-1.5 py-0.5 text-[8px] font-bold text-white uppercase tracking-wide shrink-0">Featured</span>
-                        )}
+                        ) : row.supporter ? (
+                          <span className="rounded-full border border-[oklch(0.72_0.13_75_/_0.6)] bg-[oklch(0.9_0.1_85_/_0.5)] px-1.5 py-0.5 text-[8px] font-bold text-[oklch(0.45_0.1_70)] uppercase tracking-wide shrink-0">Supporter</span>
+                        ) : null}
                         {isNew(row.created_at) && <NewBadge />}
                         {row.id === myId && (
                           <span className="rounded-full bg-black px-1.5 py-0.5 text-[8px] font-bold text-white uppercase tracking-wide shrink-0">You</span>

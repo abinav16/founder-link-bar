@@ -23,6 +23,7 @@ export interface LeaderboardRow {
   impressions_given: number;
   clicks_given: number;
   sponsored: boolean;
+  supporter: boolean;
   dailyImpressions: number[];
   dailyGiven: number[];
   dailyClicks: number[];
@@ -42,7 +43,7 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
 
   const { data: startups, error } = await supabase
     .from("startups")
-    .select("id, slug, name, website_url, description, logo_url, created_at, sponsored")
+    .select("id, slug, name, website_url, description, logo_url, created_at, sponsored, membership_mode, supporter_until")
     .eq("status", "approved");
 
 
@@ -146,6 +147,9 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
     return {
       ...s,
       sponsored: Boolean((s as any).sponsored),
+      supporter:
+        (s as any).membership_mode === "supporter" &&
+        (!(s as any).supporter_until || new Date((s as any).supporter_until).getTime() > Date.now()),
       impressions: Number(t?.impressions ?? 0),
       clicks: Number(t?.clicks ?? 0),
       impressions_given: Number(t?.impressions_given ?? 0),
