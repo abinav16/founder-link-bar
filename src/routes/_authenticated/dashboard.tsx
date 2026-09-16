@@ -910,11 +910,14 @@ function DashboardPage() {
                         {copied ? "Copied!" : "Copy snippet"}
                       </button>
                       <button
+                        type="button"
+                        disabled={installStatus === "checking"}
                         onClick={() => checkInstall(startup.website_url)}
-                        className="rounded-lg border border-black/10 px-3 py-2 text-xs font-medium text-black/60 transition hover:border-black/25 hover:text-black"
+                        className="sb-press rounded-lg border border-black/10 bg-white px-3 py-2 text-xs font-medium text-black/60 transition hover:border-black/25 hover:text-black disabled:opacity-60"
                       >
-                        Check now
+                        {installStatus === "checking" ? "Checking…" : "Check now"}
                       </button>
+
                     </div>
                   </div>
                 </div>
