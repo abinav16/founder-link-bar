@@ -336,7 +336,7 @@ serve(async (req) => {
       const testOnly: boolean = !!data?.testOnly;
       const recipients = testOnly
         ? [{ email: ADMIN_EMAIL, name: "Admin", userId: "" }]
-        : await getRecipients();
+        : sliceBatch(await getRecipients());
 
       // Send one email, returning {ok, status, message}. Retries once on 429.
       async function sendOne(toAddr: string, subj: string, htmlBody: string, extraHeaders: Record<string, string>): Promise<{ ok: boolean; status: number; message: string }> {
