@@ -1022,7 +1022,7 @@ function Apply() {
                         type="button"
                         onClick={() => { setPlacement(p); setMode("widget"); }}
                         aria-pressed={!isSupporter && placement === p}
-                        className={`rounded-md px-4 py-1.5 text-sm font-medium capitalize transition ${!isSupporter && placement === p ? "bg-white text-black shadow-sm" : "text-black/45 hover:text-black/70"}`}
+                        className={`rounded-md px-2 py-2 text-sm font-medium capitalize transition sm:px-4 sm:py-1.5 ${!isSupporter && placement === p ? "bg-white text-black shadow-sm" : "text-black/45 hover:text-black/70"}`}
                       >
                         {p}
                       </button>
@@ -1031,7 +1031,7 @@ function Apply() {
                       type="button"
                       onClick={() => setMode("supporter")}
                       aria-pressed={isSupporter}
-                      className={`rounded-md px-4 py-1.5 text-sm font-medium transition ${isSupporter ? "bg-white text-black shadow-sm" : "text-black/45 hover:text-black/70"}`}
+                      className={`whitespace-nowrap rounded-md px-2 py-2 text-sm font-medium transition sm:px-4 sm:py-1.5 ${isSupporter ? "bg-white text-black shadow-sm" : "text-black/45 hover:text-black/70"}`}
                     >
                       No Bar
                     </button>
