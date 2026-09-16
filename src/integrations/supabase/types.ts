@@ -566,6 +566,53 @@ export type Database = {
           },
         ]
       }
+      site_visits: {
+        Row: {
+          browser: string | null
+          country: string | null
+          created_at: string
+          device: string | null
+          id: string
+          os: string | null
+          path: string | null
+          referrer: string | null
+          session_id: string | null
+          startup_id: string
+        }
+        Insert: {
+          browser?: string | null
+          country?: string | null
+          created_at?: string
+          device?: string | null
+          id?: string
+          os?: string | null
+          path?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          startup_id: string
+        }
+        Update: {
+          browser?: string | null
+          country?: string | null
+          created_at?: string
+          device?: string | null
+          id?: string
+          os?: string | null
+          path?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          startup_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_visits_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       startup_stats_daily: {
         Row: {
           clicks_given: number
@@ -973,6 +1020,15 @@ export type Database = {
           id: string
           name: string
           status: string
+        }[]
+      }
+      my_site_visit_summary: {
+        Args: { _days?: number; _startup_id: string }
+        Returns: {
+          countries: Json
+          devices: Json
+          top_referrers: Json
+          total: number
         }[]
       }
       public_bid_activity: {
