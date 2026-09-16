@@ -262,7 +262,7 @@ function AgentPromptCard({ prompt }: { prompt: string }) {
       <div className="min-w-0 flex-1">
         <p className="text-[13px] font-medium text-black">Let your AI agent install it</p>
         <p className="mt-0.5 text-xs text-black/45">
-          Using Lovable, Cursor, Claude Code or another AI builder? Copy the prompt — your agent installs the code for you. Just publish your site afterwards so we can verify the install.
+          Using Lovable, Cursor, Claude Code or another AI builder? Copy the prompt your agent installs the code for you. Just publish your site afterwards so we can verify the install.
         </p>
       </div>
       <button
