@@ -585,8 +585,11 @@ function DashboardPage() {
     setBreakdown(extra.breakdown);
   }
 
+  const isSupporter = startup?.membership_mode === "supporter";
   const snippet = startup
-    ? `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startup.id}"></script>`
+    ? isSupporter
+      ? `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startup.id}" data-mode="track"></script>`
+      : `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startup.id}"></script>`
     : "";
 
   const ctr = stats.impressions > 0
