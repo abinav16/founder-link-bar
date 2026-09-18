@@ -2,7 +2,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { LiveVisitorMap } from "@/components/LiveVisitorMap";
 import { StartupFavicon } from "@/components/StartupFavicon";
-import { ArrowRight, Settings, LogOut, LayoutDashboard, Eye, MousePointerClick, Globe, BarChart2, Users, TrendingUp, Info, X, Trophy, Gavel, Sparkles } from "lucide-react";
+import { ArrowRight, Settings, LogOut, LayoutDashboard, Eye, MousePointerClick, Globe, BarChart2, Users, TrendingUp, Info, X, Trophy, Gavel } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useBidBoard, formatUsd } from "@/lib/bid";
@@ -510,11 +510,11 @@ function BarFreeDemo() {
               <div className="hidden h-2 w-20 rounded-full bg-black/5 sm:block" />
               <span className="ml-auto shrink-0 text-[11px] font-medium text-black/50">Visit →</span>
             </div>
-            {/* The gold badge that takes its place */}
-            <div className="sb-barfree-gold absolute inset-0 flex h-9 items-center justify-center gap-2 rounded-lg border border-amber-400/50 bg-amber-50/90 shadow-[0_2px_12px_-4px_rgba(180,120,0,0.25)]">
-              <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-              <span className="text-[12px] font-semibold tracking-tight text-amber-700">Bar free</span>
-              <span className="text-[11px] text-amber-600/60">and still in the network</span>
+            {/* The quiet badge that takes its place */}
+            <div className="sb-barfree-gold absolute inset-0 flex h-9 items-center justify-center gap-2.5 rounded-lg border border-black/12 bg-white shadow-[0_2px_14px_-6px_rgba(0,0,0,0.14)]">
+              <span className="text-[12px] font-semibold tracking-tight text-black">Bar free</span>
+              <span className="h-0.5 w-0.5 rounded-full bg-black/25" />
+              <span className="text-[11px] text-black/40">Still in the network</span>
             </div>
           </div>
           <div className="mt-5 space-y-2.5">
@@ -535,19 +535,16 @@ function BarFreeDemo() {
 function BarFreeSection() {
   const { ref, visible } = useInView(0.15);
   return (
-    <section
-      className="relative overflow-hidden border-t border-black/8 px-6 py-16 sm:py-24"
-      style={{ background: "linear-gradient(180deg, oklch(0.985 0.012 85), oklch(0.962 0.028 85))" }}
-    >
+    <section className="relative overflow-hidden border-t border-black/8 px-6 py-12 sm:py-16">
       <div
         ref={ref}
         className="mx-auto max-w-5xl transition-all duration-700"
         style={{ opacity: visible ? 1 : 0, transform: visible ? "none" : "translateY(24px)" }}
       >
-        <div className="flex flex-col items-center gap-12 md:flex-row md:justify-between">
+        <div className="flex flex-col items-center gap-8 md:flex-row md:justify-between md:gap-12">
           <div className="max-w-xl">
-            <span className="inline-flex items-center gap-2 rounded-full border border-amber-500/40 bg-white/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-700">
-              <Sparkles className="h-3 w-3" /> New · Go bar free
+            <span className="inline-flex items-center rounded-full border border-black/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-black/60">
+              Supporter membership
             </span>
             <h2
               className="mt-5 text-3xl font-medium leading-tight tracking-tight sm:text-4xl md:text-5xl"
@@ -560,30 +557,29 @@ function BarFreeSection() {
               placing the bar on your own site. You keep your profile page, your dashboard,
               and you get the gold highlight reserved for supporters.
             </p>
-            <ul className="mt-7 space-y-3">
+            <ul className="mt-6 space-y-2.5 sm:mt-7 sm:space-y-3">
               {[
                 "Your listing still rotates across the network",
                 "Gold highlight on the network page and the leaderboard",
                 "Full dashboard with impressions, clicks and referrals",
                 "An optional invisible analytics code for your visitor map",
               ].map((b) => (
-                <li key={b} className="flex items-start gap-3 text-[15px] leading-relaxed text-black/55">
-                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-amber-500/40 text-[11px] text-amber-600">✓</span>
+                <li key={b} className="flex items-start gap-3 text-[14px] leading-relaxed text-black/55 sm:text-[15px]">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-black/15 text-[11px] text-black/50">✓</span>
                   {b}
                 </li>
               ))}
             </ul>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
+            <div className="mt-7 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap sm:items-center">
               <Link
                 to="/apply"
-                className="group inline-flex h-12 items-center rounded-lg bg-black px-7 text-sm font-medium text-white transition-all duration-200 hover:bg-black/80"
+                className="inline-flex h-12 w-full items-center justify-center rounded-lg bg-black px-7 text-sm font-medium text-white transition-all duration-200 hover:bg-black/80 sm:w-auto"
               >
                 Go bar free
-                <Sparkles className="ml-2 h-4 w-4 transition-transform duration-200 group-hover:rotate-12" />
               </Link>
               <Link
                 to="/dashboard"
-                className="inline-flex items-center gap-2 rounded-lg border border-black/12 px-5 py-3 text-sm font-medium text-black/60 transition-colors hover:border-black/30 hover:text-black"
+                className="inline-flex h-12 w-full items-center justify-center rounded-lg border border-black/12 px-5 text-sm font-medium text-black/60 transition-colors hover:border-black/30 hover:text-black sm:h-auto sm:w-auto"
               >
                 Already a member? Switch here
               </Link>
