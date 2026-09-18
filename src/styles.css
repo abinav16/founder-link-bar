@@ -386,3 +386,21 @@
   .sb-lift, .sb-press { transition: none; }
   .sb-lift:hover, .sb-lift:active, .sb-press:active { transform: none; }
 }
+
+/* ── Bar free section: bar leaves, gold badge arrives ──────────────── */
+@keyframes sb-barfree-bar {
+  0%, 16% { opacity: 1; transform: translateY(0); filter: blur(0); }
+  30%, 76% { opacity: 0; transform: translateY(-34px); filter: blur(3px); }
+  90%, 100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+@keyframes sb-barfree-gold {
+  0%, 24% { opacity: 0; transform: translateY(16px) scale(0.94); }
+  40%, 74% { opacity: 1; transform: translateY(0) scale(1); }
+  88%, 100% { opacity: 0; transform: translateY(12px) scale(0.97); }
+}
+.sb-barfree-bar { animation: sb-barfree-bar 7s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
+.sb-barfree-gold { animation: sb-barfree-gold 7s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .sb-barfree-bar, .sb-barfree-gold { animation: none; }
+  .sb-barfree-gold { opacity: 1; transform: none; }
+}
