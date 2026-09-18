@@ -528,7 +528,6 @@ function BarFreeDemo() {
           </div>
         </div>
       </div>
-      </div>
     </div>
   );
 }
