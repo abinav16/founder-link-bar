@@ -528,7 +528,7 @@ function BarFreeDemo() {
           </div>
         </div>
       </div>
-ec      </div>
+      </div>
     </div>
   );
 }
