@@ -602,42 +602,42 @@ function StartupBidSection() {
   const { data: board } = useBidBoard();
   const top3 = (board ?? []).slice(0, 3);
   return (
-    <section className="border-t border-black/8 bg-black px-6 py-16 text-white sm:py-24">
+    <section className="overflow-hidden border-t border-border bg-muted/35 px-6 py-16 sm:py-24">
       <div
         ref={ref}
-        className="mx-auto max-w-5xl transition-all duration-700"
+        className="mx-auto max-w-6xl transition-all duration-700"
         style={{ opacity: visible ? 1 : 0, transform: visible ? "none" : "translateY(24px)" }}
       >
-        <div className="flex flex-col gap-10 md:flex-row md:items-center md:justify-between">
+        <div className="grid items-center gap-12 md:grid-cols-2 md:gap-16">
           <div className="max-w-xl">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/20 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/70">
+            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground shadow-sm">
               <Gavel className="h-3 w-3" /> New · StartupBid
             </span>
             <h2
-              className="mt-5 text-3xl font-medium leading-tight tracking-tight sm:text-4xl md:text-5xl"
+              className="mt-6 text-4xl font-medium leading-[1.05] text-foreground sm:text-5xl md:text-6xl"
               style={{ fontFamily: "var(--font-display)" }}
             >
-              Want the top spot?<br />Bid for it.
+              Want the top spot?<br /><span className="italic text-muted-foreground">Bid for it.</span>
             </h2>
-            <p className="mt-5 text-[15px] leading-relaxed text-white/50">
+            <p className="mt-6 max-w-lg text-[15px] leading-relaxed text-muted-foreground sm:text-base">
               StartupBid is our pay-to-rank leaderboard. Enter any site or @handle, pay from $5, and
               your startup climbs the board. Bids are cumulative, ranking is pure total spend, and
               anyone can join with no account and no widget install required.
             </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
               <Link
                 to="/startupbid"
-                className="group inline-flex h-12 items-center rounded-lg bg-white px-7 text-sm font-medium text-black transition-all duration-200 hover:bg-white/85"
+                className="group inline-flex h-12 w-full items-center justify-center rounded-lg bg-primary px-7 text-sm font-medium text-primary-foreground shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md sm:w-auto"
               >
                 See the board
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
               </Link>
-              <span className="text-xs text-white/35">Separate from the free widget network.</span>
+              <span className="text-center text-xs text-muted-foreground sm:text-left">Separate from the free widget network.</span>
             </div>
           </div>
-          <div className="w-full max-w-sm space-y-2.5">
+          <div className="w-full space-y-3">
             {top3.length === 0 ? (
-              <div className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-6 text-center text-sm text-white/45">
+              <div className="rounded-lg border border-border bg-card px-4 py-8 text-center text-sm text-muted-foreground shadow-sm">
                 The board is open. Be the first to claim #1.
               </div>
             ) : (
@@ -645,15 +645,20 @@ function StartupBidSection() {
                 <Link
                   key={r.id}
                   to="/startupbid"
-                  className="flex items-center gap-4 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 transition-colors hover:bg-white/[0.08]"
+                  className="group flex min-h-16 items-center gap-4 rounded-lg border border-border bg-card px-4 py-3 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-md sm:px-5"
                 >
-                  <span className="text-xs font-semibold text-white/40">#{r.rank}</span>
-                  <span className="flex-1 truncate text-sm font-medium text-white/85">{r.display_url}</span>
-                  <span className="text-sm font-semibold text-white">{formatUsd(r.total_cents)}</span>
+                  <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${r.rank === 1 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                    #{r.rank}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-sm font-medium text-card-foreground sm:text-base">{r.display_url}</span>
+                  <span className="text-sm font-semibold text-card-foreground sm:text-base">{formatUsd(r.total_cents)}</span>
                 </Link>
               ))
             )}
-            <p className="pt-1 text-center text-[11px] text-white/25">Live board updates every few seconds.</p>
+            <div className="flex items-center justify-center gap-2 pt-2">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-foreground/45" aria-hidden="true" />
+              <p className="text-center text-[11px] text-muted-foreground">Live board updates every few seconds.</p>
+            </div>
           </div>
         </div>
       </div>
