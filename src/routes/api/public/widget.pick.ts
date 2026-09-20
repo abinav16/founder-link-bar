@@ -4,6 +4,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { parseUA, extractCountry, extractIp, lookupCountry } from "@/lib/ua";
 import { getPickWeights, weightedPick } from "@/lib/pick-weights";
 import { isApprovedHost } from "@/lib/host-check";
+import { isBotRequest, isOverHostCap } from "@/lib/bot-filter";
 
 const STARTUPBAR_SITE_ID = "0d2db708-f4e9-4b77-bd83-c446826c76b1";
 
@@ -86,7 +87,13 @@ export const Route = createFileRoute("/api/public/widget/pick")({
         const weights = await getPickWeights(supabase);
         const pick = weightedPick(filtered, weights);
 
-        if (!preview) {
+        // Bots and floods still get the bar, they just never get counted.
+        const countable =
+          !preview &&
+          !isBotRequest(request) &&
+          !(await isOverHostCap(supabase, host, "impressions"));
+
+        if (countable) {
           // Enrich impression with visitor context so the per-startup
           // dashboard globe can show real referrer/country/device instead
           // of falling back to "Direct" / "Unknown".
