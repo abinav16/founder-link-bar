@@ -19,7 +19,10 @@ export const Route = createFileRoute("/api/public/widget/click")({
 
         // Clicks only count when the host site is an approved member (or the
         // click came from StartupBar's own pages, where there is no host id).
-        const hostOk = await isApprovedHost(supabase, host);
+        const hostOk =
+          (await isApprovedHost(supabase, host)) &&
+          !isBotRequest(request) &&
+          !(await isOverHostCap(supabase, host, "clicks"));
         const hostId = hostOk ? (host ?? null) : null;
 
         // Badge click: not tied to a specific promoted startup — record against
