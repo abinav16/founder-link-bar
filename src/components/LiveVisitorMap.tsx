@@ -767,11 +767,15 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
     // Poll every 30s so the globe stays populated even if the realtime channel
     // silently drops. If the viewer is exploring right now we hold the rebuild
     // back and run it as soon as they go idle, so nothing jumps under them.
+    let lastRun = Date.now();
     const t = setInterval(() => {
+      const due = Date.now() - lastRun >= 30000;
+      if (!due && !pendingRefreshRef.current) return;
       if (isViewerBusy()) { pendingRefreshRef.current = true; return; }
       pendingRefreshRef.current = false;
+      lastRun = Date.now();
       refreshData();
-    }, 5000);
+    }, 3000);
     return () => clearInterval(t);
   }, [refreshData, mapReady]);
 
