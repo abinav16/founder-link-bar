@@ -67,7 +67,8 @@ async function loadTrafficBreakdown(startupId: string): Promise<TrafficBreakdown
       .from("impressions")
       .select("country, device, host_startup_id, referrer")
       .eq("shown_startup_id", startupId)
-      .neq("referrer", "dev-simulate")
+      // .neq() would also exclude rows with a NULL referrer (direct traffic).
+      .or("referrer.is.null,referrer.neq.dev-simulate")
       .limit(2000),
     supabase
       .from("clicks")

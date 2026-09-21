@@ -619,7 +619,10 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
         .from("impressions")
         .select("id, country, device, host_startup_id, referrer, path, created_at")
         .gte("created_at", startOfDay.toISOString())
-        .neq("referrer", "dev-simulate")
+        // NOTE: a plain .neq() also drops rows where referrer IS NULL (SQL
+        // NULL comparison), which silently hid every direct visit from the
+        // globe. Keep nulls, exclude only the simulated rows.
+        .or("referrer.is.null,referrer.neq.dev-simulate")
         .order("created_at", { ascending: false })
         .limit(5000);
       // Dashboard scope: show all visits that happened ON this startup's site
