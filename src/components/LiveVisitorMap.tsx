@@ -498,6 +498,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
 
     // Stop auto-rotate when the user interacts with the map
     const stopOnInteraction = () => {
+      lastInteractionRef.current = Date.now();
       if (!autoRotateRef.current) return;
       autoRotateRef.current = false;
       setAutoRotate(false);
@@ -505,6 +506,12 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
     };
     map.on("mousedown", stopOnInteraction);
     map.on("touchstart", stopOnInteraction);
+    map.on("wheel", stopOnInteraction);
+    map.on("dragstart", stopOnInteraction);
+    map.on("zoomstart", stopOnInteraction);
+    map.on("rotatestart", stopOnInteraction);
+    map.on("drag", stopOnInteraction);
+    map.on("zoom", stopOnInteraction);
 
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
