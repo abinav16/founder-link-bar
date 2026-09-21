@@ -765,8 +765,13 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
     if (!mapReady) return;
     refreshData();
     // Poll every 30s so the globe stays populated even if the realtime channel
-    // silently drops — mirrors what a manual page refresh would do.
-    const t = setInterval(() => { refreshData(); }, 30000);
+    // silently drops. If the viewer is exploring right now we hold the rebuild
+    // back and run it as soon as they go idle, so nothing jumps under them.
+    const t = setInterval(() => {
+      if (isViewerBusy()) { pendingRefreshRef.current = true; return; }
+      pendingRefreshRef.current = false;
+      refreshData();
+    }, 5000);
     return () => clearInterval(t);
   }, [refreshData, mapReady]);
 
