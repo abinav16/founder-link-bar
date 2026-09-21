@@ -602,10 +602,10 @@ function StartupBidSection() {
   const { data: board } = useBidBoard();
   const top3 = (board ?? []).slice(0, 3);
   return (
-    <section className="overflow-hidden border-t border-border bg-muted/35 px-6 py-16 sm:py-24">
+    <section className="overflow-hidden border-t border-black/8 bg-white px-6 py-16 sm:py-24">
       <div
         ref={ref}
-        className="mx-auto max-w-6xl transition-all duration-700"
+        className="mx-auto max-w-5xl transition-all duration-700"
         style={{ opacity: visible ? 1 : 0, transform: visible ? "none" : "translateY(24px)" }}
       >
         <div className="grid items-center gap-12 md:grid-cols-2 md:gap-16">
