@@ -584,6 +584,8 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady) return;
+    // Never yank the camera while the viewer is exploring or reading a card.
+    if (isViewerBusy()) return;
     const visiblePins = pinsRef.current.filter((p) => matchesFilter(p, activeFilterRef.current));
     if (visiblePins.length === 0) return;
 
