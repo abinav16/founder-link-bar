@@ -122,6 +122,15 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
   const autoRotateRef = useRef(true);
   const rafRef = useRef<number | null>(null);
   const projectionRef = useRef<"globe" | "mercator">("globe");
+  // When the viewer is exploring the globe themselves (dragging, zooming, or
+  // reading an open visitor card) we never move the camera or rebuild pins
+  // under them. Live data keeps flowing; the view just stays where they put it.
+  const lastInteractionRef = useRef(0);
+  const popupOpenRef = useRef(false);
+  const pendingRefreshRef = useRef(false);
+  const IDLE_MS = 20000;
+  const isViewerBusy = () =>
+    popupOpenRef.current || Date.now() - lastInteractionRef.current < IDLE_MS;
   const [mapTheme, setMapTheme] = useState("dark-v11");
   // Tracks the last style URL actually applied to the map, so we skip the initial
   // effect run (map already loaded dark-v11 in the constructor).
