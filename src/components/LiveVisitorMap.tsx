@@ -122,6 +122,15 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
   const autoRotateRef = useRef(true);
   const rafRef = useRef<number | null>(null);
   const projectionRef = useRef<"globe" | "mercator">("globe");
+  // When the viewer is exploring the globe themselves (dragging, zooming, or
+  // reading an open visitor card) we never move the camera or rebuild pins
+  // under them. Live data keeps flowing; the view just stays where they put it.
+  const lastInteractionRef = useRef(0);
+  const popupOpenRef = useRef(false);
+  const pendingRefreshRef = useRef(false);
+  const IDLE_MS = 20000;
+  const isViewerBusy = () =>
+    popupOpenRef.current || Date.now() - lastInteractionRef.current < IDLE_MS;
   const [mapTheme, setMapTheme] = useState("dark-v11");
   // Tracks the last style URL actually applied to the map, so we skip the initial
   // effect run (map already loaded dark-v11 in the constructor).
@@ -410,6 +419,12 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
         .setHTML(popupHtml)
         .setLngLat([lng, lat])
         .addTo(map);
+      popupOpenRef.current = true;
+      lastInteractionRef.current = Date.now();
+      popup.on("close", () => {
+        popupOpenRef.current = false;
+        lastInteractionRef.current = Date.now();
+      });
       pinRecord.popup = popup;
     });
 
@@ -483,6 +498,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
 
     // Stop auto-rotate when the user interacts with the map
     const stopOnInteraction = () => {
+      lastInteractionRef.current = Date.now();
       if (!autoRotateRef.current) return;
       autoRotateRef.current = false;
       setAutoRotate(false);
@@ -490,6 +506,9 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
     };
     map.on("mousedown", stopOnInteraction);
     map.on("touchstart", stopOnInteraction);
+    map.on("wheel", stopOnInteraction);
+    map.on("dragstart", stopOnInteraction);
+    map.on("drag", stopOnInteraction);
 
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -565,6 +584,8 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady) return;
+    // Never yank the camera while the viewer is exploring or reading a card.
+    if (isViewerBusy()) return;
     const visiblePins = pinsRef.current.filter((p) => matchesFilter(p, activeFilterRef.current));
     if (visiblePins.length === 0) return;
 
@@ -744,8 +765,17 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
     if (!mapReady) return;
     refreshData();
     // Poll every 30s so the globe stays populated even if the realtime channel
-    // silently drops — mirrors what a manual page refresh would do.
-    const t = setInterval(() => { refreshData(); }, 30000);
+    // silently drops. If the viewer is exploring right now we hold the rebuild
+    // back and run it as soon as they go idle, so nothing jumps under them.
+    let lastRun = Date.now();
+    const t = setInterval(() => {
+      const due = Date.now() - lastRun >= 30000;
+      if (!due && !pendingRefreshRef.current) return;
+      if (isViewerBusy()) { pendingRefreshRef.current = true; return; }
+      pendingRefreshRef.current = false;
+      lastRun = Date.now();
+      refreshData();
+    }, 3000);
     return () => clearInterval(t);
   }, [refreshData, mapReady]);
 
