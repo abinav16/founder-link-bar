@@ -419,6 +419,12 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
         .setHTML(popupHtml)
         .setLngLat([lng, lat])
         .addTo(map);
+      popupOpenRef.current = true;
+      lastInteractionRef.current = Date.now();
+      popup.on("close", () => {
+        popupOpenRef.current = false;
+        lastInteractionRef.current = Date.now();
+      });
       pinRecord.popup = popup;
     });
 
