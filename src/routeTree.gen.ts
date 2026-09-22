@@ -30,6 +30,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as ApiPublicVerifyInstallRouteImport } from './routes/api/public/verify-install'
 import { Route as ApiPublicUnsubscribeRouteImport } from './routes/api/public/unsubscribe'
+import { Route as ApiPublicEmailEventsRouteImport } from './routes/api/public/email-events'
 import { Route as ApiPublicDodoWebhookRouteImport } from './routes/api/public/dodo-webhook'
 import { Route as ApiPublicBidStatusRouteImport } from './routes/api/public/bid-status'
 import { Route as ApiPublicBidEnrichRouteImport } from './routes/api/public/bid-enrich'
@@ -146,6 +147,11 @@ const ApiPublicUnsubscribeRoute = ApiPublicUnsubscribeRouteImport.update({
   path: '/api/public/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicEmailEventsRoute = ApiPublicEmailEventsRouteImport.update({
+  id: '/api/public/email-events',
+  path: '/api/public/email-events',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicDodoWebhookRoute = ApiPublicDodoWebhookRouteImport.update({
   id: '/api/public/dodo-webhook',
   path: '/api/public/dodo-webhook',
@@ -227,6 +233,7 @@ export interface FileRoutesByFullPath {
   '/api/public/bid-enrich': typeof ApiPublicBidEnrichRoute
   '/api/public/bid-status': typeof ApiPublicBidStatusRoute
   '/api/public/dodo-webhook': typeof ApiPublicDodoWebhookRoute
+  '/api/public/email-events': typeof ApiPublicEmailEventsRoute
   '/api/public/unsubscribe': typeof ApiPublicUnsubscribeRoute
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
   '/api/public/track/funnel': typeof ApiPublicTrackFunnelRoute
@@ -260,6 +267,7 @@ export interface FileRoutesByTo {
   '/api/public/bid-enrich': typeof ApiPublicBidEnrichRoute
   '/api/public/bid-status': typeof ApiPublicBidStatusRoute
   '/api/public/dodo-webhook': typeof ApiPublicDodoWebhookRoute
+  '/api/public/email-events': typeof ApiPublicEmailEventsRoute
   '/api/public/unsubscribe': typeof ApiPublicUnsubscribeRoute
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
   '/api/public/track/funnel': typeof ApiPublicTrackFunnelRoute
@@ -295,6 +303,7 @@ export interface FileRoutesById {
   '/api/public/bid-enrich': typeof ApiPublicBidEnrichRoute
   '/api/public/bid-status': typeof ApiPublicBidStatusRoute
   '/api/public/dodo-webhook': typeof ApiPublicDodoWebhookRoute
+  '/api/public/email-events': typeof ApiPublicEmailEventsRoute
   '/api/public/unsubscribe': typeof ApiPublicUnsubscribeRoute
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
   '/api/public/track/funnel': typeof ApiPublicTrackFunnelRoute
@@ -330,6 +339,7 @@ export interface FileRouteTypes {
     | '/api/public/bid-enrich'
     | '/api/public/bid-status'
     | '/api/public/dodo-webhook'
+    | '/api/public/email-events'
     | '/api/public/unsubscribe'
     | '/api/public/verify-install'
     | '/api/public/track/funnel'
@@ -363,6 +373,7 @@ export interface FileRouteTypes {
     | '/api/public/bid-enrich'
     | '/api/public/bid-status'
     | '/api/public/dodo-webhook'
+    | '/api/public/email-events'
     | '/api/public/unsubscribe'
     | '/api/public/verify-install'
     | '/api/public/track/funnel'
@@ -397,6 +408,7 @@ export interface FileRouteTypes {
     | '/api/public/bid-enrich'
     | '/api/public/bid-status'
     | '/api/public/dodo-webhook'
+    | '/api/public/email-events'
     | '/api/public/unsubscribe'
     | '/api/public/verify-install'
     | '/api/public/track/funnel'
@@ -430,6 +442,7 @@ export interface RootRouteChildren {
   ApiPublicBidEnrichRoute: typeof ApiPublicBidEnrichRoute
   ApiPublicBidStatusRoute: typeof ApiPublicBidStatusRoute
   ApiPublicDodoWebhookRoute: typeof ApiPublicDodoWebhookRoute
+  ApiPublicEmailEventsRoute: typeof ApiPublicEmailEventsRoute
   ApiPublicUnsubscribeRoute: typeof ApiPublicUnsubscribeRoute
   ApiPublicVerifyInstallRoute: typeof ApiPublicVerifyInstallRoute
   ApiPublicTrackFunnelRoute: typeof ApiPublicTrackFunnelRoute
@@ -590,6 +603,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicUnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/email-events': {
+      id: '/api/public/email-events'
+      path: '/api/public/email-events'
+      fullPath: '/api/public/email-events'
+      preLoaderRoute: typeof ApiPublicEmailEventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/dodo-webhook': {
       id: '/api/public/dodo-webhook'
       path: '/api/public/dodo-webhook'
@@ -705,6 +725,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicBidEnrichRoute: ApiPublicBidEnrichRoute,
   ApiPublicBidStatusRoute: ApiPublicBidStatusRoute,
   ApiPublicDodoWebhookRoute: ApiPublicDodoWebhookRoute,
+  ApiPublicEmailEventsRoute: ApiPublicEmailEventsRoute,
   ApiPublicUnsubscribeRoute: ApiPublicUnsubscribeRoute,
   ApiPublicVerifyInstallRoute: ApiPublicVerifyInstallRoute,
   ApiPublicTrackFunnelRoute: ApiPublicTrackFunnelRoute,

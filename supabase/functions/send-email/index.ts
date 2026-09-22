@@ -167,11 +167,16 @@ serve(async (req) => {
 
       const segment: string = data?.segment ?? "all";
 
+      // How many accounts were dropped for compliance reasons on the last
+      // getRecipients() run (deleted, suspended, unverified address).
+      let ineligibleCount = 0;
+
       // Compute recipients per segment
       async function getRecipients(): Promise<{ email: string; name: string; userId: string }[]> {
         const perPage = 1000;
         let page = 1;
         const users: { id: string; email: string; name: string }[] = [];
+        ineligibleCount = 0;
         // paginate up to 5000 users
         for (let i = 0; i < 5; i++) {
           const { data: u, error } = await supabase.auth.admin.listUsers({ page, perPage });
@@ -179,6 +184,25 @@ serve(async (req) => {
           const list = u?.users ?? [];
           for (const usr of list) {
             if (!usr.email) continue;
+            const anyUser = usr as unknown as {
+              deleted_at?: string | null;
+              banned_until?: string | null;
+              email_confirmed_at?: string | null;
+              confirmed_at?: string | null;
+              is_anonymous?: boolean;
+            };
+            // Never mail deleted, suspended, anonymous, or unverified accounts.
+            const bannedUntil = anyUser.banned_until ? new Date(anyUser.banned_until).getTime() : 0;
+            const confirmed = anyUser.email_confirmed_at ?? anyUser.confirmed_at ?? null;
+            if (
+              anyUser.deleted_at ||
+              anyUser.is_anonymous ||
+              (bannedUntil && bannedUntil > Date.now()) ||
+              !confirmed
+            ) {
+              ineligibleCount += 1;
+              continue;
+            }
             users.push({ id: usr.id, email: usr.email, name: (usr.user_metadata?.full_name as string | undefined) ?? "" });
           }
           if (list.length < perPage) break;
@@ -244,11 +268,11 @@ serve(async (req) => {
 
       // Recipient counts (post-suppression) plus a raw pre-suppression total
       // so admins see how many are opted-out for this segment.
-      async function segmentSuppressedCount(): Promise<number> {
-        // Cheap: count all rows in suppressed_emails. Segment membership check
-        // isn't worth the extra roundtrip for a UI-only hint.
-        const { count } = await supabase.from("suppressed_emails").select("*", { count: "exact", head: true });
-        return count ?? 0;
+      async function suppressionBreakdown(): Promise<{ total: number; unsubscribe: number; bounce: number; complaint: number }> {
+        const { data } = await supabase.from("suppressed_emails").select("reason");
+        const rows = (data ?? []) as { reason: string }[];
+        const by = (r: string) => rows.filter((x) => x.reason === r).length;
+        return { total: rows.length, unsubscribe: by("unsubscribe"), bounce: by("bounce"), complaint: by("complaint") };
       }
 
       // Markdown-lite → HTML (safe)
@@ -273,7 +297,7 @@ serve(async (req) => {
       // Recipients-only lookup for UI count
       if (type === "admin-broadcast-recipients") {
         const list = await getRecipients();
-        const unsubscribed = await segmentSuppressedCount();
+        const sup = await suppressionBreakdown();
         const batch = sliceBatch(list);
         return new Response(JSON.stringify({
           count: batch.length,
@@ -281,7 +305,11 @@ serve(async (req) => {
           batchSize,
           batchIndex,
           batches: batchSize ? Math.max(1, Math.ceil(list.length / batchSize)) : 1,
-          unsubscribed,
+          unsubscribed: sup.total,
+          optedOut: sup.unsubscribe,
+          bounced: sup.bounce,
+          complained: sup.complaint,
+          ineligible: ineligibleCount,
           sample: batch.slice(0, 5).map((r) => r.email),
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
@@ -379,19 +407,33 @@ serve(async (req) => {
             heading: (headlineIn || subjectIn).replace(/\{\{\s*name\s*\}\}/gi, firstName),
             bodyHtml: personalizedBody + unsubscribeFooterHtml(unsubUrl),
           });
+          // Compliance record: who was mailed, when, and how it went.
+          async function logSend(status: "sent" | "failed", error?: string) {
+            await supabase.from("email_send_log").insert({
+              message_id: `broadcast-${crypto.randomUUID()}`,
+              template_name: "admin-broadcast",
+              recipient_email: r.email,
+              status,
+              error_message: error ?? null,
+              metadata: { segment, subject: subjectIn, batchSize, batchIndex },
+            }).then(() => {}, () => {});
+          }
           try {
             const result = await sendOne(r.email, personalizedSubject, html, marketingHeaders(unsubUrl));
             if (result.ok) {
               sent += 1;
+              await logSend("sent");
             } else {
               const msg = `HTTP ${result.status} ${result.message}`;
               console.error(`broadcast send failed for ${r.email}: ${msg}`);
               errors.push({ email: r.email, error: msg });
+              await logSend("failed", msg);
             }
           } catch (e) {
             const msg = String(e).slice(0, 200);
             console.error(`broadcast send exception for ${r.email}: ${msg}`);
             errors.push({ email: r.email, error: msg });
+            await logSend("failed", msg);
           }
           // Pace under Resend's 2 req/s default rate limit
           await new Promise((res) => setTimeout(res, 550));

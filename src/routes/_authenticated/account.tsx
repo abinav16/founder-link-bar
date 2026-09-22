@@ -7,6 +7,7 @@ import { Save, User, Globe, Trash2, Plus, ChevronDown, ChevronUp, ExternalLink, 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { AvatarCropDialog } from "@/components/AvatarCropDialog";
 import { PromoteButton } from "@/components/FeaturedBookingDialog";
+import { deleteMyAccount } from "@/lib/account.functions";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
@@ -652,6 +653,9 @@ function AccountPage() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [deleteAccountOpen, setDeleteAccountOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -764,6 +768,24 @@ function AccountPage() {
 
   function handleDelete(id: string) {
     setStartups((prev) => prev.filter((s) => s.id !== id));
+  }
+
+  async function confirmDeleteAccount() {
+    if (deleteConfirm.trim().toLowerCase() !== "delete") {
+      toast.error('Type "delete" to confirm');
+      return;
+    }
+    setDeletingAccount(true);
+    const t = toast.loading("Deleting your account…");
+    try {
+      await deleteMyAccount();
+      toast.success("Your account has been deleted", { id: t });
+      await supabase.auth.signOut();
+      window.location.href = "/";
+    } catch (e) {
+      toast.error(`Couldn't delete your account: ${String(e).slice(0, 160)}`, { id: t });
+      setDeletingAccount(false);
+    }
   }
 
   return (
@@ -937,6 +959,20 @@ function AccountPage() {
                   </button>
                 </div>
               </form>
+
+              <div className="mt-8 rounded-xl border border-red-200 bg-red-50/40 p-4">
+                <p className="text-sm font-medium text-black">Delete your account</p>
+                <p className="mt-1 text-xs text-black/50">
+                  Removes your listings, profile and analytics for good, and takes your email off every list. This cannot be undone.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => { setDeleteConfirm(""); setDeleteAccountOpen(true); }}
+                  className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-red-300 bg-white px-3 py-1.5 text-xs font-medium text-red-600 transition-all hover:bg-red-600 hover:text-white"
+                >
+                  <Trash2 className="h-3.5 w-3.5" /> Delete account
+                </button>
+              </div>
             </div>
             ) : (
             <div className="space-y-3">
@@ -981,6 +1017,36 @@ function AccountPage() {
       onCancel={() => setPendingAvatarFile(null)}
       onConfirm={uploadCroppedAvatar}
     />
+    <Dialog open={deleteAccountOpen} onOpenChange={(v) => { if (!deletingAccount) setDeleteAccountOpen(v); }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Delete your account</DialogTitle>
+          <DialogDescription>
+            This deletes your listings, profile, analytics and saved startups permanently, and adds your email to our do not contact list. Payment records are kept only as long as tax law requires.
+          </DialogDescription>
+        </DialogHeader>
+        <div>
+          <label className="mb-1.5 block text-xs font-medium text-black/60">Type <span className="font-mono text-black">delete</span> to confirm</label>
+          <input
+            value={deleteConfirm}
+            onChange={(e) => setDeleteConfirm(e.target.value)}
+            placeholder="delete"
+            className={inputCls}
+          />
+        </div>
+        <DialogFooter className="gap-2 sm:gap-2">
+          <button type="button" disabled={deletingAccount} onClick={() => setDeleteAccountOpen(false)}
+            className="rounded-lg border border-black/12 px-4 py-2 text-sm font-medium text-black/60 transition-all hover:border-black/25 hover:text-black disabled:opacity-50">
+            Cancel
+          </button>
+          <button type="button" disabled={deletingAccount} onClick={confirmDeleteAccount}
+            className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-red-700 disabled:opacity-60">
+            <Trash2 className="h-3.5 w-3.5" />
+            {deletingAccount ? "Deleting…" : "Delete permanently"}
+          </button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
     </>
   );
 }
