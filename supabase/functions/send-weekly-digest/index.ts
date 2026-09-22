@@ -228,6 +228,24 @@ serve(async (req) => {
           skipped++;
           continue;
         }
+        // Skip deleted, suspended, anonymous, or unverified accounts.
+        const acct = user as unknown as {
+          deleted_at?: string | null;
+          banned_until?: string | null;
+          email_confirmed_at?: string | null;
+          confirmed_at?: string | null;
+          is_anonymous?: boolean;
+        };
+        const bannedUntil = acct.banned_until ? new Date(acct.banned_until).getTime() : 0;
+        if (
+          acct.deleted_at ||
+          acct.is_anonymous ||
+          (bannedUntil && bannedUntil > Date.now()) ||
+          !(acct.email_confirmed_at ?? acct.confirmed_at)
+        ) {
+          skipped++;
+          continue;
+        }
 
         const sections: string[] = [];
         for (const s of userStartups) {
