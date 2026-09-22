@@ -268,11 +268,11 @@ serve(async (req) => {
 
       // Recipient counts (post-suppression) plus a raw pre-suppression total
       // so admins see how many are opted-out for this segment.
-      async function segmentSuppressedCount(): Promise<number> {
-        // Cheap: count all rows in suppressed_emails. Segment membership check
-        // isn't worth the extra roundtrip for a UI-only hint.
-        const { count } = await supabase.from("suppressed_emails").select("*", { count: "exact", head: true });
-        return count ?? 0;
+      async function suppressionBreakdown(): Promise<{ total: number; unsubscribe: number; bounce: number; complaint: number }> {
+        const { data } = await supabase.from("suppressed_emails").select("reason");
+        const rows = (data ?? []) as { reason: string }[];
+        const by = (r: string) => rows.filter((x) => x.reason === r).length;
+        return { total: rows.length, unsubscribe: by("unsubscribe"), bounce: by("bounce"), complaint: by("complaint") };
       }
 
       // Markdown-lite → HTML (safe)
