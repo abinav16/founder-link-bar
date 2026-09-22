@@ -297,7 +297,7 @@ serve(async (req) => {
       // Recipients-only lookup for UI count
       if (type === "admin-broadcast-recipients") {
         const list = await getRecipients();
-        const unsubscribed = await segmentSuppressedCount();
+        const sup = await suppressionBreakdown();
         const batch = sliceBatch(list);
         return new Response(JSON.stringify({
           count: batch.length,
@@ -305,7 +305,11 @@ serve(async (req) => {
           batchSize,
           batchIndex,
           batches: batchSize ? Math.max(1, Math.ceil(list.length / batchSize)) : 1,
-          unsubscribed,
+          unsubscribed: sup.total,
+          optedOut: sup.unsubscribe,
+          bounced: sup.bounce,
+          complained: sup.complaint,
+          ineligible: ineligibleCount,
           sample: batch.slice(0, 5).map((r) => r.email),
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
