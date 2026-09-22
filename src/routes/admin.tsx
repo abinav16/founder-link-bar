@@ -799,6 +799,10 @@ function BroadcastPanel() {
   const [batchSize, setBatchSize] = useState<number>(80);
   const [batchIndex, setBatchIndex] = useState<number>(1);
   const [unsubscribed, setUnsubscribed] = useState<number>(0);
+  const [optedOut, setOptedOut] = useState<number>(0);
+  const [bounced, setBounced] = useState<number>(0);
+  const [complained, setComplained] = useState<number>(0);
+  const [ineligible, setIneligible] = useState<number>(0);
   const [loadingCount, setLoadingCount] = useState(false);
   const [previewHtml, setPreviewHtml] = useState<string>("");
   const [sending, setSending] = useState(false);
@@ -812,11 +816,15 @@ function BroadcastPanel() {
         body: { type: "admin-broadcast-recipients", data: { segment: seg, batchSize: size, batchIndex: index } },
       });
       if (error) throw error;
-      const r = data as { count: number; total?: number; batches?: number; unsubscribed?: number };
+      const r = data as { count: number; total?: number; batches?: number; unsubscribed?: number; optedOut?: number; bounced?: number; complained?: number; ineligible?: number };
       setCount(r?.count ?? 0);
       setTotal(r?.total ?? r?.count ?? 0);
       setBatches(Math.max(1, r?.batches ?? 1));
       setUnsubscribed(r?.unsubscribed ?? 0);
+      setOptedOut(r?.optedOut ?? 0);
+      setBounced(r?.bounced ?? 0);
+      setComplained(r?.complained ?? 0);
+      setIneligible(r?.ineligible ?? 0);
     } catch (e) {
       toast.error("Couldn't load recipient count");
     } finally {
