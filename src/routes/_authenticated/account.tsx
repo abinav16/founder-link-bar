@@ -7,6 +7,7 @@ import { Save, User, Globe, Trash2, Plus, ChevronDown, ChevronUp, ExternalLink, 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { AvatarCropDialog } from "@/components/AvatarCropDialog";
 import { PromoteButton } from "@/components/FeaturedBookingDialog";
+import { deleteMyAccount } from "@/lib/account.functions";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
@@ -652,6 +653,9 @@ function AccountPage() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [deleteAccountOpen, setDeleteAccountOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -764,6 +768,24 @@ function AccountPage() {
 
   function handleDelete(id: string) {
     setStartups((prev) => prev.filter((s) => s.id !== id));
+  }
+
+  async function confirmDeleteAccount() {
+    if (deleteConfirm.trim().toLowerCase() !== "delete") {
+      toast.error('Type "delete" to confirm');
+      return;
+    }
+    setDeletingAccount(true);
+    const t = toast.loading("Deleting your account…");
+    try {
+      await deleteMyAccount();
+      toast.success("Your account has been deleted", { id: t });
+      await supabase.auth.signOut();
+      window.location.href = "/";
+    } catch (e) {
+      toast.error(`Couldn't delete your account: ${String(e).slice(0, 160)}`, { id: t });
+      setDeletingAccount(false);
+    }
   }
 
   return (
