@@ -167,11 +167,16 @@ serve(async (req) => {
 
       const segment: string = data?.segment ?? "all";
 
+      // How many accounts were dropped for compliance reasons on the last
+      // getRecipients() run (deleted, suspended, unverified address).
+      let ineligibleCount = 0;
+
       // Compute recipients per segment
       async function getRecipients(): Promise<{ email: string; name: string; userId: string }[]> {
         const perPage = 1000;
         let page = 1;
         const users: { id: string; email: string; name: string }[] = [];
+        ineligibleCount = 0;
         // paginate up to 5000 users
         for (let i = 0; i < 5; i++) {
           const { data: u, error } = await supabase.auth.admin.listUsers({ page, perPage });
@@ -179,6 +184,25 @@ serve(async (req) => {
           const list = u?.users ?? [];
           for (const usr of list) {
             if (!usr.email) continue;
+            const anyUser = usr as unknown as {
+              deleted_at?: string | null;
+              banned_until?: string | null;
+              email_confirmed_at?: string | null;
+              confirmed_at?: string | null;
+              is_anonymous?: boolean;
+            };
+            // Never mail deleted, suspended, anonymous, or unverified accounts.
+            const bannedUntil = anyUser.banned_until ? new Date(anyUser.banned_until).getTime() : 0;
+            const confirmed = anyUser.email_confirmed_at ?? anyUser.confirmed_at ?? null;
+            if (
+              anyUser.deleted_at ||
+              anyUser.is_anonymous ||
+              (bannedUntil && bannedUntil > Date.now()) ||
+              !confirmed
+            ) {
+              ineligibleCount += 1;
+              continue;
+            }
             users.push({ id: usr.id, email: usr.email, name: (usr.user_metadata?.full_name as string | undefined) ?? "" });
           }
           if (list.length < perPage) break;
