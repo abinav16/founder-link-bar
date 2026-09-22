@@ -91,7 +91,11 @@ export const Route = createFileRoute("/api/public/email-events")({
           emails.map((email) => ({
             email,
             reason,
-            metadata: { event, provider: "resend", email_id: payload["email_id"] ?? null },
+            metadata: {
+              event,
+              provider: "resend",
+              email_id: typeof payload["email_id"] === "string" ? payload["email_id"] : null,
+            },
           })),
           { onConflict: "email", ignoreDuplicates: true },
         );
