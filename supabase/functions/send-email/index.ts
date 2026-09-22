@@ -407,19 +407,33 @@ serve(async (req) => {
             heading: (headlineIn || subjectIn).replace(/\{\{\s*name\s*\}\}/gi, firstName),
             bodyHtml: personalizedBody + unsubscribeFooterHtml(unsubUrl),
           });
+          // Compliance record: who was mailed, when, and how it went.
+          async function logSend(status: "sent" | "failed", error?: string) {
+            await supabase.from("email_send_log").insert({
+              message_id: `broadcast-${crypto.randomUUID()}`,
+              template_name: "admin-broadcast",
+              recipient_email: r.email,
+              status,
+              error_message: error ?? null,
+              metadata: { segment, subject: subjectIn, batchSize, batchIndex },
+            }).then(() => {}, () => {});
+          }
           try {
             const result = await sendOne(r.email, personalizedSubject, html, marketingHeaders(unsubUrl));
             if (result.ok) {
               sent += 1;
+              await logSend("sent");
             } else {
               const msg = `HTTP ${result.status} ${result.message}`;
               console.error(`broadcast send failed for ${r.email}: ${msg}`);
               errors.push({ email: r.email, error: msg });
+              await logSend("failed", msg);
             }
           } catch (e) {
             const msg = String(e).slice(0, 200);
             console.error(`broadcast send exception for ${r.email}: ${msg}`);
             errors.push({ email: r.email, error: msg });
+            await logSend("failed", msg);
           }
           // Pace under Resend's 2 req/s default rate limit
           await new Promise((res) => setTimeout(res, 550));
