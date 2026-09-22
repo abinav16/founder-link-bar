@@ -916,8 +916,14 @@ function BroadcastPanel() {
               {loadingCount ? "Counting…" : count === null ? "—" : `${count} recipient${count === 1 ? "" : "s"}`}
               <span className="text-black/30">· {SEGMENTS.find((s) => s.value === segment)?.hint}</span>
               {unsubscribed > 0 && (
-                <span className="text-black/40">· {unsubscribed} opted out</span>
+                <span className="text-black/40">· {unsubscribed} suppressed</span>
               )}
+            </div>
+            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-black/35">
+              <span>{optedOut} opted out</span>
+              <span>· {bounced} bounced</span>
+              <span>· {complained} spam reports</span>
+              <span>· {ineligible} unverified or closed accounts skipped</span>
             </div>
           </div>
 
