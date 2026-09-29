@@ -370,12 +370,12 @@ function AdminPage() {
           </div>
         </div>
 
-        <div className="mt-6 flex gap-1 border-b border-black/8">
+        <div className="scrollbar-none -mx-4 mt-6 flex gap-1 overflow-x-auto border-b border-black/8 px-4 sm:mx-0 sm:px-0">
           {STATUS_TABS.map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`relative px-3 py-2.5 text-sm font-medium capitalize transition-colors sm:px-4 ${
+              className={`relative shrink-0 whitespace-nowrap px-3 py-2.5 text-sm font-medium capitalize transition-colors sm:px-4 ${
                 tab === t ? "text-black" : "text-black/40 hover:text-black/70"
               }`}
             >
@@ -472,6 +472,34 @@ function AdminPage() {
                         {/* Mobile: founder shown inline since the column is hidden below md */}
                         <div className="mt-1 md:hidden">
                           <FounderCell founder={founders[s.user_id]} compact />
+                        </div>
+                        {/* Mobile: one-liner and proposed edit shown inline since that column is hidden below lg */}
+                        <div className="lg:hidden">
+                          {s.description && <p className="mt-2 line-clamp-2 max-w-[240px] text-xs text-black/55">{s.description}</p>}
+                          {s.edit_status === "pending" && (
+                            <div className="mt-2 w-[240px] max-w-full rounded-lg border border-blue-200 bg-blue-50 px-3 py-2">
+                              <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-700">Proposed edit</p>
+                              {(s.pending_name ?? s.name) !== s.name && (
+                                <p className="mt-1 break-words text-xs text-black/70">
+                                  <span className="text-black/35 line-through">{s.name}</span>{" → "}
+                                  <span className="font-medium">{s.pending_name}</span>
+                                </p>
+                              )}
+                              {(s.pending_description ?? s.description) !== s.description && (
+                                <p className="mt-1 break-words text-xs text-black/70">{s.pending_description}</p>
+                              )}
+                              <div className="mt-2 grid grid-cols-2 gap-1.5">
+                                <button onClick={() => resolveEdit(s, true)} disabled={updating === s.id}
+                                  className="rounded-md border border-emerald-200 bg-emerald-50 px-2 py-2 text-xs font-medium text-emerald-700 disabled:opacity-50">
+                                  Approve
+                                </button>
+                                <button onClick={() => resolveEdit(s, false)} disabled={updating === s.id}
+                                  className="rounded-md border border-black/12 bg-white px-2 py-2 text-xs font-medium text-black/60 disabled:opacity-50">
+                                  Reject
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </td>
                       <td className="hidden px-5 py-4 md:table-cell">
