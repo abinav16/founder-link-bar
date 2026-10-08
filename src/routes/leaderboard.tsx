@@ -66,6 +66,8 @@ function LeaderboardPending() {
 export const Route = createFileRoute("/leaderboard")({
   head: () => ({
     meta: [
+      { name: "twitter:card", content: "summary" },
+      { property: "og:type", content: "website" },
       { title: "Leaderboard — StartupBar" },
       { name: "description", content: "See which founder startups are driving the most impressions and clicks across the StartupBar network." },
       { property: "og:title", content: "Leaderboard — StartupBar" },

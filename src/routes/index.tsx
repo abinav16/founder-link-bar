@@ -31,6 +31,7 @@ function useInView(threshold = 0.12) {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
       { title: "StartupBar — Free traffic exchange for founders" },
       { name: "description", content: "Add one line of code to your site. A 36px bar shows another founder's startup, and yours appears on theirs. Free traffic exchange." },
       { property: "og:title", content: "StartupBar — Free traffic exchange for founders" },

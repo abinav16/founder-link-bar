@@ -59,6 +59,8 @@ function NetworkPending() {
 export const Route = createFileRoute("/network")({
   head: () => ({
     meta: [
+      { name: "twitter:card", content: "summary" },
+      { property: "og:type", content: "website" },
       { title: "Network — StartupBar" },
       { name: "description", content: "Explore the founder startups currently exchanging traffic on the StartupBar network." },
       { property: "og:title", content: "Network — StartupBar" },

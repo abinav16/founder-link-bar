@@ -4,6 +4,8 @@ import { FEATURED_PRICE_USD, FEATURED_DAYS, FEATURED_SLOT_COUNT } from "@/lib/fe
 export const Route = createFileRoute("/terms")({
   head: () => ({
     meta: [
+      { name: "twitter:card", content: "summary" },
+      { property: "og:type", content: "website" },
       { title: "Terms of Service — StartupBar" },
       { name: "description", content: "The rules for participating in the StartupBar traffic exchange — account responsibilities, content guidelines, and acceptable use." },
       { property: "og:title", content: "Terms of Service — StartupBar" },

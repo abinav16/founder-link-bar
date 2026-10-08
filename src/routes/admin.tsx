@@ -8,6 +8,8 @@ import { Check, X, ExternalLink, LogOut, Clock, RefreshCw, Radio, CircleSlash, L
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
+      { name: "twitter:card", content: "summary" },
+      { property: "og:type", content: "website" },
       { title: "Admin — StartupBar" },
       { name: "description", content: "Internal admin console for reviewing and approving startup applications on StartupBar." },
       { property: "og:title", content: "Admin — StartupBar" },

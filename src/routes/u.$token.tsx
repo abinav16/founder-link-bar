@@ -6,6 +6,10 @@ export const Route = createFileRoute("/u/$token")({
   ssr: false,
   head: () => ({
     meta: [
+      { name: "twitter:card", content: "summary" },
+      { property: "og:type", content: "website" },
+      { property: "og:title", content: "Unsubscribe · StartupBar" },
+      { property: "og:description", content: "Manage your StartupBar email preferences." },
       { title: "Unsubscribe · StartupBar" },
       { name: "description", content: "Manage your StartupBar email preferences." },
       { name: "robots", content: "noindex,nofollow" },

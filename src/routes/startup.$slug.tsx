@@ -98,13 +98,15 @@ export const Route = createFileRoute("/startup/$slug")({
     const desc = loaderData.description || `${loaderData.name} on StartupBar`;
     const url = `https://startupbar.co/startup/${loaderData.slug}`;
     const meta: Array<Record<string, string>> = [
+      { name: "twitter:card", content: "summary" },
+      { property: "og:type", content: "website" },
       { title },
       { name: "description", content: desc },
       { property: "og:title", content: title },
       { property: "og:description", content: desc },
       { property: "og:url", content: url },
     ];
-    if (loaderData.logo_url) {
+    if (loaderData.logo_url?.startsWith("https://")) {
       meta.push({ property: "og:image", content: loaderData.logo_url });
       meta.push({ name: "twitter:image", content: loaderData.logo_url });
     }

@@ -17,6 +17,8 @@ import {
 export const Route = createFileRoute("/apply")({
   head: () => ({
     meta: [
+      { name: "twitter:card", content: "summary" },
+      { property: "og:type", content: "website" },
       { title: "Apply — StartupBar" },
       { name: "description", content: "Submit your startup to join the StartupBar network. Get featured on other founders' sites and grow together through free traffic exchange." },
       { property: "og:title", content: "Apply — StartupBar" },

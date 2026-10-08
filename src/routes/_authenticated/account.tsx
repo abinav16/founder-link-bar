@@ -12,6 +12,10 @@ import { deleteMyAccount } from "@/lib/account.functions";
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
     meta: [
+      { name: "twitter:card", content: "summary" },
+      { property: "og:type", content: "website" },
+      { property: "og:title", content: "Account — StartupBar" },
+      { property: "og:description", content: "Manage your StartupBar profile, startups, and account settings." },
       { title: "Account — StartupBar" },
       { name: "description", content: "Manage your StartupBar profile, startups, and account settings." },
       { name: "robots", content: "noindex" },
