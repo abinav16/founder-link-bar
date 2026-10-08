@@ -56,59 +56,15 @@ export const Route = createFileRoute("/startupbid")({
   component: StartupBidPage,
 });
 
-function PillStat({ label, value, small }: { label: string; value: string; small?: boolean }) {
-  return (
-    <div className="flex flex-col items-center gap-0.5">
-      <span
-        style={{
-          color: "white",
-          fontSize: small ? 16 : 22,
-          fontWeight: 800,
-          letterSpacing: "-0.04em",
-          lineHeight: 1,
-        }}
-      >
-        {value}
-      </span>
-      <span
-        style={{
-          color: "rgba(255,255,255,0.35)",
-          fontSize: small ? 7 : 9,
-          fontWeight: 600,
-          letterSpacing: "0.1em",
-          textTransform: "uppercase",
-        }}
-      >
-        {label}
-      </span>
-    </div>
-  );
-}
-
-function PillStatSkeleton({ small }: { small?: boolean }) {
-  return (
-    <div className="flex flex-col items-center gap-1">
-      <div
-        className="animate-pulse rounded-full bg-white/25"
-        style={{ height: small ? 14 : 18, width: small ? 34 : 48 }}
-      />
-      <div
-        className="animate-pulse rounded-full bg-white/10"
-        style={{ height: small ? 6 : 8, width: small ? 34 : 52 }}
-      />
-    </div>
-  );
-}
-
 function HeroActivitySkeleton() {
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-4" aria-label="Loading activity">
       {Array.from({ length: 3 }).map((_, index) => (
-        <div key={index} className="flex items-center gap-2.5">
-          <div className="h-7 w-7 shrink-0 animate-pulse rounded-lg bg-white/10" />
-          <div className="min-w-0 flex-1 space-y-1.5">
-            <div className="h-2.5 w-2/3 animate-pulse rounded-full bg-white/15" />
-            <div className="h-2 w-1/3 animate-pulse rounded-full bg-white/8" />
+        <div key={index} className="flex items-center gap-3 motion-safe:animate-pulse">
+          <div className="h-9 w-9 shrink-0 rounded-lg bg-muted" />
+          <div className="min-w-0 flex-1 space-y-2">
+            <div className="h-3 w-2/3 rounded bg-muted" />
+            <div className="h-2 w-1/3 rounded bg-muted" />
           </div>
         </div>
       ))}
@@ -123,116 +79,94 @@ function bidHref(displayUrl: string): string {
 }
 
 function TrendingNow({ items, loading }: { items: BidTrending[]; loading: boolean }) {
+  const leader = items[0];
   return (
-    <div className="min-w-0 rounded-xl border border-white/10 bg-[#0a0a0a] p-3 text-left shadow-[0_8px_32px_rgba(0,0,0,0.4)] sm:p-4">
-      <div className="mb-3 flex items-center gap-1.5 text-white/45">
-        <Flame className="h-3.5 w-3.5" />
-        <span className="text-[9px] font-semibold uppercase tracking-[0.12em]">Trending now</span>
+    <section className="bid-overview-panel flex h-full min-w-0 flex-col rounded-lg border border-border bg-card p-5 text-left text-card-foreground" aria-label="Trending now">
+      <div className="mb-5 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+        <h2 className="flex min-w-0 items-center gap-2 text-xs font-semibold"><Flame className="h-4 w-4 shrink-0 text-muted-foreground" />Trending now</h2>
+        <span className="text-[10px] text-muted-foreground">Past hour</span>
       </div>
-      {loading ? (
-        <HeroActivitySkeleton />
-      ) : items.length === 0 ? (
-        <p className="text-[11px] text-white/35">Clicks will appear here live.</p>
+      {loading ? <HeroActivitySkeleton /> : !leader ? (
+        <div className="flex flex-1 items-center justify-center text-xs text-muted-foreground">No clicks in the past hour</div>
       ) : (
-        <div className="space-y-2.5">
-          {items.slice(0, 3).map((item, index) => (
-            <a
-              key={item.entry_id}
-              href={bidHref(item.display_url)}
-              target="_blank"
-              rel="noopener nofollow"
-              onClick={() => trackBidClick(item.entry_id)}
-              className="grid min-w-0 cursor-pointer grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-lg transition-colors hover:bg-white/[0.06]"
-            >
-              <StartupFavicon
-                url={item.display_url}
-                name={item.name}
-                logoUrl={item.logo_url}
-                size={26}
-                className="shrink-0 rounded-lg"
-              />
-              <div className="min-w-0">
-                <p className="truncate text-[11.5px] font-semibold text-white">{item.name}</p>
-                <p className="text-[9.5px] text-white/35">#{index + 1} trending</p>
+        <>
+          <a href={bidHref(leader.display_url)} target="_blank" rel="noopener nofollow" onClick={() => trackBidClick(leader.entry_id)} className="group grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-3 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            <div className="min-w-0">
+              <div className="mb-4 flex items-center gap-3">
+                <StartupFavicon url={leader.display_url} name={leader.name} logoUrl={leader.logo_url} size={44} className="shrink-0 rounded-lg" />
+                <span className="font-mono text-xs text-muted-foreground">01 <span className="ml-1 text-foreground">↗</span></span>
               </div>
-              <span className="shrink-0 text-[10.5px] font-semibold tabular-nums text-white/65">
-                {item.clicks_hour.toLocaleString()} clicks
-              </span>
+              <p className="truncate text-xl font-semibold leading-snug">{leader.name}</p>
+              <p className="mt-1 truncate text-xs text-muted-foreground">{leader.display_url}</p>
+            </div>
+            <ArrowUpRight className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+          </a>
+          <div className="mt-auto flex items-end justify-between gap-3 border-t border-border pt-4">
+            <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground"><MousePointerClick className="h-3.5 w-3.5" />Clicks this hour</span>
+            <span className="text-2xl font-semibold leading-none tabular-nums">{leader.clicks_hour.toLocaleString()}</span>
+          </div>
+          {items.slice(1, 3).map((item, index) => (
+            <a key={item.entry_id} href={bidHref(item.display_url)} target="_blank" rel="noopener nofollow" onClick={() => trackBidClick(item.entry_id)} className="mt-3 grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 text-xs transition-colors hover:text-muted-foreground">
+              <span className="font-mono text-[10px] text-muted-foreground">0{index + 2}</span>
+              <span className="truncate font-medium">{item.name}</span>
+              <span className="tabular-nums">{item.clicks_hour.toLocaleString()} clicks</span>
             </a>
           ))}
-        </div>
+        </>
       )}
-    </div>
+    </section>
   );
 }
 
 function RecentPurchases({ items, loading }: { items: BidActivity[]; loading: boolean }) {
   return (
-    <div className="min-w-0 rounded-xl border border-white/10 bg-[#0a0a0a] p-3 text-left shadow-[0_8px_32px_rgba(0,0,0,0.4)] sm:p-4">
-      <div className="mb-3 flex items-center gap-1.5 text-white/45">
-        <Clock3 className="h-3.5 w-3.5" />
-        <span className="text-[9px] font-semibold uppercase tracking-[0.12em]">Recent activity</span>
+    <section className="bid-overview-panel flex h-full min-w-0 flex-col rounded-lg border border-border bg-card p-5 text-left text-card-foreground" aria-label="Recent activity">
+      <div className="mb-5 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+        <h2 className="flex min-w-0 items-center gap-2 text-xs font-semibold"><Clock3 className="h-4 w-4 shrink-0 text-muted-foreground" />Recent activity</h2>
+        <span className="flex shrink-0 items-center gap-1.5 text-[10px] text-muted-foreground"><span className="bid-live-dot h-1.5 w-1.5 rounded-full bg-foreground" />Live</span>
       </div>
-      {loading ? (
-        <HeroActivitySkeleton />
-      ) : items.length === 0 ? (
-        <p className="text-[11px] text-white/35">New purchases will appear here.</p>
+      {loading ? <HeroActivitySkeleton /> : items.length === 0 ? (
+        <div className="flex flex-1 items-center justify-center text-xs text-muted-foreground">No bids yet</div>
       ) : (
-        <div className="space-y-2.5">
+        <div className="flex flex-1 flex-col justify-between">
           {items.slice(0, 3).map((item, index) => (
-            <a
-              key={`${item.entry_id}-${item.created_at}-${index}`}
-              href={bidHref(item.display_url)}
-              target="_blank"
-              rel="noopener nofollow"
-              onClick={() => trackBidClick(item.entry_id)}
-              className="grid min-w-0 cursor-pointer grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-lg transition-colors hover:bg-white/[0.06]"
-            >
-              <StartupFavicon
-                url={item.display_url}
-                name={item.name}
-                logoUrl={item.logo_url}
-                size={26}
-                className="shrink-0 rounded-lg"
-              />
+            <a key={`${item.entry_id}-${item.created_at}-${index}`} href={bidHref(item.display_url)} target="_blank" rel="noopener nofollow" onClick={() => trackBidClick(item.entry_id)} className="group relative grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-sm py-2 outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              {index < Math.min(items.length, 3) - 1 && <span aria-hidden className="absolute bottom-[-18px] left-[17px] top-[44px] w-px bg-border" />}
+              <StartupFavicon url={item.display_url} name={item.name} logoUrl={item.logo_url} size={36} className="relative shrink-0 rounded-lg" />
               <div className="min-w-0">
-                <p className="truncate text-[11.5px] font-semibold text-white">{item.name}</p>
-                <p className="truncate text-[9.5px] text-white/35">{timeAgo(item.created_at)}</p>
+                <p className="truncate text-[13px] font-semibold transition-colors group-hover:text-muted-foreground">{item.name}</p>
+                <p className="mt-1 truncate text-[10px] text-muted-foreground">{timeAgo(item.created_at)}</p>
               </div>
-              <span className="shrink-0 text-[10.5px] font-semibold tabular-nums text-white/70">
-                +{formatUsd(item.amount_cents)}
-              </span>
+              <span className="shrink-0 font-mono text-xs font-medium tabular-nums">+{formatUsd(item.amount_cents)}</span>
             </a>
           ))}
         </div>
       )}
-    </div>
+    </section>
   );
 }
 
-
 function HeroStats({ loading, stats }: { loading: boolean; stats: ReturnType<typeof useBidStats>["data"] }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-white/10 bg-[#0a0a0a] shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-      <div className="flex items-center justify-center gap-2 border-b border-white/10 px-4 py-3">
-        <Gavel className="h-4 w-4 text-white" />
-        <span className="text-[16px] font-extrabold leading-none text-white">StartupBid</span>
+    <section className="bid-overview-panel bid-stats-panel flex h-full min-w-0 flex-col overflow-hidden rounded-lg border border-bid-ink bg-bid-ink p-5 text-left text-bid-paper" aria-label="StartupBid statistics">
+      <div className="flex items-center gap-2 text-xs font-semibold"><Gavel className="h-4 w-4" />StartupBid<span aria-hidden className="ml-auto h-1 w-6 rounded-full bg-bid-paper/60" /></div>
+      <div className="my-auto py-5">
+        <p className="text-[10px] text-bid-paper/55">Total bids</p>
+        {loading ? <div className="mt-3 h-12 w-28 rounded bg-bid-paper/15 motion-safe:animate-pulse" /> : <p className="mt-2 break-all text-5xl font-semibold leading-none tabular-nums">{formatUsd(stats?.total_cents ?? 0)}</p>}
       </div>
-      <div className="grid grid-cols-2 divide-x divide-y divide-white/10">
-        {loading ? (
-          Array.from({ length: 4 }).map((_, index) => (
-            <div key={index} className="px-3 py-3"><PillStatSkeleton small /></div>
-          ))
-        ) : (
-          <>
-            <div className="px-3 py-3"><PillStat small label="Board" value={(stats?.entries ?? 0).toLocaleString()} /></div>
-            <div className="px-3 py-3"><PillStat small label="Total bid" value={formatUsd(stats?.total_cents ?? 0)} /></div>
-            <div className="px-3 py-3"><PillStat small label="Clicks" value={(stats?.total_clicks ?? 0).toLocaleString()} /></div>
-            <div className="px-3 py-3"><PillStat small label="Top bid" value={formatUsd(stats?.top_cents ?? 0)} /></div>
-          </>
-        )}
-      </div>
-    </div>
+      <dl className="grid grid-cols-3 gap-3 border-t border-bid-paper/15 pt-4">
+        {[
+          { label: "Startups", value: (stats?.entries ?? 0).toLocaleString() },
+          { label: "Clicks", value: (stats?.total_clicks ?? 0).toLocaleString() },
+          { label: "Top bid", value: formatUsd(stats?.top_cents ?? 0) },
+        ].map(({ label, value }) => (
+          <div key={label} className="min-w-0">
+            <dt className="text-[10px] text-bid-paper/55">{label}</dt>
+            <dd className="mt-1.5 break-all text-lg font-semibold leading-none tabular-nums">{loading ? "…" : value}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
   );
 }
 
@@ -596,14 +530,14 @@ function StartupBidPage() {
           </p>
 
           <div className="mt-6">
-            <div className="grid grid-cols-1 items-stretch gap-2.5 sm:grid-cols-[minmax(0,1fr)_180px_minmax(0,1fr)] sm:gap-4">
-              <div className="hidden min-w-0 sm:order-1 sm:block">
+            <div className="bid-overview-grid grid grid-cols-1 items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_260px_minmax(0,1fr)] md:gap-4">
+              <div className="hidden min-w-0 md:order-1 md:block">
                 <TrendingNow items={trending.data ?? []} loading={trending.isLoading} />
               </div>
-              <div className="mx-auto w-[190px] sm:order-2 sm:mx-0 sm:w-auto">
+              <div className="mx-auto w-full max-w-sm md:order-2 md:max-w-none">
                 <HeroStats loading={stats.isLoading} stats={stats.data} />
               </div>
-              <div className="hidden min-w-0 sm:order-3 sm:block">
+              <div className="hidden min-w-0 md:order-3 md:block">
                 <RecentPurchases items={activity.data ?? []} loading={activity.isLoading} />
               </div>
             </div>
@@ -716,7 +650,7 @@ function StartupBidPage() {
         </section>
 
         {/* Mobile: trending + recent activity below the board */}
-        <section className="mt-8 grid grid-cols-1 gap-3 sm:hidden">
+        <section className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 md:hidden">
           <TrendingNow items={trending.data ?? []} loading={trending.isLoading} />
           <RecentPurchases items={activity.data ?? []} loading={activity.isLoading} />
         </section>
