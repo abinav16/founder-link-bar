@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep StartupBid overview panels in its route and define their visual tokens and animations in the global stylesheet, so live data remains separate from presentation.

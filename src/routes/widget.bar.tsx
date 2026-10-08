@@ -17,6 +17,14 @@ const search = z.object({
 
 export const Route = createFileRoute("/widget/bar")({
   validateSearch: search,
+  head: () => ({ meta: [
+    { title: "Founder network bar — StartupBar" },
+    { name: "description", content: "Discover a founder startup through the StartupBar network widget." },
+    { property: "og:title", content: "Founder network bar — StartupBar" },
+    { property: "og:description", content: "Discover a founder startup through the StartupBar network widget." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: WidgetBar,
 });
 

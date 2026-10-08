@@ -245,7 +245,14 @@ async function loadRangeData(startupId: string, range: RangeKey) {
 }
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — StartupBar" }] }),
+  head: () => ({ meta: [
+    { title: "Dashboard — StartupBar" },
+    { name: "description", content: "View your startup traffic, visitors, and network performance on StartupBar." },
+    { property: "og:title", content: "Dashboard — StartupBar" },
+    { property: "og:description", content: "View your startup traffic, visitors, and network performance on StartupBar." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   loader: async () => {
     const { data: u } = await supabase.auth.getUser();
     const userName = u.user?.user_metadata?.full_name?.split(" ")[0] ?? "";
