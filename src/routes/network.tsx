@@ -4,7 +4,7 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { SponsoredRail } from "@/components/SponsoredRail";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { getNetworkDashboard, type NetworkDashboardResult } from "@/lib/network-dashboard.functions";
-import { ArrowUpRight, ArrowRight, Eye, Globe, Search, X } from "lucide-react";
+import { ArrowUpRight, ArrowRight, Eye, Globe, Search, Star, X } from "lucide-react";
 import { useFeaturedStartupIds } from "@/lib/featured";
 
 
@@ -143,19 +143,19 @@ function StartupCard({ s }: { s: Card }) {
         </StartupProfileLink>
       )}
       <div className="relative z-10 flex-1 min-w-0 pointer-events-none">
-        {sponsored && (
-          <div className="mb-3 flex items-center gap-2 text-featured-gold">
-            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-featured-gold" aria-hidden />
-            <span className="text-[9px] font-semibold uppercase">Featured</span>
-            <span className="h-px flex-1 bg-featured-gold/20" aria-hidden />
-          </div>
-        )}
-        <div className={sponsored ? "grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-2" : "flex items-start gap-3"}>
-          <div className={[
-            "w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center shrink-0",
+        <div className="flex items-start gap-3">
+          <div className="relative h-10 w-10 shrink-0">
+            <div className={[
+            "w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center",
             sponsored ? "bg-black/40 border border-white/[0.15]" : "bg-white border border-black/[0.08]",
           ].join(" ")}>
             <StartupFavicon url={s.website_url} name={s.name} logoUrl={s.logo_url} size={32} />
+            </div>
+            {sponsored && (
+              <span title="Featured startup" aria-label="Featured startup" className="pointer-events-auto absolute -right-1 -top-1 z-20 grid h-4 w-4 place-items-center rounded-full border border-featured-gold/40 bg-featured-surface text-featured-gold">
+                <Star className="h-2.5 w-2.5 fill-current" aria-hidden />
+              </span>
+            )}
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 min-w-0">
@@ -170,7 +170,7 @@ function StartupCard({ s }: { s: Card }) {
               <FounderChip s={s} sponsored={sponsored} />
             </div>
           </div>
-          <div className={sponsored ? "col-span-2 flex shrink-0 items-center justify-end gap-1.5" : "flex shrink-0 items-center gap-1.5"}>
+          <div className="flex shrink-0 items-center gap-1.5">
             <a
               href={visitHref}
               target="_blank"
