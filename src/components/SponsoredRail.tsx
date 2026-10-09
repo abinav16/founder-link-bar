@@ -29,7 +29,7 @@ function FeaturedCard({ slot }: { slot: FeaturedSlot }) {
     : slot.website_url;
   const handle = slot.twitter_handle ? cleanHandle(slot.twitter_handle) : null;
   return (
-    <article className="featured-glass group relative flex h-full min-w-0 flex-col overflow-hidden rounded-lg border p-3 text-featured-text">
+    <article className="featured-glass group relative flex min-w-0 shrink-0 flex-col overflow-hidden rounded-lg border p-3 text-featured-text">
       <div className="mb-2 flex items-center justify-between text-[9px] font-medium text-featured-gold">
         <span>Featured</span>
         <span className="font-mono text-featured-muted/60">0{slot.slot_index}</span>
@@ -39,16 +39,16 @@ function FeaturedCard({ slot }: { slot: FeaturedSlot }) {
           <StartupFavicon url={slot.website_url} name={slot.name} logoUrl={slot.logo_url} size={26} />
         </a>
         <div className="min-w-0">
-          <a href={visitUrl} target="_blank" rel="noopener noreferrer" title={slot.name} className="block truncate text-[14px] font-semibold leading-tight transition-colors hover:text-featured-gold">{slot.name}</a>
+          <a href={visitUrl} target="_blank" rel="noopener noreferrer" title={slot.name} className="block break-words text-[14px] font-semibold leading-tight transition-colors hover:text-featured-gold">{slot.name}</a>
           <div className="mt-1 flex min-w-0 items-center gap-1.5">
             {slot.founder_avatar_url && <img src={slot.founder_avatar_url} alt="" loading="lazy" className="h-3.5 w-3.5 shrink-0 rounded-full object-cover" />}
-            <span className="truncate text-[10px] text-featured-muted">{slot.founder_name || "Founder"}</span>
+            <span className="min-w-0 break-words text-[10px] text-featured-muted">{slot.founder_name || "Founder"}</span>
             {handle && <a href={`https://x.com/${handle}`} target="_blank" rel="noopener noreferrer" aria-label={`Founder on X: @${handle}`} title={`@${handle} on X`} className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-featured-muted transition-colors hover:bg-featured-text/10 hover:text-featured-text"><XIcon className="h-2.5 w-2.5" /></a>}
           </div>
         </div>
       </div>
-      <p className="mt-2 line-clamp-3 text-[11px] leading-[1.5] text-featured-muted [@media(max-height:850px)]:line-clamp-2">{slot.description}</p>
-      <div className="mt-auto grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-t border-featured-text/10 pt-2">
+      <p className="my-2 break-words text-[11px] leading-[1.5] text-featured-muted">{slot.description}</p>
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-t border-featured-text/10 pt-2">
         <a href={visitUrl} target="_blank" rel="noopener noreferrer" className="flex min-w-0 items-center gap-1 text-[11px] font-semibold text-featured-gold">
           Visit site <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-300 motion-safe:group-hover:-translate-y-0.5 motion-safe:group-hover:translate-x-0.5" />
         </a>
@@ -71,7 +71,8 @@ export function SponsoredRail({ side = "right" }: { side?: "left" | "right" }) {
 
   return (
     <aside className="hidden xl:block w-full min-w-0 shrink-0" aria-label={`Sponsored (${side})`}>
-      <div className="sticky top-20 grid auto-rows-[clamp(148px,calc((100dvh-190px)/4),180px)] gap-2.5 [@media(max-height:781px)]:static">
+      <div className="sb-rail sticky top-[116px] h-[calc(100dvh-148px)] overflow-y-auto overscroll-contain">
+        <div className="flex min-h-full flex-col gap-2.5 pb-1">
         {railSlots(side).map((i) => {
           const taken = bookedBy.get(i);
           if (taken) return <FeaturedCard key={i} slot={taken} />;
@@ -84,7 +85,7 @@ export function SponsoredRail({ side = "right" }: { side?: "left" | "right" }) {
                 setSlot(i);
                 setOpen(true);
               }}
-              className="group relative flex h-full min-h-0 w-full flex-col items-center justify-center gap-3 overflow-hidden rounded-lg border-border bg-transparent p-4 text-center text-muted-foreground shadow-none transition-colors hover:border-foreground/25 hover:bg-card hover:text-foreground"
+              className="group relative flex h-auto min-h-[80px] w-full flex-1 flex-col items-center justify-center gap-2 rounded-lg border-border bg-transparent p-3 text-center text-muted-foreground shadow-none transition-colors hover:border-foreground/25 hover:bg-card hover:text-foreground"
             >
               <span className="grid h-9 w-9 place-items-center rounded-full border border-border transition-transform duration-300 motion-safe:group-hover:rotate-90"><Plus className="h-4 w-4" /></span>
               <span className="text-xs font-medium">Your startup here</span>
@@ -92,6 +93,7 @@ export function SponsoredRail({ side = "right" }: { side?: "left" | "right" }) {
             </Button>
           );
         })}
+        </div>
       </div>
 
       <FeaturedBookingDialog
