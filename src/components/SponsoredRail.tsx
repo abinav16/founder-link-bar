@@ -30,7 +30,7 @@ function FeaturedCard({ slot }: { slot: FeaturedSlot }) {
   const handle = slot.twitter_handle ? cleanHandle(slot.twitter_handle) : null;
   return (
     <article className="featured-glass group relative flex h-full min-w-0 flex-col overflow-hidden rounded-lg border p-3 text-featured-text">
-      <div className="mb-2.5 flex items-center justify-between text-[9px] font-medium text-featured-gold">
+      <div className="mb-2 flex items-center justify-between text-[9px] font-medium text-featured-gold">
         <span>Featured</span>
         <span className="font-mono text-featured-muted/60">0{slot.slot_index}</span>
       </div>
@@ -47,7 +47,7 @@ function FeaturedCard({ slot }: { slot: FeaturedSlot }) {
           </div>
         </div>
       </div>
-      <p className="mt-2.5 line-clamp-3 text-[11px] leading-[1.5] text-featured-muted">{slot.description}</p>
+      <p className="mt-2 line-clamp-3 text-[11px] leading-[1.5] text-featured-muted [@media(max-height:850px)]:line-clamp-2">{slot.description}</p>
       <div className="mt-auto grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-t border-featured-text/10 pt-2">
         <a href={visitUrl} target="_blank" rel="noopener noreferrer" className="flex min-w-0 items-center gap-1 text-[11px] font-semibold text-featured-gold">
           Visit site <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-300 motion-safe:group-hover:-translate-y-0.5 motion-safe:group-hover:translate-x-0.5" />
@@ -71,7 +71,7 @@ export function SponsoredRail({ side = "right" }: { side?: "left" | "right" }) {
 
   return (
     <aside className="hidden xl:block w-full min-w-0 shrink-0" aria-label={`Sponsored (${side})`}>
-      <div className="sticky top-20 grid auto-rows-[180px] gap-3">
+      <div className="sticky top-20 grid auto-rows-[clamp(148px,calc((100dvh-140px)/4),180px)] gap-2.5 [@media(max-height:731px)]:static">
         {railSlots(side).map((i) => {
           const taken = bookedBy.get(i);
           if (taken) return <FeaturedCard key={i} slot={taken} />;
