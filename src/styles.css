@@ -39,6 +39,11 @@
   --color-sidebar-ring: var(--sidebar-ring);
   --color-bid-ink: var(--bid-ink);
   --color-bid-paper: var(--bid-paper);
+  --color-featured-surface: var(--featured-surface);
+  --color-featured-text: var(--featured-text);
+  --color-featured-muted: var(--featured-muted);
+  --color-featured-gold: var(--featured-gold);
+  --color-featured-edge: var(--featured-edge);
   --font-display: "Instrument Serif", ui-serif, Georgia, serif;
   --font-quote: "Lora", ui-serif, Georgia, serif;
 }
@@ -48,6 +53,14 @@
   --bid-ink: oklch(0.145 0 0);
   --bid-paper: oklch(0.985 0 0);
   --shadow-bid-panel: 0 8px 24px -16px oklch(0.145 0 0 / 0.22);
+  --featured-surface: oklch(0.16 0.008 260);
+  --featured-text: oklch(0.96 0.006 85);
+  --featured-muted: oklch(0.7 0.012 85);
+  --featured-gold: oklch(0.84 0.12 85);
+  --featured-edge: oklch(0.72 0.13 75);
+  --gradient-featured-glass: linear-gradient(145deg, color-mix(in oklab, var(--featured-gold) 10%, transparent), transparent 52%, color-mix(in oklab, var(--featured-text) 4%, transparent));
+  --shadow-featured: inset 0 1px 0 color-mix(in oklab, var(--featured-text) 12%, transparent), 0 8px 22px -16px color-mix(in oklab, var(--featured-surface) 70%, transparent);
+  --shadow-featured-hover: inset 0 1px 0 color-mix(in oklab, var(--featured-text) 18%, transparent), 0 12px 28px -15px color-mix(in oklab, var(--featured-edge) 28%, transparent);
   --background: oklch(0.995 0.002 90);
   --foreground: oklch(0.18 0.01 260);
   --card: oklch(1 0 0);
@@ -260,6 +273,36 @@
 }
 
 /* ── Sponsored / premium warm-gold card treatment ──────────────────── */
+.featured-glass {
+  isolation: isolate;
+  background-color: var(--featured-surface);
+  background-image: var(--gradient-featured-glass);
+  border-color: color-mix(in oklab, var(--featured-edge) 65%, transparent);
+  box-shadow: var(--shadow-featured);
+  backdrop-filter: blur(16px);
+  transition: transform 300ms ease, box-shadow 300ms ease, border-color 300ms ease;
+  letter-spacing: 0;
+}
+.featured-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent 25%, color-mix(in oklab, var(--featured-gold) 15%, transparent) 48%, color-mix(in oklab, var(--featured-text) 10%, transparent) 52%, transparent 75%);
+  transform: translateX(-120%);
+  animation: sb-sheen 6s ease-in-out infinite;
+}
+.featured-glass:hover, .featured-glass:focus-within {
+  border-color: var(--featured-gold);
+  box-shadow: var(--shadow-featured-hover);
+}
+@media (hover: hover) { .featured-glass:hover { transform: translateY(-2px); } }
+@media (prefers-reduced-motion: reduce) {
+  .featured-glass { transition: none; }
+  .featured-glass::before { animation: none; }
+  .featured-glass:hover { transform: none; }
+}
 @keyframes sb-sheen {
   0%   { transform: translateX(-120%); }
   55%  { transform: translateX(120%); }

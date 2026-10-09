@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Keep StartupBid overview panels in its route and define their visual tokens and animations in the global stylesheet, so live data remains separate from presentation.
+- Share the featured-glass treatment and semantic featured color tokens across desktop slot cards and compact banners; keep card links separate so profile and founder actions remain accessible.

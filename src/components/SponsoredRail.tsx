@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { ArrowUpRight, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { FeaturedBookingDialog } from "@/components/FeaturedBookingDialog";
@@ -8,32 +10,6 @@ import { fetchFeaturedSlots, railSlots, type FeaturedSlot } from "@/lib/featured
  * Sponsored rail. Desktop only. 4 slots per side (left = 1-4, right = 5-8).
  * Booked slots render the featured startup card; free ones invite a booking.
  */
-function SlotMark() {
-  return (
-    <div className="relative">
-      <div className="relative grid h-9 w-9 place-items-center rounded-full border border-black/15 bg-transparent">
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          aria-hidden="true"
-          className="text-black/25 transition-colors duration-500 group-hover:text-black/45"
-        >
-          <path
-            d="M12 2L14.5 9.5H22L16 14L18.5 21.5L12 17L5.5 21.5L8 14L2 9.5H9.5L12 2Z"
-            fill="currentColor"
-            fillOpacity="0.8"
-            stroke="currentColor"
-            strokeWidth="0.5"
-          />
-          <circle cx="12" cy="12" r="2" fill="none" />
-        </svg>
-      </div>
-    </div>
-  );
-}
-
 /** Minimal X (Twitter) brand mark — lucide has no brand X icon. */
 function XIcon({ className }: { className?: string }) {
   return (
@@ -48,99 +24,37 @@ function cleanHandle(handle: string): string {
 }
 
 function FeaturedCard({ slot }: { slot: FeaturedSlot }) {
-  const initial = (slot.founder_name || slot.name || "?").trim().charAt(0).toUpperCase();
   const visitUrl = slot.startup_id
     ? `/api/public/widget/click?id=${slot.startup_id}&source=featured`
     : slot.website_url;
   const handle = slot.twitter_handle ? cleanHandle(slot.twitter_handle) : null;
   return (
-    <a
-      href={visitUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="sb-sponsored group relative flex h-full min-h-0 w-full flex-col gap-2 overflow-hidden rounded-2xl border p-3 transition-all duration-500"
-    >
-      {/* Top block: big logo on the left, name + founder stacked on the right */}
-      <div className="flex min-w-0 items-center gap-2">
-        <span className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-lg border border-[oklch(0.75_0.13_75_/_0.25)] bg-black/40">
-          <StartupFavicon
-            url={slot.website_url}
-            name={slot.name}
-            logoUrl={slot.logo_url}
-            size={22}
-          />
-        </span>
-
-        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <div className="flex min-w-0 items-center gap-1.5">
-            <span className="min-w-0 flex-1 truncate text-[13px] font-semibold leading-tight text-white/95">
-              {slot.name}
-            </span>
-          </div>
-
-
-          <div className="flex min-w-0 items-center gap-1.5">
-            {slot.founder_avatar_url ? (
-              <img
-                src={slot.founder_avatar_url}
-                alt={slot.founder_name ?? "Founder"}
-                loading="lazy"
-                className="h-4 w-4 shrink-0 rounded-full object-cover ring-1 ring-[oklch(0.75_0.13_75_/_0.35)]"
-              />
-            ) : (
-              <span className="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-white/10 text-[8px] font-semibold text-white/70">
-                {initial}
-              </span>
-            )}
-            <span className="min-w-0 truncate text-[10px] text-white/45">
-              {slot.founder_name ?? "Founder"}
-            </span>
-            {handle && (
-              <span
-                role="link"
-                aria-label={`Founder on X: @${handle}`}
-                title={`@${handle} on X`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  window.open(`https://x.com/${handle}`, "_blank", "noopener,noreferrer");
-                }}
-                className="grid h-4 w-4 shrink-0 cursor-pointer place-items-center rounded-full text-white/40 transition-colors hover:bg-white/10 hover:text-white/90"
-              >
-                <XIcon className="h-2.5 w-2.5" />
-              </span>
-            )}
+    <article className="featured-glass group relative flex h-full min-w-0 flex-col overflow-hidden rounded-lg border p-3 text-featured-text">
+      <div className="mb-2.5 flex items-center justify-between text-[9px] font-medium text-featured-gold">
+        <span>Featured</span>
+        <span className="font-mono text-featured-muted/60">0{slot.slot_index}</span>
+      </div>
+      <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2.5">
+        <a href={visitUrl} target="_blank" rel="noopener noreferrer" aria-label={`Visit ${slot.name}`} className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-featured-gold/20 bg-featured-surface outline-none focus-visible:ring-2 focus-visible:ring-featured-gold">
+          <StartupFavicon url={slot.website_url} name={slot.name} logoUrl={slot.logo_url} size={26} />
+        </a>
+        <div className="min-w-0">
+          <a href={visitUrl} target="_blank" rel="noopener noreferrer" title={slot.name} className="block truncate text-[14px] font-semibold leading-tight transition-colors hover:text-featured-gold">{slot.name}</a>
+          <div className="mt-1 flex min-w-0 items-center gap-1.5">
+            {slot.founder_avatar_url && <img src={slot.founder_avatar_url} alt="" loading="lazy" className="h-3.5 w-3.5 shrink-0 rounded-full object-cover" />}
+            <span className="truncate text-[10px] text-featured-muted">{slot.founder_name || "Founder"}</span>
+            {handle && <a href={`https://x.com/${handle}`} target="_blank" rel="noopener noreferrer" aria-label={`Founder on X: @${handle}`} title={`@${handle} on X`} className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-featured-muted transition-colors hover:bg-featured-text/10 hover:text-featured-text"><XIcon className="h-2.5 w-2.5" /></a>}
           </div>
         </div>
       </div>
-
-      {/* One-liner across the full card width */}
-      <p className="line-clamp-3 min-h-0 min-w-0 overflow-hidden text-[11px] leading-[1.4] text-white/60">
-        {slot.description}
-      </p>
-
-      {/* Bottom action row: primary CTA + quiet profile link */}
-      <div className="mt-auto flex min-w-0 items-center gap-2.5 border-t border-white/10 pt-2">
-        <span className="shrink-0 text-[11px] font-semibold text-[oklch(0.85_0.12_85)] transition-transform duration-300 group-hover:translate-x-0.5">
-          Visit site →
-        </span>
-        <span className="flex-1" />
-        {slot.slug && (
-          <span
-            role="link"
-            aria-label={`View ${slot.name} profile`}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              window.open(`/startup/${slot.slug}`, "_blank", "noopener,noreferrer");
-            }}
-            className="shrink-0 cursor-pointer text-[10px] text-white/45 transition-colors hover:text-white/90"
-          >
-            View profile
-          </span>
-        )}
+      <p className="mt-2.5 line-clamp-3 text-[11px] leading-[1.5] text-featured-muted">{slot.description}</p>
+      <div className="mt-auto grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-t border-featured-text/10 pt-2">
+        <a href={visitUrl} target="_blank" rel="noopener noreferrer" className="flex min-w-0 items-center gap-1 text-[11px] font-semibold text-featured-gold">
+          Visit site <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-300 motion-safe:group-hover:-translate-y-0.5 motion-safe:group-hover:translate-x-0.5" />
+        </a>
+        {slot.slug && <a href={`/startup/${slot.slug}`} target="_blank" rel="noopener noreferrer" className="text-[10px] text-featured-muted transition-colors hover:text-featured-text">View profile</a>}
       </div>
-    </a>
+    </article>
   );
 }
 
@@ -157,35 +71,25 @@ export function SponsoredRail({ side = "right" }: { side?: "left" | "right" }) {
 
   return (
     <aside className="hidden xl:block w-full min-w-0 shrink-0" aria-label={`Sponsored (${side})`}>
-      <div className="sticky top-20 grid auto-rows-[150px] gap-2.5">
+      <div className="sticky top-20 grid auto-rows-[180px] gap-3">
         {railSlots(side).map((i) => {
           const taken = bookedBy.get(i);
           if (taken) return <FeaturedCard key={i} slot={taken} />;
           return (
-            <button
+            <Button
+              variant="outline"
               key={i}
               type="button"
               onClick={() => {
                 setSlot(i);
                 setOpen(true);
               }}
-              className="group relative flex h-full min-h-0 w-full flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl border border-black/15 bg-transparent p-4 text-center transition-all duration-300 hover:border-black/35 hover:bg-black/[0.02]"
+              className="group relative flex h-full min-h-0 w-full flex-col items-center justify-center gap-3 overflow-hidden rounded-lg border-border bg-transparent p-4 text-center text-muted-foreground shadow-none transition-colors hover:border-foreground/25 hover:bg-card hover:text-foreground"
             >
-              <SlotMark />
-
-              <div className="relative z-10 space-y-0.5">
-                <span className="block text-[9px] font-medium uppercase tracking-[0.3em] text-black/35 transition-colors duration-300 group-hover:text-black/55">
-                  Available slot
-                </span>
-                <h3
-                  className="text-[1.2rem] font-medium italic leading-tight text-black/55 transition-colors duration-300 group-hover:text-black/75"
-                  style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
-                >
-                  Book this slot
-                </h3>
-              </div>
-
-            </button>
+              <span className="grid h-9 w-9 place-items-center rounded-full border border-border transition-transform duration-300 motion-safe:group-hover:rotate-90"><Plus className="h-4 w-4" /></span>
+              <span className="text-xs font-medium">Your startup here</span>
+              <span className="text-[10px] font-normal text-muted-foreground">Book spot {i} <span aria-hidden>↗</span></span>
+            </Button>
           );
         })}
       </div>
