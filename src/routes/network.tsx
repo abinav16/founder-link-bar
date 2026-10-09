@@ -143,7 +143,14 @@ function StartupCard({ s }: { s: Card }) {
         </StartupProfileLink>
       )}
       <div className="relative z-10 flex-1 min-w-0 pointer-events-none">
-        <div className="flex items-start gap-3">
+        {sponsored && (
+          <div className="mb-3 flex items-center gap-2 text-featured-gold">
+            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-featured-gold" aria-hidden />
+            <span className="text-[9px] font-semibold uppercase">Featured</span>
+            <span className="h-px flex-1 bg-featured-gold/20" aria-hidden />
+          </div>
+        )}
+        <div className={sponsored ? "grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-2" : "flex items-start gap-3"}>
           <div className={[
             "w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center shrink-0",
             sponsored ? "bg-black/40 border border-white/[0.15]" : "bg-white border border-black/[0.08]",
@@ -153,14 +160,9 @@ function StartupCard({ s }: { s: Card }) {
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 min-w-0">
               <h3 className={[
-                "min-w-0 flex-1 truncate text-[15px] font-bold leading-snug",
+                "min-w-0 flex-1 break-words text-[15px] font-bold leading-snug",
                 sponsored ? "text-white" : "text-black",
               ].join(" ")}>{s.name}</h3>
-              {sponsored ? (
-                <span className="shrink-0 rounded-full bg-[oklch(0.65_0.15_68)] px-1.5 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-[0.12em] text-white shadow-sm">
-                  Featured
-                </span>
-              ) : null}
 
 
             </div>
@@ -168,7 +170,7 @@ function StartupCard({ s }: { s: Card }) {
               <FounderChip s={s} sponsored={sponsored} />
             </div>
           </div>
-          <div className="flex shrink-0 items-center gap-1.5">
+          <div className={sponsored ? "col-span-2 flex shrink-0 items-center justify-end gap-1.5" : "flex shrink-0 items-center gap-1.5"}>
             <a
               href={visitHref}
               target="_blank"
