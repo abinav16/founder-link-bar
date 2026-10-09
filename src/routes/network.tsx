@@ -143,7 +143,7 @@ function StartupCard({ s }: { s: Card }) {
         </StartupProfileLink>
       )}
       <div className="relative z-10 flex-1 min-w-0 pointer-events-none">
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-2">
           <div className="relative h-10 w-10 shrink-0">
             <div className={[
             "w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center",
@@ -160,7 +160,7 @@ function StartupCard({ s }: { s: Card }) {
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 min-w-0">
               <h3 className={[
-                "min-w-0 flex-1 break-words text-[15px] font-bold leading-snug",
+                "min-w-0 flex-1 [overflow-wrap:anywhere] text-[15px] font-bold leading-snug",
                 sponsored ? "text-white" : "text-black",
               ].join(" ")}>{s.name}</h3>
 
@@ -170,7 +170,7 @@ function StartupCard({ s }: { s: Card }) {
               <FounderChip s={s} sponsored={sponsored} />
             </div>
           </div>
-          <div className="flex shrink-0 items-center gap-1.5">
+          <div className="flex shrink-0 items-center gap-1">
             <a
               href={visitHref}
               target="_blank"
@@ -178,7 +178,7 @@ function StartupCard({ s }: { s: Card }) {
               aria-label={`Visit ${s.name} website`}
               title={`Visit ${s.name} website`}
               className={[
-                "pointer-events-auto inline-flex h-7 w-7 items-center justify-center rounded-full border transition-colors",
+                "pointer-events-auto inline-flex h-6 w-6 items-center justify-center rounded-full border transition-colors",
                 sponsored
                   ? "border-white/20 bg-white/10 text-white/70 hover:border-white/40 hover:bg-white/20 hover:text-white"
                   : "border-black/10 bg-white text-black/50 hover:border-black/30 hover:text-black",
@@ -190,7 +190,7 @@ function StartupCard({ s }: { s: Card }) {
               <StartupProfileLink
                 slug={s.slug}
                 className={[
-                  "pointer-events-auto inline-flex h-9 w-9 items-center justify-center rounded-full transition-colors",
+                  "pointer-events-auto inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors",
                   sponsored ? "bg-white text-black hover:bg-white/85" : "bg-black text-white hover:bg-black/80",
                 ].join(" ")}
               >
