@@ -75,14 +75,15 @@ function WidgetBar() {
   // navigation never flashes an empty/generic bar. The real pick request
   // still runs and swaps in fresh content (and owns impression counting).
   const cacheKey = `startupbar:last:${host ?? "none"}`;
-  const [startup, setStartup] = useState<Startup | null>(() => {
+  const [startup, setStartup] = useState<Startup | null>(null);
+  useEffect(() => {
     try {
-      const raw = typeof sessionStorage !== "undefined" ? sessionStorage.getItem(cacheKey) : null;
-      return raw ? (JSON.parse(raw) as Startup) : null;
+      const raw = sessionStorage.getItem(cacheKey);
+      if (raw) setStartup(JSON.parse(raw) as Startup);
     } catch {
-      return null;
+      /* Storage may be unavailable on embedded sites. */
     }
-  });
+  }, [cacheKey]);
   const [loaded, setLoaded] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [dismissed, setDismissed] = useState(false);

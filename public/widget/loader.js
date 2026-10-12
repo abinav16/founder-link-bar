@@ -371,7 +371,8 @@
         var newTheme = detectTheme();
         if (newTheme !== currentTheme) {
           currentTheme = newTheme;
-          iframe.style.background = newTheme === 'dark' ? '#18181b' : '#ffffff';
+           bg = newTheme === 'dark' ? '#18181b' : '#ffffff';
+           iframe.style.background = overlayClip ? 'transparent' : bg;
           iframe.contentWindow.postMessage({ type: 'startupbar:theme', theme: newTheme }, '*');
         }
       });
