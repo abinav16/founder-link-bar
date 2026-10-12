@@ -238,17 +238,36 @@ export const Route = createFileRoute("/api/public/dodo-webhook")({
             .eq("dodo_payment_id", paymentId)
             .maybeSingle();
           if (existing) {
-            if (isRenewal && !existing.cancel_at_period_end) {
-              // Extend the term by another 30 days from whichever is later.
+            // Only a real charge extends the term, and each charge only once.
+            // Dodo sends several events (and retries) per charge, so we key
+            // on the individual charge id and record it in payments.
+            const chargeId: string | undefined =
+              type === "payment.succeeded" || type === "payment.completed"
+                ? (data.payment_id ?? undefined)
+                : undefined;
+            if (isRenewal && chargeId && !existing.cancel_at_period_end) {
+              const { data: seen } = await supabaseAdmin
+                .from("payments")
+                .select("id")
+                .eq("dodo_payment_id", chargeId)
+                .maybeSingle();
               const cur = existing.expires_at ? new Date(existing.expires_at).getTime() : 0;
-              const from = Math.max(cur, Date.now());
-              await supabaseAdmin
-                .from("featured_slots")
-                .update({
-                  status: "active",
-                  expires_at: new Date(from + 30 * 86_400_000).toISOString(),
-                })
-                .eq("id", existing.id);
+              // A charge within the current term's last week is the renewal;
+              // anything earlier is the first charge already counted at booking.
+              const isDueRenewal = cur - Date.now() < 7 * 86_400_000;
+              if (!seen && isDueRenewal) {
+                await supabaseAdmin
+                  .from("payments")
+                  .insert({ user_id: userId, dodo_payment_id: chargeId, status: "renewal", consumed_at: new Date().toISOString() });
+                const from = Math.max(cur, Date.now());
+                await supabaseAdmin
+                  .from("featured_slots")
+                  .update({
+                    status: "active",
+                    expires_at: new Date(from + 30 * 86_400_000).toISOString(),
+                  })
+                  .eq("id", existing.id);
+              }
             }
             return new Response("ok", { status: 200 });
           }
