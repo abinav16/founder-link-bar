@@ -32,25 +32,40 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
   width: min(360px, 100%); padding: 22px; border: 1px solid var(--exit-edge); border-radius: 8px;
   background: var(--exit-surface); color: var(--exit-ink); box-shadow: var(--shadow-exit);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; letter-spacing: 0;
-  animation: sb-exit-enter 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: top right;
+  animation: sb-exit-enter 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+.sb-widget-bottom .sb-exit-card { transform-origin: bottom right; animation-name: sb-exit-enter-bottom; }
 .sb-exit-topline { display: flex; align-items: center; justify-content: space-between; margin: -6px -6px 20px 0; font-size: 11px; font-weight: 500; color: var(--exit-muted); }
 .sb-exit-close { width: 30px; height: 30px; color: var(--exit-muted); }
 .sb-exit-close:hover { background: var(--exit-soft); color: var(--exit-ink); }
+.sb-exit-close svg { transition: transform 220ms ease; }
+.sb-exit-close:hover svg { transform: rotate(90deg); }
 .sb-exit-identity { display: flex; gap: 12px; align-items: center; }
 .sb-exit-eyebrow { margin: 0 0 5px; color: var(--exit-muted); font-size: 10px; }
 .sb-exit-card h2 { margin: 0; font-family: inherit; font-size: 20px; font-weight: 600; line-height: 1.25; letter-spacing: 0; overflow-wrap: anywhere; }
 .sb-exit-pitch { margin: 18px 0 20px; font-size: 14px; line-height: 1.6; color: var(--exit-muted); overflow-wrap: anywhere; }
 .sb-exit-visit { width: 100%; height: 42px; background: var(--exit-ink); color: var(--exit-surface); border-radius: 4px; font-size: 13px; box-shadow: none; justify-content: space-between; }
-.sb-exit-visit:hover { background: var(--exit-ink); opacity: 0.9; }
+.sb-exit-visit { transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), opacity 220ms ease; }
+.sb-exit-visit svg { transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1); }
+.sb-exit-visit:hover { background: var(--exit-ink); opacity: 0.9; transform: translateY(-1px); }
+.sb-exit-visit:hover svg { transform: translate(2px, -2px); }
+.sb-exit-visit:active { transform: scale(0.98); }
 .sb-exit-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px solid var(--exit-edge); margin-top: 20px; padding-top: 16px; color: var(--exit-muted); font-size: 10px; }
 .sb-exit-brand { display: inline-flex; align-items: center; gap: 7px; color: var(--exit-ink); text-decoration: none; font-size: 12px; font-weight: 650; flex-shrink: 0; }
-.sb-exit-brand svg { width: 20px; height: 20px; padding: 4px; background: var(--exit-ink); color: var(--exit-surface); border-radius: 4px; }
+.sb-exit-brand-mark { display: block; width: 24px; height: 8px; flex-shrink: 0; background: var(--exit-ink); border-radius: 999px; transform-origin: left center; transition: transform 220ms ease; }
+.sb-exit-brand { transition: opacity 220ms ease; }
+.sb-exit-brand:hover .sb-exit-brand-mark { transform: scaleX(1.12); }
 .sb-exit-brand:hover { opacity: 0.75; }
 .sb-exit-brand:focus-visible { outline: 2px solid var(--exit-ink); outline-offset: 4px; border-radius: 2px; }
 .sb-exit-brand-note { text-align: right; font-size: 9px; line-height: 1.5; }
-@keyframes sb-exit-enter { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
-@media (prefers-reduced-motion: reduce) { .sb-exit-card { animation: none; } }
+@keyframes sb-exit-enter { from { opacity: 0; transform: translateY(-14px) scale(0.96); filter: blur(2px); } to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
+@keyframes sb-exit-enter-bottom { from { opacity: 0; transform: translateY(14px) scale(0.96); filter: blur(2px); } to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
+@media (prefers-reduced-motion: reduce) {
+  .sb-exit-card { animation: none; }
+  .sb-exit-close svg, .sb-exit-visit, .sb-exit-visit svg, .sb-exit-brand, .sb-exit-brand-mark { transition: none; }
+  .sb-exit-close:hover svg, .sb-exit-visit:hover, .sb-exit-visit:hover svg, .sb-exit-visit:active, .sb-exit-brand:hover .sb-exit-brand-mark { transform: none; }
+}
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
