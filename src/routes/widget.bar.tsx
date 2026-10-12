@@ -1,6 +1,6 @@
 import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ArrowUpRight, Info, X } from "lucide-react";
+import { ArrowUpRight, Info, Layers2, X } from "lucide-react";
 import { z } from "zod";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { Button } from "@/components/ui/button";
@@ -422,7 +422,10 @@ function WidgetBar() {
             <Button asChild className="sb-exit-visit">
               <a href={`/api/public/widget/click?id=${exitStartup.id}${host ? `&host=${host}` : ""}${domain ? `&via=${encodeURIComponent(domain)}` : ""}`} target="_blank" rel="noopener noreferrer" onClick={() => setExitStartup(null)}>Visit site <ArrowUpRight /></a>
             </Button>
-            <div className="sb-exit-footer"><span>Independent tools. Worth a look.</span><span>StartupBar</span></div>
+            <div className="sb-exit-footer">
+              <a className="sb-exit-brand" href={`/api/public/widget/click?source=badge${host ? `&host=${host}` : ""}${domain ? `&via=${encodeURIComponent(domain)}` : ""}`} target="_blank" rel="noopener noreferrer" aria-label="Discover StartupBar"><Layers2 aria-hidden="true" />StartupBar</a>
+              <span className="sb-exit-brand-note">Built by founders.<br />Discovered together.</span>
+            </div>
           </aside>
         </div>
       )}
