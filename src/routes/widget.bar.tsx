@@ -1,8 +1,9 @@
 import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Info, X } from "lucide-react";
+import { ArrowUpRight, Info, X } from "lucide-react";
 import { z } from "zod";
 import { StartupFavicon } from "@/components/StartupFavicon";
+import { Button } from "@/components/ui/button";
 
 const search = z.object({
   host: z.string().uuid().optional(),
@@ -85,6 +86,11 @@ function WidgetBar() {
   const [loaded, setLoaded] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const [exitStartup, setExitStartup] = useState<Startup | null>(null);
+  const [placement, setPlacement] = useState<"top" | "bottom">("top");
+  const exitRef = useRef<Startup | null>(null);
+  const exitUsed = useRef(false);
+  const cardRef = useRef<HTMLElement>(null);
   const isMobile = mobile === 1;
   const wrapperRef = useRef<HTMLDivElement>(null);
   const startupRef = useRef<Startup | null>(null);
@@ -93,6 +99,7 @@ function WidgetBar() {
   startupRef.current = startup;
   showInfoRef.current = showInfo;
   dismissedRef.current = dismissed;
+  exitRef.current = exitStartup;
 
 
   useEffect(() => {
@@ -102,12 +109,30 @@ function WidgetBar() {
         const t = e.data.theme;
         if (t === "light" || t === "dark") setActiveTheme(t);
       }
+      if (e.data?.type === "startupbar:exit" && !exitUsed.current && startupRef.current && !showInfoRef.current && !dismissedRef.current) {
+        exitUsed.current = true;
+        setFadeIn(true);
+        setExitStartup(startupRef.current);
+        window.parent.postMessage({ type: "startupbar:exit-opened" }, e.origin);
+      }
+      if (e.data?.type === "startupbar:exit-close") setExitStartup(null);
     }
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
   }, []);
 
   const [fadeIn, setFadeIn] = useState(true);
+
+  useEffect(() => {
+    window.parent.postMessage({ type: "startupbar:exit-ready", ready: !!startup && !showInfo && !exitStartup && !dismissed }, "*");
+  }, [startup, showInfo, exitStartup, dismissed]);
+
+  useEffect(() => {
+    if (!exitStartup) return;
+    const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") setExitStartup(null); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [exitStartup]);
 
   useEffect(() => {
     let cancelled = false;
@@ -125,6 +150,7 @@ function WidgetBar() {
         if (res.ok) {
           const data = (await res.json()) as (Startup & { placement?: "top" | "bottom" }) | null;
           if (data?.placement) {
+            setPlacement(data.placement);
             try {
               window.parent.postMessage({ type: "startupbar:placement", placement: data.placement }, "*");
             } catch { /* ignore */ }
@@ -153,14 +179,14 @@ function WidgetBar() {
     let fadeTimer: ReturnType<typeof setTimeout> | undefined;
     const interval = setInterval(async () => {
       if (cancelled) return;
-      if (dismissedRef.current || showInfoRef.current) return;
+      if (dismissedRef.current || showInfoRef.current || exitRef.current) return;
       if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
       const next = await fetchStartup();
-      if (cancelled || !next) return;
+      if (cancelled || !next || exitRef.current) return;
       if (next.id === startupRef.current?.id) return;
       setFadeIn(false);
       fadeTimer = setTimeout(() => {
-        if (cancelled) return;
+        if (cancelled || exitRef.current) return;
         setStartup(next);
         setFadeIn(true);
       }, 500);
@@ -176,16 +202,25 @@ function WidgetBar() {
 
   const lastSentHeight = useRef<number>(-1);
   useEffect(() => {
-    const send = (h: number) => {
+    const send = (h: number, overlay = false) => {
       const rounded = Math.round(h);
-      if (rounded === lastSentHeight.current) return;
+      if (rounded === lastSentHeight.current && !overlay) return;
       lastSentHeight.current = rounded;
-      window.parent.postMessage({ type: "startupbar:resize", height: rounded }, "*");
+      const rect = cardRef.current?.getBoundingClientRect();
+      window.parent.postMessage({ type: "startupbar:resize", height: rounded, overlay, card: rect ? { left: rect.left } : undefined }, "*");
     };
 
     if (dismissed) {
       send(0);
       return;
+    }
+
+    if (exitStartup) {
+      const update = () => send(wrapperRef.current?.scrollHeight || 36, true);
+      const observer = new ResizeObserver(update);
+      if (wrapperRef.current) observer.observe(wrapperRef.current);
+      update();
+      return () => observer.disconnect();
     }
 
     if (!showInfo) {
@@ -197,7 +232,7 @@ function WidgetBar() {
       send(wrapperRef.current?.scrollHeight || 36);
     });
     return () => window.cancelAnimationFrame(frame);
-  }, [dismissed, loaded, showInfo]);
+  }, [dismissed, loaded, showInfo, exitStartup, placement]);
 
 
 
@@ -252,7 +287,7 @@ function WidgetBar() {
   };
 
   return (
-    <div ref={wrapperRef} style={{ position: "relative", width: "100%" }}>
+    <div ref={wrapperRef} className={`sb-widget-shell ${activeTheme === "dark" ? "sb-widget-dark" : ""} ${placement === "bottom" ? "sb-widget-bottom" : ""}`}>
       {isMobile && (
         <style>{`
           @keyframes sb-marquee {
@@ -277,7 +312,7 @@ function WidgetBar() {
         }}
       >
         {/* Info button — always visible */}
-        <button onClick={(e) => { e.stopPropagation(); setShowInfo(v => !v); }} aria-label="About StartupBar" style={iconBtnStyle}>
+        <button onClick={(e) => { e.stopPropagation(); setExitStartup(null); setShowInfo(v => !v); }} aria-label="About StartupBar" style={iconBtnStyle}>
           <Info size={12} />
         </button>
 
@@ -371,6 +406,25 @@ function WidgetBar() {
         )}
       </div>
       {showInfo && <InfoPanel tokens={tokens} />}
+      {exitStartup && (
+        <div className="sb-exit-region">
+          <aside ref={cardRef} className="sb-exit-card" aria-label={`Discover ${exitStartup.name}`}>
+            <div className="sb-exit-topline">
+              <span>Before you go</span>
+              <Button variant="ghost" size="icon" className="sb-exit-close" aria-label="Close recommendation" title="Close recommendation" onClick={() => setExitStartup(null)}><X /></Button>
+            </div>
+            <div className="sb-exit-identity">
+              <StartupFavicon url={exitStartup.website_url} name={exitStartup.name} logoUrl={exitStartup.logo_url} size={40} className="rounded-lg shrink-0" />
+              <div className="min-w-0"><p className="sb-exit-eyebrow">From the founder network</p><h2>{exitStartup.name}</h2></div>
+            </div>
+            <p className="sb-exit-pitch">{exitStartup.description}</p>
+            <Button asChild className="sb-exit-visit">
+              <a href={`/api/public/widget/click?id=${exitStartup.id}${host ? `&host=${host}` : ""}${domain ? `&via=${encodeURIComponent(domain)}` : ""}`} target="_blank" rel="noopener noreferrer" onClick={() => setExitStartup(null)}>Visit site <ArrowUpRight /></a>
+            </Button>
+            <div className="sb-exit-footer"><span>Independent tools. Worth a look.</span><span>StartupBar</span></div>
+          </aside>
+        </div>
+      )}
     </div>
   );
 }
