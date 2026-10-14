@@ -318,14 +318,8 @@
         if (dismissed) return;
         if (!isFinite(next) || next < 36 || next > window.innerHeight) return;
         overlayClip = '';
-        if (e.data.overlay && e.data.card) {
-          var c = e.data.card;
-          var left = Math.max(0, Math.min(window.innerWidth, Number(c.left) - 8));
-          if (!isFinite(left)) return;
-          overlayClip = placement === 'bottom'
-            ? 'polygon(' + left + 'px 0,100% 0,100% 100%,0 100%,0 ' + (next - 36) + 'px,' + left + 'px ' + (next - 36) + 'px)'
-            : 'polygon(0 0,100% 0,100% 100%,' + left + 'px 100%,' + left + 'px 36px,0 36px)';
-        }
+        // The recommendation now extends the entire bar. Its measured height
+        // limits pointer interception to the visible band, not a floating card.
         iframe.style.clipPath = overlayClip;
         iframe.style.background = e.data.overlay ? 'transparent' : bg;
         if (next === currentHeight) return;
