@@ -17,7 +17,7 @@ function setup({ optOut = false, pointer = true } = {}) {
   };
   const window = { innerWidth: 1280, innerHeight: 900, location: { hostname: 'host.example', pathname: '/' }, matchMedia: () => ({ matches: pointer }), addEventListener: (name, cb) => { listeners[name] = cb; } };
   window.top = window;
-  runInNewContext(readFileSync(__dirname + '/loader.js', 'utf8'), { window, document, navigator: { userAgent: 'Chrome' }, screen: {}, URL, URLSearchParams, localStorage: { getItem() {} }, sessionStorage: { getItem: k => storage.get(k), setItem: (k, v) => storage.set(k, v) }, Date: { now: () => now }, Math, isFinite, setTimeout() {} });
+  runInNewContext(readFileSync(__dirname + '/loader.js', 'utf8'), { window, document, navigator: { userAgent: 'Chrome' }, screen: {}, URL, URLSearchParams, localStorage: { getItem() {} }, sessionStorage: { getItem: k => storage.get(k), setItem: (k, v) => storage.set(k, v) }, Date: { now: () => now }, Math, isFinite, setTimeout: cb => { cb(); return 0; }, clearTimeout() {} });
   const message = (data, source = frame.contentWindow, origin = 'https://startupbar.co') => listeners.message({ data, source, origin });
   message({ type: 'startupbar:exit-ready', ready: true });
   listeners.mousemove();
