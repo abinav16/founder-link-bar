@@ -133,7 +133,7 @@ function WidgetBar() {
 
   useEffect(() => {
     if (!exitStartup || exitExpanded) return;
-    const timer = setTimeout(() => setExitStartup(null), 560);
+    const timer = setTimeout(() => setExitStartup(null), 820);
     return () => clearTimeout(timer);
   }, [exitStartup, exitExpanded]);
 
