@@ -88,6 +88,7 @@ function WidgetBar() {
   const [showInfo, setShowInfo] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [exitStartup, setExitStartup] = useState<Startup | null>(null);
+  const [exitExpanded, setExitExpanded] = useState(false);
   const [placement, setPlacement] = useState<"top" | "bottom">("top");
   const exitRef = useRef<Startup | null>(null);
   const exitUsed = useRef(false);
@@ -114,9 +115,10 @@ function WidgetBar() {
         exitUsed.current = true;
         setFadeIn(true);
         setExitStartup(startupRef.current);
+        setExitExpanded(true);
         window.parent.postMessage({ type: "startupbar:exit-opened" }, e.origin);
       }
-      if (e.data?.type === "startupbar:exit-close") setExitStartup(null);
+      if (e.data?.type === "startupbar:exit-close") setExitExpanded(false);
     }
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
@@ -129,8 +131,14 @@ function WidgetBar() {
   }, [startup, showInfo, exitStartup, dismissed]);
 
   useEffect(() => {
+    if (!exitStartup || exitExpanded) return;
+    const timer = setTimeout(() => setExitStartup(null), 560);
+    return () => clearTimeout(timer);
+  }, [exitStartup, exitExpanded]);
+
+  useEffect(() => {
     if (!exitStartup) return;
-    const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") setExitStartup(null); };
+    const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") setExitExpanded(false); };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [exitStartup]);
@@ -217,7 +225,7 @@ function WidgetBar() {
     }
 
     if (exitStartup) {
-      const update = () => send(wrapperRef.current?.scrollHeight || 36, true);
+      const update = () => send(wrapperRef.current?.getBoundingClientRect().height || 36, true);
       const observer = new ResizeObserver(update);
       if (wrapperRef.current) observer.observe(wrapperRef.current);
       update();
@@ -313,7 +321,7 @@ function WidgetBar() {
         }}
       >
         {/* Info button — always visible */}
-        <button onClick={(e) => { e.stopPropagation(); setExitStartup(null); setShowInfo(v => !v); }} aria-label="About StartupBar" style={iconBtnStyle}>
+        <button onClick={(e) => { e.stopPropagation(); setExitExpanded(false); setShowInfo(v => !v); }} aria-label="About StartupBar" style={iconBtnStyle}>
           <Info size={12} />
         </button>
 
@@ -407,28 +415,39 @@ function WidgetBar() {
         )}
       </div>
       {showInfo && <InfoPanel tokens={tokens} />}
-      {exitStartup && (
-        <div className="sb-exit-region">
+      <div className={`sb-exit-region ${exitExpanded ? "sb-exit-expanded" : ""}`} aria-hidden={!exitExpanded} inert={!exitExpanded}>
+        <div className="sb-exit-reveal">
+        {exitStartup && (
           <aside ref={cardRef} className="sb-exit-card" aria-label={`Discover ${exitStartup.name}`}>
-            <div className="sb-exit-topline">
-              <span>Before you go</span>
-              <Button variant="ghost" size="icon" className="sb-exit-close" aria-label="Close recommendation" title="Close recommendation" onClick={() => setExitStartup(null)}><X /></Button>
+            <div className="sb-exit-guide">
+              <div className="sb-bar-mascot" aria-hidden="true">
+                <span className="sb-mascot-brow sb-mascot-brow-left" />
+                <span className="sb-mascot-brow sb-mascot-brow-right" />
+                <span className="sb-mascot-eye sb-mascot-eye-left" />
+                <span className="sb-mascot-eye sb-mascot-eye-right" />
+                <span className="sb-mascot-mouth" />
+              </div>
+              <span className="sb-exit-greeting">Wait, take a look.</span>
+              <a className="sb-exit-brand" href={`/api/public/widget/click?source=badge${host ? `&host=${host}` : ""}${domain ? `&via=${encodeURIComponent(domain)}` : ""}`} target="_blank" rel="noopener noreferrer" aria-label="Discover StartupBar">StartupBar <ArrowUpRight size={12} /></a>
             </div>
+            <div className="sb-exit-story">
             <div className="sb-exit-identity">
               <StartupFavicon url={exitStartup.website_url} name={exitStartup.name} logoUrl={exitStartup.logo_url} size={40} className="rounded-lg shrink-0" />
-              <div className="min-w-0"><p className="sb-exit-eyebrow">From the founder network</p><h2>{exitStartup.name}</h2></div>
+              <div className="min-w-0"><p className="sb-exit-eyebrow">Before you go · From the founder network</p><h2>{exitStartup.name}</h2></div>
             </div>
             <p className="sb-exit-pitch">{exitStartup.description}</p>
+            </div>
+            <div className="sb-exit-actions">
             <Button asChild className="sb-exit-visit">
-              <a href={`/api/public/widget/click?id=${exitStartup.id}${host ? `&host=${host}` : ""}${domain ? `&via=${encodeURIComponent(domain)}` : ""}`} target="_blank" rel="noopener noreferrer" onClick={() => setExitStartup(null)}>Visit site <ArrowUpRight /></a>
+              <a href={`/api/public/widget/click?id=${exitStartup.id}${host ? `&host=${host}` : ""}${domain ? `&via=${encodeURIComponent(domain)}` : ""}`} target="_blank" rel="noopener noreferrer" onClick={() => setExitExpanded(false)}>Visit site <ArrowUpRight /></a>
             </Button>
-            <div className="sb-exit-footer">
-              <a className="sb-exit-brand" href={`/api/public/widget/click?source=badge${host ? `&host=${host}` : ""}${domain ? `&via=${encodeURIComponent(domain)}` : ""}`} target="_blank" rel="noopener noreferrer" aria-label="Discover StartupBar"><span className="sb-exit-brand-mark" aria-hidden="true" />StartupBar</a>
               <span className="sb-exit-brand-note">Built by founders.<br />Discovered together.</span>
             </div>
+            <Button variant="ghost" size="icon" className="sb-exit-close" aria-label="Close recommendation" title="Close recommendation" onClick={() => setExitExpanded(false)}><X /></Button>
           </aside>
+        )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
