@@ -9,92 +9,43 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
-import { Route as AdminRouteImport } from './routes/admin'
-import { Route as ApplyRouteImport } from './routes/apply'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as FaqRouteImport } from './routes/faq'
-import { Route as LeaderboardRouteImport } from './routes/leaderboard'
-import { Route as NetworkRouteImport } from './routes/network'
-import { Route as PricingRouteImport } from './routes/pricing'
-import { Route as PrivacyRouteImport } from './routes/privacy'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as StartupbidRouteImport } from './routes/startupbid'
 import { Route as TermsRouteImport } from './routes/terms'
-import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
-import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthCallbackRouteImport } from './routes/auth_.callback'
-import { Route as StartupSlugRouteImport } from './routes/startup.$slug'
-import { Route as UTokenRouteImport } from './routes/u.$token'
+import { Route as StartupbidRouteImport } from './routes/startupbid'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as NetworkRouteImport } from './routes/network'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
+import { Route as FaqRouteImport } from './routes/faq'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ApplyRouteImport } from './routes/apply'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as WidgetBarRouteImport } from './routes/widget.bar'
-import { Route as ApiPublicBidCheckoutRouteImport } from './routes/api/public/bid-checkout'
-import { Route as ApiPublicBidEnrichRouteImport } from './routes/api/public/bid-enrich'
-import { Route as ApiPublicBidStatusRouteImport } from './routes/api/public/bid-status'
-import { Route as ApiPublicDodoWebhookRouteImport } from './routes/api/public/dodo-webhook'
-import { Route as ApiPublicEmailEventsRouteImport } from './routes/api/public/email-events'
-import { Route as ApiPublicUnsubscribeRouteImport } from './routes/api/public/unsubscribe'
+import { Route as UTokenRouteImport } from './routes/u.$token'
+import { Route as StartupSlugRouteImport } from './routes/startup.$slug'
+import { Route as AuthCallbackRouteImport } from './routes/auth_.callback'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as ApiPublicVerifyInstallRouteImport } from './routes/api/public/verify-install'
-import { Route as ApiPublicTrackFunnelRouteImport } from './routes/api/public/track.funnel'
-import { Route as ApiPublicTrackSiteVisitRouteImport } from './routes/api/public/track.site-visit'
-import { Route as ApiPublicTrackSupporterRouteImport } from './routes/api/public/track.supporter'
-import { Route as ApiPublicWidgetClickRouteImport } from './routes/api/public/widget.click'
-import { Route as ApiPublicWidgetHeartbeatRouteImport } from './routes/api/public/widget.heartbeat'
-import { Route as ApiPublicWidgetPickRouteImport } from './routes/api/public/widget.pick'
+import { Route as ApiPublicUnsubscribeRouteImport } from './routes/api/public/unsubscribe'
+import { Route as ApiPublicEmailEventsRouteImport } from './routes/api/public/email-events'
+import { Route as ApiPublicDodoWebhookRouteImport } from './routes/api/public/dodo-webhook'
+import { Route as ApiPublicBidStatusRouteImport } from './routes/api/public/bid-status'
+import { Route as ApiPublicBidEnrichRouteImport } from './routes/api/public/bid-enrich'
+import { Route as ApiPublicBidCheckoutRouteImport } from './routes/api/public/bid-checkout'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as ApiPublicWidgetPickRouteImport } from './routes/api/public/widget.pick'
+import { Route as ApiPublicWidgetHeartbeatRouteImport } from './routes/api/public/widget.heartbeat'
+import { Route as ApiPublicWidgetClickRouteImport } from './routes/api/public/widget.click'
+import { Route as ApiPublicTrackSupporterRouteImport } from './routes/api/public/track.supporter'
+import { Route as ApiPublicTrackSiteVisitRouteImport } from './routes/api/public/track.site-visit'
+import { Route as ApiPublicTrackFunnelRouteImport } from './routes/api/public/track.funnel'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApplyRoute = ApplyRouteImport.update({
-  id: '/apply',
-  path: '/apply',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FaqRoute = FaqRouteImport.update({
-  id: '/faq',
-  path: '/faq',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LeaderboardRoute = LeaderboardRouteImport.update({
-  id: '/leaderboard',
-  path: '/leaderboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NetworkRoute = NetworkRouteImport.update({
-  id: '/network',
-  path: '/network',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PricingRoute = PricingRouteImport.update({
-  id: '/pricing',
-  path: '/pricing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PrivacyRoute = PrivacyRouteImport.update({
-  id: '/privacy',
-  path: '/privacy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StartupbidRoute = StartupbidRouteImport.update({
@@ -102,34 +53,58 @@ const StartupbidRoute = StartupbidRouteImport.update({
   path: '/startupbid',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TermsRoute = TermsRouteImport.update({
-  id: '/terms',
-  path: '/terms',
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
-  id: '/account',
-  path: '/account',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthCallbackRoute = AuthCallbackRouteImport.update({
-  id: '/auth_/callback',
-  path: '/auth/callback',
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
-const StartupSlugRoute = StartupSlugRouteImport.update({
-  id: '/startup/$slug',
-  path: '/startup/$slug',
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
-const UTokenRoute = UTokenRouteImport.update({
-  id: '/u/$token',
-  path: '/u/$token',
+const NetworkRoute = NetworkRouteImport.update({
+  id: '/network',
+  path: '/network',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApplyRoute = ApplyRouteImport.update({
+  id: '/apply',
+  path: '/apply',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WidgetBarRoute = WidgetBarRouteImport.update({
@@ -137,29 +112,34 @@ const WidgetBarRoute = WidgetBarRouteImport.update({
   path: '/widget/bar',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicBidCheckoutRoute = ApiPublicBidCheckoutRouteImport.update({
-  id: '/api/public/bid-checkout',
-  path: '/api/public/bid-checkout',
+const UTokenRoute = UTokenRouteImport.update({
+  id: '/u/$token',
+  path: '/u/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicBidEnrichRoute = ApiPublicBidEnrichRouteImport.update({
-  id: '/api/public/bid-enrich',
-  path: '/api/public/bid-enrich',
+const StartupSlugRoute = StartupSlugRouteImport.update({
+  id: '/startup/$slug',
+  path: '/startup/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicBidStatusRoute = ApiPublicBidStatusRouteImport.update({
-  id: '/api/public/bid-status',
-  path: '/api/public/bid-status',
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth_/callback',
+  path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicDodoWebhookRoute = ApiPublicDodoWebhookRouteImport.update({
-  id: '/api/public/dodo-webhook',
-  path: '/api/public/dodo-webhook',
-  getParentRoute: () => rootRouteImport,
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const ApiPublicEmailEventsRoute = ApiPublicEmailEventsRouteImport.update({
-  id: '/api/public/email-events',
-  path: '/api/public/email-events',
+const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const ApiPublicVerifyInstallRoute = ApiPublicVerifyInstallRouteImport.update({
+  id: '/api/public/verify-install',
+  path: '/api/public/verify-install',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicUnsubscribeRoute = ApiPublicUnsubscribeRouteImport.update({
@@ -167,40 +147,29 @@ const ApiPublicUnsubscribeRoute = ApiPublicUnsubscribeRouteImport.update({
   path: '/api/public/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicVerifyInstallRoute = ApiPublicVerifyInstallRouteImport.update({
-  id: '/api/public/verify-install',
-  path: '/api/public/verify-install',
+const ApiPublicEmailEventsRoute = ApiPublicEmailEventsRouteImport.update({
+  id: '/api/public/email-events',
+  path: '/api/public/email-events',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicTrackFunnelRoute = ApiPublicTrackFunnelRouteImport.update({
-  id: '/api/public/track/funnel',
-  path: '/api/public/track/funnel',
+const ApiPublicDodoWebhookRoute = ApiPublicDodoWebhookRouteImport.update({
+  id: '/api/public/dodo-webhook',
+  path: '/api/public/dodo-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicTrackSiteVisitRoute = ApiPublicTrackSiteVisitRouteImport.update({
-  id: '/api/public/track/site-visit',
-  path: '/api/public/track/site-visit',
+const ApiPublicBidStatusRoute = ApiPublicBidStatusRouteImport.update({
+  id: '/api/public/bid-status',
+  path: '/api/public/bid-status',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicTrackSupporterRoute = ApiPublicTrackSupporterRouteImport.update({
-  id: '/api/public/track/supporter',
-  path: '/api/public/track/supporter',
+const ApiPublicBidEnrichRoute = ApiPublicBidEnrichRouteImport.update({
+  id: '/api/public/bid-enrich',
+  path: '/api/public/bid-enrich',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicWidgetClickRoute = ApiPublicWidgetClickRouteImport.update({
-  id: '/api/public/widget/click',
-  path: '/api/public/widget/click',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicWidgetHeartbeatRoute =
-  ApiPublicWidgetHeartbeatRouteImport.update({
-    id: '/api/public/widget/heartbeat',
-    path: '/api/public/widget/heartbeat',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicWidgetPickRoute = ApiPublicWidgetPickRouteImport.update({
-  id: '/api/public/widget/pick',
-  path: '/api/public/widget/pick',
+const ApiPublicBidCheckoutRoute = ApiPublicBidCheckoutRouteImport.update({
+  id: '/api/public/bid-checkout',
+  path: '/api/public/bid-checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LovableEmailQueueProcessRoute =
@@ -209,6 +178,37 @@ const LovableEmailQueueProcessRoute =
     path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicWidgetPickRoute = ApiPublicWidgetPickRouteImport.update({
+  id: '/api/public/widget/pick',
+  path: '/api/public/widget/pick',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicWidgetHeartbeatRoute =
+  ApiPublicWidgetHeartbeatRouteImport.update({
+    id: '/api/public/widget/heartbeat',
+    path: '/api/public/widget/heartbeat',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicWidgetClickRoute = ApiPublicWidgetClickRouteImport.update({
+  id: '/api/public/widget/click',
+  path: '/api/public/widget/click',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicTrackSupporterRoute = ApiPublicTrackSupporterRouteImport.update({
+  id: '/api/public/track/supporter',
+  path: '/api/public/track/supporter',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicTrackSiteVisitRoute = ApiPublicTrackSiteVisitRouteImport.update({
+  id: '/api/public/track/site-visit',
+  path: '/api/public/track/site-visit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicTrackFunnelRoute = ApiPublicTrackFunnelRouteImport.update({
+  id: '/api/public/track/funnel',
+  path: '/api/public/track/funnel',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -456,81 +456,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated': {
-      id: '/_authenticated'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/apply': {
-      id: '/apply'
-      path: '/apply'
-      fullPath: '/apply'
-      preLoaderRoute: typeof ApplyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/faq': {
-      id: '/faq'
-      path: '/faq'
-      fullPath: '/faq'
-      preLoaderRoute: typeof FaqRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/leaderboard': {
-      id: '/leaderboard'
-      path: '/leaderboard'
-      fullPath: '/leaderboard'
-      preLoaderRoute: typeof LeaderboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/network': {
-      id: '/network'
-      path: '/network'
-      fullPath: '/network'
-      preLoaderRoute: typeof NetworkRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pricing': {
-      id: '/pricing'
-      path: '/pricing'
-      fullPath: '/pricing'
-      preLoaderRoute: typeof PricingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/privacy': {
-      id: '/privacy'
-      path: '/privacy'
-      fullPath: '/privacy'
-      preLoaderRoute: typeof PrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/startupbid': {
@@ -540,46 +470,81 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StartupbidRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/terms': {
-      id: '/terms'
-      path: '/terms'
-      fullPath: '/terms'
-      preLoaderRoute: typeof TermsRouteImport
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/account': {
-      id: '/_authenticated/account'
-      path: '/account'
-      fullPath: '/account'
-      preLoaderRoute: typeof AuthenticatedAccountRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard': {
-      id: '/_authenticated/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/auth_/callback': {
-      id: '/auth_/callback'
-      path: '/auth/callback'
-      fullPath: '/auth/callback'
-      preLoaderRoute: typeof AuthCallbackRouteImport
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/startup/$slug': {
-      id: '/startup/$slug'
-      path: '/startup/$slug'
-      fullPath: '/startup/$slug'
-      preLoaderRoute: typeof StartupSlugRouteImport
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/u/$token': {
-      id: '/u/$token'
-      path: '/u/$token'
-      fullPath: '/u/$token'
-      preLoaderRoute: typeof UTokenRouteImport
+    '/network': {
+      id: '/network'
+      path: '/network'
+      fullPath: '/network'
+      preLoaderRoute: typeof NetworkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/apply': {
+      id: '/apply'
+      path: '/apply'
+      fullPath: '/apply'
+      preLoaderRoute: typeof ApplyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/widget/bar': {
@@ -589,39 +554,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WidgetBarRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/bid-checkout': {
-      id: '/api/public/bid-checkout'
-      path: '/api/public/bid-checkout'
-      fullPath: '/api/public/bid-checkout'
-      preLoaderRoute: typeof ApiPublicBidCheckoutRouteImport
+    '/u/$token': {
+      id: '/u/$token'
+      path: '/u/$token'
+      fullPath: '/u/$token'
+      preLoaderRoute: typeof UTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/bid-enrich': {
-      id: '/api/public/bid-enrich'
-      path: '/api/public/bid-enrich'
-      fullPath: '/api/public/bid-enrich'
-      preLoaderRoute: typeof ApiPublicBidEnrichRouteImport
+    '/startup/$slug': {
+      id: '/startup/$slug'
+      path: '/startup/$slug'
+      fullPath: '/startup/$slug'
+      preLoaderRoute: typeof StartupSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/bid-status': {
-      id: '/api/public/bid-status'
-      path: '/api/public/bid-status'
-      fullPath: '/api/public/bid-status'
-      preLoaderRoute: typeof ApiPublicBidStatusRouteImport
+    '/auth_/callback': {
+      id: '/auth_/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/dodo-webhook': {
-      id: '/api/public/dodo-webhook'
-      path: '/api/public/dodo-webhook'
-      fullPath: '/api/public/dodo-webhook'
-      preLoaderRoute: typeof ApiPublicDodoWebhookRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/public/email-events': {
-      id: '/api/public/email-events'
-      path: '/api/public/email-events'
-      fullPath: '/api/public/email-events'
-      preLoaderRoute: typeof ApiPublicEmailEventsRouteImport
+    '/_authenticated/account': {
+      id: '/_authenticated/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AuthenticatedAccountRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/public/verify-install': {
+      id: '/api/public/verify-install'
+      path: '/api/public/verify-install'
+      fullPath: '/api/public/verify-install'
+      preLoaderRoute: typeof ApiPublicVerifyInstallRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/unsubscribe': {
@@ -631,46 +603,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicUnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/verify-install': {
-      id: '/api/public/verify-install'
-      path: '/api/public/verify-install'
-      fullPath: '/api/public/verify-install'
-      preLoaderRoute: typeof ApiPublicVerifyInstallRouteImport
+    '/api/public/email-events': {
+      id: '/api/public/email-events'
+      path: '/api/public/email-events'
+      fullPath: '/api/public/email-events'
+      preLoaderRoute: typeof ApiPublicEmailEventsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/track/funnel': {
-      id: '/api/public/track/funnel'
-      path: '/api/public/track/funnel'
-      fullPath: '/api/public/track/funnel'
-      preLoaderRoute: typeof ApiPublicTrackFunnelRouteImport
+    '/api/public/dodo-webhook': {
+      id: '/api/public/dodo-webhook'
+      path: '/api/public/dodo-webhook'
+      fullPath: '/api/public/dodo-webhook'
+      preLoaderRoute: typeof ApiPublicDodoWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/track/site-visit': {
-      id: '/api/public/track/site-visit'
-      path: '/api/public/track/site-visit'
-      fullPath: '/api/public/track/site-visit'
-      preLoaderRoute: typeof ApiPublicTrackSiteVisitRouteImport
+    '/api/public/bid-status': {
+      id: '/api/public/bid-status'
+      path: '/api/public/bid-status'
+      fullPath: '/api/public/bid-status'
+      preLoaderRoute: typeof ApiPublicBidStatusRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/track/supporter': {
-      id: '/api/public/track/supporter'
-      path: '/api/public/track/supporter'
-      fullPath: '/api/public/track/supporter'
-      preLoaderRoute: typeof ApiPublicTrackSupporterRouteImport
+    '/api/public/bid-enrich': {
+      id: '/api/public/bid-enrich'
+      path: '/api/public/bid-enrich'
+      fullPath: '/api/public/bid-enrich'
+      preLoaderRoute: typeof ApiPublicBidEnrichRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/widget/click': {
-      id: '/api/public/widget/click'
-      path: '/api/public/widget/click'
-      fullPath: '/api/public/widget/click'
-      preLoaderRoute: typeof ApiPublicWidgetClickRouteImport
+    '/api/public/bid-checkout': {
+      id: '/api/public/bid-checkout'
+      path: '/api/public/bid-checkout'
+      fullPath: '/api/public/bid-checkout'
+      preLoaderRoute: typeof ApiPublicBidCheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/widget/heartbeat': {
-      id: '/api/public/widget/heartbeat'
-      path: '/api/public/widget/heartbeat'
-      fullPath: '/api/public/widget/heartbeat'
-      preLoaderRoute: typeof ApiPublicWidgetHeartbeatRouteImport
+    '/lovable/email/queue/process': {
+      id: '/lovable/email/queue/process'
+      path: '/lovable/email/queue/process'
+      fullPath: '/lovable/email/queue/process'
+      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/widget/pick': {
@@ -680,11 +652,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWidgetPickRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/lovable/email/queue/process': {
-      id: '/lovable/email/queue/process'
-      path: '/lovable/email/queue/process'
-      fullPath: '/lovable/email/queue/process'
-      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+    '/api/public/widget/heartbeat': {
+      id: '/api/public/widget/heartbeat'
+      path: '/api/public/widget/heartbeat'
+      fullPath: '/api/public/widget/heartbeat'
+      preLoaderRoute: typeof ApiPublicWidgetHeartbeatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/widget/click': {
+      id: '/api/public/widget/click'
+      path: '/api/public/widget/click'
+      fullPath: '/api/public/widget/click'
+      preLoaderRoute: typeof ApiPublicWidgetClickRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/track/supporter': {
+      id: '/api/public/track/supporter'
+      path: '/api/public/track/supporter'
+      fullPath: '/api/public/track/supporter'
+      preLoaderRoute: typeof ApiPublicTrackSupporterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/track/site-visit': {
+      id: '/api/public/track/site-visit'
+      path: '/api/public/track/site-visit'
+      fullPath: '/api/public/track/site-visit'
+      preLoaderRoute: typeof ApiPublicTrackSiteVisitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/track/funnel': {
+      id: '/api/public/track/funnel'
+      path: '/api/public/track/funnel'
+      fullPath: '/api/public/track/funnel'
+      preLoaderRoute: typeof ApiPublicTrackFunnelRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
