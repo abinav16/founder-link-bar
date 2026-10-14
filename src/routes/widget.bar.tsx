@@ -115,7 +115,8 @@ function WidgetBar() {
         exitUsed.current = true;
         setFadeIn(true);
         setExitStartup(startupRef.current);
-        setExitExpanded(true);
+        // Establish the compact geometry before starting the morph.
+        window.requestAnimationFrame(() => window.requestAnimationFrame(() => setExitExpanded(true)));
         window.parent.postMessage({ type: "startupbar:exit-opened" }, e.origin);
       }
       if (e.data?.type === "startupbar:exit-close") setExitExpanded(false);
@@ -296,7 +297,7 @@ function WidgetBar() {
   };
 
   return (
-    <div ref={wrapperRef} className={`sb-widget-shell ${activeTheme === "dark" ? "sb-widget-dark" : ""} ${placement === "bottom" ? "sb-widget-bottom" : ""}`}>
+    <div ref={wrapperRef} className={`sb-widget-shell ${exitExpanded ? "sb-widget-morphed" : ""} ${activeTheme === "dark" ? "sb-widget-dark" : ""} ${placement === "bottom" ? "sb-widget-bottom" : ""}`}>
       {isMobile && (
         <style>{`
           @keyframes sb-marquee {
@@ -313,6 +314,9 @@ function WidgetBar() {
         `}</style>
       )}
       <div
+        className="sb-widget-compact"
+        aria-hidden={exitExpanded}
+        inert={exitExpanded}
         style={{ ...barStyle, cursor: startup ? "pointer" : undefined }}
         onClick={() => {
           if (!startup) return;
