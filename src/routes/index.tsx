@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useBidBoard, formatUsd } from "@/lib/bid";
 
 import { SitePreviewSurface } from "@/components/SitePreviewSurface";
+import socialPreviewAsset from "@/assets/founders-helping-founders.jpg.asset.json";
 
 function useInView(threshold = 0.12) {
   const ref = useRef<HTMLDivElement>(null);
@@ -40,8 +41,8 @@ export const Route = createFileRoute("/")({
       { name: "twitter:description", content: "Add one line of code to your site. A 36px bar shows another founder's startup, and yours appears on theirs. Free traffic exchange." },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:url", content: "https://startupbar.co/" },
-      { property: "og:image", content: "https://startupbar.co/__l5e/assets-v1/6ee40991-2265-40aa-8073-c327d29be787/og-social-card.png" },
-      { name: "twitter:image", content: "https://startupbar.co/__l5e/assets-v1/6ee40991-2265-40aa-8073-c327d29be787/og-social-card.png" },
+      { property: "og:image", content: `https://startupbar.co${socialPreviewAsset.url}` },
+      { name: "twitter:image", content: `https://startupbar.co${socialPreviewAsset.url}` },
     ],
     links: [
       { rel: "canonical", href: "https://startupbar.co/" },
