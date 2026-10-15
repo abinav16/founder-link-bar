@@ -3,7 +3,16 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { supabase } from "@/integrations/supabase/client";
 import { COUNTRY_CENTROIDS, COUNTRY_NAMES, flagEmoji, jitter, pinPosition } from "@/lib/geo-centroids";
-import { funName, avatarUrl } from "@/lib/fun-name";
+import { funName, avatarUrl, avatarFallback, handleAvatarError } from "@/lib/fun-name";
+
+// Global error hook for avatar <img> tags inside raw HTML strings (map pins/popups).
+// Swaps a failed DiceBear request for a locally generated initial badge.
+if (typeof window !== "undefined") {
+  (window as unknown as Record<string, unknown>).__sbAvatarErr = (img: HTMLImageElement) => {
+    img.onerror = null;
+    img.src = avatarFallback(img.dataset.sbid ?? "");
+  };
+}
 import { Globe, Map as MapIcon, Eye, RotateCcw, Minimize2, Maximize2, Palette, UserPlus } from "lucide-react";
 
 const MAP_THEMES = [
