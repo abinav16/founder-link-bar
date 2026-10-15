@@ -13,3 +13,4 @@
 - Share the featured-glass treatment and semantic featured color tokens across desktop slot cards and compact banners; keep card links separate so profile and founder actions remain accessible.
 - Use content-sized featured cards with flexible empty slots in a viewport-bounded scrollable desktop rail, so complete listing text remains accessible without wasting available space.
 - Keep exit detection in the host loader and recommendation rendering in the widget route; authenticate frame messages and measure the animated extension's actual height so the host page remains interactive below the bar.
+- Keep profile insights in a dedicated public RPC and vouches behind database-enforced founder eligibility and ownership rules; use daily rollups rather than raw analytics scans to keep profiles fast.

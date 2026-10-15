@@ -1,3 +1,9 @@
+# Startup profile improvements
+- [ ] Add seven-day traffic and honest momentum comparisons.
+- [ ] Add verified founder vouches with secure write rules.
+- [ ] Add three related network startups and owner stats sharing to X.
+- [ ] Verify public and signed-in flows, mobile layout, and rule tests.
+
 # Exit recommendation
 - [x] Replace the floating card with a fluid bar extension and expressive logo mascot.
 - [x] Verify extension opening, closing, themes, placements and host-page interaction.
