@@ -686,6 +686,45 @@ export type Database = {
           },
         ]
       }
+      startup_vouches: {
+        Row: {
+          created_at: string
+          founder_startup_id: string
+          founder_user_id: string
+          startup_id: string
+          tag: string
+        }
+        Insert: {
+          created_at?: string
+          founder_startup_id: string
+          founder_user_id: string
+          startup_id: string
+          tag?: string
+        }
+        Update: {
+          created_at?: string
+          founder_startup_id?: string
+          founder_user_id?: string
+          startup_id?: string
+          tag?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_vouches_founder_startup_id_fkey"
+            columns: ["founder_startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "startup_vouches_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       startups: {
         Row: {
           banned: boolean
@@ -1031,6 +1070,7 @@ export type Database = {
           total: number
         }[]
       }
+      profile_vouch_access: { Args: { _startup_id: string }; Returns: Json }
       public_bid_activity: {
         Args: { _limit?: number }
         Returns: {
@@ -1218,6 +1258,10 @@ export type Database = {
           startup_id: string
         }[]
       }
+      public_startup_profile_insights: {
+        Args: { _startup_id: string }
+        Returns: Json
+      }
       public_startup_profile_views: {
         Args: { _since?: string; _startup_id: string }
         Returns: number
@@ -1279,6 +1323,10 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      set_startup_vouch: {
+        Args: { _startup_id: string; _tag: string }
+        Returns: undefined
       }
       widget_pick_weights: {
         Args: never
