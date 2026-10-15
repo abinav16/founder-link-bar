@@ -5,6 +5,7 @@ import { getStartupPage, getStartupPulse } from "@/lib/startup-page.functions";
 import { StartupEmbed } from "@/components/StartupEmbed";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { SponsoredRail } from "@/components/SponsoredRail";
+import { ProfileMomentum, FounderVouches, RelatedStartups, OwnerStatsShare } from '@/components/StartupProfileInsights';
 
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { supabase } from "@/integrations/supabase/client";
@@ -143,7 +144,7 @@ function fmt(n: number) {
 function StartupPage() {
   const { slug } = Route.useParams();
   const { data } = useSuspenseQuery(pageQuery(slug));
-  const s = data!;
+  const s = data;
 
   // Profile views are recorded by the root-level site-visit tracker, which now
   // fires on every route (once per path per browser session).
@@ -161,16 +162,19 @@ function StartupPage() {
     return () => { cancel = true; sub.subscription.unsubscribe(); };
   }, []);
   const isSignedIn = !!authState.userId;
-  const isOwner = isSignedIn && !!s.user_id && authState.userId === s.user_id;
+  const isOwner = isSignedIn && !!s?.user_id && authState.userId === s.user_id;
 
   const pulseQ = useQuery({
-    queryKey: ["startup-pulse", s.id],
-    queryFn: () => getStartupPulse({ data: { id: s.id } }),
-    initialData: s.pulse,
+    queryKey: ["startup-pulse", s?.id],
+    queryFn: () => s ? getStartupPulse({ data: { id: s.id } }) : Promise.resolve(0),
+    initialData: s?.pulse,
+    enabled: !!s && authState.ready,
+    staleTime: 15_000,
     refetchInterval: 15_000,
   });
 
-  const joined = new Date(s.created_at).toLocaleDateString(undefined, { month: "long", year: "numeric" });
+  if (!s) return null;
+  const joined = new Date(s.created_at).toLocaleDateString('en-US', { month: "long", year: "numeric", timeZone: 'UTC' });
   const ctr = s.impressions > 0 ? ((s.clicks / s.impressions) * 100).toFixed(1) : "0.0";
   const external = s.website_url.startsWith("http") ? s.website_url : `https://${s.website_url}`;
   const isSupporter =
@@ -238,6 +242,8 @@ function StartupPage() {
           </div>
         )}
 
+        <ProfileMomentum insights={s.insights} />
+
         {/* LIVE EMBED */}
         <div className="mt-12">
           <div className="mb-4 flex items-center gap-2">
@@ -249,6 +255,7 @@ function StartupPage() {
 
         {/* FOUNDER — always rendered */}
         <FounderSection s={s} />
+        <FounderVouches id={s.id} insights={s.insights} userId={authState.userId} isOwner={isOwner} />
 
         {/* REFERRERS */}
         {s.referrers.length > 0 && (
@@ -276,6 +283,9 @@ function StartupPage() {
             </div>
           </div>
         )}
+
+        <RelatedStartups insights={s.insights} />
+        {isOwner && <OwnerStatsShare name={s.name} slug={s.slug} clicks={s.clicks} impressions={s.impressions} />}
 
         {/* FOOTER CTA — varies by auth state */}
         <StartupPageCta name={s.name} authReady={authState.ready} isSignedIn={isSignedIn} isOwner={isOwner} slug={s.slug} />

@@ -6,6 +6,8 @@
 
 /* Embedded recommendations keep their palette independent of host styles. */
 :root {
+  --profile-share-paper: #f3f3f1;
+  --profile-share-ink: #191919;
   --exit-surface: oklch(1 0 0);
   --exit-ink: oklch(0.2 0.008 260);
   --exit-muted: oklch(0.52 0.008 260);
@@ -214,6 +216,15 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
 .page-enter {
   animation: page-in 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
+.profile-insights-band { border-top: 1px solid var(--border); padding-top: 26px; color: var(--foreground); }
+.profile-kicker { font-size: 10px; font-weight: 600; color: var(--muted-foreground); letter-spacing: 0; text-transform: uppercase; }
+.profile-sparkline { width: 100%; height: 130px; color: var(--foreground); overflow: visible; }
+.profile-chart-grid { stroke: var(--border); stroke-width: 1; }
+.profile-discovery-card { display: block; border: 1px solid var(--border); background: var(--card); color: var(--card-foreground); padding: 20px; border-radius: 8px; transition: border-color 200ms ease, transform 200ms ease; }
+.profile-discovery-card:hover { border-color: var(--foreground); transform: translateY(-2px); }
+.profile-share-preview { background: var(--profile-share-paper); color: var(--profile-share-ink); border-radius: 8px; padding: 24px; max-width: 560px; }
+@media (prefers-reduced-motion: reduce) { .profile-discovery-card { transition: none; } .profile-discovery-card:hover { transform: none; } }
 
 @keyframes progress-bar {
   from { transform: scaleX(0); }

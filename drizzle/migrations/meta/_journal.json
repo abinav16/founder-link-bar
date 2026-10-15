@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1792090891804,
+      "tag": "0000_startup_profile_insights_and_founder_vouches",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792091012924,
+      "tag": "0001_complete_profile_momentum_comparison",
+      "breakpoints": true
+    }
+  ]
+}
