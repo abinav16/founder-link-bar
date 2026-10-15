@@ -1204,6 +1204,8 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
                             <img
                               key={f.id}
                               src={avatarUrl(f.id)}
+                              data-sbid={f.id}
+                              onError={handleAvatarError}
                               width={18}
                               height={18}
                               title={f.name}
@@ -1242,6 +1244,8 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
                               <div className="relative shrink-0">
                                 <img
                                   src={avatarUrl(f.id)}
+                                  data-sbid={f.id}
+                                  onError={handleAvatarError}
                                   width={26}
                                   height={26}
                                   className="rounded-full bg-zinc-900"
