@@ -370,7 +370,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
       <div style="position:relative;width:36px;height:36px;pointer-events:none;">
         <div class="sb-pin-halo" style="position:absolute;inset:-10px;border-radius:9999px;background:${color}40;animation:sb-pin-pulse 2s ease-out infinite;"></div>
         <div style="position:absolute;inset:0;border-radius:9999px;overflow:hidden;border:2px solid ${color};box-shadow:0 2px 10px rgba(0,0,0,0.5), 0 0 10px ${color}80;background:#18181b;">
-          <img src="${avatar}" width="32" height="32" style="display:block;width:100%;height:100%;object-fit:cover;" />
+          <img src="${avatar}" data-sbid="${id}" onerror="window.__sbAvatarErr&&window.__sbAvatarErr(this)" width="32" height="32" style="display:block;width:100%;height:100%;object-fit:cover;" />
         </div>
         <div style="position:absolute;bottom:-2px;right:-2px;width:14px;height:14px;border-radius:9999px;background:#18181b;display:flex;align-items:center;justify-content:center;font-size:9px;border:1.5px solid rgba(0,0,0,0.4);">${flag}</div>
       </div>
@@ -390,7 +390,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
     const popupHtml = `
       <div class="sb-popup-inner" style="font-family:inherit;padding:4px;min-width:180px;max-width:220px;">
         <div style="display:flex;align-items:center;gap:8px;padding-bottom:8px;margin-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08);">
-          <img src="${avatar}" class="sb-popup-avatar" width="32" height="32" style="border-radius:9999px;background:#18181b;border:1.5px solid ${color};flex-shrink:0;" />
+          <img src="${avatar}" data-sbid="${id}" onerror="window.__sbAvatarErr&&window.__sbAvatarErr(this)" class="sb-popup-avatar" width="32" height="32" style="border-radius:9999px;background:#18181b;border:1.5px solid ${color};flex-shrink:0;" />
           <div style="min-width:0;">
             <div style="font-size:12px;font-weight:700;color:#fff;text-transform:capitalize;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</div>
             <div style="font-size:10px;color:rgba(255,255,255,0.45);white-space:nowrap;">${flag} ${countryName}</div>
