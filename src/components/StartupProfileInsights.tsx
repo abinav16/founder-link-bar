@@ -29,7 +29,7 @@ export function ProfileMomentum({ insights }: { insights: ProfileInsights }) {
       <div className="min-w-0"><svg viewBox="0 0 608 130" className="profile-sparkline" role="img" aria-label={`Seven-day network impressions: ${days.map(d => `${d.date}: ${d.impressions}`).join(', ')}`}>
         <path d="M16 110H592 M16 66H592 M16 22H592" className="profile-chart-grid" />
         <polyline points={points} fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
-        {days.map((d,i) => <circle key={d.date} cx={16+i*96} cy={110-Number(d.impressions)/max*88} r="4" fill="currentColor"><title>{d.date}: {d.impressions} impressions, {d.clicks} clicks</title></circle>)}
+        {days.map((d,i) => <circle key={d.date} cx={16+i*96} cy={110-Number(d.impressions)/max*88} r="4" fill="currentColor"><title>{`${d.date}: ${d.impressions} impressions, ${d.clicks} clicks`}</title></circle>)}
       </svg><div className="flex justify-between gap-1 text-[10px] text-muted-foreground">{days.map(d => <span key={d.date} title={`${d.date}: ${d.impressions} impressions`}>{d.day_offset === 0 ? 'Today' : new Date(`${d.date}T12:00:00Z`).toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' })}</span>)}</div>
       <p className="mt-3 text-[11px] text-muted-foreground">UTC · Today is still in progress. Momentum compares completed weeks.</p></div>
     </div>
