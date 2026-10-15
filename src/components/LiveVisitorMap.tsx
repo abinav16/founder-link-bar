@@ -1358,7 +1358,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
                           {filteredFeed.map((f, i) => (
                             <div key={f.id} className="flex items-center gap-2 rounded-lg px-1.5 py-1.5 hover:bg-white/[0.05]">
                               <div className="relative shrink-0">
-                                <img src={avatarUrl(f.id)} width={22} height={22} className="rounded-full bg-zinc-900" style={{ border: `1.5px solid ${DEVICE_COLORS[f.device] ?? DEVICE_COLORS.unknown}` }} />
+                                <img src={avatarUrl(f.id)} data-sbid={f.id} onError={handleAvatarError} width={22} height={22} className="rounded-full bg-zinc-900" style={{ border: `1.5px solid ${DEVICE_COLORS[f.device] ?? DEVICE_COLORS.unknown}` }} />
                                 {i === 0 && <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full border border-black bg-emerald-400" />}
                               </div>
                               <div className="min-w-0 flex-1 overflow-hidden">
