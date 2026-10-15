@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import type { ProfileInsights } from './profile-insights';
 
 function getClient() {
   const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
@@ -48,6 +49,7 @@ export interface StartupPageData {
   clicks_given: number;
   referrers: StartupReferrer[];
   pulse: number;
+  insights: ProfileInsights;
 }
 
 async function probeIframeBlocked(rawUrl: string): Promise<boolean> {
@@ -94,11 +96,13 @@ export const getStartupPage = createServerFn({ method: "GET" })
     if (!s) return null;
     const row = s as any;
 
-    const [totalsRes, referrersRes, pulseRes] = await Promise.all([
+    const [totalsRes, referrersRes, pulseRes, insightsRes] = await Promise.all([
       supabase.rpc("public_startup_totals" as any, { _ids: [row.id] }),
       supabase.rpc("public_startup_referrers" as any, { _startup_id: row.id }),
       supabase.rpc("public_startup_pulse" as any, { _startup_id: row.id }),
+      supabase.rpc('public_startup_profile_insights', { _startup_id: row.id }),
     ]);
+    if (insightsRes.error) throw new Error('Profile insights are temporarily unavailable. Please retry.');
 
     const t = ((totalsRes.data as any) ?? [])[0] ?? {};
     const refs = ((referrersRes.data as any) ?? []) as StartupReferrer[];
@@ -148,6 +152,7 @@ export const getStartupPage = createServerFn({ method: "GET" })
       clicks_given: Number(t.clicks_given ?? 0),
       referrers: refs.map((r) => ({ ...r, cnt: Number(r.cnt) })),
       pulse,
+      insights: insightsRes.data as unknown as ProfileInsights,
     };
   });
 
