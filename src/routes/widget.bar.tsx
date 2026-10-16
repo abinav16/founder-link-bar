@@ -1,9 +1,8 @@
 import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ArrowUpRight, Info, X } from "lucide-react";
+import { Info, X } from "lucide-react";
 import { z } from "zod";
 import { StartupFavicon } from "@/components/StartupFavicon";
-import { Button } from "@/components/ui/button";
 
 const search = z.object({
   host: z.string().uuid().optional(),
@@ -296,7 +295,7 @@ function WidgetBar() {
         }}
       >
         {/* Info button — always visible */}
-        <button onClick={(e) => { e.stopPropagation(); setExitExpanded(false); setShowInfo(v => !v); }} aria-label="About StartupBar" style={iconBtnStyle}>
+        <button onClick={(e) => { e.stopPropagation(); setShowInfo(v => !v); }} aria-label="About StartupBar" style={iconBtnStyle}>
           <Info size={12} />
         </button>
 
@@ -390,39 +389,6 @@ function WidgetBar() {
         )}
       </div>
       {showInfo && <InfoPanel tokens={tokens} />}
-      <div className={`sb-exit-region ${exitExpanded ? "sb-exit-expanded" : ""}`} aria-hidden={!exitExpanded} inert={!exitExpanded}>
-        <div className="sb-exit-reveal">
-        {exitStartup && (
-          <aside ref={cardRef} className="sb-exit-card" aria-label={`Discover ${exitStartup.name}`}>
-            <div className="sb-exit-guide">
-              <div className="sb-bar-mascot" aria-hidden="true">
-                <span className="sb-mascot-brow sb-mascot-brow-left" />
-                <span className="sb-mascot-brow sb-mascot-brow-right" />
-                <span className="sb-mascot-eye sb-mascot-eye-left" />
-                <span className="sb-mascot-eye sb-mascot-eye-right" />
-                <span className="sb-mascot-mouth" />
-              </div>
-              <span className="sb-exit-greeting">Wait, take a look.</span>
-              <a className="sb-exit-brand" href={`/api/public/widget/click?source=badge${host ? `&host=${host}` : ""}${domain ? `&via=${encodeURIComponent(domain)}` : ""}`} target="_blank" rel="noopener noreferrer" aria-label="Discover StartupBar">StartupBar <ArrowUpRight size={12} /></a>
-            </div>
-            <div className="sb-exit-story">
-            <div className="sb-exit-identity">
-              <StartupFavicon url={exitStartup.website_url} name={exitStartup.name} logoUrl={exitStartup.logo_url} size={40} className="rounded-lg shrink-0" />
-              <div className="min-w-0"><p className="sb-exit-eyebrow">Before you go · From the founder network</p><h2>{exitStartup.name}</h2></div>
-            </div>
-            <p className="sb-exit-pitch">{exitStartup.description}</p>
-            </div>
-            <div className="sb-exit-actions">
-            <Button asChild className="sb-exit-visit">
-              <a href={`/api/public/widget/click?id=${exitStartup.id}${host ? `&host=${host}` : ""}${domain ? `&via=${encodeURIComponent(domain)}` : ""}`} target="_blank" rel="noopener noreferrer" onClick={() => setExitExpanded(false)}>Visit site <ArrowUpRight /></a>
-            </Button>
-              <span className="sb-exit-brand-note">Built by founders.<br />Discovered together.</span>
-            </div>
-            <Button variant="ghost" size="icon" className="sb-exit-close" aria-label="Close recommendation" title="Close recommendation" onClick={() => setExitExpanded(false)}><X /></Button>
-          </aside>
-        )}
-        </div>
-      </div>
     </div>
   );
 }
