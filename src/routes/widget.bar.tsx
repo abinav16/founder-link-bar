@@ -215,7 +215,7 @@ function WidgetBar() {
       send(wrapperRef.current?.scrollHeight || 36);
     });
     return () => window.cancelAnimationFrame(frame);
-  }, [dismissed, loaded, showInfo, exitStartup, placement]);
+  }, [dismissed, loaded, showInfo, placement]);
 
 
 
@@ -270,7 +270,7 @@ function WidgetBar() {
   };
 
   return (
-    <div ref={wrapperRef} className={`sb-widget-shell ${exitExpanded ? "sb-widget-morphed" : ""} ${activeTheme === "dark" ? "sb-widget-dark" : ""} ${placement === "bottom" ? "sb-widget-bottom" : ""}`}>
+    <div ref={wrapperRef} className={`sb-widget-shell ${activeTheme === "dark" ? "sb-widget-dark" : ""} ${placement === "bottom" ? "sb-widget-bottom" : ""}`}>
       {isMobile && (
         <style>{`
           @keyframes sb-marquee {
@@ -287,9 +287,7 @@ function WidgetBar() {
         `}</style>
       )}
       <div
-        className="sb-widget-compact"
-        aria-hidden={exitExpanded}
-        inert={exitExpanded}
+        className={`sb-widget-compact ${exitAttention ? "sb-exit-attention" : ""}`}
         style={{ ...barStyle, cursor: startup ? "pointer" : undefined }}
         onClick={() => {
           if (!startup) return;
