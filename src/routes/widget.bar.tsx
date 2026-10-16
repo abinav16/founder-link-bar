@@ -87,12 +87,9 @@ function WidgetBar() {
   const [loaded, setLoaded] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [dismissed, setDismissed] = useState(false);
-  const [exitStartup, setExitStartup] = useState<Startup | null>(null);
-  const [exitExpanded, setExitExpanded] = useState(false);
+  const [exitAttention, setExitAttention] = useState(false);
   const [placement, setPlacement] = useState<"top" | "bottom">("top");
-  const exitRef = useRef<Startup | null>(null);
   const exitUsed = useRef(false);
-  const cardRef = useRef<HTMLElement>(null);
   const isMobile = mobile === 1;
   const wrapperRef = useRef<HTMLDivElement>(null);
   const startupRef = useRef<Startup | null>(null);
@@ -101,7 +98,6 @@ function WidgetBar() {
   startupRef.current = startup;
   showInfoRef.current = showInfo;
   dismissedRef.current = dismissed;
-  exitRef.current = exitStartup;
 
 
   useEffect(() => {
@@ -111,15 +107,14 @@ function WidgetBar() {
         const t = e.data.theme;
         if (t === "light" || t === "dark") setActiveTheme(t);
       }
+      // Exit intent: never expand — just a glance-worthy shake + shimmer on
+      // the compact bar, once per session.
       if (e.data?.type === "startupbar:exit" && !exitUsed.current && startupRef.current && !showInfoRef.current && !dismissedRef.current) {
         exitUsed.current = true;
-        setFadeIn(true);
-        setExitStartup(startupRef.current);
-        // Establish the compact geometry before starting the morph.
-        window.requestAnimationFrame(() => window.requestAnimationFrame(() => setExitExpanded(true)));
+        setExitAttention(true);
+        window.setTimeout(() => setExitAttention(false), 1800);
         window.parent.postMessage({ type: "startupbar:exit-opened" }, e.origin);
       }
-      if (e.data?.type === "startupbar:exit-close") setExitExpanded(false);
     }
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
@@ -128,21 +123,8 @@ function WidgetBar() {
   const [fadeIn, setFadeIn] = useState(true);
 
   useEffect(() => {
-    window.parent.postMessage({ type: "startupbar:exit-ready", ready: !!startup && !showInfo && !exitStartup && !dismissed }, "*");
-  }, [startup, showInfo, exitStartup, dismissed]);
-
-  useEffect(() => {
-    if (!exitStartup || exitExpanded) return;
-    const timer = setTimeout(() => setExitStartup(null), 820);
-    return () => clearTimeout(timer);
-  }, [exitStartup, exitExpanded]);
-
-  useEffect(() => {
-    if (!exitStartup) return;
-    const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") setExitExpanded(false); };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [exitStartup]);
+    window.parent.postMessage({ type: "startupbar:exit-ready", ready: !!startup && !showInfo && !dismissed }, "*");
+  }, [startup, showInfo, dismissed]);
 
   useEffect(() => {
     let cancelled = false;
