@@ -171,14 +171,14 @@ function WidgetBar() {
     let fadeTimer: ReturnType<typeof setTimeout> | undefined;
     const interval = setInterval(async () => {
       if (cancelled) return;
-      if (dismissedRef.current || showInfoRef.current || exitRef.current) return;
+      if (dismissedRef.current || showInfoRef.current) return;
       if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
       const next = await fetchStartup();
-      if (cancelled || !next || exitRef.current) return;
+      if (cancelled || !next) return;
       if (next.id === startupRef.current?.id) return;
       setFadeIn(false);
       fadeTimer = setTimeout(() => {
-        if (cancelled || exitRef.current) return;
+        if (cancelled) return;
         setStartup(next);
         setFadeIn(true);
       }, 500);
@@ -198,21 +198,12 @@ function WidgetBar() {
       const rounded = Math.round(h);
       if (rounded === lastSentHeight.current && !overlay) return;
       lastSentHeight.current = rounded;
-      const rect = cardRef.current?.getBoundingClientRect();
-      window.parent.postMessage({ type: "startupbar:resize", height: rounded, overlay, card: rect ? { left: rect.left } : undefined }, "*");
+      window.parent.postMessage({ type: "startupbar:resize", height: rounded, overlay }, "*");
     };
 
     if (dismissed) {
       send(0);
       return;
-    }
-
-    if (exitStartup) {
-      const update = () => send(wrapperRef.current?.getBoundingClientRect().height || 36, true);
-      const observer = new ResizeObserver(update);
-      if (wrapperRef.current) observer.observe(wrapperRef.current);
-      update();
-      return () => observer.disconnect();
     }
 
     if (!showInfo) {
