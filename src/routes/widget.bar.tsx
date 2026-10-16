@@ -1,9 +1,8 @@
 import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ArrowUpRight, Info, X } from "lucide-react";
+import { Info, X } from "lucide-react";
 import { z } from "zod";
 import { StartupFavicon } from "@/components/StartupFavicon";
-import { Button } from "@/components/ui/button";
 
 const search = z.object({
   host: z.string().uuid().optional(),
@@ -87,12 +86,9 @@ function WidgetBar() {
   const [loaded, setLoaded] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [dismissed, setDismissed] = useState(false);
-  const [exitStartup, setExitStartup] = useState<Startup | null>(null);
-  const [exitExpanded, setExitExpanded] = useState(false);
+  const [exitAttention, setExitAttention] = useState(false);
   const [placement, setPlacement] = useState<"top" | "bottom">("top");
-  const exitRef = useRef<Startup | null>(null);
   const exitUsed = useRef(false);
-  const cardRef = useRef<HTMLElement>(null);
   const isMobile = mobile === 1;
   const wrapperRef = useRef<HTMLDivElement>(null);
   const startupRef = useRef<Startup | null>(null);
@@ -101,7 +97,6 @@ function WidgetBar() {
   startupRef.current = startup;
   showInfoRef.current = showInfo;
   dismissedRef.current = dismissed;
-  exitRef.current = exitStartup;
 
 
   useEffect(() => {
@@ -111,15 +106,14 @@ function WidgetBar() {
         const t = e.data.theme;
         if (t === "light" || t === "dark") setActiveTheme(t);
       }
+      // Exit intent: never expand — just a glance-worthy shake + shimmer on
+      // the compact bar, once per session.
       if (e.data?.type === "startupbar:exit" && !exitUsed.current && startupRef.current && !showInfoRef.current && !dismissedRef.current) {
         exitUsed.current = true;
-        setFadeIn(true);
-        setExitStartup(startupRef.current);
-        // Establish the compact geometry before starting the morph.
-        window.requestAnimationFrame(() => window.requestAnimationFrame(() => setExitExpanded(true)));
+        setExitAttention(true);
+        window.setTimeout(() => setExitAttention(false), 1800);
         window.parent.postMessage({ type: "startupbar:exit-opened" }, e.origin);
       }
-      if (e.data?.type === "startupbar:exit-close") setExitExpanded(false);
     }
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
@@ -128,21 +122,8 @@ function WidgetBar() {
   const [fadeIn, setFadeIn] = useState(true);
 
   useEffect(() => {
-    window.parent.postMessage({ type: "startupbar:exit-ready", ready: !!startup && !showInfo && !exitStartup && !dismissed }, "*");
-  }, [startup, showInfo, exitStartup, dismissed]);
-
-  useEffect(() => {
-    if (!exitStartup || exitExpanded) return;
-    const timer = setTimeout(() => setExitStartup(null), 820);
-    return () => clearTimeout(timer);
-  }, [exitStartup, exitExpanded]);
-
-  useEffect(() => {
-    if (!exitStartup) return;
-    const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") setExitExpanded(false); };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [exitStartup]);
+    window.parent.postMessage({ type: "startupbar:exit-ready", ready: !!startup && !showInfo && !dismissed }, "*");
+  }, [startup, showInfo, dismissed]);
 
   useEffect(() => {
     let cancelled = false;
@@ -189,14 +170,14 @@ function WidgetBar() {
     let fadeTimer: ReturnType<typeof setTimeout> | undefined;
     const interval = setInterval(async () => {
       if (cancelled) return;
-      if (dismissedRef.current || showInfoRef.current || exitRef.current) return;
+      if (dismissedRef.current || showInfoRef.current) return;
       if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
       const next = await fetchStartup();
-      if (cancelled || !next || exitRef.current) return;
+      if (cancelled || !next) return;
       if (next.id === startupRef.current?.id) return;
       setFadeIn(false);
       fadeTimer = setTimeout(() => {
-        if (cancelled || exitRef.current) return;
+        if (cancelled) return;
         setStartup(next);
         setFadeIn(true);
       }, 500);
@@ -216,21 +197,12 @@ function WidgetBar() {
       const rounded = Math.round(h);
       if (rounded === lastSentHeight.current && !overlay) return;
       lastSentHeight.current = rounded;
-      const rect = cardRef.current?.getBoundingClientRect();
-      window.parent.postMessage({ type: "startupbar:resize", height: rounded, overlay, card: rect ? { left: rect.left } : undefined }, "*");
+      window.parent.postMessage({ type: "startupbar:resize", height: rounded, overlay }, "*");
     };
 
     if (dismissed) {
       send(0);
       return;
-    }
-
-    if (exitStartup) {
-      const update = () => send(wrapperRef.current?.getBoundingClientRect().height || 36, true);
-      const observer = new ResizeObserver(update);
-      if (wrapperRef.current) observer.observe(wrapperRef.current);
-      update();
-      return () => observer.disconnect();
     }
 
     if (!showInfo) {
@@ -242,7 +214,7 @@ function WidgetBar() {
       send(wrapperRef.current?.scrollHeight || 36);
     });
     return () => window.cancelAnimationFrame(frame);
-  }, [dismissed, loaded, showInfo, exitStartup, placement]);
+  }, [dismissed, loaded, showInfo, placement]);
 
 
 
@@ -297,7 +269,7 @@ function WidgetBar() {
   };
 
   return (
-    <div ref={wrapperRef} className={`sb-widget-shell ${exitExpanded ? "sb-widget-morphed" : ""} ${activeTheme === "dark" ? "sb-widget-dark" : ""} ${placement === "bottom" ? "sb-widget-bottom" : ""}`}>
+    <div ref={wrapperRef} className={`sb-widget-shell ${activeTheme === "dark" ? "sb-widget-dark" : ""} ${placement === "bottom" ? "sb-widget-bottom" : ""}`}>
       {isMobile && (
         <style>{`
           @keyframes sb-marquee {
@@ -314,9 +286,7 @@ function WidgetBar() {
         `}</style>
       )}
       <div
-        className="sb-widget-compact"
-        aria-hidden={exitExpanded}
-        inert={exitExpanded}
+        className={`sb-widget-compact ${exitAttention ? "sb-exit-attention" : ""}`}
         style={{ ...barStyle, cursor: startup ? "pointer" : undefined }}
         onClick={() => {
           if (!startup) return;
@@ -325,7 +295,7 @@ function WidgetBar() {
         }}
       >
         {/* Info button — always visible */}
-        <button onClick={(e) => { e.stopPropagation(); setExitExpanded(false); setShowInfo(v => !v); }} aria-label="About StartupBar" style={iconBtnStyle}>
+        <button onClick={(e) => { e.stopPropagation(); setShowInfo(v => !v); }} aria-label="About StartupBar" style={iconBtnStyle}>
           <Info size={12} />
         </button>
 
@@ -419,39 +389,6 @@ function WidgetBar() {
         )}
       </div>
       {showInfo && <InfoPanel tokens={tokens} />}
-      <div className={`sb-exit-region ${exitExpanded ? "sb-exit-expanded" : ""}`} aria-hidden={!exitExpanded} inert={!exitExpanded}>
-        <div className="sb-exit-reveal">
-        {exitStartup && (
-          <aside ref={cardRef} className="sb-exit-card" aria-label={`Discover ${exitStartup.name}`}>
-            <div className="sb-exit-guide">
-              <div className="sb-bar-mascot" aria-hidden="true">
-                <span className="sb-mascot-brow sb-mascot-brow-left" />
-                <span className="sb-mascot-brow sb-mascot-brow-right" />
-                <span className="sb-mascot-eye sb-mascot-eye-left" />
-                <span className="sb-mascot-eye sb-mascot-eye-right" />
-                <span className="sb-mascot-mouth" />
-              </div>
-              <span className="sb-exit-greeting">Wait, take a look.</span>
-              <a className="sb-exit-brand" href={`/api/public/widget/click?source=badge${host ? `&host=${host}` : ""}${domain ? `&via=${encodeURIComponent(domain)}` : ""}`} target="_blank" rel="noopener noreferrer" aria-label="Discover StartupBar">StartupBar <ArrowUpRight size={12} /></a>
-            </div>
-            <div className="sb-exit-story">
-            <div className="sb-exit-identity">
-              <StartupFavicon url={exitStartup.website_url} name={exitStartup.name} logoUrl={exitStartup.logo_url} size={40} className="rounded-lg shrink-0" />
-              <div className="min-w-0"><p className="sb-exit-eyebrow">Before you go · From the founder network</p><h2>{exitStartup.name}</h2></div>
-            </div>
-            <p className="sb-exit-pitch">{exitStartup.description}</p>
-            </div>
-            <div className="sb-exit-actions">
-            <Button asChild className="sb-exit-visit">
-              <a href={`/api/public/widget/click?id=${exitStartup.id}${host ? `&host=${host}` : ""}${domain ? `&via=${encodeURIComponent(domain)}` : ""}`} target="_blank" rel="noopener noreferrer" onClick={() => setExitExpanded(false)}>Visit site <ArrowUpRight /></a>
-            </Button>
-              <span className="sb-exit-brand-note">Built by founders.<br />Discovered together.</span>
-            </div>
-            <Button variant="ghost" size="icon" className="sb-exit-close" aria-label="Close recommendation" title="Close recommendation" onClick={() => setExitExpanded(false)}><X /></Button>
-          </aside>
-        )}
-        </div>
-      </div>
     </div>
   );
 }
