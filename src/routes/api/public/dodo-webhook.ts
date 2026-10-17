@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createHmac, timingSafeEqual } from "crypto";
+import { supporterTerm } from "../../../../supabase/functions/create-dodo-checkout/supporter-term";
 
 // Dodo Payments uses the standard-webhooks spec:
 //   Headers: webhook-id, webhook-timestamp, webhook-signature
@@ -42,11 +43,9 @@ export const Route = createFileRoute("/api/public/dodo-webhook")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        // Accept both the live and test webhook secrets so the same endpoint
-        // can fulfil events from either Dodo environment.
+        // Live events only: test payments must never grant production access.
         const secrets = [
           process.env.DODO_WEBHOOK_SECRET,
-          process.env.DODO_TEST_WEBHOOK_SECRET,
         ].filter((s): s is string => Boolean(s));
         if (secrets.length === 0) {
           console.error("[dodo-webhook] Missing DODO_WEBHOOK_SECRET");
@@ -156,7 +155,8 @@ export const Route = createFileRoute("/api/public/dodo-webhook")({
           type === "payment.succeeded" ||
           type === "payment.completed" ||
           type === "subscription.active" ||
-          type === "subscription.renewed";
+          type === "subscription.renewed" ||
+          (data.metadata?.kind === "supporter" && type === "subscription.updated");
         if (!isSucceeded) {
           return new Response("ok", { status: 200 });
         }
@@ -206,22 +206,40 @@ export const Route = createFileRoute("/api/public/dodo-webhook")({
             .maybeSingle();
           if (!row) return new Response("ok", { status: 200 });
 
-          const current = row.supporter_until ? new Date(row.supporter_until).getTime() : 0;
-          const alreadyFulfilled = row.supporter_subscription_id === paymentId;
-          // First purchase starts a year from now; a renewal extends from the
-          // later of "now" and the current end date so nothing is lost.
-          if (alreadyFulfilled && !isRenewal) return new Response("ok", { status: 200 });
-          const from = Math.max(current, Date.now());
+          // Read the current provider state, not stale/retried event dates.
+          // During a free trial this ends in seven days, not one unpaid year.
+          const apiKey = process.env.DODO_PAYMENTS_API_KEY;
+          if (!apiKey) return new Response("Missing live payment configuration", { status: 500 });
+          const subRes = await fetch(`https://live.dodopayments.com/subscriptions/${encodeURIComponent(paymentId)}`, {
+            headers: { Authorization: `Bearer ${apiKey}` },
+          });
+          if (!subRes.ok) {
+            console.error("[dodo-webhook] Supporter lookup failed", subRes.status, await subRes.text());
+            return new Response("Subscription lookup failed", { status: 502 });
+          }
+          const subscription = await subRes.json() as {
+            status?: string; next_billing_date?: string; cancel_at_next_billing_date?: boolean;
+            metadata?: { kind?: string; user_id?: string; startup_id?: string };
+          };
+          if (subscription.metadata?.kind !== "supporter" || subscription.metadata.user_id !== userId || subscription.metadata.startup_id !== startupId) {
+            return new Response("Subscription mismatch", { status: 403 });
+          }
+          const term = supporterTerm(subscription);
+          if (!term) return new Response("ok", { status: 200 });
 
-          await supabaseAdmin
+          const { error: supporterError } = await supabaseAdmin
             .from("startups")
             .update({
               membership_mode: "supporter",
-              supporter_until: new Date(from + 365 * 86_400_000).toISOString(),
+              supporter_until: term.until,
               supporter_subscription_id: paymentId,
-              supporter_cancel_at_period_end: false,
+              supporter_cancel_at_period_end: term.cancelling,
             } as never)
             .eq("id", startupId);
+          if (supporterError) {
+            console.error("[dodo-webhook] Supporter update failed", supporterError);
+            return new Response("Membership update failed", { status: 500 });
+          }
 
           return new Response("ok", { status: 200 });
         }

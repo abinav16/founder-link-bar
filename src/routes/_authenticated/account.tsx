@@ -1,3 +1,4 @@
+import { SUPPORTER_PRICE_USD, SUPPORTER_TRIAL_DAYS } from "@/lib/supporter";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -113,19 +114,19 @@ function MembershipSection({ startup, onUpdate }: {
               </p>
             </div>
             <span className="shrink-0 rounded-full border border-amber-200 bg-amber-100/70 px-2.5 py-1 text-[10px] font-medium text-amber-800">
-              $1,999 / year
+              ${SUPPORTER_PRICE_USD} / year
             </span>
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <button type="button" disabled={busy} onClick={goBarFree}
               className="rounded-lg bg-black px-3.5 py-2 text-[11px] font-medium text-white hover:opacity-90 transition-all disabled:opacity-60">
-              {busy ? "Opening checkout…" : "Go Bar Free"}
+              {busy ? "Opening checkout…" : `Start ${SUPPORTER_TRIAL_DAYS}-day free trial`}
             </button>
             <a href="/pricing#supporter" className="text-[11px] font-medium text-black/45 hover:text-black transition-all">
               How it works
             </a>
           </div>
-          <p className="mt-2 text-[11px] text-black/35">Billed yearly. Cancel anytime. No refunds.</p>
+          <p className="mt-2 text-[11px] text-black/35">{SUPPORTER_TRIAL_DAYS} days free, then ${SUPPORTER_PRICE_USD}/year including tax. Card required. Cancel before the trial ends to avoid the first charge.</p>
         </div>
       </div>
     );
@@ -147,7 +148,7 @@ function MembershipSection({ startup, onUpdate }: {
     });
     setBusy(false);
     if (error || (data as any)?.error) { toast.error("Could not cancel right now — please try again."); return; }
-    toast.success("Auto-renewal cancelled", { description: renews ? `Your Supporter year runs until ${renews}.` : undefined });
+    toast.success("Auto-renewal cancelled", { description: renews ? `Your Supporter access continues until ${renews}.` : undefined });
     onUpdate(startup.id, { supporter_cancel_at_period_end: true });
   }
 
@@ -177,7 +178,7 @@ function MembershipSection({ startup, onUpdate }: {
 
       <div className="mt-3 rounded-lg border border-black/10 bg-black/[0.02] px-4 py-3 text-[11px] leading-relaxed text-black/60">
         {renews && (
-          <p>{cancelling ? "Ends on" : "Renews on"} <span className="font-medium text-black/75">{renews}</span>{cancelling ? " — auto-renewal is off." : " · $1,999 / year"}</p>
+          <p>{cancelling ? "Ends on" : "Next billing date"} <span className="font-medium text-black/75">{renews}</span>{cancelling ? " — auto-renewal is off." : ` · $${SUPPORTER_PRICE_USD} / year`}</p>
         )}
         <p className="mt-1.5">
           Analytics code: {trackingLive
@@ -210,7 +211,7 @@ function MembershipSection({ startup, onUpdate }: {
           Switch to the free bar
         </button>
       </div>
-      <p className="mt-1.5 text-[11px] text-black/35">Cancelling stops the next renewal. No refunds — your paid year keeps running.</p>
+      <p className="mt-1.5 text-[11px] text-black/35">Cancel before your trial ends to avoid the first charge. Access continues until the date above. Paid periods are non-refundable except where required by law.</p>
     </div>
   );
 }
@@ -699,7 +700,7 @@ function AccountPage() {
             .from("startups").select("id, name, website_url, description, status, logo_url, user_id, slug, founder_name, founder_quote, founder_avatar_url, widget_placement, pending_name, pending_description, edit_status, edit_submitted_at, membership_mode, supporter_until, supporter_cancel_at_period_end, tracking_last_seen_at").eq("user_id", u.user.id).order("created_at", { ascending: true });
           if (fresh) setStartups(fresh as Startup[]);
         } else {
-          toast.info("Payment received — we'll activate your membership shortly.", { duration: 8000 });
+          toast.info("Checkout completed — we're confirming your membership.", { duration: 8000 });
         }
       }
     })();

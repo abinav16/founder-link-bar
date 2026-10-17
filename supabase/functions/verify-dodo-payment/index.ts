@@ -10,10 +10,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const testMode = Deno.env.get("DODO_MODE") !== "live";
-    const apiKey = testMode
-      ? (Deno.env.get("DODO_TEST_API_KEY") ?? Deno.env.get("DODO_PAYMENTS_API_KEY"))
-      : Deno.env.get("DODO_PAYMENTS_API_KEY");
+    const apiKey = Deno.env.get("DODO_PAYMENTS_API_KEY");
     if (!apiKey) {
       return new Response(JSON.stringify({ error: "Missing DODO_PAYMENTS_API_KEY" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -43,8 +40,7 @@ serve(async (req) => {
       });
     }
 
-    const mode = Deno.env.get("DODO_MODE") === "live" ? "live" : "test";
-    const baseUrl = mode === "test" ? "https://test.dodopayments.com" : "https://live.dodopayments.com";
+    const baseUrl = "https://live.dodopayments.com";
 
     const res = await fetch(`${baseUrl}/payments/${payment_id}`, {
       headers: { "Authorization": `Bearer ${apiKey}` },

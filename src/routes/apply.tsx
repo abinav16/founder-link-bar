@@ -1,3 +1,4 @@
+import { SUPPORTER_PRICE_USD, SUPPORTER_TRIAL_DAYS } from "@/lib/supporter";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
@@ -179,7 +180,7 @@ function SupporterStory() {
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-black/8 bg-black/[0.018] px-4 py-3.5 sm:px-5 sm:py-4">
         <div className="min-w-0">
           <p className="text-[10px] font-semibold uppercase text-black/35 sm:text-[11px]">Supporter membership</p>
-          <h3 className="mt-0.5 truncate text-base font-semibold text-black sm:text-lg">Supporter — $1,999 / year</h3>
+          <h3 className="mt-0.5 truncate text-base font-semibold text-black sm:text-lg">Supporter — ${SUPPORTER_PRICE_USD} / year</h3>
         </div>
         <span className="shrink-0 rounded-full border border-emerald-700/15 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase text-emerald-800">No bar</span>
       </div>
@@ -752,7 +753,7 @@ function Apply() {
     window.location.href = data.payment_link;
   }
 
-  // Supporter membership: $1,999/year annual subscription. The listing row is
+  // Supporter membership: $999/year annual subscription. The listing row is
   // created after the buyer returns, then the subscription is confirmed and
   // stamped onto it.
   async function handleSupporterPayment() {
@@ -934,7 +935,7 @@ function Apply() {
           body: { action: "confirm_supporter", subscription_id: supporterSub, startup_id: startupId },
         });
         if (confErr || (!conf?.activated && !conf?.pending)) {
-          toast.info("Payment received — we'll activate your supporter membership shortly.", { duration: 8000 });
+          toast.info("Checkout completed — we're confirming your Supporter membership.", { duration: 8000 });
         }
       }
 
@@ -1122,7 +1123,7 @@ function Apply() {
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </button>
                 <p className="text-center text-xs text-black/30">
-                  {isSupporter ? "$1,999 / year · Cancel anytime · We review within 24h" : "Free forever · We review within 24h · No commitment"}
+                  {isSupporter ? `${SUPPORTER_TRIAL_DAYS} days free, then $${SUPPORTER_PRICE_USD}/year · Cancel anytime` : "Free forever · We review within 24h · No commitment"}
                 </p>
               </form>
             </div>
@@ -1418,7 +1419,7 @@ function Apply() {
                 : paymentLoading
                 ? "Redirecting to payment…"
                 : isSupporter
-                ? "Pay $1,999 / year & submit →"
+                ? `Start ${SUPPORTER_TRIAL_DAYS}-day free trial & submit →`
                 : needsPayment
                 ? "Pay $9.99 & submit →"
                 : "Submit application";
@@ -1434,7 +1435,7 @@ function Apply() {
             })()}
             <p className="text-center text-xs text-black/30">
               {isSupporter
-                ? "The analytics line is optional — you can add it later from your dashboard."
+                ? `${SUPPORTER_TRIAL_DAYS} days free, then $${SUPPORTER_PRICE_USD}/year including tax. Card required. Cancel before the trial ends to avoid a charge. Analytics code is optional.`
                 : verifyStatus !== "live" && verifyStatus !== "csp-img"
                 ? "Install the script and verify it's live to continue."
                 : !resubmitId && existingCount >= 1 && !hasPrepaid

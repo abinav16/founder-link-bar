@@ -1,3 +1,4 @@
+import { supporterTerm } from "./supporter-term.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -36,19 +37,9 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    // TEST MODE: sandbox payments. Set DODO_MODE=live in secrets for real payments.
-    const mode: "test" | "live" =
-      Deno.env.get("DODO_MODE") === "live" ? "live" : "test";
-
-
-
-
-
-
-
-    const apiKey = mode === "test"
-      ? (Deno.env.get("DODO_TEST_API_KEY") ?? Deno.env.get("DODO_PAYMENTS_API_KEY"))
-      : Deno.env.get("DODO_PAYMENTS_API_KEY");
+    // All purchases and confirmations use the live Dodo environment.
+    const mode = "live";
+    const apiKey = Deno.env.get("DODO_PAYMENTS_API_KEY");
     if (!apiKey) {
       return new Response(JSON.stringify({ error: "Missing DODO_PAYMENTS_API_KEY" }), {
         status: 500,
@@ -100,9 +91,7 @@ serve(async (req) => {
           status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      const baseUrl = mode === "test"
-        ? "https://test.dodopayments.com"
-        : "https://live.dodopayments.com";
+      const baseUrl = "https://live.dodopayments.com";
 
       const subRes = await fetch(`${baseUrl}/subscriptions/${encodeURIComponent(subId)}`, {
         headers: { "Authorization": `Bearer ${apiKey}` },
@@ -111,7 +100,7 @@ serve(async (req) => {
       let sub: any = null;
       try { sub = subRaw ? JSON.parse(subRaw) : null; } catch { sub = null; }
 
-      if (!sub || sub?.metadata?.kind !== "supporter" || sub?.metadata?.user_id !== userData.user.id) {
+      if (!subRes.ok || !sub || sub?.metadata?.kind !== "supporter" || sub?.metadata?.user_id !== userData.user.id) {
         return new Response(JSON.stringify({ error: "Subscription not found" }), {
           status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -126,7 +115,7 @@ serve(async (req) => {
       const admin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
       const { data: owned } = await admin
         .from("startups")
-        .select("id, supporter_until")
+        .select("id, supporter_until, supporter_subscription_id")
         .eq("id", startupId)
         .eq("user_id", userData.user.id)
         .maybeSingle();
@@ -136,15 +125,19 @@ serve(async (req) => {
         });
       }
 
-      const current = owned.supporter_until ? new Date(owned.supporter_until).getTime() : 0;
-      const from = Math.max(current, Date.now());
+      const term = supporterTerm(sub);
+      if (!term) {
+        return new Response(JSON.stringify({ pending: true, error: "Subscription billing period not confirmed" }), {
+          status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       const { error: updErr } = await admin
         .from("startups")
         .update({
           membership_mode: "supporter",
-          supporter_until: new Date(from + 365 * 86_400_000).toISOString(),
+          supporter_until: term.until,
           supporter_subscription_id: subId,
-          supporter_cancel_at_period_end: false,
+          supporter_cancel_at_period_end: term.cancelling,
         })
         .eq("id", startupId);
       if (updErr) {
@@ -170,15 +163,17 @@ serve(async (req) => {
           status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      const baseUrl = mode === "test"
-        ? "https://test.dodopayments.com"
-        : "https://live.dodopayments.com";
+      const baseUrl = "https://live.dodopayments.com";
       if (row.supporter_subscription_id) {
-        await fetch(`${baseUrl}/subscriptions/${encodeURIComponent(row.supporter_subscription_id)}`, {
+        const cancelRes = await fetch(`${baseUrl}/subscriptions/${encodeURIComponent(row.supporter_subscription_id)}`, {
           method: "PATCH",
           headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
           body: JSON.stringify({ cancel_at_next_billing_date: true }),
-        }).catch(() => {});
+        });
+        if (!cancelRes.ok) {
+          console.error("Supporter cancellation failed", cancelRes.status, await cancelRes.text());
+          return new Response(JSON.stringify({ error: "Could not cancel with Dodo. No cancellation has been recorded." }), { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
       }
       const admin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
       await admin
@@ -198,9 +193,7 @@ serve(async (req) => {
       const requestedId = typeof body?.subscription_id === "string"
         ? body.subscription_id.trim()
         : "";
-      const baseUrl = mode === "test"
-        ? "https://test.dodopayments.com"
-        : "https://live.dodopayments.com";
+      const baseUrl = "https://live.dodopayments.com";
       const paidStatuses = new Set(["active", "succeeded", "completed"]);
 
       const isMine = (sub: any) =>
@@ -403,9 +396,7 @@ serve(async (req) => {
         });
       }
 
-      const baseUrl = mode === "test"
-        ? "https://test.dodopayments.com"
-        : "https://live.dodopayments.com";
+      const baseUrl = "https://live.dodopayments.com";
       if (slotRow.dodo_payment_id) {
         try {
           const res = await fetch(
@@ -453,19 +444,12 @@ serve(async (req) => {
       });
     }
 
-    // Product + metadata differ per purchase kind. In test mode, prefer
-    // test-specific product IDs; fall back to the live ones if not set.
-    const featuredId = mode === "test"
-      ? (Deno.env.get("DODO_TEST_FEATURED_PRODUCT_ID") ?? Deno.env.get("DODO_FEATURED_PRODUCT_ID"))
-      : Deno.env.get("DODO_FEATURED_PRODUCT_ID");
-    const listingId = mode === "test"
-      ? (Deno.env.get("DODO_TEST_PRODUCT_ID") ?? Deno.env.get("DODO_PRODUCT_ID"))
-      : Deno.env.get("DODO_PRODUCT_ID");
-    const supporterId = mode === "test"
-      ? (Deno.env.get("DODO_TEST_SUPPORTER_PRODUCT_ID") ?? Deno.env.get("DODO_SUPPORTER_PRODUCT_ID"))
-      : Deno.env.get("DODO_SUPPORTER_PRODUCT_ID");
+    // Never fall back to another product or a test-environment product.
+    const featuredId = Deno.env.get("DODO_FEATURED_PRODUCT_ID");
+    const listingId = Deno.env.get("DODO_PRODUCT_ID");
+    const supporterId = Deno.env.get("DODO_SUPPORTER_PRODUCT_ID");
     const productId = kind === "featured"
-      ? (featuredId ?? listingId)
+      ? featuredId
       : kind === "supporter"
       ? supporterId
       : listingId;
@@ -513,10 +497,8 @@ serve(async (req) => {
     }
 
 
-    // Default to live; set DODO_MODE=test in secrets to use the test endpoint.
-    const baseUrl = mode === "test"
-      ? "https://test.dodopayments.com"
-      : "https://live.dodopayments.com";
+    // Live-only checkout.
+    const baseUrl = "https://live.dodopayments.com";
     // Featured slots are a recurring subscription product in Dodo; listings are
     // a one-time payment. The two use different endpoints and return different
     // id fields on the redirect.
@@ -534,6 +516,7 @@ serve(async (req) => {
           payment_link: true,
           product_id: productId,
           quantity: 1,
+          ...(kind === "supporter" ? { trial_period_days: 7 } : {}),
           return_url: finalReturnUrl,
           metadata,
         }

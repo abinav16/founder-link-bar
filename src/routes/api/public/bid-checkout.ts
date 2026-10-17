@@ -84,10 +84,10 @@ export const Route = createFileRoute("/api/public/bid-checkout")({
         if (!isAllowedOrigin(origin)) return json({ error: "Invalid origin" }, 400);
 
         // LIVE MODE: bid checkout runs against Dodo live for real payments.
-        const apiKey = process.env.DODO_PAYMENTS_API_KEY ?? process.env.DODO_TEST_API_KEY;
+        const apiKey = process.env.DODO_PAYMENTS_API_KEY;
         // Only the dedicated pay-what-you-want bid product may be used — falling
         // back to another product would charge that product's fixed price.
-        const productId = process.env.DODO_BID_PRODUCT_ID ?? process.env.DODO_TEST_BID_PRODUCT_ID;
+        const productId = process.env.DODO_BID_PRODUCT_ID;
         if (!apiKey || !productId) {
           return json({ error: "Payments are not configured yet." }, 500);
         }
