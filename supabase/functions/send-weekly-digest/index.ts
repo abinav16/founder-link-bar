@@ -330,18 +330,18 @@ serve(async (req) => {
         for (const s of userStartups) {
           const impressions = impCount.get(s.id) ?? 0;
 
-          const { count: clicks } = await admin
-            .from("clicks")
-            .select("*", { count: "exact", head: true })
-            .eq("shown_startup_id", s.id)
-            .gte("created_at", sevenDaysAgo);
-
-          const { count: lastWeekImps } = await admin
-            .from("impressions")
-            .select("*", { count: "exact", head: true })
-            .eq("shown_startup_id", s.id)
-            .gte("created_at", fourteenDaysAgo)
-            .lt("created_at", sevenDaysAgo);
+          // Daily rollups keep the digest fast; raw event scans time out.
+          const { data: rows } = await admin
+            .from("startup_stats_daily")
+            .select("date, impressions_received, clicks_received")
+            .eq("startup_id", s.id)
+            .gte("date", fourteenDaysAgo.slice(0, 10));
+          const cut = sevenDaysAgo.slice(0, 10);
+          let clicks = 0, lastWeekImps = 0;
+          for (const r of rows ?? []) {
+            if (r.date >= cut) clicks += Number(r.clicks_received) || 0;
+            else lastWeekImps += Number(r.impressions_received) || 0;
+          }
 
           const rank = [...impCount.values()].filter((c) => c > impressions).length + 1;
           const ctr = impressions > 0 ? ((clicks ?? 0) / impressions * 100).toFixed(1) : "0.0";
