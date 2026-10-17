@@ -340,9 +340,9 @@ serve(async (req) => {
           const diff = impressions - lw;
           let delta: string;
           let color: string;
-          if (diff > 0) { delta = `↑ ${diff} vs last week`; color = "#22c55e"; }
-          else if (diff < 0) { delta = `↓ ${Math.abs(diff)} vs last week`; color = "#ef4444"; }
-          else { delta = "— same as last week"; color = "#94a3b8"; }
+          if (diff > 0) { delta = `↑ ${diff} vs last week`; color = "#2f8a4f"; }
+          else if (diff < 0) { delta = `↓ ${Math.abs(diff)} vs last week`; color = "#b4483a"; }
+          else { delta = "Same as last week"; color = "#9a978b"; }
 
           sections.push(section({
             startupName: s.name,
@@ -358,8 +358,8 @@ serve(async (req) => {
         const fullName = (user.user_metadata?.full_name as string) || user.email.split("@")[0];
         const firstName = fullName.split(" ")[0] || "Founder";
         const intro = userStartups.length === 1
-          ? `Here's how <strong style="color:#0f172a;">${userStartups[0].name}</strong> performed on the StartupBar network this week.`
-          : `Here's how your <strong style="color:#0f172a;">${userStartups.length} startups</strong> performed on the StartupBar network this week.`;
+          ? `Here's how <strong style="color:#1c1d22;">${userStartups[0].name}</strong> performed on the StartupBar network over the last seven days.`
+          : `Here's how your <strong style="color:#1c1d22;">${userStartups.length} startups</strong> performed on the StartupBar network over the last seven days.`;
 
         const token = await getOrCreateUnsubToken(admin, email);
         const unsubUrl = `https://startupbar.co/u/${token}`;
