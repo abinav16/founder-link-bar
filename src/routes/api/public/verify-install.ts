@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { hasNativeWidgetFrame } from "@/lib/widget-install-evidence";
 
 const PRIVATE_IP_RE = /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|127\.|0\.|169\.254\.|::1$|fc|fd)/i;
 
@@ -117,14 +118,9 @@ export const Route = createFileRoute("/api/public/verify-install")({
           }
           // Some sites don't use our loader.js at all — they render the
           // /widget/bar iframe natively (React/Vue component, CSP-friendly).
-          // Those pages carry our slot marker and/or allow startupbar.co in
-          // frame-src, but none of the loader markers, so the plain check
-          // used to report them as "removed" while the bar is clearly live.
-          const headerCspRaw = res.headers.get("content-security-policy") ?? "";
-          const nativeEmbed =
-            /data-startupbar-slot/i.test(html) ||
-            /startupbar\.co\/widget\/bar/i.test(html) ||
-            (/frame-src[^;]*startupbar\.co/i.test(headerCspRaw) && /startupbar/i.test(html));
+          // Only an actual iframe can bypass loader script restrictions.
+          // CSP permission, brand mentions and empty slots prove nothing.
+          const nativeEmbed = hasNativeWidgetFrame(html);
           const installed =
             nativeEmbed ||
             bundleInstall ||

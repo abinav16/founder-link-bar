@@ -14,3 +14,6 @@
 - Use content-sized featured cards with flexible empty slots in a viewport-bounded scrollable desktop rail, so complete listing text remains accessible without wasting available space.
 - Keep exit detection in the host loader and the compact attention effect in the widget route; authenticate frame messages and keep the compact row in normal flow so both placements remain visible and info-panel height is measured correctly.
 - Keep profile insights in a dedicated public RPC and vouches behind database-enforced founder eligibility and ownership rules; use daily rollups rather than raw analytics scans to keep profiles fast.
+- Share the live visitor history limit across seed, realtime feed and map pins so incoming visits preserve the same history window.
+- Native-widget detection requires an actual iframe source, not CSP permissions or slot placeholders, so blocked loaders cannot bypass script checks.
+- Dashboard RPC values and labels use oldest-first UTC periods; rolling-day totals and buckets share identical boundaries so charts accurately represent their selected range.
