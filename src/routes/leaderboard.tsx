@@ -340,7 +340,7 @@ function LeaderboardPage() {
                 <div className="grid grid-cols-3 gap-3 items-end">
                   {podiumDisplay.map((row: LeaderboardRow) => {
                     const originalIndex = podium.findIndex((r: LeaderboardRow) => r.id === row.id);
-                    const dark = originalIndex === 0 && !row.supporter;
+                    const dark = row.sponsored || (originalIndex === 0 && !row.supporter);
                     return (
                       <div
                         key={row.id}
