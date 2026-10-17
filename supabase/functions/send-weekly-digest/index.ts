@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { escapeHtml, shell, section } from "./template.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -199,7 +200,7 @@ serve(async (req) => {
 
     const { data: startups, error: sErr } = await admin
       .from("startups")
-      .select("id, name, user_id, banned, widget_last_heartbeat_at")
+      .select("id, name, website_url, logo_url, user_id, banned, widget_last_heartbeat_at")
       .eq("status", "approved")
       .eq("banned", false);
     if (sErr) throw sErr;
@@ -220,10 +221,12 @@ serve(async (req) => {
       impCount.set(r.shown_startup_id, Number(r.cnt) || 0);
     });
 
-    const byUser = new Map<string, Array<{ id: string; name: string; hb: string | null }>>();
+    type DigestStartup = { id: string; name: string; websiteUrl: string; logoUrl: string | null; hb: string | null };
+    const byUser = new Map<string, DigestStartup[]>();
     for (const s of startups ?? []) {
-      if (!byUser.has(s.user_id)) byUser.set(s.user_id, []);
-      byUser.get(s.user_id)!.push({ id: s.id, name: s.name, hb: s.widget_last_heartbeat_at });
+      const owned = byUser.get(s.user_id) ?? [];
+      owned.push({ id: s.id, name: s.name, websiteUrl: s.website_url, logoUrl: s.logo_url, hb: s.widget_last_heartbeat_at });
+      byUser.set(s.user_id, owned);
     }
 
     const { data: sup } = await admin.from("suppressed_emails").select("email");
@@ -259,7 +262,7 @@ serve(async (req) => {
     const errors: Array<{ userId: string; error: string }> = [];
 
     // Build the eligible candidate list first, then cap it.
-    type Candidate = { userId: string; email: string; user: any; startups: Array<{ id: string; name: string }> };
+    type Candidate = { userId: string; email: string; user: any; startups: DigestStartup[] };
     const candidates: Candidate[] = [];
     const seenEmails = new Set<string>();
     const activeSince = now.getTime() - 7 * 24 * 60 * 60 * 1000;
@@ -339,27 +342,27 @@ serve(async (req) => {
           const lw = lastWeekImps ?? 0;
           const diff = impressions - lw;
           let delta: string;
-          let color: string;
-          if (diff > 0) { delta = `↑ ${diff} vs last week`; color = "#2f8a4f"; }
-          else if (diff < 0) { delta = `↓ ${Math.abs(diff)} vs last week`; color = "#b4483a"; }
-          else { delta = "Same as last week"; color = "#9a978b"; }
+          if (diff > 0) { delta = `${diff.toLocaleString("en-US")} more`; }
+          else if (diff < 0) { delta = `${Math.abs(diff).toLocaleString("en-US")} fewer`; }
+          else { delta = "No change in"; }
 
           sections.push(section({
             startupName: s.name,
+            websiteUrl: s.websiteUrl,
+            logoUrl: s.logoUrl,
             impressions,
             clicks: clicks ?? 0,
             ctr,
             rank: `#${rank}`,
             impressionsDelta: delta,
-            impressionsDeltaColor: color,
           }));
         }
 
         const fullName = (user.user_metadata?.full_name as string) || user.email.split("@")[0];
         const firstName = fullName.split(" ")[0] || "Founder";
         const intro = userStartups.length === 1
-          ? `Here's how <strong style="color:#1c1d22;">${userStartups[0].name}</strong> performed on the StartupBar network over the last seven days.`
-          : `Here's how your <strong style="color:#1c1d22;">${userStartups.length} startups</strong> performed on the StartupBar network over the last seven days.`;
+          ? `Here's how ${escapeHtml(userStartups[0].name)} performed on the StartupBar network this week.`
+          : `Here's how your ${userStartups.length} startups performed on the StartupBar network this week.`;
 
         const token = await getOrCreateUnsubToken(admin, email);
         const unsubUrl = `https://startupbar.co/u/${token}`;
