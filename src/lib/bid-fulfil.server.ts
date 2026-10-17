@@ -172,35 +172,20 @@ export async function enrichEntry(entryId: string): Promise<void> {
 
 
 
-/** Look a payment up directly with Dodo (source of truth for the return poll).
- *  Tries the sandbox and live APIs with whichever keys exist, so a bid is never
- *  stuck "pending" just because the deployment is on the other mode. */
+/** Look up live payments only; test payments cannot grant live board credit. */
 export async function getDodoPayment(paymentId: string): Promise<any | null> {
-  if (!paymentId) return null;
-  const attempts: { host: string; key: string }[] = [];
-  const liveKey = process.env.DODO_PAYMENTS_API_KEY;
-  const testKey = process.env.DODO_TEST_API_KEY;
-  if (liveKey) attempts.push({ host: "https://live.dodopayments.com", key: liveKey });
-  if (testKey) attempts.push({ host: "https://test.dodopayments.com", key: testKey });
-  if (liveKey && testKey) {
-    // Cross-pair as a last resort: keys are occasionally rotated between modes.
-    attempts.push({ host: "https://live.dodopayments.com", key: testKey });
-    attempts.push({ host: "https://test.dodopayments.com", key: liveKey });
-  }
-
-  for (const { host, key } of attempts) {
-    try {
-      const res = await fetch(`${host}/payments/${encodeURIComponent(paymentId)}`, {
-        headers: { Authorization: `Bearer ${key}` },
-      });
-      if (!res.ok) continue;
-      const raw = await res.text();
-      if (!raw) continue;
-      return JSON.parse(raw);
-    } catch {
-      /* try the next endpoint */
+  const apiKey = process.env.DODO_PAYMENTS_API_KEY;
+  if (!paymentId || !apiKey) return null;
+  try {
+    const res = await fetch(`https://live.dodopayments.com/payments/${encodeURIComponent(paymentId)}`, {
+      headers: { Authorization: `Bearer ${apiKey}` },
+    });
+    if (!res.ok) {
+      console.error("[bid] payment lookup failed", res.status, await res.text());
+      return null;
     }
+    return await res.json();
+  } catch {
+    return null;
   }
-  console.error("[bid] payment lookup failed for", paymentId);
-  return null;
 }

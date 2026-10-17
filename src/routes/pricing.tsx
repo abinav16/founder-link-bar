@@ -1,3 +1,4 @@
+import { SUPPORTER_PRICE_USD, SUPPORTER_TRIAL_DAYS } from "@/lib/supporter";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,9 +8,9 @@ export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
       { title: "Pricing — StartupBar" },
-      { name: "description", content: "StartupBar pricing: first startup listing free forever, extra listings $9.99 one-time, and Featured spot promotion at $79 per month. Payments processed by Dodo Payments." },
+      { name: "description", content: "StartupBar pricing: first startup listing free forever, extra listings $9.99 one-time, and Featured spot promotion at $79 per month. Supporter: seven days free, then $999/year. Payments processed by Dodo Payments." },
       { property: "og:title", content: "Pricing — StartupBar" },
-      { property: "og:description", content: "First listing free. Extra listings $9.99 one-time. Featured spot promotion $79 per month, cancel anytime." },
+      { property: "og:description", content: "First listing free. Extra listings $9.99 one-time. Featured spot promotion $79 per month. Supporter: seven days free, then $999/year, cancel anytime." },
       { property: "og:url", content: "https://startupbar.co/pricing" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -44,7 +45,8 @@ export const Route = createFileRoute("/pricing")({
             {
               "@type": "Offer",
               name: "Supporter membership",
-              price: "1999",
+              description: `${SUPPORTER_TRIAL_DAYS} days free, then $${SUPPORTER_PRICE_USD} USD per year, taxes included.`,
+              price: String(SUPPORTER_PRICE_USD),
               priceCurrency: "USD",
               url: "https://startupbar.co/pricing",
               availability: "https://schema.org/InStock",
@@ -287,17 +289,18 @@ function PricingPage() {
             <div>
               <div className="text-xs font-medium uppercase tracking-wide text-black/40">Supporter membership — no bar on your site</div>
               <div className="mt-2 flex items-baseline gap-1">
-                <span className="text-4xl font-semibold tracking-tight text-black">$1,999</span>
-                <span className="text-sm text-black/40">USD per year, cancel anytime</span>
+                <span className="text-4xl font-semibold tracking-tight text-black">${SUPPORTER_PRICE_USD}</span>
+                <span className="text-sm text-black/40">USD per year after {SUPPORTER_TRIAL_DAYS} days free</span>
               </div>
             </div>
             <Link
               to="/apply"
               className="inline-flex h-10 items-center rounded-md border border-black px-4 text-sm font-medium text-black hover:bg-black hover:text-white transition-colors"
             >
-              Become a Supporter
+              Start free trial
             </Link>
           </div>
+          <p className="mt-3 text-sm text-black/60">{SUPPORTER_TRIAL_DAYS} days free. Card required. Cancel before the trial ends to avoid the first charge. Taxes included.</p>
           <p className="mt-4 text-sm leading-relaxed text-black/60">
             For founders who want to be listed without showing the bar on their own site. You pay instead of
             contributing impressions, and you are shown across the network at an average member&rsquo;s share —
@@ -311,7 +314,7 @@ function PricingPage() {
             <li className="flex gap-2"><Check />Gold highlight on the network page and the leaderboard, with a Supporter tag</li>
             <li className="flex gap-2"><Check />Optional one-line analytics code unlocks your own visitor map and on-site stats</li>
             <li className="flex gap-2"><Check />Switch back to the free bar at any time</li>
-            <li className="flex gap-2"><Check />Renews yearly until you cancel. No refunds; your paid year keeps running</li>
+            <li className="flex gap-2"><Check />Cancel during your trial without charge. After that, renews yearly until cancelled; no refunds except where required by law</li>
           </ul>
         </div>
 
@@ -353,6 +356,7 @@ function PricingPage() {
               <li>Payments are processed by <strong className="font-medium text-black">Dodo Payments</strong>, our merchant of record. StartupBar never sees or stores your card details.</li>
               <li>All prices are in US dollars. Applicable taxes are calculated and shown at checkout.</li>
               <li>Listing payments are one-time and never auto renew.</li>
+              <li>Supporter starts with {SUPPORTER_TRIAL_DAYS} days free, then charges ${SUPPORTER_PRICE_USD} USD per year including tax. A card is required; cancel before the trial ends to avoid the first charge.</li>
               <li>The featured spot is a subscription. It renews automatically every {FEATURED_DAYS} days at ${FEATURED_PRICE_USD} until you cancel.</li>
               <li>Your receipt is emailed by Dodo Payments and the charge appears on your statement via Dodo Payments.</li>
             </ul>

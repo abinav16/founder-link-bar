@@ -1,3 +1,4 @@
+import { SUPPORTER_PRICE_USD, SUPPORTER_TRIAL_DAYS } from "@/lib/supporter";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { FEATURED_PRICE_USD, FEATURED_DAYS, FEATURED_SLOT_COUNT } from "@/lib/featured";
@@ -38,7 +39,7 @@ const FAQS: Faq[] = [
     id: "supporter-tier",
     cat: "Membership & approval",
     q: "Can I be listed without showing the bar on my site?",
-    a: "Yes — that's the Supporter membership, $1,999 per year. You pay instead of contributing impressions, and you're shown across the network at an average member's share: never more than an average contributing member, never starved. Nothing is rendered on your own site. You keep your listing, profile page, leaderboard presence and dashboard, plus a subtle Supporter badge. It does not buy extra reach, featured spots or leaderboard position.",
+    a: `Yes — that's the Supporter membership: ${SUPPORTER_TRIAL_DAYS} days free, then $${SUPPORTER_PRICE_USD} per year including tax. A card is required. Cancel before the trial ends to avoid the first charge. You pay instead of contributing impressions, and you're shown across the network at an average member's share: never more than an average contributing member, never starved. Nothing is rendered on your own site. You keep your listing, profile page, leaderboard presence and dashboard, plus a subtle Supporter badge. It does not buy extra reach, featured spots or leaderboard position.`,
   },
   {
     id: "supporter-tracking-code",
@@ -50,7 +51,7 @@ const FAQS: Faq[] = [
     id: "supporter-cancel",
     cat: "Billing",
     q: "Can I cancel the Supporter membership?",
-    a: "Yes, any time from your account. Cancelling stops the next renewal; there are no refunds and your paid year keeps running until it ends. You can also switch back to the free bar at any point — install the bar snippet and your paid term simply continues in the background.",
+    a: "Yes, any time from your account. Cancel before your seven-day free trial ends to avoid the first charge. Access lasts until the end of the trial. After the trial, cancelling stops the next renewal; there are no refunds and your paid year keeps running until it ends. You can also switch back to the free bar at any point — install the bar snippet and your paid term simply continues in the background.",
   },
   {
     id: "how-to-join",
