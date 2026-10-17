@@ -18,3 +18,4 @@
 - Native-widget detection requires an actual iframe source, not CSP permissions or slot placeholders, so blocked loaders cannot bypass script checks.
 - Admin "Removed" requires both a negative page scan and no widget heartbeat inside the shared proof window, because static scans miss bundled and inner-page installs while heartbeats come from the running bar.
 - Dashboard RPC values and labels use oldest-first UTC periods; rolling-day totals and buckets share identical boundaries so charts accurately represent their selected range.
+- Keep weekly digest rendering in a pure adjacent template module with inline email-safe tokens, separate from recipient selection and sending, so presentation can be previewed without sending emails.

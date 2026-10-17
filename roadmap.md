@@ -21,3 +21,7 @@
 - [x] Make 24-hour totals and chart buckets use the same rolling window.
 - [x] Retain 200 visitors during realtime updates and test the limit.
 - [x] Require actual iframe evidence for native installs and verify blocked scripts.
+
+# Weekly email redesign
+- [x] Replace the gold/italic email with a clean monochrome layout and individual startup logos.
+- [x] Verify the rendered email at desktop and phone widths.
