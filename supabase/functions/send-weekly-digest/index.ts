@@ -44,51 +44,55 @@ async function getOrCreateUnsubToken(
   return (reread?.token as string) ?? token;
 }
 
+const LOGO = "https://startupbar.co/favicon.png";
+const SERIF = "'Instrument Serif',Georgia,'Times New Roman',serif";
+const SANS = "Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif";
+
 function shell(firstName: string, intro: string, sections: string, unsubUrl: string) {
   return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Your StartupBar stats</title>
+  <meta name="color-scheme" content="light only" />
+  <title>Your StartupBar week</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 </head>
-<body style="margin:0;padding:0;background:#f5f5f4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f4;padding:40px 16px;">
+<body style="margin:0;padding:0;background:#ffffff;font-family:${SANS};color:#1c1d22;">
+  <div style="display:none;max-height:0;overflow:hidden;">Your weekly impressions, clicks and rank on the StartupBar network.</div>
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f7f6f2;padding:36px 14px;">
     <tr><td align="center">
       <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
         <tr>
-          <td style="background:#000000;border-radius:12px 12px 0 0;padding:28px 32px;">
-            <span style="display:inline-block;background:#ffffff;color:#000000;font-size:10px;font-weight:700;letter-spacing:0.08em;padding:4px 10px;border-radius:999px;">STARTUPBAR</span>
+          <td style="padding:0 4px 22px;">
+            <table cellpadding="0" cellspacing="0"><tr>
+              <td style="vertical-align:middle;"><img src="${LOGO}" width="34" height="34" alt="StartupBar" style="display:block;border-radius:9px;border:0;" /></td>
+              <td style="vertical-align:middle;padding-left:10px;font-size:15px;font-weight:600;color:#1c1d22;letter-spacing:-0.01em;">StartupBar</td>
+            </tr></table>
           </td>
         </tr>
         <tr>
-          <td style="background:#ffffff;padding:32px 32px 8px;">
-            <h1 style="margin:0 0 6px;font-size:26px;font-weight:700;color:#0f172a;letter-spacing:-0.02em;">Hey ${firstName} 👋</h1>
-            <p style="margin:0 0 28px;font-size:15px;color:#64748b;line-height:1.6;">${intro}</p>
+          <td style="background:#ffffff;border:1px solid #e8e6df;border-radius:18px;padding:36px 28px 28px;">
+            <div style="font-size:11px;font-weight:600;color:#8a8778;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:14px;">Weekly report</div>
+            <h1 style="margin:0 0 12px;font-family:${SERIF};font-weight:400;font-size:40px;line-height:1.05;color:#1c1d22;">Hey ${firstName}, <em style="color:#a8822e;">here's your week.</em></h1>
+            <p style="margin:0 0 30px;font-size:15px;color:#5f5d55;line-height:1.6;">${intro}</p>
             ${sections}
-            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
-              <tr>
-                <td>
-                  <a href="https://startupbar.co/dashboard" style="display:inline-block;background:#000000;color:#ffffff;font-size:13px;font-weight:600;text-decoration:none;padding:12px 22px;border-radius:8px;">View full dashboard →</a>
-                </td>
-              </tr>
+            <table cellpadding="0" cellspacing="0" style="margin:8px 0 30px;"><tr><td style="background:#1c1d22;border-radius:999px;">
+              <a href="https://startupbar.co/dashboard" style="display:inline-block;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:13px 26px;">Open your dashboard &rarr;</a>
+            </td></tr></table>
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#16171c;border-radius:14px;">
+              <tr><td style="padding:22px 24px;">
+                <div style="font-family:${SERIF};font-size:22px;line-height:1.2;color:#f5f2ea;margin-bottom:6px;">Founders helping founders.</div>
+                <div style="font-size:13px;color:#b3ae9f;line-height:1.6;margin-bottom:12px;">Every new site on the network means more impressions for everyone. Know a founder who'd benefit?</div>
+                <a href="https://startupbar.co" style="font-size:13px;font-weight:600;color:#e3c374;text-decoration:none;">Share StartupBar &rarr;</a>
+              </td></tr>
             </table>
-            <div style="border-top:1px solid #f1f5f9;margin-bottom:24px;"></div>
-            <p style="margin:0 0 6px;font-size:13px;color:#64748b;line-height:1.6;">
-              The more sites that install StartupBar, the more impressions every founder gets. Know a founder who'd benefit?
-            </p>
-            <a href="https://startupbar.co" style="font-size:13px;font-weight:600;color:#0f172a;text-decoration:none;">Share StartupBar →</a>
           </td>
         </tr>
         <tr>
-          <td style="background:#f8fafc;border-radius:0 0 12px 12px;padding:20px 32px;border-top:1px solid #e2e8f0;">
-            <p style="margin:0 0 6px;font-size:11px;color:#94a3b8;line-height:1.6;">
-              You're getting this because you joined <a href="https://startupbar.co" style="color:#64748b;text-decoration:none;">StartupBar</a>.
-              Sent once a week.
-            </p>
-            <p style="margin:0;font-size:11px;color:#94a3b8;line-height:1.6;">
-              Don't want weekly stats? <a href="${unsubUrl}" style="color:#64748b;text-decoration:underline;">Unsubscribe in one click</a>. You'll still get important account emails.
-            </p>
+          <td style="padding:22px 6px 0;text-align:center;">
+            <p style="margin:0 0 6px;font-size:11px;color:#9a978b;line-height:1.6;">You're getting this because you joined <a href="https://startupbar.co" style="color:#5f5d55;text-decoration:none;">StartupBar</a>. Sent once a week.</p>
+            <p style="margin:0;font-size:11px;color:#9a978b;line-height:1.6;">Don't want weekly stats? <a href="${unsubUrl}" style="color:#5f5d55;text-decoration:underline;">Unsubscribe in one click</a>. You'll still get important account emails.</p>
           </td>
         </tr>
       </table>
@@ -96,6 +100,16 @@ function shell(firstName: string, intro: string, sections: string, unsubUrl: str
   </table>
 </body>
 </html>`;
+}
+
+function stat(label: string, value: string | number, sub: string, subColor = "#9a978b") {
+  return `<td width="33%" style="padding:0 4px;vertical-align:top;">
+    <div style="background:#faf9f6;border:1px solid #eeece5;border-radius:12px;padding:14px 12px;">
+      <div style="font-size:10px;font-weight:600;color:#9a978b;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;">${label}</div>
+      <div style="font-size:24px;font-weight:700;color:#1c1d22;line-height:1;letter-spacing:-0.02em;">${value}</div>
+      <div style="font-size:11px;color:${subColor};margin-top:6px;line-height:1.3;">${sub}</div>
+    </div>
+  </td>`;
 }
 
 function section(s: {
@@ -107,45 +121,21 @@ function section(s: {
   impressionsDelta: string;
   impressionsDeltaColor: string;
 }) {
-  return `<div style="margin-bottom:24px;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;">
-  <div style="background:#f8fafc;padding:12px 16px;border-bottom:1px solid #e2e8f0;">
-    <span style="font-size:13px;font-weight:700;color:#0f172a;">${s.startupName}</span>
-  </div>
-  <div style="padding:16px;">
-    <table width="100%" cellpadding="0" cellspacing="0">
-      <tr>
-        <td width="25%" style="padding:0 6px 0 0;">
-          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px 12px;">
-            <div style="font-size:9px;font-weight:600;color:#94a3b8;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:5px;">IMPRESSIONS</div>
-            <div style="font-size:22px;font-weight:700;color:#0f172a;line-height:1;">${s.impressions}</div>
-            <div style="font-size:10px;color:${s.impressionsDeltaColor};margin-top:3px;">${s.impressionsDelta}</div>
-          </div>
-        </td>
-        <td width="25%" style="padding:0 6px;">
-          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px 12px;">
-            <div style="font-size:9px;font-weight:600;color:#94a3b8;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:5px;">CLICKS</div>
-            <div style="font-size:22px;font-weight:700;color:#0f172a;line-height:1;">${s.clicks}</div>
-            <div style="font-size:10px;color:#94a3b8;margin-top:3px;">visits</div>
-          </div>
-        </td>
-        <td width="25%" style="padding:0 6px;">
-          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px 12px;">
-            <div style="font-size:9px;font-weight:600;color:#94a3b8;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:5px;">CTR</div>
-            <div style="font-size:22px;font-weight:700;color:#0f172a;line-height:1;">${s.ctr}%</div>
-            <div style="font-size:10px;color:#94a3b8;margin-top:3px;">click-through</div>
-          </div>
-        </td>
-        <td width="25%" style="padding:0 0 0 6px;">
-          <div style="background:#0f172a;border-radius:10px;padding:14px 12px;">
-            <div style="font-size:9px;font-weight:600;color:#64748b;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:5px;">RANK</div>
-            <div style="font-size:22px;font-weight:700;color:#ffffff;line-height:1;">${s.rank}</div>
-            <div style="font-size:10px;color:#64748b;margin-top:3px;">by impressions</div>
-          </div>
-        </td>
-      </tr>
-    </table>
-  </div>
-</div>`;
+  return `<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:18px;border:1px solid #e8e6df;border-radius:14px;">
+  <tr><td style="padding:16px 16px 12px;">
+    <table width="100%" cellpadding="0" cellspacing="0"><tr>
+      <td style="font-size:16px;font-weight:600;color:#1c1d22;">${s.startupName}</td>
+      <td align="right"><span style="display:inline-block;background:#16171c;color:#e3c374;font-size:12px;font-weight:700;padding:5px 11px;border-radius:999px;white-space:nowrap;">&#9733; Rank ${s.rank}</span></td>
+    </tr></table>
+  </td></tr>
+  <tr><td style="padding:0 12px 14px;">
+    <table width="100%" cellpadding="0" cellspacing="0"><tr>
+      ${stat("Impressions", s.impressions, s.impressionsDelta, s.impressionsDeltaColor)}
+      ${stat("Clicks", s.clicks, "visits to your site")}
+      ${stat("CTR", s.ctr + "%", "click-through")}
+    </tr></table>
+  </td></tr>
+</table>`;
 }
 
 async function sendEmail(to: string, html: string, unsubUrl: string) {
