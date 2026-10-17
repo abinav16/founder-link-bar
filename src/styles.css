@@ -26,10 +26,10 @@
 /* Both canvas layers must be transparent: an iframe otherwise paints white around dark cards. */
 html:has(.sb-widget-shell), body:has(.sb-widget-shell) { background: transparent; background-color: transparent; }
 html:has(.sb-widget-dark) { color-scheme: dark; }
-/* One continuous surface, measured frame-by-frame by the embedded route. */
+/* Keep the compact row in flow so bottom placement cannot clip it above
+   the frame, and the info panel contributes its full measured height. */
 .sb-widget-shell { position: relative; width: 100%; background: transparent; }
-.sb-widget-compact { position: absolute; inset: 0 0 auto; z-index: 1; opacity: 1; }
-.sb-widget-bottom .sb-widget-compact { inset: auto 0 0; }
+.sb-widget-compact { position: relative; z-index: 1; opacity: 1; }
 
 /* Exit intent: a glance-worthy nudge, never an expansion. The bar stays
    exactly 36px — a quick micro-shake plus a glass shimmer sweeping across. */

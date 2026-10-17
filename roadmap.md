@@ -10,3 +10,8 @@
 - [x] Add restrained same-startup recommendation with accessible close and tracked visit link.
 - [x] Add desktop exit detection, session cap, host opt out, and safe overlay sizing.
 - [x] Verify live interaction, both placements, themes, and narrow screens.
+
+# Widget visibility regression
+- [x] Reproduce the empty bottom bar on Orgledge and identify clipped content.
+- [x] Restore the compact row to normal flow without changing the attention effect.
+- [x] Verify live picks, both placements and themes, info-panel controls and dismissal.
