@@ -4,6 +4,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { supabase } from "@/integrations/supabase/client";
 import { COUNTRY_CENTROIDS, COUNTRY_NAMES, flagEmoji, jitter, pinPosition } from "@/lib/geo-centroids";
 import { funName, avatarUrl, avatarFallback, handleAvatarError } from "@/lib/fun-name";
+import { LIVE_VISITOR_LIMIT, prependVisitor } from "@/lib/live-visitor-history";
 
 // Global error hook for avatar <img> tags inside raw HTML strings (map pins/popups).
 // Swaps a failed DiceBear request for a locally generated initial badge.
@@ -717,8 +718,8 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
         refCounts.set(name, (refCounts.get(name) ?? 0) + 1);
       }
 
-      // Seed feed from the 30 most recent records (already sorted newest-first)
-      const seedFeed: FeedEvent[] = data.slice(0, 200).map((row) => {
+      // Seed and realtime updates retain the same recent-history window.
+      const seedFeed: FeedEvent[] = data.slice(0, LIVE_VISITOR_LIMIT).map((row) => {
         const code = row.country?.toUpperCase() ?? "US";
         const referrerName = resolveReferrerSync(effectiveHost(row.host_startup_id), row.referrer);
         return {
@@ -747,7 +748,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
         // window pulse; earlier ones are dimmed dots, so the globe matches the
         // list of recent visitors instead of looking empty.
         const nowMs = Date.now();
-        for (const row of data.slice(0, 200).reverse()) {
+        for (const row of data.slice(0, LIVE_VISITOR_LIMIT).reverse()) {
           const code = row.country?.toUpperCase();
           if (!code) continue;
           const createdAtMs = new Date((row as { created_at?: string }).created_at ?? nowMs).getTime();
@@ -828,10 +829,9 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
         addPin(row.id, code, device, effHost, row.os ?? "unknown", row.browser ?? "unknown", row.path, row.referrer);
 
         resolveReferrer(effHost, row.referrer).then(({ name: referrerName }) => {
-          setFeed((prev) => [
+          setFeed((prev) => prependVisitor(prev,
             { id: row.id, name: funName(row.id), flag: flagEmoji(code), country: code, path: row.path ?? "/", device, referrerName, ts: Date.now() },
-            ...prev,
-          ].slice(0, 30));
+          ));
 
           setReferrerCounts((prev) => {
             const m = new Map(prev);
@@ -860,7 +860,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
   }, [scopeStartupId, networkMode]);
 
   useEffect(() => {
-    const MAX_PINS = 200;
+    const MAX_PINS = LIVE_VISITOR_LIMIT;
     const t = setInterval(() => {
       const now = Date.now();
       // Pins are never dropped for age — they fade to a dim dot instead. Only
