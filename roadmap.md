@@ -14,4 +14,4 @@
 # Widget visibility regression
 - [x] Reproduce the empty bottom bar on Orgledge and identify clipped content.
 - [x] Restore the compact row to normal flow without changing the attention effect.
-- [ ] Verify live picks, both placements and themes, info-panel controls and dismissal.
+- [x] Verify live picks, both placements and themes, info-panel controls and dismissal.
