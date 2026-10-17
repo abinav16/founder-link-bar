@@ -7,6 +7,11 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const FROM = "StartupBar <hello@startupbar.co>";
 const SUBJECT = "Your StartupBar stats this week ✦";
+const TEMPLATE = "weekly-digest";
+// Hard daily cap keeps the rest of Resend's 100/day free quota for account emails.
+const DAILY_CAP = 50;
+// One digest per founder per ~week, regardless of how many daily runs happen.
+const DEDUPE_WINDOW_MS = 6.5 * 24 * 60 * 60 * 1000;
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -360,18 +365,30 @@ serve(async (req) => {
           ? `Here's how <strong style="color:#0f172a;">${userStartups[0].name}</strong> performed on the StartupBar network this week.`
           : `Here's how your <strong style="color:#0f172a;">${userStartups.length} startups</strong> performed on the StartupBar network this week.`;
 
-        const token = await getOrCreateUnsubToken(admin, user.email);
+        const token = await getOrCreateUnsubToken(admin, email);
         const unsubUrl = `https://startupbar.co/u/${token}`;
         const html = shell(firstName, intro, sections.join("\n"), unsubUrl);
-        await sendEmail(user.email, html, unsubUrl);
+        const res = await sendEmail(email, html, unsubUrl);
+        if (logId) {
+          await admin.from("email_send_log")
+            .update({ status: "sent", message_id: (res as any)?.id ?? null })
+            .eq("id", logId);
+        }
         sent++;
       } catch (e) {
         console.error(`Failed for user ${userId}:`, e);
         errors.push({ userId, error: String(e) });
+        if (logId) {
+          await admin.from("email_send_log")
+            .update({ status: "failed", error_message: String(e).slice(0, 300) })
+            .eq("id", logId);
+        }
       }
+      // Pace well under Resend's rate limit.
+      await new Promise((r) => setTimeout(r, 600));
     }
 
-    return new Response(JSON.stringify({ ok: true, sent, skipped, errors }), {
+    return new Response(JSON.stringify({ ok: true, sent, skipped, skipReasons, remaining, errors }), {
       headers: { ...cors, "Content-Type": "application/json" },
     });
   } catch (err) {
