@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { checkIsAdmin } from "@/lib/admin-auth.functions";
 import { toast } from "sonner";
+import { heartbeatProvesInstall } from "@/lib/widget-install-evidence";
 import { Check, X, ExternalLink, LogOut, Clock, RefreshCw, Radio, CircleSlash, Loader2, Eye, EyeOff, ShieldOff, Ban, Send, Users, Mail } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
