@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { checkIsAdmin } from "@/lib/admin-auth.functions";
 import { toast } from "sonner";
+import { heartbeatProvesInstall } from "@/lib/widget-install-evidence";
 import { Check, X, ExternalLink, LogOut, Clock, RefreshCw, Radio, CircleSlash, Loader2, Eye, EyeOff, ShieldOff, Ban, Send, Users, Mail } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
@@ -162,7 +163,7 @@ function AdminPage() {
     return () => clearInterval(t);
   }, []);
 
-  async function checkEmbed(id: string, website: string) {
+  async function checkEmbed(id: string, website: string, lastPage?: string | null) {
     setEmbed((p) => ({ ...p, [id]: { state: "checking" } }));
     try {
       const { data: sess } = await supabase.auth.getSession();
@@ -171,7 +172,8 @@ function AdminPage() {
         const { data: u } = await supabase.auth.getUser();
         if (u.user) token = (await supabase.auth.getSession()).data.session?.access_token;
       }
-      const r = await fetch(`/api/public/verify-install?url=${encodeURIComponent(website)}&id=${encodeURIComponent(id)}`, {
+      const page = lastPage ?? startups.find((x) => x.id === id)?.widget_last_page_url ?? null;
+      const r = await fetch(`/api/public/verify-install?url=${encodeURIComponent(website)}&id=${encodeURIComponent(id)}${page ? `&page=${encodeURIComponent(page)}` : ""}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
 
@@ -230,7 +232,7 @@ function AdminPage() {
       setFounders(Object.fromEntries(rows.map((r) => [r.user_id, r])));
     }
     // Check embed for any startup with a website (including pending — that's the point)
-    list.filter((s) => s.website_url && s.status !== "rejected").forEach((s) => checkEmbed(s.id, s.website_url));
+    list.filter((s) => s.website_url && s.status !== "rejected").forEach((s) => checkEmbed(s.id, s.website_url, s.widget_last_page_url));
   }
 
 
@@ -417,7 +419,11 @@ function AdminPage() {
                 <tbody className="divide-y divide-black/5">
                   {filtered.map((s) => {
                     const e: EmbedState = embed[s.id] ?? { state: "idle" };
-                    const scriptInstalled = e.state === "installed";
+                    // The running widget's own heartbeat is ground truth: a ping
+                    // in the last 24h proves the bar is installed even when the
+                    // page scan can't see it (bundled loaders, inner pages).
+                    const hbProvesInstall = heartbeatProvesInstall(s.widget_last_heartbeat_at, now);
+                    const scriptInstalled = e.state === "installed" || (e.state === "missing" && hbProvesInstall);
                     const scriptSuspicious = e.state === "installed" && e.suspicious;
                     const scriptCspBlocked = e.state === "installed" && e.cspBlocked;
                     const scriptIdMismatch = e.state === "installed" && e.idMismatch;
@@ -439,7 +445,7 @@ function AdminPage() {
                     const hbHidden = hbFresh && s.widget_currently_visible === false;
                     // Script pinged us at some point but is gone from the HTML
                     // now → the founder took it down after installing.
-                    const scriptRemoved = e.state === "missing" && !!s.widget_last_heartbeat_at;
+                    const scriptRemoved = e.state === "missing" && !!s.widget_last_heartbeat_at && !hbProvesInstall;
                     const hbSeenAt = s.widget_last_heartbeat_at
                       ? new Date(s.widget_last_heartbeat_at).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
                       : null;

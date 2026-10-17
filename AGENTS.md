@@ -16,4 +16,5 @@
 - Keep profile insights in a dedicated public RPC and vouches behind database-enforced founder eligibility and ownership rules; use daily rollups rather than raw analytics scans to keep profiles fast.
 - Share the live visitor history limit across seed, realtime feed and map pins so incoming visits preserve the same history window.
 - Native-widget detection requires an actual iframe source, not CSP permissions or slot placeholders, so blocked loaders cannot bypass script checks.
+- Admin "Removed" requires both a negative page scan and no widget heartbeat inside the shared proof window, because static scans miss bundled and inner-page installs while heartbeats come from the running bar.
 - Dashboard RPC values and labels use oldest-first UTC periods; rolling-day totals and buckets share identical boundaries so charts accurately represent their selected range.

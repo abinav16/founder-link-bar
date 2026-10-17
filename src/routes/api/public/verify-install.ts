@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { hasNativeWidgetFrame } from "@/lib/widget-install-evidence";
+import { collectScriptUrls, hasNativeWidgetFrame, isSameSite } from "@/lib/widget-install-evidence";
 
 const PRIVATE_IP_RE = /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|127\.|0\.|169\.254\.|::1$|fc|fd)/i;
 
@@ -54,13 +54,15 @@ export const Route = createFileRoute("/api/public/verify-install")({
         }
 
         try {
-          const res = await fetch(targetUrl, {
-            headers: {
-              "User-Agent": "StartupBar-Verifier/1.0 (+https://startupbar.co)",
-              "Accept": "text/html",
-            },
-            signal: AbortSignal.timeout(8000),
-          });
+          const fetchPage = (href: string) =>
+            fetch(href, {
+              headers: {
+                "User-Agent": "StartupBar-Verifier/1.0 (+https://startupbar.co)",
+                "Accept": "text/html",
+              },
+              signal: AbortSignal.timeout(8000),
+            });
+          let res = await fetchPage(targetUrl);
 
           if (!res.ok) {
             return Response.json({ installed: false, error: `Site returned ${res.status}` }, { headers: NO_STORE });
@@ -72,31 +74,18 @@ export const Route = createFileRoute("/api/public/verify-install")({
           let installedId: string | null = null;
           let idMismatch = false;
 
-          const html = await res.text();
+          let html = await res.text();
 
-          // Some sites (Vite/React/Next SPAs) don't put the snippet in the
-          // served HTML at all — the app bundle injects the loader at runtime.
-          // Scan the site's own JS bundles for our markers so those installs
-          // aren't reported as "not found".
+          // Some sites (Vite/React/Next/Remix SPAs) don't put the snippet in
+          // the served HTML at all — the app bundle injects the loader at
+          // runtime. Scan the site's own JS bundles (script tags plus
+          // modulepreload / preload-as-script links) for our markers.
           let bundleInstall = false;
           let bundleId: string | null = null;
           const markerRe = /startupbar\.co\/widget|widget\/loader\.js|data-startup(?:bar)?-(?:id|slot)|startupbar-loader/i;
-          if (!markerRe.test(html)) {
+          const scanBundles = async (pageHtml: string, pageHref: string) => {
             try {
-              const pageUrl = new URL(targetUrl);
-              const srcs = Array.from(html.matchAll(/<script[^>]+src=["']([^"']+)["']/gi))
-                .map((m) => m[1])
-                .map((s) => {
-                  try {
-                    return new URL(s, pageUrl);
-                  } catch {
-                    return null;
-                  }
-                })
-                .filter((u): u is URL => !!u && u.origin === pageUrl.origin)
-                .slice(0, 4);
-
-              for (const u of srcs) {
+              for (const u of collectScriptUrls(pageHtml, new URL(pageHref))) {
                 const jsRes = await fetch(u.href, {
                   headers: { "User-Agent": "StartupBar-Verifier/1.0 (+https://startupbar.co)" },
                   signal: AbortSignal.timeout(8000),
@@ -109,11 +98,36 @@ export const Route = createFileRoute("/api/public/verify-install")({
                   const window_ = js.slice(Math.max(0, at - 800), at + 800);
                   const idm = window_.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
                   if (idm) bundleId = idm[1];
-                  break;
+                  return;
                 }
               }
             } catch {
               /* bundle scan is best-effort */
+            }
+          };
+          if (!markerRe.test(html)) await scanBundles(html, targetUrl);
+
+          // Some founders install the bar only on inner pages (app, blog).
+          // If the homepage shows nothing, re-check the last page the widget
+          // itself reported from — only when it's on the startup's own domain.
+          const fallbackPage = url.searchParams.get("page");
+          if (!bundleInstall && !markerRe.test(html) && fallbackPage && isSameSite(fallbackPage, targetUrl)) {
+            const fb = isSafeUrl(fallbackPage);
+            if (fb.safe && fb.href !== targetUrl) {
+              try {
+                const fbRes = await fetchPage(fb.href);
+                if (fbRes.ok) {
+                  const fbHtml = await fbRes.text();
+                  if (markerRe.test(fbHtml)) {
+                    res = fbRes;
+                    html = fbHtml;
+                  } else {
+                    await scanBundles(fbHtml, fb.href);
+                  }
+                }
+              } catch {
+                /* fallback is best-effort */
+              }
             }
           }
           // Some sites don't use our loader.js at all — they render the
