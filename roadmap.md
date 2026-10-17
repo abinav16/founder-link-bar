@@ -25,3 +25,9 @@
 # Weekly email redesign
 - [x] Replace the gold/italic email with a clean monochrome layout and individual startup logos.
 - [x] Verify the rendered email at desktop and phone widths.
+
+# Supporter pricing and trial
+- [ ] Update all current Supporter prices and disclose the seven-day free trial.
+- [ ] Align activation, expiry and cancellation with Dodo's actual trial/billing dates.
+- [ ] Ensure all Dodo payment paths use live credentials and products.
+- [ ] Test trial rules and verify live checkout without making a payment.
