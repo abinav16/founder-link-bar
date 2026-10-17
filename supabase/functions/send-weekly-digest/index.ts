@@ -178,6 +178,12 @@ serve(async (req) => {
     ? authHeader.slice(7).trim()
     : "";
   let authorized = !!token && token === SUPABASE_SERVICE_ROLE_KEY;
+  const jobToken = req.headers.get("x-job-token")?.trim();
+  if (!authorized && jobToken && jobToken.length >= 32) {
+    const a = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const { data } = await a.from("internal_job_tokens").select("token").eq("name", "weekly-digest").maybeSingle();
+    authorized = !!data?.token && data.token === jobToken;
+  }
   if (!authorized && token && !token.startsWith("sb_publishable_")) {
     try {
       const probe = await fetch(`${SUPABASE_URL}/auth/v1/admin/users?page=1&per_page=1`, {
