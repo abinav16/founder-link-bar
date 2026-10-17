@@ -165,36 +165,50 @@ async function sendEmail(to: string, html: string, unsubUrl: string) {
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
 
-  // Require service-role bearer to prevent unauthenticated mass-email abuse.
+  // Require a real service-role credential to prevent mass-email abuse.
+  // The cron passes the vault-stored service key; it may differ in format
+  // from this runtime's env key, so verify it against the admin API.
   const authHeader = req.headers.get("authorization") ?? "";
   const token = authHeader.toLowerCase().startsWith("bearer ")
     ? authHeader.slice(7).trim()
     : "";
-  if (!token || token !== SUPABASE_SERVICE_ROLE_KEY) {
+  let authorized = !!token && token === SUPABASE_SERVICE_ROLE_KEY;
+  if (!authorized && token && !token.startsWith("sb_publishable_")) {
+    try {
+      const probe = await fetch(`${SUPABASE_URL}/auth/v1/admin/users?page=1&per_page=1`, {
+        headers: { apikey: token, Authorization: `Bearer ${token}` },
+      });
+      authorized = probe.ok;
+    } catch { authorized = false; }
+  }
+  if (!authorized) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
       headers: { ...cors, "Content-Type": "application/json" },
     });
   }
 
-
+  // Optional: { testEmail } sends ONE digest to that address only (for preview).
+  let body: { testEmail?: string } = {};
+  try { body = await req.json(); } catch { /* empty body */ }
+  const testEmail = body.testEmail?.trim().toLowerCase() || null;
 
   try {
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const { data: startups, error: sErr } = await admin
       .from("startups")
-      .select("id, name, user_id")
-      .eq("status", "approved");
+      .select("id, name, user_id, banned, widget_last_heartbeat_at")
+      .eq("status", "approved")
+      .eq("banned", false);
     if (sErr) throw sErr;
 
     const now = new Date();
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString();
+    // A founder gets at most one digest per this window, no matter how often the job runs.
+    const dedupeSince = new Date(now.getTime() - DEDUPE_WINDOW_MS).toISOString();
 
-    // Global impression counts per startup (last 7 days) for rank.
-    // Uses an aggregating RPC — a plain .select() hits the Data API's
-    // 1000-row cap and silently undercounts once the network is busy.
     const { data: allImps, error: impErr } = await admin.rpc(
       "digest_impression_counts",
       { _since: sevenDaysAgo },
@@ -205,47 +219,101 @@ serve(async (req) => {
       impCount.set(r.shown_startup_id, Number(r.cnt) || 0);
     });
 
-    // Group startups by founder
-    const byUser = new Map<string, Array<{ id: string; name: string }>>();
+    const byUser = new Map<string, Array<{ id: string; name: string; hb: string | null }>>();
     for (const s of startups ?? []) {
       if (!byUser.has(s.user_id)) byUser.set(s.user_id, []);
-      byUser.get(s.user_id)!.push({ id: s.id, name: s.name });
+      byUser.get(s.user_id)!.push({ id: s.id, name: s.name, hb: s.widget_last_heartbeat_at });
     }
 
-    // Load unsubscribed emails once so we can skip opted-out founders.
     const { data: sup } = await admin.from("suppressed_emails").select("email");
     const suppressedSet = new Set((sup ?? []).map((r: any) => String(r.email).toLowerCase()));
 
+    // Who already got (or is getting) a digest inside the dedupe window.
+    const { data: recentLogs } = await admin
+      .from("email_send_log")
+      .select("recipient_email, status")
+      .eq("template_name", TEMPLATE)
+      .in("status", ["sent", "pending"])
+      .gte("created_at", dedupeSince);
+    const alreadySent = new Set((recentLogs ?? []).map((r: any) => String(r.recipient_email).toLowerCase()));
+
+    // Last digest date per email (for fair oldest-first ordering).
+    const { data: lastLogs } = await admin
+      .from("email_send_log")
+      .select("recipient_email, created_at")
+      .eq("template_name", TEMPLATE)
+      .eq("status", "sent")
+      .order("created_at", { ascending: false })
+      .limit(2000);
+    const lastSentAt = new Map<string, number>();
+    for (const r of lastLogs ?? []) {
+      const e = String(r.recipient_email).toLowerCase();
+      if (!lastSentAt.has(e)) lastSentAt.set(e, new Date(r.created_at).getTime());
+    }
+
     let sent = 0;
     let skipped = 0;
+    const skipReasons: Record<string, number> = {};
+    const skip = (why: string) => { skipped++; skipReasons[why] = (skipReasons[why] ?? 0) + 1; };
     const errors: Array<{ userId: string; error: string }> = [];
 
+    // Build the eligible candidate list first, then cap it.
+    type Candidate = { userId: string; email: string; user: any; startups: Array<{ id: string; name: string }> };
+    const candidates: Candidate[] = [];
+    const seenEmails = new Set<string>();
+    const activeSince = now.getTime() - 7 * 24 * 60 * 60 * 1000;
+
     for (const [userId, userStartups] of byUser) {
+      const { data: { user } } = await admin.auth.admin.getUserById(userId);
+      if (!user?.email) { skip("no_email"); continue; }
+      const email = user.email.trim().toLowerCase();
+      if (testEmail && email !== testEmail) continue;
+      if (seenEmails.has(email)) { skip("duplicate"); continue; }
+      seenEmails.add(email);
+      if (suppressedSet.has(email)) { skip("suppressed"); continue; }
+      const acct = user as unknown as {
+        deleted_at?: string | null;
+        banned_until?: string | null;
+        email_confirmed_at?: string | null;
+        confirmed_at?: string | null;
+        is_anonymous?: boolean;
+      };
+      const bannedUntil = acct.banned_until ? new Date(acct.banned_until).getTime() : 0;
+      if (
+        acct.deleted_at ||
+        acct.is_anonymous ||
+        (bannedUntil && bannedUntil > Date.now()) ||
+        !(acct.email_confirmed_at ?? acct.confirmed_at)
+      ) { skip("ineligible_account"); continue; }
+      if (!testEmail && alreadySent.has(email)) { skip("already_sent_this_week"); continue; }
+
+      // Activity filter: impressions this week OR a live widget heartbeat this week.
+      const active = userStartups.some((s) =>
+        (impCount.get(s.id) ?? 0) > 0 || (s.hb && new Date(s.hb).getTime() >= activeSince)
+      );
+      if (!active) { skip("inactive"); continue; }
+
+      candidates.push({ userId, email, user, startups: userStartups });
+    }
+
+    // Oldest-served first so everyone rotates fairly across days.
+    candidates.sort((a, b) =>
+      (lastSentAt.get(a.email) ?? 0) - (lastSentAt.get(b.email) ?? 0) || a.email.localeCompare(b.email)
+    );
+    const batch = candidates.slice(0, testEmail ? 1 : DAILY_CAP);
+    const remaining = candidates.length - batch.length;
+
+    for (const { userId, email, user, startups: userStartups } of batch) {
+      let logId: string | null = null;
       try {
-        const { data: { user } } = await admin.auth.admin.getUserById(userId);
-        if (!user?.email) continue;
-        if (suppressedSet.has(user.email.toLowerCase())) {
-          skipped++;
-          continue;
-        }
-        // Skip deleted, suspended, anonymous, or unverified accounts.
-        const acct = user as unknown as {
-          deleted_at?: string | null;
-          banned_until?: string | null;
-          email_confirmed_at?: string | null;
-          confirmed_at?: string | null;
-          is_anonymous?: boolean;
-        };
-        const bannedUntil = acct.banned_until ? new Date(acct.banned_until).getTime() : 0;
-        if (
-          acct.deleted_at ||
-          acct.is_anonymous ||
-          (bannedUntil && bannedUntil > Date.now()) ||
-          !(acct.email_confirmed_at ?? acct.confirmed_at)
-        ) {
-          skipped++;
-          continue;
-        }
+        // Claim the send first; a concurrent run will see this pending row.
+        const { data: claim } = await admin
+          .from("email_send_log")
+          .insert({ template_name: TEMPLATE, recipient_email: email, status: "pending", metadata: { test: !!testEmail } })
+          .select("id")
+          .single();
+        logId = (claim?.id as string) ?? null;
+
 
         const sections: string[] = [];
         for (const s of userStartups) {
