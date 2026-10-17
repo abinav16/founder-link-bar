@@ -24,4 +24,4 @@
 
 # Weekly email redesign
 - [x] Replace the gold/italic email with a clean monochrome layout and individual startup logos.
-- [ ] Verify the rendered email at desktop and phone widths.
+- [x] Verify the rendered email at desktop and phone widths.
