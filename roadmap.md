@@ -17,7 +17,7 @@
 - [x] Verify live picks, both placements and themes, info-panel controls and dismissal.
 
 # Monitoring corrections
-- [ ] Correct chart chronology and verify daily/monthly arrays.
-- [ ] Make 24-hour totals and chart buckets use the same rolling window.
-- [ ] Retain 200 visitors during realtime updates and test the limit.
-- [ ] Require actual iframe evidence for native installs and verify blocked scripts.
+- [x] Correct chart chronology and verify daily/monthly arrays.
+- [x] Make 24-hour totals and chart buckets use the same rolling window.
+- [x] Retain 200 visitors during realtime updates and test the limit.
+- [x] Require actual iframe evidence for native installs and verify blocked scripts.
