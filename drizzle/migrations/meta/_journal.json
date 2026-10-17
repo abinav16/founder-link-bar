@@ -15,6 +15,13 @@
       "when": 1792091012924,
       "tag": "0001_complete_profile_momentum_comparison",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792223083665,
+      "tag": "0002_correct_dashboard_chart_chronology_and_rolling_day",
+      "breakpoints": true
     }
   ]
 }
