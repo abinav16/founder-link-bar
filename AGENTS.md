@@ -19,4 +19,5 @@
 - Admin "Removed" requires both a negative page scan and no widget heartbeat inside the shared proof window, because static scans miss bundled and inner-page installs while heartbeats come from the running bar.
 - Dashboard RPC values and labels use oldest-first UTC periods; rolling-day totals and buckets share identical boundaries so charts accurately represent their selected range.
 - Keep weekly digest rendering in a pure adjacent template module with inline email-safe tokens, separate from recipient selection and sending, so presentation can be previewed without sending emails.
+- Share app-email delivery policy and monochrome shells independently of send triggers; authentication templates share a React Email layout and never copy access links or security codes to another recipient.
 - Use shared Supporter price/trial constants in public copy and Dodo's next billing date for membership expiry, so trials and webhook retries never grant unpaid years; all Dodo paths use live-only credentials and webhook verification.
