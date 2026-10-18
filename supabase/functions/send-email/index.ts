@@ -4,8 +4,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const FROM = "StartupBar <hello@startupbar.co>";
-const ADMIN_EMAIL = "danielabinav16@gmail.com";
+import { FROM, ADMIN_EMAIL, appEmailCc } from "./delivery.ts";
+import { shell } from "./template.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,12 +13,10 @@ const corsHeaders = {
 };
 
 async function sendEmail(to: string | string[], subject: string, html: string) {
-  const toList = Array.isArray(to) ? to : [to];
-  const bcc = toList.map((t) => t.toLowerCase()).includes(ADMIN_EMAIL.toLowerCase()) ? undefined : ADMIN_EMAIL;
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: FROM, to, subject, html, ...(bcc ? { bcc } : {}) }),
+    body: JSON.stringify({ from: FROM, to, subject, html, ...appEmailCc(to) }),
   });
   if (!res.ok) throw new Error(await res.text());
 }
@@ -65,35 +63,6 @@ function marketingHeaders(unsubUrl: string) {
     "List-Unsubscribe": `<${unsubUrl}>`,
     "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
   };
-}
-
-// Branded shell used by every email type.
-function shell(opts: { heading: string; bodyHtml: string; signoff?: string }) {
-  const signoff = opts.signoff ?? "— Abinav from StartupBar";
-  return `<!doctype html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f5f5f4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#0a0a0a;-webkit-font-smoothing:antialiased;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f5f5f4;padding:32px 16px;">
-    <tr><td align="center">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;">
-        <tr><td style="padding:4px 8px 20px 8px;">
-          <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-            <td style="background:#0a0a0a;border-radius:999px;width:28px;height:10px;font-size:0;line-height:0;">&nbsp;</td>
-            <td style="padding-left:10px;font-size:14px;font-weight:600;color:#0a0a0a;letter-spacing:-0.01em;">StartupBar</td>
-          </tr></table>
-        </td></tr>
-        <tr><td style="background:#ffffff;border-radius:14px;padding:36px 36px 32px 36px;box-shadow:0 1px 2px rgba(0,0,0,0.04);">
-          <h1 style="margin:0 0 20px 0;font-size:26px;line-height:1.2;font-weight:700;letter-spacing:-0.02em;color:#0a0a0a;">${opts.heading}</h1>
-          ${opts.bodyHtml}
-          <p style="margin:24px 0 0 0;font-size:14px;line-height:1.6;color:#71717a;">${signoff}</p>
-        </td></tr>
-        <tr><td style="padding:20px 8px 0 8px;font-size:12px;line-height:1.6;color:#a1a1aa;text-align:center;">
-          © 2026 StartupBar · <a href="https://startupbar.co" style="color:#a1a1aa;text-decoration:none;">startupbar.co</a> · <a href="https://startupbar.co/privacy" style="color:#a1a1aa;text-decoration:none;">Privacy</a>
-        </td></tr>
-      </table>
-    </td></tr>
-  </table>
-</body></html>`;
 }
 
 const p = (text: string) =>
@@ -368,7 +337,6 @@ serve(async (req) => {
 
       // Send one email, returning {ok, status, message}. Retries once on 429.
       async function sendOne(toAddr: string, subj: string, htmlBody: string, extraHeaders: Record<string, string>): Promise<{ ok: boolean; status: number; message: string }> {
-        const bcc = toAddr.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? undefined : ADMIN_EMAIL;
         const doFetch = () => fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
@@ -378,7 +346,7 @@ serve(async (req) => {
             subject: subj,
             html: htmlBody,
             headers: extraHeaders,
-            ...(bcc ? { bcc } : {}),
+            ...appEmailCc(toAddr),
           }),
         });
         let res = await doFetch();
@@ -482,12 +450,12 @@ serve(async (req) => {
       const applicantEmail = escapeHtml(data?.applicantEmail ?? "unknown");
 
       to = ADMIN_EMAIL;
-      subject = `🆕 New application: ${startupName}`;
+      subject = `New application: ${startupName}`;
       html = shell({
         heading: "New startup application",
         bodyHtml: `
           ${p(`A new application just landed in the review queue.`)}
-          <div style="margin:0 0 20px 0;border:1px solid #e4e4e7;border-radius:10px;padding:16px 18px;background:#fafafa;">
+          <div style="margin:0 0 20px 0;border:1px solid #e4e4e7;border-radius:6px;padding:16px 18px;background:#fafafa;">
             <p style="margin:0 0 8px 0;font-size:13px;color:#71717a;">Startup</p>
             <p style="margin:0 0 14px 0;font-size:16px;font-weight:600;color:#0a0a0a;">${startupName}</p>
             <p style="margin:0 0 8px 0;font-size:13px;color:#71717a;">Website</p>
@@ -501,7 +469,7 @@ serve(async (req) => {
             <a href="https://startupbar.co/admin" style="display:inline-block;background:#0a0a0a;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:10px 18px;border-radius:8px;">Review in admin →</a>
           </p>
         `,
-        signoff: "— StartupBar bot",
+        signoff: "StartupBar",
       });
 
       await sendEmail(to, subject, html);
@@ -551,7 +519,7 @@ serve(async (req) => {
         ? `Welcome to StartupBar`
         : `We received your StartupBar application — ${data?.startupName ?? "your startup"}`;
       html = shell({
-        heading: type === "welcome" ? "Welcome 👋" : "Application received ✓",
+        heading: type === "welcome" ? "Welcome to StartupBar." : "Application received.",
         bodyHtml: type === "welcome"
           ? `
             ${p(`Hi ${founderName},`)}
@@ -590,9 +558,9 @@ serve(async (req) => {
     to = email;
 
     if (type === "startup-approved") {
-      subject = `🎉 ${name} is now live on StartupBar`;
+      subject = `${name} is now live on StartupBar`;
       html = shell({
-        heading: "You're live. 🎉",
+        heading: "You're live.",
         bodyHtml: `
           ${p(`Hi ${founderName},`)}
           ${p(`${strong(name)} has been approved and is now showing across the StartupBar network. Other founders' sites are already discovering your startup.`)}
@@ -707,9 +675,9 @@ serve(async (req) => {
       html = shell({ heading: r.heading, bodyHtml: p(`Hi ${founderName},`) + reasonBlock + r.body + noteBlock });
     } else if (type === "startup-warning") {
       const snippet = `&lt;script async src="https://startupbar.co/widget/loader.js" data-startup-id="YOUR_ID"&gt;&lt;/script&gt;`;
-      subject = `⚠️ Action required: StartupBar widget not detected on ${site}`;
+      subject = `Action required: StartupBar widget not detected on ${site}`;
       html = shell({
-        heading: "Widget not detected ⚠️",
+        heading: "Widget not detected",
         bodyHtml: `
           ${p(`Hi ${founderName},`)}
           ${p(`We noticed the StartupBar widget is no longer detected on ${strong(site)}.`)}
