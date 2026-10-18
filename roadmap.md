@@ -31,3 +31,8 @@
 - [x] Align activation, expiry and cancellation with Dodo's actual trial/billing dates.
 - [x] Ensure all Dodo payment paths use live credentials and products.
 - [x] Test trial rules and verify live checkout without making a payment.
+
+# Consistent email design and sender
+- [x] Match active app and authentication templates to the monochrome weekly summary.
+- [x] Set the requested sender and safe non-authentication CC without duplicate copies.
+- [x] Verify rendered templates and sending rules (desktop/phone previews, CC tests, unsigned webhook rejection; no live emails sent).

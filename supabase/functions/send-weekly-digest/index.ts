@@ -1,12 +1,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { escapeHtml, shell, section } from "./template.ts";
+import { FROM, appEmailCc } from "../send-email/delivery.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-const FROM = "StartupBar <hello@startupbar.co>";
 const SUBJECT = "Your StartupBar stats this week ✦";
 const TEMPLATE = "weekly-digest";
 // Hard daily cap keeps the rest of Resend's 100/day free quota for account emails.
@@ -52,6 +52,7 @@ async function sendEmail(to: string, html: string, unsubUrl: string) {
     body: JSON.stringify({
       from: FROM,
       to,
+      ...appEmailCc(to),
       subject: SUBJECT,
       html,
       headers: {
