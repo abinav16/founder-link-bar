@@ -17,5 +17,5 @@ export function EmailBrand() {
 }
 
 export function EmailSignoff() {
-  return <><Text style={{fontSize:'14px',fontWeight:600,color:'#111111',margin:'28px 0 24px'}}>Founders helping founders.</Text><Hr style={{borderColor:'#e5e5e5',margin:'0 0 22px'}} /><Text style={{...emailStyles.footer,margin:0}}><Link href="https://startupbar.co" style={emailStyles.link}>StartupBar</Link> · <Link href="https://startupbar.co/privacy" style={emailStyles.link}>Privacy</Link></Text></>;
+  return <><Text style={{fontSize:'14px',fontWeight:600,color:'#111111',margin:'28px 0 24px'}}>Founders helping founders.</Text><Hr style={{borderColor:'#e5e5e5',margin:'0 0 22px'}} /><Text style={{...emailStyles.footer,margin:0}}><Link href="https://startupbar.co" style={emailStyles.link}>StartupBar</Link> · <Link href="https://startupbar.co/pricing" style={emailStyles.link}>Pricing</Link> · <Link href="https://startupbar.co/privacy" style={emailStyles.link}>Privacy</Link> · <Link href="https://startupbar.co/terms" style={emailStyles.link}>Terms &amp; Conditions</Link></Text></>;
 }
