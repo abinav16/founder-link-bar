@@ -652,6 +652,7 @@ function StartupBidSection() {
                   <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${r.rank === 1 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
                     #{r.rank}
                   </span>
+                  <StartupFavicon url={r.display_url} name={r.display_url} size={28} className="shrink-0 rounded-md" />
                   <span className="min-w-0 flex-1 truncate text-sm font-medium text-card-foreground sm:text-base">{r.display_url}</span>
                   <span className="text-sm font-semibold text-card-foreground sm:text-base">{formatUsd(r.total_cents)}</span>
                 </Link>
