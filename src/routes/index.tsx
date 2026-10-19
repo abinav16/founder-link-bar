@@ -1042,9 +1042,9 @@ function Landing() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col gap-1">
               <Logo />
-              <span className="text-[11px] text-black/30">Built for founders, by founders.</span>
+              <span className="text-[13px] text-black/30">Built for founders, by founders.</span>
             </div>
-            <div className="flex flex-wrap items-center gap-4 text-xs text-black/40">
+            <div className="flex flex-wrap items-center gap-4 text-[13px] text-black/40">
               <a href="mailto:hello@startupbar.co" className="hover:text-black transition-colors">Support</a>
               {authReady && user ? (
                 <Link to="/dashboard" className="hover:text-black transition-colors">Dashboard</Link>
