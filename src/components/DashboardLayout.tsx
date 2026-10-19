@@ -14,7 +14,7 @@ function FooterBar({ wide }: { wide?: boolean }) {
           <span className="text-sm font-semibold tracking-tight text-black">StartupBar</span>
           <span className="text-[13px] text-black/30 ml-1">— Built for founders, by founders.</span>
         </div>
-        <div className="flex flex-wrap items-center gap-4 text-xs text-black/40">
+        <div className="flex flex-wrap items-center gap-4 text-[13px] text-black/40">
           <a href="mailto:hello@startupbar.co" className="hover:text-black transition-colors">Support</a>
           <Link to="/pricing" className="hover:text-black transition-colors">Pricing</Link>
           <Link to="/faq" className="hover:text-black transition-colors">FAQ</Link>
