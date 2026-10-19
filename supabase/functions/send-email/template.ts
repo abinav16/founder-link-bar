@@ -16,6 +16,6 @@ ${opts.bodyHtml}
 <p style="margin:28px 0 0;font-size:14px;line-height:1.7;color:${theme.muted};">${opts.signoff ?? 'Abinav from StartupBar'}</p>
 <p style="margin:24px 0;font-size:14px;font-weight:600;">Founders helping founders.</p>
 <div style="height:1px;background:${theme.border};margin:0 0 22px;"></div>
-<p style="margin:0;font-size:12px;line-height:1.7;color:${theme.muted};"><a href="https://startupbar.co" style="color:${theme.muted};">StartupBar</a> · <a href="https://startupbar.co/privacy" style="color:${theme.muted};">Privacy</a></p>
+<p style="margin:0;font-size:12px;line-height:1.7;color:${theme.muted};"><a href="https://startupbar.co" style="color:${theme.muted};">StartupBar</a> · <a href="https://startupbar.co/pricing" style="color:${theme.muted};">Pricing</a> · <a href="https://startupbar.co/privacy" style="color:${theme.muted};">Privacy</a> · <a href="https://startupbar.co/terms" style="color:${theme.muted};">Terms &amp; Conditions</a></p>
 </td></tr></table></td></tr></table></body></html>`;
 }

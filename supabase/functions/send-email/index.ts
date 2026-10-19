@@ -523,7 +523,7 @@ serve(async (req) => {
         bodyHtml: type === "welcome"
           ? `
             ${p(`Hi ${founderName},`)}
-            ${p(`Welcome to StartupBar. Head to your dashboard to submit your startup and get free traffic from the network.`)}
+            ${p(`Welcome to StartupBar. <a href="https://startupbar.co/apply" style="color:#111111;font-weight:600;text-decoration:underline;">Apply</a> to join the network and start getting free traffic from fellow founders.`)}
           `
           : `
             ${p(`Hi ${founderName},`)}
