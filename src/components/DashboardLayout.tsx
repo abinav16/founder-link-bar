@@ -12,9 +12,9 @@ function FooterBar({ wide }: { wide?: boolean }) {
         <div className="flex items-center gap-2">
           <div className="h-2 w-6 rounded-sm bg-black" />
           <span className="text-sm font-semibold tracking-tight text-black">StartupBar</span>
-          <span className="text-xs text-black/30 ml-1">— Built for founders, by founders.</span>
+          <span className="text-[13px] text-black/30 ml-1">— Built for founders, by founders.</span>
         </div>
-        <div className="flex flex-wrap items-center gap-4 text-xs text-black/40">
+        <div className="flex flex-wrap items-center gap-4 text-[13px] text-black/40">
           <a href="mailto:hello@startupbar.co" className="hover:text-black transition-colors">Support</a>
           <Link to="/pricing" className="hover:text-black transition-colors">Pricing</Link>
           <Link to="/faq" className="hover:text-black transition-colors">FAQ</Link>

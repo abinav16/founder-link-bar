@@ -62,7 +62,7 @@ function TermsPage() {
         </div>
       </main>
       <footer className="border-t border-black/8 px-6 py-8">
-        <div className="mx-auto flex max-w-2xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-xs text-black/30">
+        <div className="mx-auto flex max-w-2xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-[13px] text-black/30">
           <span>© {new Date().getFullYear()} StartupBar</span>
           <div className="flex flex-wrap items-center gap-4">
             <a href="mailto:hello@startupbar.co" className="hover:text-black transition-colors">Support</a>
