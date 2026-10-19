@@ -61,7 +61,8 @@ export function shell(firstName: string, intro: string, sections: string, unsubU
       <p style="margin:0 0 24px;font-size:14px;font-weight:600;">Founders helping founders.</p>
       <div style="height:1px;background:${theme.border};margin:0 0 22px;"></div>
       <p style="margin:0 0 8px;font-size:12px;line-height:1.7;color:${theme.muted};">You're receiving weekly stats for your startups on StartupBar.</p>
-      <p style="margin:0;font-size:12px;line-height:1.7;color:${theme.muted};"><a href="${escapeHtml(unsubUrl)}" style="color:${theme.muted};text-decoration:underline;">Unsubscribe from weekly stats</a>. You'll still receive important account emails.</p>
+      <p style="margin:0 0 8px;font-size:12px;line-height:1.7;color:${theme.muted};"><a href="${escapeHtml(unsubUrl)}" style="color:${theme.muted};text-decoration:underline;">Unsubscribe from weekly stats</a>. You'll still receive important account emails.</p>
+      <p style="margin:0;font-size:12px;line-height:1.7;color:${theme.muted};"><a href="https://startupbar.co" style="color:${theme.muted};">StartupBar</a> · <a href="https://startupbar.co/pricing" style="color:${theme.muted};">Pricing</a> · <a href="https://startupbar.co/privacy" style="color:${theme.muted};">Privacy</a> · <a href="https://startupbar.co/terms" style="color:${theme.muted};">Terms &amp; Conditions</a></p>
     </td></tr></table>
   </td></tr></table>
 </body>
