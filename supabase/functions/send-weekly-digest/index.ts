@@ -107,9 +107,11 @@ serve(async (req) => {
 
     const { data: startups, error: sErr } = await admin
       .from("startups")
-      .select("id, name, website_url, logo_url, user_id, banned, widget_last_heartbeat_at")
+      .select("id, name, website_url, logo_url, user_id, banned, widget_last_heartbeat_at, created_at")
       .eq("status", "approved")
-      .eq("banned", false);
+      .eq("banned", false)
+      // Only startups listed for a full week get a weekly summary.
+      .lte("created_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
     if (sErr) throw sErr;
 
     const now = new Date();
