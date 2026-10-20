@@ -186,20 +186,9 @@
     applyIframeStyle();
 
     // Desktop-only intent: no scroll, back-button or touch interception.
-    // Tab-switch guard: browsers fire mouseleave when the cursor heads for
-    // another tab, so we wait a beat before expanding. If the visitor
-    // actually switches tab (visibilityState hidden) or pulls the cursor
-    // back into the page, the expansion is cancelled.
-    var exitArmTimer = null;
-    function cancelExitArm() {
-      if (exitArmTimer) { clearTimeout(exitArmTimer); exitArmTimer = null; }
-    }
+    // Fires immediately when the cursor leaves the top edge — the visible
+    // checks below (tab hidden, focus in an input) still block bad moments.
     document.addEventListener('mousemove', function () { exitPointerSeen = true; }, { passive: true });
-    document.addEventListener('mouseenter', cancelExitArm, { passive: true });
-    document.addEventListener('visibilitychange', function () {
-      if (document.visibilityState !== 'visible') cancelExitArm();
-    });
-    window.addEventListener('blur', cancelExitArm);
     document.addEventListener('mouseleave', function (e) {
       if (s.getAttribute('data-exit-intent') === 'off' || dismissed || exitShown || !exitReady) return;
       if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
@@ -208,13 +197,8 @@
       var active = document.activeElement;
       if (active && (active.matches('input, textarea, select, [contenteditable="true"]') || active.closest('[role="dialog"], dialog[open]'))) return;
       try { if (sessionStorage.getItem('startupbar:exit-shown') === '1') return; } catch (err) {}
-      cancelExitArm();
-      exitArmTimer = setTimeout(function () {
-        exitArmTimer = null;
-        if (dismissed || exitShown) return;
-        if (document.visibilityState !== 'visible') return;
-        iframe.contentWindow.postMessage({ type: 'startupbar:exit' }, origin);
-      }, 400);
+      if (dismissed || exitShown) return;
+      iframe.contentWindow.postMessage({ type: 'startupbar:exit' }, origin);
     });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') iframe.contentWindow.postMessage({ type: 'startupbar:exit-close' }, origin);

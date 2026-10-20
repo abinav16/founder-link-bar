@@ -48,12 +48,12 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
 .sb-widget-dark { --exit-shimmer: oklch(0.97 0.002 285 / 0.14); }
 @keyframes sb-bar-shake {
   0%, 100% { transform: translateX(0); }
-  15% { transform: translateX(-3px); }
-  30% { transform: translateX(3px); }
-  45% { transform: translateX(-2px); }
-  60% { transform: translateX(2px); }
-  75% { transform: translateX(-1px); }
-  88% { transform: translateX(1px); }
+  15% { transform: translateX(-4px); }
+  30% { transform: translateX(4px); }
+  45% { transform: translateX(-3px); }
+  60% { transform: translateX(3px); }
+  75% { transform: translateX(-2px); }
+  88% { transform: translateX(2px); }
 }
 @keyframes sb-bar-shimmer {
   from { background-position: 120% 0; }
