@@ -7,7 +7,11 @@ export const vouchTags: { value: VouchTag; label: string }[] = [
 ];
 export interface ProfileDay { date: string; day_offset: number; impressions: number; clicks: number }
 export interface RelatedStartup { id: string; slug: string; name: string; description: string; website_url: string; logo_url: string | null }
-export interface FounderVouch { tag: VouchTag; founder_name: string; name: string; slug: string; website_url: string; logo_url: string | null }
+export interface VouchStartup { name: string; slug: string; website_url: string; logo_url: string | null }
+export interface FounderVouch extends VouchStartup { tag: VouchTag; founder_name: string; startups?: VouchStartup[] }
+export function vouchStartups(vouch: FounderVouch): VouchStartup[] {
+  return vouch.startups?.length ? vouch.startups : [vouch];
+}
 export interface ProfileInsights { daily: ProfileDay[]; vouchCount: number; vouchTags: Partial<Record<VouchTag, number>>; vouches: FounderVouch[]; related: RelatedStartup[] }
 export function momentum(days: ProfileDay[]) {
   // Compare complete UTC days; today's partial traffic never implies a decline.

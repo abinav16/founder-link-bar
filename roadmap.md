@@ -1,4 +1,6 @@
 # Startup profile improvements
+- [x] Show all public startups per vouching founder with stacked circular logos and individual startup links.
+- [x] Verify multi-startup vouches against live profile data and narrow-screen layout.
 - [x] Add seven-day traffic and honest momentum comparisons.
 - [x] Add verified founder vouches with secure write rules.
 - [x] Add three related network startups and owner stats sharing to X.

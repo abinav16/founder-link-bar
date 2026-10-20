@@ -1,6 +1,6 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { momentum, statsShareText } from './profile-insights';
+import { momentum, statsShareText, vouchStartups, type FounderVouch } from './profile-insights';
 
 describe('seven-day momentum', () => {
   test('compares seven completed days to the prior seven, not partial today', () => {
@@ -20,5 +20,15 @@ describe('owner share metrics', () => {
   });
   test('zero-click startups share impressions honestly', () => {
     assert.ok(statsShareText('Test startup', 0, 500, 'test').includes('500 network impressions'));
+  });
+});
+describe('vouch founder startups', () => {
+  const vouch: FounderVouch = { tag: 'great_concept', founder_name: 'Daniel', name: 'NotepadPlus', slug: 'notepadplus', website_url: 'https://notepad.plus', logo_url: null };
+  test('keeps every startup belonging to a multi-startup founder', () => {
+    const startups = [vouch, { name: 'StartupBar', slug: 'startupbar', website_url: 'https://startupbar.co', logo_url: null }];
+    assert.deepEqual(vouchStartups({ ...vouch, startups }).map(s => s.name), ['NotepadPlus', 'StartupBar']);
+  });
+  test('keeps single-startup vouches compatible with older profile data', () => {
+    assert.deepEqual(vouchStartups(vouch).map(s => s.slug), ['notepadplus']);
   });
 });
