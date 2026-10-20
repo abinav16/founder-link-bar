@@ -36,6 +36,13 @@
       "when": 1792229480047,
       "tag": "0004_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792505730245,
+      "tag": "0005_vouch_founder_all_public_startups",
+      "breakpoints": true
     }
   ]
 }

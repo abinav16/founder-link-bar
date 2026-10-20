@@ -6,7 +6,7 @@ import { ArrowDownRight, ArrowUpRight, Check, Flame, Gem, Minus, ShieldCheck, Th
 import { Button } from '@/components/ui/button';
 import { StartupFavicon } from '@/components/StartupFavicon';
 import { getVouchAccess, saveVouch } from '@/lib/profile-insights.functions';
-import { momentum, statsShareText, vouchTags, type ProfileInsights, type VouchTag } from '@/lib/profile-insights';
+import { momentum, statsShareText, vouchStartups, vouchTags, type ProfileInsights, type VouchTag } from '@/lib/profile-insights';
 
 const tagIcons = { vouch: ThumbsUp, clean_ux: Flame, lightning_fast: Zap, great_concept: Gem };
 
@@ -59,7 +59,15 @@ export function FounderVouches({ id, insights, userId, isOwner }: { id: string; 
     })}</div>
     {!userId ? <Button asChild variant="link" className="mt-2 px-0"><Link to="/auth">Sign in to vouch</Link></Button> : isOwner ? <p className="mt-3 text-xs text-muted-foreground">Vouches come from other approved founders in the network.</p> : access.isError ? <Button variant="link" className="mt-2 px-0" onClick={() => access.refetch()}>Retry eligibility check</Button> : access.data && !access.data.eligible ? <p className="mt-3 text-xs text-muted-foreground">An approved startup is needed to give a founder vouch.</p> : <p className="mt-3 text-xs text-muted-foreground">{access.data?.tag ? 'Your vouch is saved. Select it again to remove it.' : 'One vouch per founder. Choose what stands out.'}</p>}
     {error && <p role="alert" className="mt-3 text-sm text-destructive">{error}</p>}
-    {insights.vouches.length ? <div className="mt-6 grid gap-4 sm:grid-cols-2">{insights.vouches.map(v => <Link key={v.slug + v.founder_name} to="/startup/$slug" params={{ slug: v.slug }} className="flex min-w-0 items-center gap-3 text-sm"><div className="size-9 shrink-0 overflow-hidden rounded-md border border-border"><StartupFavicon name={v.name} url={v.website_url} logoUrl={v.logo_url} size={36} /></div><div className="min-w-0"><p className="font-medium break-words">{v.founder_name}</p><p className="text-xs text-muted-foreground break-words">{v.name} · {vouchTags.find(t => t.value === v.tag)?.label}</p></div><ArrowUpRight className="ml-auto size-4 shrink-0 text-muted-foreground" /></Link>)}</div> : <p className="mt-5 text-sm text-muted-foreground">No vouches yet. The first one starts the story.</p>}
+    {insights.vouches.length ? <div className="mt-6 grid gap-5 sm:grid-cols-2">{insights.vouches.map(v => {
+      const startups = vouchStartups(v);
+      return <div key={v.slug + v.founder_name} className="flex min-w-0 items-start gap-3 text-sm" aria-label={`Vouch from ${v.founder_name}`}>
+        <div className="flex max-w-28 shrink-0 flex-wrap items-center gap-y-1 -space-x-3" aria-label={`${v.founder_name}'s startup logos`}>
+          {startups.map(s => <Link key={s.slug} to="/startup/$slug" params={{ slug: s.slug }} title={s.name} aria-label={`${s.name} profile`} className="relative size-10 shrink-0 overflow-hidden rounded-full border-2 border-background bg-background ring-1 ring-border transition-transform hover:z-10 hover:-translate-y-0.5 focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-ring"><StartupFavicon name={s.name} url={s.website_url} logoUrl={s.logo_url} size={36} className="rounded-full" /></Link>)}
+        </div>
+        <div className="min-w-0 flex-1"><p className="font-medium break-words">{v.founder_name}</p><p className="mt-1 text-xs leading-relaxed text-muted-foreground">{startups.map((s, i) => <span key={s.slug}>{i > 0 && <span aria-hidden="true"> · </span>}<Link to="/startup/$slug" params={{ slug: s.slug }} className="break-words underline-offset-2 hover:text-foreground hover:underline">{s.name}</Link></span>)}</p><p className="mt-1 text-xs text-muted-foreground">{vouchTags.find(t => t.value === v.tag)?.label}</p></div>
+      </div>;
+    })}</div> : <p className="mt-5 text-sm text-muted-foreground">No vouches yet. The first one starts the story.</p>}
   </section>;
 }
 
