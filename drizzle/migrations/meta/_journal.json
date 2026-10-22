@@ -43,6 +43,20 @@
       "when": 1792505730245,
       "tag": "0005_vouch_founder_all_public_startups",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792694096733,
+      "tag": "0006_partner_signup_attribution",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792694313863,
+      "tag": "0007_signup_reporting_safety",
+      "breakpoints": true
     }
   ]
 }

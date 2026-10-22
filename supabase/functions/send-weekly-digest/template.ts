@@ -31,7 +31,7 @@ export function startupLogo(logoUrl: string | null, websiteUrl: string): string 
   } catch { return "https://startupbar.co/favicon.png"; }
 }
 
-export function shell(firstName: string, intro: string, sections: string, unsubUrl: string): string {
+export function shell(firstName: string, intro: string, sections: string, unsubUrl: string, firstVerified = false): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -51,7 +51,7 @@ export function shell(firstName: string, intro: string, sections: string, unsubU
       </tr></table>
       <div style="height:1px;background:${theme.border};margin:26px 0 32px;"></div>
       <p style="margin:0 0 10px;font-size:12px;font-weight:500;color:${theme.muted};">Weekly summary · Last 7 days</p>
-      <h1 style="margin:0 0 20px;font-family:${theme.sans};font-size:32px;line-height:1.2;font-weight:700;font-style:normal;">Your weekly stats.</h1>
+      <h1 style="margin:0 0 20px;font-family:${theme.sans};font-size:32px;line-height:1.2;font-weight:700;font-style:normal;">${firstVerified ? 'Your first verified signup.' : 'Your weekly stats.'}</h1>
       <p style="margin:0 0 6px;font-size:15px;line-height:1.7;">Hi ${escapeHtml(firstName)},</p>
       <p style="margin:0 0 34px;font-size:15px;line-height:1.7;color:${theme.muted};">${intro}</p>
       ${sections}
@@ -85,6 +85,7 @@ export function section(s: {
   ctr: string;
   rank: string;
   impressionsDelta: string;
+  signupTracking?: { enabled: boolean; verified: number; reported: number } | null;
 }): string {
   let domain = "";
   try { domain = new URL(s.websiteUrl.startsWith("http") ? s.websiteUrl : `https://${s.websiteUrl}`).hostname.replace(/^www\./, ""); } catch { /* No domain label for invalid URLs. */ }
@@ -105,5 +106,6 @@ export function section(s: {
       ${stat("Click-through rate", escapeHtml(s.ctr) + "%")}
     </tr></table></td></tr>
     <tr><td style="padding:0 0 24px;font-size:12px;line-height:1.6;color:${theme.muted};">${escapeHtml(s.impressionsDelta)} impressions compared with last week</td></tr>
+    ${s.signupTracking?.enabled ? `<tr><td style="padding:0 0 24px;border-top:1px solid ${theme.border};"><p style="margin:18px 0 12px;font-size:14px;font-weight:600;">Signups from the network</p><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="table-layout:fixed;"><tr>${stat('Verified signups', s.signupTracking.verified || '—')}${stat('Success-page reports', s.signupTracking.reported || '—')}${stat('Attribution window', '30 days')}</tr></table><p style="margin:14px 0 0;font-size:12px;line-height:1.6;color:${theme.muted};">Verified signups are reported by your signed signup system; page reports are browser signals, not verified accounts. Counts use this week’s reporting dates. “—” means no confirmations this week; it does not prove no signups occurred.</p></td></tr>` : ''}
   </table>`;
 }

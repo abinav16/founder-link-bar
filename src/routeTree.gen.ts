@@ -35,6 +35,8 @@ import { Route as ApiPublicDodoWebhookRouteImport } from './routes/api/public/do
 import { Route as ApiPublicEmailEventsRouteImport } from './routes/api/public/email-events'
 import { Route as ApiPublicUnsubscribeRouteImport } from './routes/api/public/unsubscribe'
 import { Route as ApiPublicVerifyInstallRouteImport } from './routes/api/public/verify-install'
+import { Route as ApiPublicSignupConfigRouteImport } from './routes/api/public/signup.config'
+import { Route as ApiPublicSignupConfirmRouteImport } from './routes/api/public/signup.confirm'
 import { Route as ApiPublicTrackFunnelRouteImport } from './routes/api/public/track.funnel'
 import { Route as ApiPublicTrackSiteVisitRouteImport } from './routes/api/public/track.site-visit'
 import { Route as ApiPublicTrackSupporterRouteImport } from './routes/api/public/track.supporter'
@@ -174,6 +176,16 @@ const ApiPublicVerifyInstallRoute = ApiPublicVerifyInstallRouteImport.update({
   path: '/api/public/verify-install',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSignupConfigRoute = ApiPublicSignupConfigRouteImport.update({
+  id: '/api/public/signup/config',
+  path: '/api/public/signup/config',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicSignupConfirmRoute = ApiPublicSignupConfirmRouteImport.update({
+  id: '/api/public/signup/confirm',
+  path: '/api/public/signup/confirm',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicTrackFunnelRoute = ApiPublicTrackFunnelRouteImport.update({
   id: '/api/public/track/funnel',
   path: '/api/public/track/funnel',
@@ -248,6 +260,8 @@ export interface FileRoutesByFullPath {
   '/api/public/email-events': typeof ApiPublicEmailEventsRoute
   '/api/public/unsubscribe': typeof ApiPublicUnsubscribeRoute
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
+  '/api/public/signup/config': typeof ApiPublicSignupConfigRoute
+  '/api/public/signup/confirm': typeof ApiPublicSignupConfirmRoute
   '/api/public/track/funnel': typeof ApiPublicTrackFunnelRoute
   '/api/public/track/site-visit': typeof ApiPublicTrackSiteVisitRoute
   '/api/public/track/supporter': typeof ApiPublicTrackSupporterRoute
@@ -284,6 +298,8 @@ export interface FileRoutesByTo {
   '/api/public/email-events': typeof ApiPublicEmailEventsRoute
   '/api/public/unsubscribe': typeof ApiPublicUnsubscribeRoute
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
+  '/api/public/signup/config': typeof ApiPublicSignupConfigRoute
+  '/api/public/signup/confirm': typeof ApiPublicSignupConfirmRoute
   '/api/public/track/funnel': typeof ApiPublicTrackFunnelRoute
   '/api/public/track/site-visit': typeof ApiPublicTrackSiteVisitRoute
   '/api/public/track/supporter': typeof ApiPublicTrackSupporterRoute
@@ -322,6 +338,8 @@ export interface FileRoutesById {
   '/api/public/email-events': typeof ApiPublicEmailEventsRoute
   '/api/public/unsubscribe': typeof ApiPublicUnsubscribeRoute
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
+  '/api/public/signup/config': typeof ApiPublicSignupConfigRoute
+  '/api/public/signup/confirm': typeof ApiPublicSignupConfirmRoute
   '/api/public/track/funnel': typeof ApiPublicTrackFunnelRoute
   '/api/public/track/site-visit': typeof ApiPublicTrackSiteVisitRoute
   '/api/public/track/supporter': typeof ApiPublicTrackSupporterRoute
@@ -360,6 +378,8 @@ export interface FileRouteTypes {
     | '/api/public/email-events'
     | '/api/public/unsubscribe'
     | '/api/public/verify-install'
+    | '/api/public/signup/config'
+    | '/api/public/signup/confirm'
     | '/api/public/track/funnel'
     | '/api/public/track/site-visit'
     | '/api/public/track/supporter'
@@ -396,6 +416,8 @@ export interface FileRouteTypes {
     | '/api/public/email-events'
     | '/api/public/unsubscribe'
     | '/api/public/verify-install'
+    | '/api/public/signup/config'
+    | '/api/public/signup/confirm'
     | '/api/public/track/funnel'
     | '/api/public/track/site-visit'
     | '/api/public/track/supporter'
@@ -433,6 +455,8 @@ export interface FileRouteTypes {
     | '/api/public/email-events'
     | '/api/public/unsubscribe'
     | '/api/public/verify-install'
+    | '/api/public/signup/config'
+    | '/api/public/signup/confirm'
     | '/api/public/track/funnel'
     | '/api/public/track/site-visit'
     | '/api/public/track/supporter'
@@ -469,6 +493,8 @@ export interface RootRouteChildren {
   ApiPublicEmailEventsRoute: typeof ApiPublicEmailEventsRoute
   ApiPublicUnsubscribeRoute: typeof ApiPublicUnsubscribeRoute
   ApiPublicVerifyInstallRoute: typeof ApiPublicVerifyInstallRoute
+  ApiPublicSignupConfigRoute: typeof ApiPublicSignupConfigRoute
+  ApiPublicSignupConfirmRoute: typeof ApiPublicSignupConfirmRoute
   ApiPublicTrackFunnelRoute: typeof ApiPublicTrackFunnelRoute
   ApiPublicTrackSiteVisitRoute: typeof ApiPublicTrackSiteVisitRoute
   ApiPublicTrackSupporterRoute: typeof ApiPublicTrackSupporterRoute
@@ -664,6 +690,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicVerifyInstallRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/signup/config': {
+      id: '/api/public/signup/config'
+      path: '/api/public/signup/config'
+      fullPath: '/api/public/signup/config'
+      preLoaderRoute: typeof ApiPublicSignupConfigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/signup/confirm': {
+      id: '/api/public/signup/confirm'
+      path: '/api/public/signup/confirm'
+      fullPath: '/api/public/signup/confirm'
+      preLoaderRoute: typeof ApiPublicSignupConfirmRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/track/funnel': {
       id: '/api/public/track/funnel'
       path: '/api/public/track/funnel'
@@ -768,6 +808,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicEmailEventsRoute: ApiPublicEmailEventsRoute,
   ApiPublicUnsubscribeRoute: ApiPublicUnsubscribeRoute,
   ApiPublicVerifyInstallRoute: ApiPublicVerifyInstallRoute,
+  ApiPublicSignupConfigRoute: ApiPublicSignupConfigRoute,
+  ApiPublicSignupConfirmRoute: ApiPublicSignupConfirmRoute,
   ApiPublicTrackFunnelRoute: ApiPublicTrackFunnelRoute,
   ApiPublicTrackSiteVisitRoute: ApiPublicTrackSiteVisitRoute,
   ApiPublicTrackSupporterRoute: ApiPublicTrackSupporterRoute,
