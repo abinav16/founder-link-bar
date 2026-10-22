@@ -1,4 +1,5 @@
 # Partner signup attribution
+- [ ] Simplify signup reporting and setup using the supplied animated reference; verify real dashboard interactions and phone alignment.
 - [x] Add optional owner-controlled setup during application and in the dashboard.
 - [x] Add anonymous referral tokens, success-page reporting and signed server confirmations with deduplication.
 - [x] Add honest conversion reporting, health states and weekly-email results within existing safeguards.
