@@ -364,7 +364,7 @@ const STEPS = [
     headline: "One line of code.\nInfinite reach.",
     bullets: [
       "Works on Next.js, Webflow, WordPress — anything",
-      "Async load — zero impact on page speed",
+      "Async load — never blocks your page",
       "Auto-updated, always shows the best match",
     ],
     visual: <SlideVisual2 />,
@@ -439,8 +439,8 @@ function HowItWorks() {
 }
 
 const FACTS = [
-  { stat: "$0", label: "forever", body: "No ad budget, no CPMs, no subscriptions. You trade a 36px bar — nothing else." },
-  { stat: "100%", label: "founder audience", body: "Every site in the network is run by a founder. You reach people who actually buy SaaS." },
+  { stat: "$0", label: "first listing", body: "Your first listing is free forever — you trade a 36px bar. Paid upgrades are optional extras." },
+  { stat: "100%", label: "founder-run sites", body: "Every site in the network is a founder's own product, reviewed by a human before it goes live." },
   { stat: "1 line", label: "of code", body: "No SDK, no onboarding flow, no dashboard to manage. Paste once and forget." },
 ];
 
@@ -687,7 +687,7 @@ function CtaBanner() {
           Start getting discovered<br />by other founders today.
         </h2>
         <p className="mx-auto mt-5 max-w-sm text-[15px] leading-relaxed text-black/40">
-          Two minutes to set up. Free forever.<br />Cancel by deleting one line of code.
+          Two minutes to set up. Your first listing is free forever.<br />Cancel by deleting one line of code.
         </p>
         <div className="mt-10">
           <Link
@@ -850,7 +850,7 @@ function Landing() {
         <HeroCanvas />
         <div className="relative z-10 mx-auto max-w-5xl px-4 pt-10 pb-12 text-center sb-fade-up sm:px-6 sm:pt-20 sm:pb-28">
           <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-black/30">
-            Free forever&nbsp;&nbsp;·&nbsp;&nbsp;No money, ever
+            First listing free forever&nbsp;&nbsp;·&nbsp;&nbsp;Optional paid upgrades
           </p>
 
           <h1
