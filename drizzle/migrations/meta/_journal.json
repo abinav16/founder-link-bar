@@ -57,6 +57,13 @@
       "when": 1792694313863,
       "tag": "0007_signup_reporting_safety",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792695255338,
+      "tag": "0008_signup_confirmation_reporting_dates",
+      "breakpoints": true
     }
   ]
 }
