@@ -42,18 +42,19 @@ async function getOrCreateUnsubToken(
     .select("token")
     .eq("email", normalized)
     .maybeSingle();
-  return (reread?.token as string) ?? token;
+  if (!reread?.token) throw new Error('Cannot send without a working unsubscribe link');
+  return reread.token as string;
 }
 
-async function sendEmail(to: string, html: string, unsubUrl: string) {
+async function sendEmail(to: string, html: string, unsubUrl: string, idempotencyKey: string, firstVerified = false) {
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
-    headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
+    headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
     body: JSON.stringify({
       from: FROM,
       to,
       ...appEmailCc(to),
-      subject: SUBJECT,
+      subject: firstVerified ? 'Your first verified StartupBar signup — and weekly stats' : SUBJECT,
       html,
       headers: {
         "List-Unsubscribe": `<${unsubUrl}>`,
@@ -138,7 +139,8 @@ serve(async (req) => {
       byUser.set(s.user_id, owned);
     }
 
-    const { data: sup } = await admin.from("suppressed_emails").select("email");
+    const { data: sup, error: suppressionError } = await admin.from("suppressed_emails").select("email");
+    if (suppressionError) throw suppressionError;
     const suppressedSet = new Set((sup ?? []).map((r: any) => String(r.email).toLowerCase()));
 
     // Who already got (or is getting) a digest inside the dedupe window.
@@ -201,9 +203,14 @@ serve(async (req) => {
       if (!testEmail && alreadySent.has(email)) { skip("already_sent_this_week"); continue; }
 
       // Activity filter: impressions this week OR a live widget heartbeat this week.
-      const active = userStartups.some((s) =>
+      let active = userStartups.some((s) =>
         (impCount.get(s.id) ?? 0) > 0 || (s.hb && new Date(s.hb).getTime() >= activeSince)
       );
+      // A server-confirmed signup is activity even without a recent bar heartbeat.
+      if (!active) {
+        const { count, error: conversionActivityError } = await admin.from('signup_conversions').select('id',{count:'exact',head:true}).in('startup_id',userStartups.map(s=>s.id)).eq('is_test',false).gte('created_at',sevenDaysAgo).limit(1);
+        if (!conversionActivityError) active = (count ?? 0)>0;
+      }
       if (!active) { skip("inactive"); continue; }
 
       candidates.push({ userId, email, user, startups: userStartups });
@@ -220,15 +227,14 @@ serve(async (req) => {
       let logId: string | null = null;
       try {
         // Claim the send first; a concurrent run will see this pending row.
-        const { data: claim } = await admin
-          .from("email_send_log")
-          .insert({ template_name: TEMPLATE, recipient_email: email, status: "pending", metadata: { test: !!testEmail } })
-          .select("id")
-          .single();
-        logId = (claim?.id as string) ?? null;
+        const { data: claim, error: claimError } = await admin.rpc('claim_weekly_digest', { _email: email, _test: !!testEmail });
+        if (claimError) throw claimError;
+        logId = (claim as string) ?? null;
+        if (!logId) { skip('already_claimed_or_daily_cap'); continue; }
 
 
         const sections: string[] = [];
+        const firstVerifiedIds: string[] = [];
         for (const s of userStartups) {
           const impressions = impCount.get(s.id) ?? 0;
 
@@ -255,6 +261,14 @@ serve(async (req) => {
           else if (diff < 0) { delta = `${Math.abs(diff).toLocaleString("en-US")} fewer`; }
           else { delta = "No change in"; }
 
+          // Optional reporting is isolated: a reporting outage never invents zeros.
+          const { data: signupSummary, error: signupError } = await admin.rpc('digest_signup_summary', { _startup_id: s.id, _since: sevenDaysAgo, _until: now.toISOString() });
+          const signupTracking = signupError ? null : signupSummary as { enabled: boolean; verified: number; reported: number } | null;
+          if (signupTracking?.verified && !testEmail) {
+            const { data: tracking } = await admin.from('signup_tracking_settings').select('first_verified_email_at').eq('startup_id',s.id).maybeSingle();
+            if (tracking && !tracking.first_verified_email_at) firstVerifiedIds.push(s.id);
+          }
+
           sections.push(section({
             startupName: s.name,
             websiteUrl: s.websiteUrl,
@@ -264,6 +278,7 @@ serve(async (req) => {
             ctr,
             rank: `#${rank}`,
             impressionsDelta: delta,
+            signupTracking,
           }));
         }
 
@@ -275,13 +290,33 @@ serve(async (req) => {
 
         const token = await getOrCreateUnsubToken(admin, email);
         const unsubUrl = `https://startupbar.co/u/${token}`;
-        const html = shell(firstName, intro, sections.join("\n"), unsubUrl);
-        const res = await sendEmail(email, html, unsubUrl);
+        // Recheck suppression and account eligibility immediately before delivery.
+        const { data: suppressionNow, error: suppressionNowError } = await admin.from('suppressed_emails').select('id').eq('email',email).maybeSingle();
+        const { data: freshAuth, error: freshAuthError } = await admin.auth.admin.getUserById(userId);
+        const freshUser = freshAuth?.user;
+        if (suppressionNowError || freshAuthError) throw new Error('Recipient eligibility unavailable');
+        if (suppressionNow || !freshUser?.email_confirmed_at || freshUser.is_anonymous || freshUser.deleted_at || (freshUser.banned_until && new Date(freshUser.banned_until).getTime()>Date.now())) {
+          await admin.from('email_send_log').update({status:'skipped',error_message:'Recipient suppressed or ineligible at send time'}).eq('id',logId);
+          skip('suppressed_or_ineligible_at_send'); continue;
+        }
+        const firstVerified = firstVerifiedIds.length>0;
+        const html = shell(firstName, intro, sections.join("\n"), unsubUrl, firstVerified);
+        // Keep an ambiguous delivery pending, so a network timeout cannot send
+        // another email with a new provider idempotency key on the next run.
+        let res: any;
+        try { res = await sendEmail(email, html, unsubUrl, `weekly-digest/${logId}`, firstVerified); }
+        catch (deliveryError) {
+          await admin.from('email_send_log').update({error_message:'Delivery uncertain or rejected; held to prevent duplicate sends'}).eq('id',logId);
+          errors.push({userId,error:'Delivery not confirmed; send held'});
+          await new Promise(r=>setTimeout(r,600));
+          continue;
+        }
         if (logId) {
           await admin.from("email_send_log")
             .update({ status: "sent", message_id: (res as any)?.id ?? null })
             .eq("id", logId);
         }
+        if (firstVerifiedIds.length>0) await admin.from('signup_tracking_settings').update({first_verified_email_at:new Date().toISOString()}).in('startup_id',firstVerifiedIds).is('first_verified_email_at',null);
         sent++;
       } catch (e) {
         console.error(`Failed for user ${userId}:`, e);

@@ -5,6 +5,19 @@
     var id = s && s.getAttribute('data-startup-id');
     if (!id) return;
     var origin = new URL(s.src).origin;
+    // Keep optional signup reporting isolated from rendering and supporter mode.
+    // It is enabled by owner settings and never stores a referral without consent.
+    try {
+      if (!window.__sbConversionScriptRequested && document.head) {
+        window.__sbConversionScriptRequested = true;
+        var conversionScript = document.createElement('script');
+        conversionScript.src = origin + '/widget/conversions.js';
+        conversionScript.async = true;
+        conversionScript.setAttribute('data-startup-id', id);
+        if (s.getAttribute('data-conversion-consent') === 'granted') conversionScript.setAttribute('data-conversion-consent', 'granted');
+        document.head.appendChild(conversionScript);
+      }
+    } catch (conversionError) {}
 
     // Supporter mode: render nothing at all. No bar, no spacing, no layout
     // shift — only the anonymous pageview beacon so the founder's dashboard

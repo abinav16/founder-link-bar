@@ -1,0 +1,12 @@
+import { describe, it, expect } from 'vitest';
+import { ATTRIBUTION_MS, withinAttributionWindow, normalizeSuccessPath, matchesPartnerOrigin, cohortConversionRate, hmacSignature, verifySignupSignature, sha256 } from './signup-tracking';
+
+describe('partner signup attribution rules', () => {
+  it('allows exactly thirty days after a referral',()=>{expect(ATTRIBUTION_MS).toBe(30*24*60*60*1000);expect(withinAttributionWindow(1000,1000+30*86400000)).toBe(true);expect(withinAttributionWindow(1000,1001+30*86400000)).toBe(false);});
+  it('rejects future referral timestamps',()=>expect(withinAttributionWindow(1000,999)).toBe(false));
+  it('rejects login, signup form and dashboard pages as signup confirmation',()=>{for(const p of ['/','/login','/signin','/signup','/register','/dashboard']) expect(()=>normalizeSuccessPath(p)).toThrow();expect(normalizeSuccessPath('/signup/complete/')).toBe('/signup/complete');});
+  it('rejects arbitrary hosts, HTTP and paths containing private queries',()=>{expect(matchesPartnerOrigin('https://other.example','https://partner.example')).toBe(false);expect(matchesPartnerOrigin('http://partner.example','https://partner.example')).toBe(false);expect(matchesPartnerOrigin('https://www.partner.example','https://partner.example')).toBe(true);for(const p of ['//evil.example','/success?email=x','/success#token','/success%3Femail'])expect(()=>normalizeSuccessPath(p)).toThrow();});
+  it('calculates rates against the matching referral cohort',()=>{expect(cohortConversionRate(4,31)).toBe('12.9');expect(cohortConversionRate(0,0)).toBe(null);});
+  it('requires a valid signature over the exact body and a fresh timestamp',async()=>{const secret='test-only-key',raw='{"event_id":"opaque123"}',timestamp='1792692000',now=1792692000000;const signature=await hmacSignature(secret,`${timestamp}.${raw}`);expect(await verifySignupSignature(secret,timestamp,raw,signature,now)).toBe(true);expect(await verifySignupSignature(secret,timestamp,raw+' ',signature,now)).toBe(false);expect(await verifySignupSignature(secret,timestamp,raw,signature,now+301000)).toBe(false);expect(await verifySignupSignature(secret,timestamp,raw,'00',now)).toBe(false);});
+  it('stores capability and opaque event hashes rather than raw identifiers',async()=>expect(await sha256('abc')).toBe('ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad'));
+});

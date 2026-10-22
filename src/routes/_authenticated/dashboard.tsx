@@ -7,6 +7,7 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { PromoteButton } from "@/components/FeaturedBookingDialog";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { LiveVisitorMap } from "@/components/LiveVisitorMap";
+import { SignupTrackingPanel } from "@/components/SignupTrackingPanel";
 
 function DashboardPending() {
   return (
@@ -883,6 +884,8 @@ function DashboardPage() {
               <StatCard icon={Eye} label="Profile views" value={profileViews === null ? "—" : profileViews.toLocaleString()} sub={`Your StartupBar page · ${RANGE_SUB[range].toLowerCase()}`} />
               <StatCard icon={BarChart2} label="Rank" value={rank ? `#${rank}` : "—"} sub="By impressions (all time)" />
             </div>
+
+            <SignupTrackingPanel startupId={startup.id} range={range} status={startup.status} />
 
             <div className={`rounded-xl border border-black/8 bg-white p-6 transition-opacity ${rangeLoading ? "opacity-60" : ""}`}>
               <div className="flex items-center justify-between">

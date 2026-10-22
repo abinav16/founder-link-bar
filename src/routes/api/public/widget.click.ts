@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { isApprovedHost } from "@/lib/host-check";
 import { isBotRequest, isOverHostCap } from "@/lib/bot-filter";
+import { randomReferralToken, sha256 } from "@/lib/signup-tracking";
 
 const STARTUPBAR_SITE_ID = "0d2db708-f4e9-4b77-bd83-c446826c76b1";
 
@@ -15,7 +16,8 @@ export const Route = createFileRoute("/api/public/widget/click")({
         const host = url.searchParams.get("host");
         const source = url.searchParams.get("source");
         const via = url.searchParams.get("via");
-        const supabase = createClient<Database>(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } });
+        const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
+        const supabase = createClient<Database>(process.env.SUPABASE_URL!, key, { auth: { storage: undefined, persistSession: false, autoRefreshToken: false }, global: { fetch: (input, init) => { const h = new Headers(init?.headers); h.set('apikey',key); if (key.startsWith('sb_')) h.delete('Authorization'); return fetch(input,{...init,headers:h}); } } });
 
         // Clicks only count when the host site is an approved member (or the
         // click came from StartupBar's own pages, where there is no host id).
@@ -68,6 +70,21 @@ export const Route = createFileRoute("/api/public/widget/click")({
         dest.searchParams.set("utm_medium", medium);
         dest.searchParams.set("utm_campaign", campaign);
         if (via) dest.searchParams.set("_sbvia", via.slice(0, 200));
+        // Only genuine approved partner-host clicks can mint attribution.
+        // Fail closed for proof, but fail open for navigation on tracking errors.
+        if (host && source !== 'preview' && source !== 'dashboard' && source !== 'profile' && hostOk && host !== id) {
+          try {
+            const { data: approved } = await supabase.rpc('is_approved_host', { _id: host });
+            const { data: targetApproved } = await supabase.rpc('is_approved_host', { _id: id });
+            const { data: config } = await supabase.rpc('signup_tracking_public', { _startup_id: id });
+            if (approved === true && targetApproved === true && config && typeof config === 'object' && !Array.isArray(config) && config.enabled === true) {
+              const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
+              const token = randomReferralToken();
+              const { error } = await supabaseAdmin.from('signup_referrals').insert({ startup_id: id, host_startup_id: host, token_hash: await sha256(token) });
+              if (!error) dest.searchParams.set('_sbref', token);
+            }
+          } catch { /* Attribution failure must never break the partner visit. */ }
+        }
         return new Response(null, { status: 302, headers: { Location: dest.toString(), "Cache-Control": "no-store" } });
       },
     },

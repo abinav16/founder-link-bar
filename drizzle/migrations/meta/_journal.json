@@ -43,6 +43,34 @@
       "when": 1792505730245,
       "tag": "0005_vouch_founder_all_public_startups",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792694096733,
+      "tag": "0006_partner_signup_attribution",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792694313863,
+      "tag": "0007_signup_reporting_safety",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792695255338,
+      "tag": "0008_signup_confirmation_reporting_dates",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792695276639,
+      "tag": "0009_signup_private_table_grants",
+      "breakpoints": true
     }
   ]
 }

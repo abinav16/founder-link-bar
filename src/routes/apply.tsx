@@ -7,6 +7,10 @@ import { toast } from "sonner";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { trackFunnel } from "@/lib/funnel";
 import { SitePreviewSurface } from "@/components/SitePreviewSurface";
+import { SignupTrackingSetup, emptySignupDraft, type SignupTrackingDraft } from "@/components/SignupTrackingSetup";
+import { saveSignupTracking } from "@/lib/signup-tracking.functions";
+import { normalizeSuccessPath } from "@/lib/signup-tracking";
+import { useServerFn } from "@tanstack/react-start";
 
 import {
   ArrowRight, ArrowLeft, ExternalLink,
@@ -444,6 +448,10 @@ function Apply() {
     if (typeof window === "undefined") return "top";
     try { return JSON.parse(readRawDraft() ?? "{}")?.placement === "bottom" ? "bottom" : "top"; } catch { return "top"; }
   });
+  const saveTracking = useServerFn(saveSignupTracking);
+  const [tracking, setTracking] = useState<SignupTrackingDraft>(() => {
+    try { return JSON.parse(readRawDraft() ?? '{}').tracking ?? emptySignupDraft; } catch { return emptySignupDraft; }
+  });
   // "widget" = show the bar on your own site (free). "supporter" = pay yearly
   // instead of showing the bar; the snippet is optional and only powers the
   // founder's own dashboard stats.
@@ -654,8 +662,8 @@ function Apply() {
     if (typeof window === "undefined") return;
     if (resubmitId) return; // resubmits are URL-driven — don't overwrite the fresh-apply draft
     if (!name && !url && !desc && !quote) return;
-    writeDraft({ step, name, url, desc, quote, placement, mode, startupId });
-  }, [step, name, url, desc, quote, placement, mode, resubmitId]);
+    writeDraft({ step, name, url, desc, quote, placement, mode, startupId, tracking });
+  }, [step, name, url, desc, quote, placement, mode, resubmitId, startupId, tracking]);
 
   // Supporters get a tracking-only snippet: it renders nothing, no bar, no
   // layout shift — it only powers their own dashboard stats.
@@ -847,6 +855,11 @@ function Apply() {
       }
       const parsed = validated.data;
       const payload = { ...parsed, founder_quote: quote.trim() || null, widget_placement: placement };
+      // Optional tracking must never hold a paid listing hostage.
+      let trackingReady = tracking.enabled && tracking.consentAcknowledged;
+      if (trackingReady && tracking.successPath.trim()) {
+        try { normalizeSuccessPath(tracking.successPath); } catch { trackingReady = false; }
+      }
 
       // Duplicate guard: the same listing can come back here twice (a second
       // payment, a refreshed return URL, a re-run auto-submit). Detect it
@@ -927,6 +940,13 @@ function Apply() {
           return;
         }
         setLoading(false);
+      }
+
+      if (trackingReady) {
+        try { await saveTracking({ data: { startupId: resubmitId || startupId, ...tracking } }); }
+        catch { toast.info('Your application is saved. Finish optional signup tracking in your dashboard.'); }
+      } else if (tracking.enabled) {
+        toast.info('Your application is saved. Review the signup-complete page and privacy confirmation in your dashboard to enable tracking.');
       }
 
       // Supporter: stamp the paid year onto the listing we just created.
@@ -1398,6 +1418,8 @@ function Apply() {
               </div>
             </div>
           </div>
+
+          <SignupTrackingSetup prefix="apply-tracking" value={tracking} onChange={setTracking} />
 
           <div className="mt-8 space-y-3">
             {(() => {

@@ -584,6 +584,163 @@ export type Database = {
           },
         ]
       }
+      signup_conversions: {
+        Row: {
+          confirmation: string
+          created_at: string
+          event_hash: string | null
+          id: string
+          is_test: boolean
+          referral_id: string
+          startup_id: string
+        }
+        Insert: {
+          confirmation: string
+          created_at?: string
+          event_hash?: string | null
+          id?: string
+          is_test?: boolean
+          referral_id: string
+          startup_id: string
+        }
+        Update: {
+          confirmation?: string
+          created_at?: string
+          event_hash?: string | null
+          id?: string
+          is_test?: boolean
+          referral_id?: string
+          startup_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signup_conversions_referral_id_fkey"
+            columns: ["referral_id"]
+            isOneToOne: true
+            referencedRelation: "signup_referrals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signup_conversions_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      signup_referrals: {
+        Row: {
+          created_at: string
+          expires_at: string
+          host_startup_id: string | null
+          id: string
+          is_test: boolean
+          startup_id: string
+          token_hash: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          host_startup_id?: string | null
+          id?: string
+          is_test?: boolean
+          startup_id: string
+          token_hash: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          host_startup_id?: string | null
+          id?: string
+          is_test?: boolean
+          startup_id?: string
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signup_referrals_host_startup_id_fkey"
+            columns: ["host_startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signup_referrals_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      signup_tracking_keys: {
+        Row: {
+          rotated_at: string
+          secret: string
+          startup_id: string
+        }
+        Insert: {
+          rotated_at?: string
+          secret: string
+          startup_id: string
+        }
+        Update: {
+          rotated_at?: string
+          secret?: string
+          startup_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signup_tracking_keys_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: true
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      signup_tracking_settings: {
+        Row: {
+          configured_at: string
+          enabled: boolean
+          first_verified_email_at: string | null
+          last_browser_report_at: string | null
+          last_server_report_at: string | null
+          last_test_at: string | null
+          startup_id: string
+          success_path: string | null
+        }
+        Insert: {
+          configured_at?: string
+          enabled?: boolean
+          first_verified_email_at?: string | null
+          last_browser_report_at?: string | null
+          last_server_report_at?: string | null
+          last_test_at?: string | null
+          startup_id: string
+          success_path?: string | null
+        }
+        Update: {
+          configured_at?: string
+          enabled?: boolean
+          first_verified_email_at?: string | null
+          last_browser_report_at?: string | null
+          last_server_report_at?: string | null
+          last_test_at?: string | null
+          startup_id?: string
+          success_path?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signup_tracking_settings_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: true
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_visits: {
         Row: {
           browser: string | null
@@ -947,6 +1104,10 @@ export type Database = {
           user_id: string
         }[]
       }
+      claim_weekly_digest: {
+        Args: { _email: string; _test?: boolean }
+        Returns: string
+      }
       confirm_bid_payment: {
         Args: { _bid_id: string; _email?: string; _payment_id: string }
         Returns: {
@@ -995,6 +1156,10 @@ export type Database = {
           cnt: number
           shown_startup_id: string
         }[]
+      }
+      digest_signup_summary: {
+        Args: { _since: string; _startup_id: string; _until: string }
+        Returns: Json
       }
       email_queue_dispatch: { Args: never; Returns: undefined }
       enqueue_email: {
@@ -1078,6 +1243,10 @@ export type Database = {
           name: string
           status: string
         }[]
+      }
+      my_signup_summary: {
+        Args: { _since?: string; _startup_id: string }
+        Returns: Json
       }
       my_site_visit_summary: {
         Args: { _days?: number; _startup_id: string }
@@ -1334,6 +1503,7 @@ export type Database = {
           top_referrers: Json
         }[]
       }
+      purge_signup_attribution: { Args: never; Returns: undefined }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
@@ -1342,10 +1512,20 @@ export type Database = {
           read_ct: number
         }[]
       }
+      record_signup_conversion: {
+        Args: {
+          _confirmation: string
+          _event_hash?: string
+          _startup_id: string
+          _token_hash: string
+        }
+        Returns: Json
+      }
       set_startup_vouch: {
         Args: { _startup_id: string; _tag: string }
         Returns: undefined
       }
+      signup_tracking_public: { Args: { _startup_id: string }; Returns: Json }
       widget_pick_weights: {
         Args: never
         Returns: {
