@@ -1,8 +1,9 @@
 # Partner signup attribution
-- [ ] Add optional owner-controlled setup during application and in the dashboard.
-- [ ] Add anonymous referral tokens, success-page reporting and signed server confirmations with deduplication.
-- [ ] Add honest conversion reporting, health states and weekly-email results within existing safeguards.
-- [ ] Verify ownership, attribution boundaries, retry behavior and desktop/phone alignment.
+- [x] Add optional owner-controlled setup during application and in the dashboard.
+- [x] Add anonymous referral tokens, success-page reporting and signed server confirmations with deduplication.
+- [x] Add honest conversion reporting, health states and weekly-email results within existing safeguards.
+- [x] Verify ownership, attribution boundaries, retry behavior and desktop/phone alignment (owner test referral read back; no real partner signup claimed).
+- [ ] Activate on partner websites after publication and partner consent/success-page or signed-event setup; waits on publication and each partner’s integration.
 
 # Startup profile improvements
 - [x] Show all public startups per vouching founder with stacked circular logos and individual startup links.

@@ -203,9 +203,14 @@ serve(async (req) => {
       if (!testEmail && alreadySent.has(email)) { skip("already_sent_this_week"); continue; }
 
       // Activity filter: impressions this week OR a live widget heartbeat this week.
-      const active = userStartups.some((s) =>
+      let active = userStartups.some((s) =>
         (impCount.get(s.id) ?? 0) > 0 || (s.hb && new Date(s.hb).getTime() >= activeSince)
       );
+      // A server-confirmed signup is activity even without a recent bar heartbeat.
+      if (!active) {
+        const { count, error: conversionActivityError } = await admin.from('signup_conversions').select('id',{count:'exact',head:true}).in('startup_id',userStartups.map(s=>s.id)).eq('is_test',false).gte('created_at',sevenDaysAgo).limit(1);
+        if (!conversionActivityError) active = (count ?? 0)>0;
+      }
       if (!active) { skip("inactive"); continue; }
 
       candidates.push({ userId, email, user, startups: userStartups });
