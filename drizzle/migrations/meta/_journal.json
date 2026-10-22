@@ -64,6 +64,13 @@
       "when": 1792695255338,
       "tag": "0008_signup_confirmation_reporting_dates",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792695276639,
+      "tag": "0009_signup_private_table_grants",
+      "breakpoints": true
     }
   ]
 }
