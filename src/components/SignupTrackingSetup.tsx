@@ -39,16 +39,16 @@ export function SignupTrackingSetup({ value, onChange, prefix = 'signup-tracking
           </>}
         </>}
         {step === 1 && <>
-          <ShieldCheck className="tracking-review-icon mb-4 h-6 w-6" aria-hidden="true" /><h3 className="text-xl font-semibold">Private by default.</h3>
-          <p className="mt-2 text-sm text-muted-foreground">Anonymous referrals. A 30-day window. No customer details.</p>
-          <div className="mt-6 flex items-start gap-3"><Checkbox id={`${prefix}-consent`} checked={value.consentAcknowledged} onCheckedChange={checked => onChange({ ...value, consentAcknowledged: checked === true })} /><Label htmlFor={`${prefix}-consent`} className="text-sm font-normal leading-6">I’ll report only new accounts, update my privacy notice, and require analytics consent for browser tracking.</Label></div>
-          <p className="mt-4 text-xs leading-5 text-muted-foreground">Saving enables tracking. Results appear only after your signup system sends confirmations.</p>
+          <ShieldCheck className="tracking-review-icon mb-4 h-6 w-6" aria-hidden="true" /><h3 className={`${compact ? 'text-lg' : 'text-xl'} font-semibold`}>Private by default.</h3>
+          <p className={`${compact ? 'mt-1 text-xs' : 'mt-2 text-sm'} text-muted-foreground`}>Anonymous referrals. A 30-day window. No customer details.</p>
+          <div className="mt-6 flex items-start gap-3"><Checkbox id={`${prefix}-consent`} checked={value.consentAcknowledged} onCheckedChange={checked => onChange({ ...value, consentAcknowledged: checked === true })} /><Label htmlFor={`${prefix}-consent`} className={`${compact ? 'leading-5' : 'leading-6'} text-sm font-normal`}>I’ll report only new accounts, update my privacy notice, and require analytics consent for browser tracking.</Label></div>
+          {!compact && <p className="mt-4 text-xs leading-5 text-muted-foreground">Saving enables tracking. Results appear only after your signup system sends confirmations.</p>}
           {!onComplete && value.consentAcknowledged && <p role="status" className="mt-4 flex items-center gap-2 text-sm"><Check className="h-4 w-4" />Setup will be saved with your application.</p>}
         </>}
       </div>
       <div className="tracking-setup-footer mt-7 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-t border-border pt-5">
-        <div>{step > 0 && <Button type="button" variant="ghost" disabled={busy} onClick={() => setStep(step - 1)}><ArrowLeft />Back</Button>}</div>
-        {step === 0 ? <Button type="button" disabled={busy} onClick={() => { onChange({ ...value, successPath: '' }); setShowInstructions(false); setStep(1); }}>Continue<ArrowRight /></Button> : onComplete ? <Button type="button" disabled={busy || !value.consentAcknowledged} onClick={onComplete}>{busy ? <Loader2 className="animate-spin" /> : <Check />}{busy ? 'Saving…' : 'Save setup'}</Button> : <span className="text-xs text-muted-foreground">Optional setup</span>}
+        <div className="flex min-w-0 items-center gap-2">{step > 0 && <Button type="button" variant="ghost" size={compact ? 'sm' : 'default'} disabled={busy} onClick={() => setStep(step - 1)}><ArrowLeft />Back</Button>}{compact && markers}</div>
+        {step === 0 ? <Button type="button" size={compact ? 'sm' : 'default'} disabled={busy} onClick={() => { onChange({ ...value, successPath: '' }); setShowInstructions(false); setStep(1); }}>Continue<ArrowRight /></Button> : onComplete ? <Button type="button" size={compact ? 'sm' : 'default'} disabled={busy || !value.consentAcknowledged} onClick={onComplete}>{busy ? <Loader2 className="animate-spin" /> : <Check />}{busy ? 'Saving…' : 'Save setup'}</Button> : <span className="text-xs text-muted-foreground">Optional setup</span>}
       </div>
     </div>}
   </section>;
