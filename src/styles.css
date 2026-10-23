@@ -202,10 +202,11 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
 .tracking-inline-stage { height: 208px; min-height: 208px; max-height: 208px; padding-top: 20px; padding-bottom: 20px; overflow: hidden; display: flex; flex-direction: column; }
 .tracking-inline-stage > .tracking-inline-transition { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
 .tracking-overview { flex: 1; min-height: 0; }
-.tracking-results { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; }
+.tracking-results { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 4px; }
 .tracking-result-metrics { margin: 0; }
-.tracking-results-footer { flex-shrink: 0; padding-top: 8px; }
-.tracking-results-footer button { height: 32px; }
+.tracking-result-metrics dd { line-height: 28px; margin-top: 2px; margin-bottom: 2px; }
+.tracking-results-footer { flex-shrink: 0; padding-top: 6px; }
+.tracking-results-footer button { height: 28px; min-height: 28px; }
 .tracking-inline-active > .tracking-inline-transition > .tracking-detail-body,
 .tracking-inline-active > .tracking-inline-transition > .max-w-2xl { flex: 1; min-height: 0; width: 100%; overflow: auto; overscroll-behavior: contain; scrollbar-width: thin; padding-right: 4px; }
 .tracking-inline-header { flex-shrink: 0; margin-bottom: 4px; }
