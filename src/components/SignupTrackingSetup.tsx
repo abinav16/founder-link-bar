@@ -67,7 +67,7 @@ export function SignupTrackingSetup({ value, onChange, prefix = 'signup-tracking
           <details className="mt-5 text-xs"><summary className="cursor-pointer font-medium">View the same instructions</summary><pre className="mt-3 max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-md border border-border bg-muted p-4 font-mono text-xs leading-5">{prompt}</pre></details>
         </>}
         {step === 1 && <>
-          <ShieldCheck className="mb-4 h-6 w-6" aria-hidden="true" /><h3 className="text-xl font-semibold">Private by default.</h3>
+          <ShieldCheck className="tracking-review-icon mb-4 h-6 w-6" aria-hidden="true" /><h3 className="text-xl font-semibold">Private by default.</h3>
           <p className="mt-2 text-sm text-muted-foreground">Anonymous referrals. A 30-day window. No customer details.</p>
           <div className="mt-6">{consent}</div>
           <p className="mt-4 text-xs leading-5 text-muted-foreground">Saving enables tracking. Results appear only after your signup system sends confirmations.</p>
