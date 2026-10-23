@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useServerFn } from '@tanstack/react-start';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,18 @@ export function SignupTrackingPanel({ startupId, range, status }: { startupId: s
   const [view, setView] = useState<'setup'|'test'|'info'|null>(null);
   const { data, error, isPending, isFetching, refetch } = useQuery({ queryKey: ['signup-summary', startupId, range], queryFn: () => getSummary({ data: { startupId, since: range === 'all' ? null : new Date(Date.now() - ({ '24h': 86400000, '7d': 7 * 86400000, '30d': 30 * 86400000 }[range])).toISOString() } }), refetchInterval: 60000 });
   useEffect(() => { setDraft(emptySignupDraft); setSecret(''); setTestUrl(''); setConfirmRotate(false); setView(null); setSaved(false); }, [startupId]);
+  // The resting card sets the size; every step view reuses that exact height.
+  const stageRef = useRef<HTMLElement>(null);
+  const [restHeight, setRestHeight] = useState<number | null>(null);
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el || view !== null) return;
+    const measure = () => setRestHeight(el.offsetHeight);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [view, isPending]);
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['signup-summary', startupId] });
   const rate = data ? cohortConversionRate(data.cohort_verified, data.referrals) : null;
   const enabled = data?.settings?.enabled ?? false;
@@ -38,7 +50,7 @@ export function SignupTrackingPanel({ startupId, range, status }: { startupId: s
     <p className="mt-1 text-xs leading-5 text-muted-foreground">Save in server secrets, never on a public page.</p>
     {secret ? <div className="mt-2 flex flex-wrap items-center gap-2"><Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => void action(async () => { await navigator.clipboard.writeText(secret); setCopied(true); })}>{copied ? <Check /> : <Copy />}{copied ? 'Key copied' : 'Copy private key'}</Button><span className="text-xs text-muted-foreground">Copy now. It won’t be shown again.</span><Button type="button" variant="ghost" size="sm" onClick={() => setSecret('')}>Hide key</Button></div> : confirmRotate ? <div className="mt-2 space-y-2"><p className="text-xs leading-5 text-muted-foreground">Replacing a key disconnects your current setup.</p><div className="flex flex-wrap gap-2"><Button type="button" size="sm" disabled={busy} onClick={() => void action(async () => { const result = await rotate({ data: { startupId } }); setSecret(result.secret); setConfirmRotate(false); setCopied(false); })}>{busy ? <Loader2 className="animate-spin" /> : <KeyRound />}Create new key</Button><Button type="button" variant="ghost" size="sm" disabled={busy} onClick={() => setConfirmRotate(false)}>Cancel</Button></div></div> : <Button type="button" variant="outline" size="sm" className="mt-2" disabled={busy} onClick={() => setConfirmRotate(true)}><KeyRound />Create or replace key</Button>}
   </div>;
-  return <section className={`signup-tracking-ui tracking-inline-stage border-y border-border bg-background px-5 py-7 text-foreground sm:px-7 ${view ? 'tracking-inline-active' : ''}`} aria-label="Partner signup results" aria-busy={busy}>
+  return <section ref={stageRef} style={view && restHeight ? { height: Math.max(restHeight, 248) } : undefined} className={`signup-tracking-ui tracking-inline-stage border-y border-border bg-background px-5 text-foreground sm:px-7 ${view ? 'tracking-inline-active py-5' : 'py-7'}`} aria-label="Partner signup results" aria-busy={busy}>
     {isPending ? <div className="flex items-center gap-3 py-5 text-sm text-muted-foreground" role="status"><Loader2 className="h-4 w-4 animate-spin" />Loading signup results…</div> : error ? <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-base font-semibold">Signup results unavailable</h2><p role="alert" className="mt-1 text-sm text-muted-foreground">Your widget and traffic stats still work.</p></div><Button variant="outline" size="sm" onClick={() => void refetch()}>Try again</Button></div> : data && <div key={view ?? (enabled ? 'results' : 'overview')} className="tracking-inline-transition">
       {view !== null && <header className="tracking-inline-header mb-2 flex items-center justify-between gap-3"><Button variant="ghost" size="sm" className="-ml-3" disabled={busy} onClick={leave}><ArrowLeft />{enabled ? 'Back to results' : 'Back'}</Button><span className="text-xs font-medium text-muted-foreground">{view === 'setup' ? 'Signup tracking setup' : view === 'test' ? 'Connection test' : 'About your results'}</span>{view === 'setup' && enabled && <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" disabled={busy} onClick={() => void action(async () => { await save({ data: { startupId, ...draft, enabled: false, successPath: '' } }); await refresh(); setView(null); setSecret(''); setTestUrl(''); toast.success('Signup tracking turned off.'); })}>Turn off tracking</Button>}<Button variant="ghost" size="icon" aria-label="Close signup setup" title="Close signup setup" disabled={busy} onClick={leave}><X /></Button></header>}
       {view === 'setup' ? <div className="tracking-inline-setup"><SignupTrackingSetup compact key={startupId} startupId={startupId} signingKey={signingKey} showToggle={false} prefix={`tracking-${startupId}`} value={draft} busy={busy} onChange={setDraft} onComplete={() => void action(async () => { await save({ data: { startupId, ...draft, successPath: '' } }); await refresh(); setSecret(''); setConfirmRotate(false); setSaved(true); setView(null); toast.success('Signup tracking saved.'); })} /></div>
