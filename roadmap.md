@@ -1,5 +1,5 @@
 # Partner signup attribution
-- [ ] Replace popup setup with inline two-step signup-system connection, unified instructions and saved results; verify signed-in and narrow-screen flows.
+- [x] Replace popup setup with inline two-step signup-system connection, unified instructions and saved results; verify signed-in save/readback, copy, test/info views and narrow-screen flows.
 - [x] Simplify signup reporting and setup using the supplied animated reference; verify signed-in save/readback, reporting details, test view and phone alignment.
 - [x] Add optional owner-controlled setup during application and in the dashboard.
 - [x] Add anonymous referral tokens, success-page reporting and signed server confirmations with deduplication.
