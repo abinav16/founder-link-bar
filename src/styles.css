@@ -208,6 +208,19 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
 .tracking-compact-setup .tracking-step-number { transition: background 220ms ease, color 220ms ease; }
 .tracking-compact-setup .tracking-step-content { min-height: 0; flex: 1; overflow: auto; overscroll-behavior: contain; scrollbar-width: thin; padding-right: 2px; }
 .tracking-compact-setup .tracking-setup-footer { flex-shrink: 0; margin-top: 8px; padding-top: 8px; }
+.tracking-compact-header { flex-shrink: 0; display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); align-items: center; gap: 12px; margin-bottom: 12px; }
+.tracking-compact-header button { min-height: 28px; height: 28px; }
+.tracking-compact-row { display: grid; gap: 14px; }
+.tracking-compact-action { display: flex; justify-content: flex-end; }
+.tracking-compact-action button { min-width: 132px; }
+@media (min-width: 1024px) {
+  .tracking-compact-row-connect { grid-template-columns: minmax(0,1fr) minmax(0,1fr) auto; gap: 28px; }
+  .tracking-compact-row-connect > .tracking-key { border-top: 0; border-left: 1px solid var(--border); padding-top: 0; padding-left: 24px; }
+  .tracking-compact-row-single { grid-template-columns: minmax(0,1fr) auto; gap: 28px; }
+  .tracking-compact-action { align-items: flex-end; align-self: end; }
+}
+@media (max-width: 1023px) { .tracking-compact-action button { width: 100%; } }
+@media (max-width: 640px) { .tracking-step-dots .tracking-step-marker:not(.tracking-step-current) > span:last-child { display: none; } .tracking-compact-header { gap: 6px; } }
 .tracking-step-dots { display: flex; align-items: center; gap: 14px; margin: 0 0 0 4px; }
 .tracking-step-dots .tracking-step-marker { padding: 0; border: 0; gap: 6px; transition: color 220ms ease; }
 .tracking-step-dots .tracking-step-number { width: 18px; height: 18px; }
