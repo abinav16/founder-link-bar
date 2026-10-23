@@ -1,4 +1,5 @@
 # Partner signup attribution
+- [ ] Restore the original signup card footprint across inline steps and results; verify compact content, transitions and phone layout.
 - [x] Replace popup setup with inline two-step signup-system connection, unified instructions and saved results; verify signed-in save/readback, copy, test/info views and narrow-screen flows.
 - [x] Simplify signup reporting and setup using the supplied animated reference; verify signed-in save/readback, reporting details, test view and phone alignment.
 - [x] Add optional owner-controlled setup during application and in the dashboard.
