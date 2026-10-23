@@ -15,15 +15,16 @@ export function SignupTrackingSetup({ value, onChange, prefix = 'signup-tracking
   const [copyError, setCopyError] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
   const prompt = signupConnectionInstructions(startupId);
+  const markers = <ol className={compact ? 'tracking-step-dots' : 'mb-7 grid grid-cols-2 border-b border-border'} aria-label="Signup tracking setup steps">
+    {['Connect', 'Review & save'].map((name, index) => <li key={name} className={`tracking-step-marker ${index === step ? 'tracking-step-current' : ''}`} aria-current={index === step ? 'step' : undefined}><span className={`tracking-step-number ${index <= step ? 'tracking-step-reached' : ''}`}>{index < step ? <Check className="h-3 w-3" /> : index + 1}</span><span>{name}</span></li>)}
+  </ol>;
   return <section className={`signup-tracking-ui text-foreground ${compact ? 'tracking-compact-setup' : ''}`} aria-label="Signup tracking setup">
     {showToggle && <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-t border-border py-5">
       <div className="min-w-0"><h2 id={`${prefix}-title`} className="flex items-center gap-2 text-sm font-semibold"><ShieldCheck className="h-4 w-4 shrink-0" />Track referred signups</h2><p className="mt-1 text-xs text-muted-foreground">Optional. Set up now or later.</p></div>
       <Switch aria-label="Enable signup tracking" checked={value.enabled} onCheckedChange={enabled => onChange({ ...value, enabled, successPath: '' })} />
     </div>}
     {value.enabled && <div className="tracking-setup-frame">
-      {(() => { const markers = <ol className={compact ? 'tracking-step-dots' : 'mb-7 grid grid-cols-2 border-b border-border'} aria-label="Signup tracking setup steps">
-        {['Connect', 'Review & save'].map((name, index) => <li key={name} className={`tracking-step-marker ${index === step ? 'tracking-step-current' : ''}`} aria-current={index === step ? 'step' : undefined}><span className={`tracking-step-number ${index <= step ? 'tracking-step-reached' : ''}`}>{index < step ? <Check className="h-3 w-3" /> : index + 1}</span><span>{name}</span></li>)}
-      </ol>; return compact ? null : markers; })()}
+      {!compact && markers}
       <div key={`${step}-${showInstructions}`} className="tracking-step-content tracking-reveal" tabIndex={-1}>
         {step === 0 && <>
           {compact ? showInstructions ? <div className="tracking-instructions-view"><Button type="button" variant="ghost" size="sm" onClick={() => setShowInstructions(false)}><ArrowLeft />Back to connection</Button><pre className="mt-2 whitespace-pre-wrap break-words font-mono text-xs leading-5">{prompt}</pre></div> : <div className="tracking-connect-grid"><div className="min-w-0"><h3 className="text-lg font-semibold">Connect your signup flow.</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">Paste these instructions into your website AI or send them to your developer.</p><div className="mt-3 flex flex-wrap gap-2"><Button type="button" variant="outline" size="sm" onClick={async () => { try { await navigator.clipboard.writeText(prompt); setCopied(true); setCopyError(false); } catch { setCopyError(true); } }}>{copied ? <Check /> : <Copy />}{copied ? 'Setup copied' : 'Copy instructions'}</Button><Button type="button" variant="ghost" size="sm" onClick={() => setShowInstructions(true)}>View</Button></div>{copyError && <p role="alert" className="mt-2 text-xs text-muted-foreground">Can’t copy. Choose View to copy manually.</p>}</div>{signingKey}</div> : <>
