@@ -220,7 +220,8 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
   .tracking-compact-action { align-items: flex-end; align-self: end; }
 }
 @media (max-width: 1023px) { .tracking-compact-action button { width: 100%; } }
-@media (max-width: 640px) { .tracking-step-dots .tracking-step-marker:not(.tracking-step-current) > span:last-child { display: none; } .tracking-compact-header { gap: 6px; } }
+@media (max-width: 640px) { .tracking-step-dots .tracking-step-marker > span:last-child { display: none; } .tracking-step-dots { gap: 8px; } .tracking-compact-header { gap: 6px; } }
+.tracking-compact-header button { white-space: nowrap; }
 .tracking-step-dots { display: flex; align-items: center; gap: 14px; margin: 0 0 0 4px; }
 .tracking-step-dots .tracking-step-marker { padding: 0; border: 0; gap: 6px; transition: color 220ms ease; }
 .tracking-step-dots .tracking-step-number { width: 18px; height: 18px; }
