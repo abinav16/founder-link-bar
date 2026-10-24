@@ -1,5 +1,5 @@
 # Partner signup attribution
-- [ ] Audit and align Terms, Privacy Policy, FAQ and public signup-tracking documentation; verify the updated pages.
+- [x] Audit and align Terms, Privacy Policy, FAQ and public signup-tracking documentation; verify visible disclosures, FAQ controls and links, and 13 attribution/consent tests (preview has a pre-existing root hydration warning).
 - [x] Enforce the overview footprint for every signup card state and verify overview → connect → review → saved results on the signed-in dashboard.
 - [x] Restore the original signup card footprint across inline steps and results; verify compact content, transitions and phone layout.
 - [x] Replace popup setup with inline two-step signup-system connection, unified instructions and saved results; verify signed-in save/readback, copy, test/info views and narrow-screen flows.
