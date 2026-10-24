@@ -7,7 +7,8 @@ import { toast } from "sonner";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { trackFunnel } from "@/lib/funnel";
 import { SitePreviewSurface } from "@/components/SitePreviewSurface";
-import { SignupTrackingSetup, emptySignupDraft, type SignupTrackingDraft } from "@/components/SignupTrackingSetup";
+import { emptySignupDraft, type SignupTrackingDraft } from "@/components/SignupTrackingSetup";
+import { ApplySignupTracking } from "@/components/ApplySignupTracking";
 import { saveSignupTracking } from "@/lib/signup-tracking.functions";
 import { normalizeSuccessPath } from "@/lib/signup-tracking";
 import { useServerFn } from "@tanstack/react-start";
@@ -1183,16 +1184,16 @@ function Apply() {
 
       {step === 2 && (
 
-        <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 md:py-16">
+        <div className="apply-install-page mx-auto max-w-6xl px-4 py-8 sm:px-6 md:py-14">
           <button onClick={() => setStep(1)} className="mb-8 flex items-center gap-1.5 text-sm text-black/40 hover:text-black transition-colors">
             <ArrowLeft className="h-3.5 w-3.5" /> Back
           </button>
 
           <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Step 2 of 2</span>
-          <h1 className="mt-4 text-3xl font-medium leading-tight tracking-tight md:text-4xl" style={{ fontFamily: "var(--font-display)" }}>
+          <h1 className="mt-4 font-display text-3xl font-medium leading-tight sm:text-4xl md:text-5xl">
             {isSupporter ? "Your analytics line (optional)." : "Install the script."}
           </h1>
-          <p className="mt-3 text-[15px] leading-relaxed text-black/45">
+          <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
             {isSupporter
                ? <>One invisible line. It shows nothing on your site it only unlocks your visitor map, visits and click stats. Skip it or add it later.</>
               : <>Paste this once inside the <code className="rounded bg-black/8 px-1.5 py-0.5 font-mono text-sm">&lt;head&gt;</code> of your site, then verify it's live.</>}
@@ -1231,9 +1232,10 @@ function Apply() {
           </div>
 
           {/* Install checklist card */}
-          <div className="mt-6 overflow-hidden rounded-2xl border border-black/10 bg-white">
+          <div className="apply-install-grid mt-6 grid gap-8 border-y border-border py-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-12">
+            <div className="min-w-0">
             {/* Embed code */}
-            <div className="border-b border-black/8 p-5 sm:p-6">
+            <div className="border-b border-border pb-6">
               <p className="text-sm font-semibold text-black">
                 {isSupporter ? "1 · Your analytics code (optional)" : "1 · Your embed code"}
               </p>
@@ -1243,7 +1245,7 @@ function Apply() {
             </div>
 
             {/* Verify */}
-            <div className={`border-b border-black/8 p-5 sm:p-6 border-l-2 ${
+            <div className={`mt-6 py-2 pl-4 border-l-2 ${
               verifyStatus === "live" ? "border-l-emerald-500" :
               verifyStatus === "csp" ? "border-l-red-500" :
               verifyStatus === "csp-frame" ? "border-l-red-500" :
@@ -1356,8 +1358,9 @@ function Apply() {
               )}
             </div>
 
+            </div>
             {/* Install guide */}
-            <div className="p-5 sm:p-6">
+            <div className="min-w-0 lg:border-l lg:border-border lg:pl-10">
               <p className="text-sm font-semibold text-black">3 · Install guide & options</p>
               <p className="mt-1 text-xs text-black/45">Optional reading — expand what you need.</p>
               <div className="mt-4 space-y-2">
@@ -1419,9 +1422,9 @@ function Apply() {
             </div>
           </div>
 
-          <SignupTrackingSetup prefix="apply-tracking" value={tracking} onChange={setTracking} />
+          <ApplySignupTracking value={tracking} onChange={setTracking} startupId={startupId} />
 
-          <div className="mt-8 space-y-3">
+          <div className="mt-8 space-y-3 lg:ml-auto lg:max-w-md">
             {(() => {
               const needsPayment = !resubmitId && existingCount >= 1 && !hasPrepaid;
               const verified = verifyStatus === "live" || verifyStatus === "csp-img";
