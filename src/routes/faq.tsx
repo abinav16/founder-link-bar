@@ -256,7 +256,7 @@ const FAQS: Faq[] = [
     id: "signup-tracking-limits",
     cat: "Signup tracking",
     q: "How long does attribution last, and can I turn it off?",
-    a: "An eligible referral can be attributed for up to 30 days. Blocked storage, consent choices, different devices, other domains and expired referrals may leave signups unattributed. Turn tracking off in your dashboard to stop new attribution; this does not delete historical records. Unconverted referrals are cleaned up after 90 days and conversion records after one year. Deleting the startup deletes its attribution records. Results appear in your dashboard and weekly stats, not an email for every signup.",
+    a: "An eligible referral can be attributed for up to 30 days. Blocked storage, consent choices, different devices, other domains and expired referrals may leave signups unattributed. Turn tracking off in your dashboard to stop new attribution; this does not delete historical records. Daily cleanup removes unconverted referrals after 90 days and conversion records after 365 days; linked converted-referral records may remain until the startup is deleted. Deleting the startup deletes its attribution records. Results appear in your dashboard and weekly stats, not an email for every signup.",
   },
 
   // Rules
