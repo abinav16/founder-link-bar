@@ -12,6 +12,7 @@ const CATEGORIES = [
   "Featured spots",
   "Billing",
   "Traffic & delivery",
+  "Signup tracking",
   "Rules",
 ] as const;
 
@@ -83,7 +84,7 @@ const FAQS: Faq[] = [
     id: "widget-not-showing",
     cat: "Widget & install",
     q: "I installed the script but the bar isn't showing. Why?",
-    a: "The most common causes are:\n\n1. A cookie/consent tool (Termly, Cookiebot, OneTrust, CookieYes) is auto-blocking third-party scripts. Allowlist startupbar.co or mark the script as essential/functional.\n2. A Content Security Policy that doesn't allow https://startupbar.co in script-src.\n3. The script is only placed on one page or one template instead of site-wide.\n4. The data-startup-id doesn't match your listing's ID, so the bar can't identify your site.\n5. An ad blocker on your own browser — test in a clean private window.",
+    a: "The most common causes are:\n\n1. A cookie/consent tool (Termly, Cookiebot, OneTrust, CookieYes) is blocking the script. Check its configuration and your site's privacy requirements; do not bypass required consent or classify optional signup tracking as essential.\n2. A Content Security Policy that doesn't allow https://startupbar.co in script-src.\n3. The script is only placed on one page or one template instead of site-wide.\n4. The data-startup-id doesn't match your listing's ID, so the bar can't identify your site.\n5. An ad blocker on your own browser — test in a clean private window.",
   },
   {
     id: "verify-install",
@@ -95,7 +96,7 @@ const FAQS: Faq[] = [
     id: "must-keep-widget",
     cat: "Widget & install",
     q: "Do I have to keep the widget installed?",
-    a: "Yes. The widget must stay live and visible on your site for as long as your startup is in the network. Removing it, hiding it with CSS, restricting it to a single page, or gating it behind a consent tool while still receiving impressions counts as leaving the network — the listing gets removed.",
+    a: "Yes, unless your startup has an active Supporter membership. The widget must stay installed and visible while you participate in the free exchange. Removing it, hiding it with CSS or restricting it to a single page may make your listing ineligible. Respect legally required consent and visitor privacy choices; optional signup tracking is separate and never required to stay in the network.",
   },
 
   // Membership & approval
@@ -224,6 +225,38 @@ const FAQS: Faq[] = [
     cat: "Traffic & delivery",
     q: "How much traffic will I get?",
     a: "It depends on your own traffic and on the network's size. There's no guaranteed volume — the more visitors you send through the bar, the more visitors come back to you.",
+  },
+
+  // Signup tracking
+  {
+    id: "signup-tracking-setup",
+    cat: "Signup tracking",
+    q: "Can StartupBar track signups with my existing widget?",
+    a: "Yes, optionally — without installing a second widget. The bar can see a referral click, but it cannot see an account being created inside your signup system. Open Signup tracking in your dashboard, connect your signup system using the instructions, then confirm privacy consent and save. Your developer or coding assistant must make that connection; switching it on alone does not confirm signups.",
+  },
+  {
+    id: "signup-tracking-reports",
+    cat: "Signup tracking",
+    q: "What counts as a signup, and is it independently verified?",
+    a: "A signed partner confirmation is a report from the destination startup's server that a genuinely new account was created. A success-page report only means someone reached a configured signup-complete page and is shown separately. A signature identifies the reporting partner; neither report is an independent audit or proof that StartupBar caused the signup. Clicks are never counted as signups, and test reports stay out of real totals.",
+  },
+  {
+    id: "signup-tracking-pages",
+    cat: "Signup tracking",
+    q: "Why can't I use /dashboard or /login as my signup-complete page?",
+    a: "Returning users open those pages too, so their logins and refreshes would look like new signups. The default is to connect your signup system so it reports only after creating a new account. The alternative is a dedicated completion page, such as /signup/complete, reached only after a successful new signup; visits to it are still labelled as page reports, not confirmed accounts.",
+  },
+  {
+    id: "signup-tracking-privacy",
+    cat: "Signup tracking",
+    q: "What consent and privacy notice does signup tracking need?",
+    a: "Connect your site's analytics consent before the widget stores or reports a referral. Browser reporting respects Global Privacy Control and Do Not Track; withdrawing consent clears the stored referral. Explain StartupBar signup attribution in your privacy notice, including the 30-day referral window, browser storage, the reports you send and how visitors can withdraw consent. Keep the private signing key on your server and do not send customer names, emails or passwords. You remain responsible for your site's applicable privacy requirements. StartupBar's Privacy Policy has the data and retention details.",
+  },
+  {
+    id: "signup-tracking-limits",
+    cat: "Signup tracking",
+    q: "How long does attribution last, and can I turn it off?",
+    a: "An eligible referral can be attributed for up to 30 days. Blocked storage, consent choices, different devices, other domains and expired referrals may leave signups unattributed. Turn tracking off in your dashboard to stop new attribution; this does not delete historical records. Unconverted referrals are cleaned up after 90 days and conversion records after one year. Deleting the startup deletes its attribution records. Results appear in your dashboard and weekly stats, not an email for every signup.",
   },
 
   // Rules
