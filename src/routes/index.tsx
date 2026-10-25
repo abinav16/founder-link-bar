@@ -509,24 +509,24 @@ const FACTS = [
 function WhyItWorks() {
   const { ref, visible } = useInView();
   return (
-    <section className="border-t border-black/8 bg-black/[0.015] px-6 py-16 sm:py-24 md:py-32">
+    <section className="why-works border-t border-black/8 px-6 py-16 sm:py-24 md:py-32">
       <div className="mx-auto max-w-5xl">
         <div
           ref={ref}
           className="transition-all duration-700"
           style={{ opacity: visible ? 1 : 0, transform: visible ? "none" : "translateY(24px)" }}
         >
-          <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Why it works</span>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-white/35">Why it works</span>
           <h2
-            className="mt-4 text-3xl font-medium leading-tight tracking-tight sm:text-4xl md:text-5xl"
+            className="mt-4 text-3xl font-medium leading-tight tracking-tight text-white sm:text-4xl md:text-5xl"
             style={{ fontFamily: "var(--font-display)" }}
           >
             The fairest growth channel<br />you'll ever ship.
           </h2>
         </div>
-        <div className="mt-16 grid gap-3 md:grid-cols-3 md:gap-0">
+        <div className="why-works-grid mt-16 grid md:grid-cols-3">
           {FACTS.map((f, i) => (
-            <FactCell key={i} fact={f} delay={i * 100} total={FACTS.length} index={i} />
+            <FactCell key={i} fact={f} delay={i * 120} index={i} />
           ))}
         </div>
       </div>
@@ -534,23 +534,24 @@ function WhyItWorks() {
   );
 }
 
-function FactCell({ fact, delay, total, index }: { fact: typeof FACTS[0]; delay: number; total: number; index: number }) {
+function FactCell({ fact, delay, index }: { fact: typeof FACTS[0]; delay: number; index: number }) {
   const { ref, visible } = useInView(0.15);
   return (
     <div
       ref={ref}
-      className={`group relative rounded-2xl bg-white px-8 py-10 transition-all duration-700 hover:shadow-[0_4px_24px_-6px_rgba(0,0,0,0.08)] ${index < total - 1 ? "mb-3 md:mb-0 md:mr-3" : ""}`}
+      className="why-works-cell group relative px-2 py-10 transition-all duration-700 md:px-10 md:py-4"
       style={{ opacity: visible ? 1 : 0, transform: visible ? "none" : "translateY(20px)", transitionDelay: `${delay}ms` }}
     >
+      <span className="text-[11px] font-medium tracking-[0.3em] text-white/25">0{index + 1}</span>
       <div
-        className="text-5xl font-semibold leading-none tracking-tight text-black transition-transform duration-300 group-hover:-translate-y-0.5 md:text-6xl"
+        className="why-works-stat mt-5 text-6xl font-semibold leading-none tracking-tight text-white md:text-7xl"
         style={{ fontFamily: "var(--font-display)" }}
       >
         {fact.stat}
       </div>
-      <div className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-black/35">{fact.label}</div>
-      <div className="mt-6 h-px w-8 bg-black/12 transition-all duration-300 group-hover:w-12 group-hover:bg-black/25" />
-      <p className="mt-5 text-sm leading-relaxed text-black/45">{fact.body}</p>
+      <div className="mt-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/40">{fact.label}</div>
+      <div className="why-works-rule mt-7 h-px w-8 bg-white/20" />
+      <p className="mt-6 text-sm leading-relaxed text-white/50">{fact.body}</p>
     </div>
   );
 }
