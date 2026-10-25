@@ -1,6 +1,7 @@
 import { SiteHeader } from "@/components/SiteHeader";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { LiveVisitorMap } from "@/components/LiveVisitorMap";
+import { SignupTrackingJourney } from "@/components/SignupTrackingJourney";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { ArrowRight, Settings, LogOut, LayoutDashboard, Eye, MousePointerClick, Globe, BarChart2, Users, TrendingUp, Info, X, Trophy, Gavel } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
@@ -433,6 +434,64 @@ function HowItWorks() {
           ))}
         </div>
 
+      </div>
+    </section>
+  );
+}
+
+function SignupProofSection() {
+  const { ref, visible } = useInView();
+  return (
+    <section className="signup-tracking-ui border-t border-black/8 bg-white px-6 py-16 sm:py-24 md:py-32">
+      <div className="mx-auto max-w-5xl">
+        <div
+          ref={ref}
+          className="transition-all duration-700"
+          style={{ opacity: visible ? 1 : 0, transform: visible ? "none" : "translateY(24px)" }}
+        >
+          <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Signup tracking</span>
+          <h2
+            className="mt-4 text-3xl font-medium leading-tight tracking-tight sm:text-4xl md:text-5xl"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            See which visits<br />become signups.
+          </h2>
+          <p className="mt-5 max-w-xl text-base leading-relaxed text-black/45">
+            Clicks tell you people arrived. Optional signup tracking tells you they joined. It uses the widget you already have — no second install.
+          </p>
+        </div>
+        <div className="mt-14 grid items-center gap-10 md:grid-cols-2 md:gap-16">
+          <ul className="space-y-4">
+            {[
+              ["Signed confirmations", "Your server sends a signed report when a genuinely new account is created — the default, most reliable method."],
+              ["Shown honestly", "Signed partner confirmations and browser success-page reports are counted and labelled separately."],
+              ["Private by default", "Anonymous referrals, a 30-day window, no customer names or emails. Test reports never touch your real totals."],
+            ].map(([title, body]) => (
+              <li key={title} className="flex items-start gap-3">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-black/15 text-[11px] text-black/40">✓</span>
+                <div className="min-w-0">
+                  <span className="text-[15px] font-medium text-black/75">{title}</span>
+                  <p className="mt-0.5 text-sm leading-relaxed text-black/45">{body}</p>
+                </div>
+              </li>
+            ))}
+            <li className="pt-2">
+              <Link
+                to="/faq"
+                className="group inline-flex items-center gap-2 text-sm font-medium text-black/60 transition-colors hover:text-black"
+              >
+                How signup tracking works
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            </li>
+          </ul>
+          <div className="min-w-0 rounded-2xl border border-black/10 bg-black/[0.015] px-6 py-10 sm:px-10">
+            <SignupTrackingJourney />
+            <p className="mt-8 text-center text-xs leading-relaxed text-black/35">
+              Referral visit → new account → signed signup report. Set it up in your dashboard in two steps.
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -1028,6 +1087,7 @@ function Landing() {
         </div>
       </section>
 
+      <SignupProofSection />
       <WhyItWorks />
       <BarFreeSection />
       <StartupBidSection />
