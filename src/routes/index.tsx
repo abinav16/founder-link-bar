@@ -516,9 +516,9 @@ function WhyItWorks() {
           className="transition-all duration-700"
           style={{ opacity: visible ? 1 : 0, transform: visible ? "none" : "translateY(24px)" }}
         >
-          <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-white/35">Why it works</span>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Why it works</span>
           <h2
-            className="mt-4 text-3xl font-medium leading-tight tracking-tight text-white sm:text-4xl md:text-5xl"
+            className="mt-4 text-3xl font-medium leading-tight tracking-tight text-black sm:text-4xl md:text-5xl"
             style={{ fontFamily: "var(--font-display)" }}
           >
             The fairest growth channel<br />you'll ever ship.
@@ -542,16 +542,16 @@ function FactCell({ fact, delay, index }: { fact: typeof FACTS[0]; delay: number
       className="why-works-cell group relative px-2 py-10 transition-all duration-700 md:px-10 md:py-4"
       style={{ opacity: visible ? 1 : 0, transform: visible ? "none" : "translateY(20px)", transitionDelay: `${delay}ms` }}
     >
-      <span className="text-[11px] font-medium tracking-[0.3em] text-white/25">0{index + 1}</span>
+      <span className="text-[11px] font-medium tracking-[0.3em] text-black/25">0{index + 1}</span>
       <div
-        className="why-works-stat mt-5 text-6xl font-semibold leading-none tracking-tight text-white md:text-7xl"
+        className="why-works-stat mt-5 text-6xl font-semibold leading-none tracking-tight text-black md:text-7xl"
         style={{ fontFamily: "var(--font-display)" }}
       >
         {fact.stat}
       </div>
-      <div className="mt-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/40">{fact.label}</div>
-      <div className="why-works-rule mt-7 h-px w-8 bg-white/20" />
-      <p className="mt-6 text-sm leading-relaxed text-white/50">{fact.body}</p>
+      <div className="mt-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-black/40">{fact.label}</div>
+      <div className="why-works-rule mt-7 h-px w-8 bg-black/20" />
+      <p className="mt-6 text-sm leading-relaxed text-black/50">{fact.body}</p>
     </div>
   );
 }
