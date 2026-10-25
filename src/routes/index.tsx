@@ -454,20 +454,20 @@ function SignupProofSection() {
             className="mt-4 text-3xl font-medium leading-tight tracking-tight sm:text-4xl md:text-5xl"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            See which visits<br />become signups.
+            See which visits<br />become <span className="signup-proof-underline">signups</span>.
           </h2>
           <p className="mt-5 max-w-xl text-base leading-relaxed text-black/45">
             Clicks tell you people arrived. Optional signup tracking tells you they joined. It uses the widget you already have — no second install.
           </p>
         </div>
         <div className="mt-14 grid items-center gap-10 md:grid-cols-2 md:gap-16">
-          <ul className="space-y-4">
+          <ul className="space-y-6">
             {[
               ["Signed confirmations", "Your server sends a signed report when a genuinely new account is created — the default, most reliable method."],
               ["Shown honestly", "Signed partner confirmations and browser success-page reports are counted and labelled separately."],
               ["Private by default", "Anonymous referrals, a 30-day window, no customer names or emails. Test reports never touch your real totals."],
             ].map(([title, body]) => (
-              <li key={title} className="flex items-start gap-3">
+              <li key={title} className="signup-proof-item flex items-start gap-3">
                 <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-black/15 text-[11px] text-black/40">✓</span>
                 <div className="min-w-0">
                   <span className="text-[15px] font-medium text-black/75">{title}</span>
@@ -485,11 +485,14 @@ function SignupProofSection() {
               </Link>
             </li>
           </ul>
-          <div className="min-w-0 rounded-2xl border border-black/10 bg-black/[0.015] px-6 py-10 sm:px-10">
+          <div className="signup-proof-card min-w-0">
             <SignupTrackingJourney />
-            <p className="mt-8 text-center text-xs leading-relaxed text-black/35">
-              Referral visit → new account → signed signup report. Set it up in your dashboard in two steps.
+            <p className="signup-proof-caption">
+              Referral visit → new account → signed signup report.
             </p>
+            <div className="mt-1 text-center">
+              <span className="signup-proof-status"><span className="signup-proof-dot" />Set up in your dashboard in two steps</span>
+            </div>
           </div>
         </div>
       </div>

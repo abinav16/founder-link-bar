@@ -270,6 +270,40 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
 .tracking-journey-node-1 .tracking-journey-icon { animation-delay: 800ms; }
 .tracking-journey-node-2 .tracking-journey-icon { animation-delay: 1600ms; }
 .tracking-journey-arrow { position: absolute; top: 18px; right: -11px; background: var(--background); }
+
+/* Homepage signup-proof section: inverted card, glowing journey, staggered reveal */
+.signup-proof-card { position: relative; overflow: hidden; border-radius: 20px; background: var(--foreground); color: var(--background); padding: 44px 40px 36px; box-shadow: 0 24px 60px -28px rgba(0, 0, 0, 0.45); transition: transform 400ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 400ms ease; }
+.signup-proof-card:hover { transform: translateY(-4px); box-shadow: 0 32px 72px -28px rgba(0, 0, 0, 0.55); }
+.signup-proof-card::before { content: ""; position: absolute; inset: 0; background: radial-gradient(600px 220px at 50% -10%, rgba(255, 255, 255, 0.14), transparent 70%); pointer-events: none; }
+.signup-proof-card::after { content: ""; position: absolute; inset: 0; border-radius: inherit; border: 1px solid rgba(255, 255, 255, 0.12); pointer-events: none; }
+.signup-proof-card .tracking-journey { padding: 30px 0 18px; }
+.signup-proof-card .tracking-journey-line { background: rgba(255, 255, 255, 0.18); }
+.signup-proof-card .tracking-journey-line span { background: var(--background); box-shadow: 0 0 12px rgba(255, 255, 255, 0.8); }
+.signup-proof-card .tracking-journey-icon { width: 56px; height: 56px; border-radius: 14px; background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.22); color: var(--background); animation-name: tracking-node, signup-proof-glow; animation-duration: 4.8s, 4.8s; animation-timing-function: ease-in-out, ease-in-out; animation-iteration-count: infinite, infinite; }
+.signup-proof-card .tracking-journey-node-1 .tracking-journey-icon { animation-delay: 800ms, 800ms; }
+.signup-proof-card .tracking-journey-node-2 .tracking-journey-icon { animation-delay: 1600ms, 1600ms; }
+.signup-proof-card .tracking-journey-node span { color: rgba(255, 255, 255, 0.55); }
+.signup-proof-card .tracking-journey-arrow { background: transparent; color: rgba(255, 255, 255, 0.35); }
+.signup-proof-caption { margin-top: 22px; text-align: center; font-size: 12px; line-height: 1.6; color: rgba(255, 255, 255, 0.4); }
+.signup-proof-status { display: inline-flex; align-items: center; gap: 8px; margin-top: 18px; padding: 6px 12px; border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 999px; font-size: 11px; font-weight: 500; color: rgba(255, 255, 255, 0.65); }
+.signup-proof-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--background); animation: signup-proof-pulse 2.4s ease-in-out infinite; }
+.signup-proof-item { opacity: 0; transform: translateY(14px); animation: signup-proof-item-in 600ms cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.signup-proof-item:nth-child(1) { animation-delay: 100ms; }
+.signup-proof-item:nth-child(2) { animation-delay: 220ms; }
+.signup-proof-item:nth-child(3) { animation-delay: 340ms; }
+.signup-proof-item:nth-child(4) { animation-delay: 460ms; }
+.signup-proof-underline { position: relative; white-space: nowrap; }
+.signup-proof-underline::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0.04em; height: 0.08em; background: currentColor; opacity: 0.25; transform: scaleX(0); transform-origin: left; animation: signup-proof-underline-in 900ms 500ms cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+@keyframes signup-proof-glow { 0%, 12%, 40%, 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); } 20%, 30% { box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.12), 0 0 24px rgba(255, 255, 255, 0.25); } }
+@keyframes signup-proof-pulse { 0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5); } 50% { opacity: 0.55; box-shadow: 0 0 0 5px rgba(255, 255, 255, 0); } }
+@keyframes signup-proof-item-in { to { opacity: 1; transform: translateY(0); } }
+@keyframes signup-proof-underline-in { to { transform: scaleX(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .signup-proof-card, .signup-proof-card:hover { transition: none; transform: none; }
+  .signup-proof-card .tracking-journey-icon, .signup-proof-dot { animation: none; }
+  .signup-proof-item { opacity: 1; transform: none; animation: none; }
+  .signup-proof-underline::after { animation: none; transform: scaleX(1); }
+}
 @keyframes tracking-reveal { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes tracking-flow { 0%, 15% { transform: translateX(-110%); } 65%, 100% { transform: translateX(440%); } }
 @keyframes tracking-node { 0%, 12%, 40%, 100% { transform: translateY(0); border-color: var(--border); } 20%, 30% { transform: translateY(-4px); border-color: var(--foreground); } }
