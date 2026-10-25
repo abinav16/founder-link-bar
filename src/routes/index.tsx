@@ -1,6 +1,7 @@
 import { SiteHeader } from "@/components/SiteHeader";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { LiveVisitorMap } from "@/components/LiveVisitorMap";
+import { SignupTrackingJourney } from "@/components/SignupTrackingJourney";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { ArrowRight, Settings, LogOut, LayoutDashboard, Eye, MousePointerClick, Globe, BarChart2, Users, TrendingUp, Info, X, Trophy, Gavel } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
@@ -1028,6 +1029,7 @@ function Landing() {
         </div>
       </section>
 
+      <SignupProofSection />
       <WhyItWorks />
       <BarFreeSection />
       <StartupBidSection />
