@@ -120,6 +120,7 @@ function WidgetBar() {
   }, []);
 
   const [fadeIn, setFadeIn] = useState(true);
+  const ctaLabel = "Try free";
 
   useEffect(() => {
     window.parent.postMessage({ type: "startupbar:exit-ready", ready: !!startup && !showInfo && !dismissed }, "*");
@@ -180,8 +181,8 @@ function WidgetBar() {
         if (cancelled) return;
         setStartup(next);
         setFadeIn(true);
-      }, 500);
-    }, 30000);
+      }, 400);
+    }, 13000);
 
     return () => {
       cancelled = true;
@@ -266,10 +267,29 @@ function WidgetBar() {
     flexShrink: 0,
     color: tokens.text,
     textDecoration: "none",
+    border: `1px solid ${tokens.border}`,
+    padding: "2px 9px",
+    borderRadius: "999px",
+    fontSize: 11,
+    fontWeight: 600,
+    lineHeight: 1.4,
+    transition: "background 150ms ease, border-color 150ms ease",
   };
 
   return (
     <div ref={wrapperRef} className={`sb-widget-shell ${activeTheme === "dark" ? "sb-widget-dark" : ""} ${placement === "bottom" ? "sb-widget-bottom" : ""}`}>
+      <style>{`
+        .sb-widget-compact:hover { background-color: rgba(0, 0, 0, 0.02) !important; }
+        .sb-widget-dark .sb-widget-compact:hover { background-color: rgba(255, 255, 255, 0.03) !important; }
+        .sb-visit-arrow { display: inline-block; margin-left: 2px; transition: transform 150ms ease; }
+        .sb-visit-cta:hover .sb-visit-arrow { transform: translateX(2px); }
+        .sb-visit-cta:hover { background-color: rgba(0, 0, 0, 0.04) !important; border-color: rgba(0, 0, 0, 0.22) !important; }
+        .sb-widget-dark .sb-visit-cta:hover { background-color: rgba(255, 255, 255, 0.06) !important; border-color: rgba(255, 255, 255, 0.28) !important; }
+        @media (prefers-reduced-motion: reduce) {
+          .sb-visit-arrow { transition: none; }
+          .sb-visit-cta:hover .sb-visit-arrow { transform: none; }
+        }
+      `}</style>
       {isMobile && (
         <style>{`
           @keyframes sb-marquee {
@@ -316,7 +336,7 @@ function WidgetBar() {
               flex: 1,
               minWidth: 0,
               opacity: fadeIn ? 1 : 0,
-              transition: "opacity 500ms ease-in-out",
+              transition: "opacity 400ms ease-in-out",
             }}
           >
             <StartupFavicon
@@ -345,12 +365,13 @@ function WidgetBar() {
 
             <a
               onClick={(e) => e.stopPropagation()}
+              className="sb-visit-cta"
               href={`/api/public/widget/click?id=${startup.id}${host ? `&host=${host}` : ""}${domain ? `&via=${encodeURIComponent(domain)}` : ""}`}
               target="_blank"
               rel="noopener noreferrer"
-              style={{ ...arrowLinkBase, fontWeight: isMobile ? 800 : 500, fontSize: isMobile ? 14 : 12 }}
+              style={{ ...arrowLinkBase, fontWeight: 600, fontSize: isMobile ? 12 : 11 }}
             >
-              Visit →
+              {ctaLabel}<span className="sb-visit-arrow">→</span>
             </a>
           </div>
         ) : !loaded ? (
