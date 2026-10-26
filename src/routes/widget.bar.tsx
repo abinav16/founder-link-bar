@@ -120,6 +120,7 @@ function WidgetBar() {
   }, []);
 
   const [fadeIn, setFadeIn] = useState(true);
+  const ctaLabel = "Try free";
 
   useEffect(() => {
     window.parent.postMessage({ type: "startupbar:exit-ready", ready: !!startup && !showInfo && !dismissed }, "*");
@@ -180,8 +181,8 @@ function WidgetBar() {
         if (cancelled) return;
         setStartup(next);
         setFadeIn(true);
-      }, 500);
-    }, 30000);
+      }, 400);
+    }, 13000);
 
     return () => {
       cancelled = true;
@@ -266,6 +267,13 @@ function WidgetBar() {
     flexShrink: 0,
     color: tokens.text,
     textDecoration: "none",
+    border: `1px solid ${tokens.border}`,
+    padding: "2px 9px",
+    borderRadius: "999px",
+    fontSize: 11,
+    fontWeight: 600,
+    lineHeight: 1.4,
+    transition: "background 150ms ease, border-color 150ms ease",
   };
 
   return (
