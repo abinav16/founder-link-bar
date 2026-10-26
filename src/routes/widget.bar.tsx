@@ -336,7 +336,7 @@ function WidgetBar() {
               flex: 1,
               minWidth: 0,
               opacity: fadeIn ? 1 : 0,
-              transition: "opacity 500ms ease-in-out",
+              transition: "opacity 400ms ease-in-out",
             }}
           >
             <StartupFavicon
