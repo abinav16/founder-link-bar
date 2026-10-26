@@ -335,6 +335,7 @@ function WidgetBar() {
               gap: 8,
               flex: 1,
               minWidth: 0,
+              justifyContent: isMobile ? "flex-start" : "center",
               opacity: fadeIn ? 1 : 0,
               transition: "opacity 400ms ease-in-out",
             }}
@@ -358,21 +359,10 @@ function WidgetBar() {
               </span>
 
             ) : (
-              <span style={{ color: tokens.textMuted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+              <span style={{ color: tokens.textMuted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: "0 1 auto", minWidth: 0 }}>
                 &nbsp;· {startup.description}
               </span>
             )}
-
-            <a
-              onClick={(e) => e.stopPropagation()}
-              className="sb-visit-cta"
-              href={`/api/public/widget/click?id=${startup.id}${host ? `&host=${host}` : ""}${domain ? `&via=${encodeURIComponent(domain)}` : ""}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ ...arrowLinkBase, fontWeight: 600, fontSize: isMobile ? 12 : 11 }}
-            >
-              {ctaLabel}<span className="sb-visit-arrow">→</span>
-            </a>
           </div>
         ) : !loaded ? (
           /* First pick still in flight: neutral skeleton, never the generic
@@ -396,6 +386,20 @@ function WidgetBar() {
               Join free →
             </a>
           </>
+        )}
+
+        {/* CTA pill — sits after the centered content group so it stays on the right */}
+        {startup && (
+          <a
+            onClick={(e) => e.stopPropagation()}
+            className="sb-visit-cta"
+            href={`/api/public/widget/click?id=${startup.id}${host ? `&host=${host}` : ""}${domain ? `&via=${encodeURIComponent(domain)}` : ""}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ ...arrowLinkBase, fontWeight: 600, fontSize: isMobile ? 12 : 11 }}
+          >
+            {ctaLabel}<span className="sb-visit-arrow">→</span>
+          </a>
         )}
 
         {/* X button — desktop only */}
