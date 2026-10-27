@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { trackPageView } from "@/lib/analytics";
 import { trackSiteVisit } from "@/lib/site-visit";
 import { BackToTop } from "@/components/BackToTop";
+import { GoogleOneTap } from "@/components/GoogleOneTap";
 
 
 function NotFoundComponent() {
@@ -185,6 +186,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <Outlet />
       <BackToTop />
+      <GoogleOneTap />
       <Toaster />
     </QueryClientProvider>
   );
