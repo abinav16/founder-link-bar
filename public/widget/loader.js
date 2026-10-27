@@ -79,8 +79,8 @@
 
 
     function detectTheme() {
-      var dataTheme = s.getAttribute('data-theme');
-      if (dataTheme === 'dark' || dataTheme === 'light') return dataTheme;
+      // The script's own data-theme attribute no longer overrides anything:
+      // the bar always blends with the site's real rendered colors.
 
       var roots = [document.documentElement, document.body];
       for (var i = 0; i < roots.length; i++) {
@@ -135,10 +135,8 @@
     function detectPalette() {
       var mode = detectTheme();
       var fallback = mode === 'dark' ? [24, 24, 27, 1] : [255, 255, 255, 1];
-      // Explicit founder theme overrides remain authoritative.
-      if (s.getAttribute('data-theme') === 'dark' || s.getAttribute('data-theme') === 'light') {
-        return { theme: mode, background: colorHex(fallback), foreground: mode === 'dark' ? '#f4f4f5' : '#0f172a' };
-      }
+      // Auto-blend is always authoritative: computed host colors win over any
+      // legacy data-theme attribute on the script tag.
       try {
         var rootStyle = window.getComputedStyle(document.documentElement);
         var bodyStyle = document.body && window.getComputedStyle(document.body);
