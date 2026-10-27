@@ -688,11 +688,12 @@ function Apply() {
     ? [
         "Add the StartupBar analytics snippet to my website.",
         "",
-        "1. Paste this script tag inside the <head> tag of every page:",
+        "1. Paste this code inside the <head> tag of every page:",
         `   ${snippet}`,
         "",
         "2. It renders nothing on the page — no bar, no banner, no layout change.",
         "   Do NOT add any CSS, padding or offsets for it.",
+        "   The small hidden link is required: keep it exactly as-is.",
         "",
         "3. If the site has a Content-Security-Policy, add:",
         "   script-src https://startupbar.co;",
