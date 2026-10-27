@@ -761,6 +761,10 @@ function CtaBanner() {
             <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
           </Link>
         </div>
+        <p className="mx-auto mt-6 max-w-md text-[13px] leading-relaxed text-black/40">
+          Sign in with email or Google to list your startup, install the embed bar, and access real-time visitor analytics.{" "}
+          <Link to="/privacy" className="underline underline-offset-2 hover:text-black">Privacy Policy</Link>
+        </p>
       </div>
     </section>
   );
@@ -926,11 +930,7 @@ function Landing() {
           </h1>
 
           <p className="mx-auto mt-5 max-w-xl text-base text-black/50 leading-relaxed sm:mt-7 sm:text-lg">
-            <strong className="font-semibold text-black">StartupBar</strong> is a free traffic exchange for software founders. Add one line of code. A small bar appears on your site showing another founder's startup. In return, yours gets shown on theirs.
-          </p>
-          <p className="mx-auto mt-3 max-w-xl text-[13px] text-black/40 leading-relaxed">
-            Sign in with Google to list your startup, get your bar code and see your visitor stats. We only use your name, email and profile photo for your account.{" "}
-            <Link to="/privacy" className="underline underline-offset-2 hover:text-black">Privacy Policy</Link>
+            <strong className="font-semibold text-black">StartupBar</strong> is a mutual traffic exchange for indie founders. Add one line of code. A small bar appears on your site showing another founder's startup. In return, yours gets shown on theirs.
           </p>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-1.5">

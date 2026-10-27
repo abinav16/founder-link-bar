@@ -265,6 +265,11 @@ function AuthPage() {
             </button>
           </form>
 
+          <p className="mt-5 text-center text-xs leading-relaxed text-black/40">
+            Sign in with email or Google to list your startup, install the embed bar, and access real-time visitor analytics.{" "}
+            <Link to="/privacy" className="underline underline-offset-2 hover:text-black">Privacy Policy</Link>
+          </p>
+
           <div className="mt-6 text-center text-sm text-black/40">
             {mode === "signin" ? (<>New to StartupBar?{" "}<button onClick={() => setMode("signup")} className="font-medium text-black hover:underline underline-offset-2">Create an account</button></>) : (<>Already have an account?{" "}<button onClick={() => setMode("signin")} className="font-medium text-black hover:underline underline-offset-2">Sign in</button></>)}
           </div>
