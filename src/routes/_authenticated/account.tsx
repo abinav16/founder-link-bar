@@ -141,7 +141,10 @@ function MembershipSection({ startup, onUpdate }: {
   const cancelling = !!startup.supporter_cancel_at_period_end;
   const seen = startup.tracking_last_seen_at ? new Date(startup.tracking_last_seen_at) : null;
   const trackingLive = !!seen && Date.now() - seen.getTime() < 7 * 24 * 60 * 60 * 1000;
-  const snippet = `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startup.id}" data-mode="track"></script>`;
+  // The fallback link stays in the static HTML so search crawlers (which never
+  // run the loader script) still register a backlink from every partner site.
+  const fallbackLink = `<a href="https://startupbar.co" target="_blank" rel="noopener" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">StartupBar</a>`;
+  const snippet = `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startup.id}" data-mode="track"></script>\n${fallbackLink}`;
 
   async function cancelRenewal() {
     if (busy) return;

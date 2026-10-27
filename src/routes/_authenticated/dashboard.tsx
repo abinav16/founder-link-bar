@@ -616,10 +616,13 @@ function DashboardPage() {
   }
 
   const isSupporter = startup?.membership_mode === "supporter";
+  // The fallback link stays in the static HTML so search crawlers (which never
+  // run the loader script) still register a backlink from every partner site.
+  const fallbackLink = `<a href="https://startupbar.co" target="_blank" rel="noopener" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">StartupBar</a>`;
   const snippet = startup
     ? isSupporter
-      ? `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startup.id}" data-mode="track"></script>`
-      : `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startup.id}"></script>`
+      ? `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startup.id}" data-mode="track"></script>\n${fallbackLink}`
+      : `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startup.id}"></script>\n${fallbackLink}`
     : "";
 
   // Approved widget-mode listings only start collecting data once the script
