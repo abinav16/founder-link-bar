@@ -46,7 +46,7 @@ export const Route = createFileRoute("/")({
       { name: "twitter:image", content: `https://startupbar.co${socialPreviewAsset.url}` },
     ],
     links: [
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@800&display=swap" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Manrope:wght@600&display=swap" },
       { rel: "canonical", href: "https://startupbar.co/" },
       {
         rel: "preload",
@@ -918,7 +918,7 @@ function Landing() {
           </p>
 
           <h1
-            className="mt-6 font-hero-rounded text-[1.9rem] font-extrabold leading-[1.12] tracking-normal text-foreground sm:mt-8 sm:text-5xl md:text-6xl lg:text-[4rem]"
+            className="mt-6 font-hero-rounded text-[1.9rem] font-semibold leading-[1.16] tracking-normal text-foreground sm:mt-8 sm:text-5xl md:text-6xl lg:text-[4rem]"
           >
             Founders helping founders
             <br className="hidden sm:block" />{" "}
