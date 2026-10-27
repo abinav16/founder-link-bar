@@ -203,6 +203,7 @@ function StartupPage() {
               </h1>
               <p className="mt-2 max-w-xl text-[14px] sm:text-[15px] leading-relaxed text-black/60">{s.description}</p>
               <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-black/45">
+                {s.category && <span className="rounded-md border border-border bg-muted px-2.5 py-1 text-foreground">{s.category}</span>}
                 <span className="inline-flex items-center gap-1 rounded-full bg-black/5 px-2.5 py-1">
                   <Calendar className="h-3 w-3" /> Joined {joined}
                 </span>

@@ -1,3 +1,5 @@
+import { StartupCategorySelect } from "@/components/StartupCategorySelect";
+import { STARTUP_CATEGORIES, isStartupCategory } from "@/lib/startup-categories";
 import { SUPPORTER_PRICE_USD, SUPPORTER_TRIAL_DAYS } from "@/lib/supporter";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
@@ -41,6 +43,7 @@ const schema = z.object({
   name: z.string().trim().min(2).max(60),
   website_url: z.string().trim().url().max(200),
   description: z.string().trim().min(10).max(100),
+  category: z.enum(STARTUP_CATEGORIES, { message: "Choose a startup category." }),
   founder_quote: z.string().trim().max(280).optional(),
 });
 
@@ -441,6 +444,9 @@ function Apply() {
   const [name, setName] = useState(initial.name);
   const [url, setUrl] = useState(initial.url);
   const [desc, setDesc] = useState(initial.desc);
+  const [category, setCategory] = useState<string>(() => {
+    try { const value = JSON.parse(readRawDraft() ?? "{}").category; return isStartupCategory(value) ? value : ""; } catch { return ""; }
+  });
   const [quote, setQuote] = useState(() => {
     if (typeof window === "undefined") return "";
     try { return JSON.parse(readRawDraft() ?? "{}")?.quote ?? ""; } catch { return ""; }
@@ -525,7 +531,7 @@ function Apply() {
       if (!u.user) return;
       const { data, error } = await supabase
         .from("startups")
-        .select("id, name, website_url, description, founder_quote, widget_placement, status, user_id")
+        .select("id, name, website_url, description, category, founder_quote, widget_placement, status, user_id")
         .eq("id", resubmitId)
         .maybeSingle();
       if (error || !data || data.user_id !== u.user.id) {
@@ -545,6 +551,7 @@ function Apply() {
       setName(data.name);
       setUrl(data.website_url);
       setDesc(data.description);
+      setCategory(data.category ?? "");
       setQuote(data.founder_quote ?? "");
       setPlacement(data.widget_placement === "bottom" ? "bottom" : "top");
       setStartupId(data.id);
@@ -663,8 +670,8 @@ function Apply() {
     if (typeof window === "undefined") return;
     if (resubmitId) return; // resubmits are URL-driven — don't overwrite the fresh-apply draft
     if (!name && !url && !desc && !quote) return;
-    writeDraft({ step, name, url, desc, quote, placement, mode, startupId, tracking });
-  }, [step, name, url, desc, quote, placement, mode, resubmitId, startupId, tracking]);
+    writeDraft({ step, name, url, desc, category, quote, placement, mode, startupId, tracking });
+  }, [step, name, url, desc, category, quote, placement, mode, resubmitId, startupId, tracking]);
 
   // Supporters get a tracking-only snippet: it renders nothing, no bar, no
   // layout shift — it only powers their own dashboard stats.
@@ -727,14 +734,14 @@ function Apply() {
 
   function goToStep2(e: React.FormEvent) {
     e.preventDefault();
-    const parsed = schema.safeParse({ name, website_url: url, description: desc, founder_quote: quote });
+    const parsed = schema.safeParse({ name, website_url: url, description: desc, category, founder_quote: quote });
     if (!parsed.success) {
       toast.error(parsed.error.issues[0]?.message ?? "Invalid input");
       return;
     }
     if (!authed) {
       // Save draft at step 1 — user must sign in before reaching the install step.
-      writeDraft({ step: 1, name, url, desc, quote, placement, mode, startupId });
+      writeDraft({ step: 1, name, url, desc, category, quote, placement, mode, startupId });
       sessionStorage.setItem("startupbar:auth-next", "/apply");
       navigate({ to: "/auth" });
       return;
@@ -747,7 +754,7 @@ function Apply() {
     setPaymentLoading(true);
     // Persist the draft so we can restore state after Dodo redirects back —
     // we deliberately keep the return URL tiny (no PII in query string).
-    writeDraft({ step: 2, name, url, desc, quote, placement, mode, startupId });
+    writeDraft({ step: 2, name, url, desc, category, quote, placement, mode, startupId });
 
     const { data: u } = await supabase.auth.getUser();
     const returnUrl = `${window.location.origin}/apply?paid=true&sid=${encodeURIComponent(startupId)}`;
@@ -767,7 +774,7 @@ function Apply() {
   // stamped onto it.
   async function handleSupporterPayment() {
     setPaymentLoading(true);
-    writeDraft({ step: 2, name, url, desc, quote, placement, mode: "supporter", startupId });
+    writeDraft({ step: 2, name, url, desc, category, quote, placement, mode: "supporter", startupId });
 
     const { data: u } = await supabase.auth.getUser();
     const returnUrl = `${window.location.origin}/apply?supporter=1&sid=${encodeURIComponent(startupId)}`;
@@ -847,7 +854,7 @@ function Apply() {
       const user_id = userData.user?.id;
       if (!user_id) { setLoading(false); navigate({ to: "/auth" }); return; }
 
-      const validated = schema.safeParse({ name, website_url: url, description: desc, founder_quote: quote });
+      const validated = schema.safeParse({ name, website_url: url, description: desc, category, founder_quote: quote });
       if (!validated.success) {
         setLoading(false);
         setStep(1);
@@ -1097,6 +1104,9 @@ function Apply() {
                     }}
                     placeholder="acme.ai" className={inputCls}
                   />
+                </Field>
+                <Field label="Category">
+                  <StartupCategorySelect value={category} onChange={setCategory} />
                 </Field>
                 <Field label="One-liner" hint="What your product does, in plain English. Max 100 chars.">
                   <textarea required maxLength={100} rows={3} value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="Turn meeting notes into action items, automatically." className={inputCls + " resize-none"} />

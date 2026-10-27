@@ -1,3 +1,5 @@
+import { StartupCategorySelect } from "@/components/StartupCategorySelect";
+import { isStartupCategory } from "@/lib/startup-categories";
 import { SUPPORTER_PRICE_USD, SUPPORTER_TRIAL_DAYS } from "@/lib/supporter";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
@@ -30,6 +32,7 @@ interface Startup {
   name: string;
   website_url: string;
   description: string;
+  category: string | null;
   status: "pending" | "approved" | "rejected";
   logo_url: string | null;
   user_id: string;
@@ -224,6 +227,7 @@ function StartupCard({ startup, onUpdate, onDelete }: {
   const editPending = startup.edit_status === "pending";
   const isSupporterMode = startup.membership_mode === "supporter";
   const [expanded, setExpanded] = useState(false);
+  const [savingCategory, setSavingCategory] = useState(false);
   const [sName, setSName] = useState(startup.pending_name ?? startup.name);
   const [sDesc, setSDesc] = useState(startup.pending_description ?? startup.description);
   const [fQuote, setFQuote] = useState(startup.founder_quote ?? "");
@@ -288,6 +292,18 @@ function StartupCard({ startup, onUpdate, onDelete }: {
     setSDesc(startup.description);
     toast.success("Changes withdrawn");
     onUpdate(startup.id, { pending_name: null, pending_description: null, edit_status: "none", edit_submitted_at: null });
+  }
+
+  async function saveCategory(category: string) {
+    if (!isStartupCategory(category) || savingCategory) return;
+    setSavingCategory(true);
+    const { data, error } = await supabase.from("startups")
+      .update({ category }).eq("id", startup.id).eq("user_id", startup.user_id)
+      .select("category").single();
+    setSavingCategory(false);
+    if (error || !data) { toast.error("Could not save category. Please try again."); return; }
+    onUpdate(startup.id, { category: data.category });
+    toast.success("Category updated");
   }
 
   async function saveFounder() {
@@ -493,6 +509,10 @@ function StartupCard({ startup, onUpdate, onDelete }: {
               </div>
             </div>
             <div>
+              <label htmlFor={`category-${startup.id}`} className="mb-1.5 block text-xs font-medium text-muted-foreground">Category</label>
+              <StartupCategorySelect id={`category-${startup.id}`} value={startup.category ?? ""} onChange={saveCategory} disabled={savingCategory} />
+            </div>
+            <div>
               <label className="mb-1.5 block text-xs font-medium text-black/60">One-liner ({sDesc.length}/100)</label>
               <textarea required maxLength={100} rows={2} value={sDesc} onChange={(e) => setSDesc(e.target.value)} className={inputCls + " resize-none"} />
             </div>
@@ -679,7 +699,7 @@ function AccountPage() {
       setAvatarUrl(p?.avatar_url ?? u.user.user_metadata?.avatar_url ?? u.user.user_metadata?.picture ?? null);
 
       const { data } = await supabase
-        .from("startups").select("id, name, website_url, description, status, logo_url, user_id, slug, founder_name, founder_quote, founder_avatar_url, widget_placement, pending_name, pending_description, edit_status, edit_submitted_at, membership_mode, supporter_until, supporter_cancel_at_period_end, tracking_last_seen_at").eq("user_id", u.user.id).order("created_at", { ascending: true });
+        .from("startups").select("id, name, website_url, description, category, status, logo_url, user_id, slug, founder_name, founder_quote, founder_avatar_url, widget_placement, pending_name, pending_description, edit_status, edit_submitted_at, membership_mode, supporter_until, supporter_cancel_at_period_end, tracking_last_seen_at").eq("user_id", u.user.id).order("created_at", { ascending: true });
       if (data) setStartups(data as Startup[]);
 
       // Returning from the Supporter checkout: confirm the subscription and
@@ -697,7 +717,7 @@ function AccountPage() {
         if ((conf as any)?.activated) {
           toast.success("You're a Supporter — the bar is off for your site.");
           const { data: fresh } = await supabase
-            .from("startups").select("id, name, website_url, description, status, logo_url, user_id, slug, founder_name, founder_quote, founder_avatar_url, widget_placement, pending_name, pending_description, edit_status, edit_submitted_at, membership_mode, supporter_until, supporter_cancel_at_period_end, tracking_last_seen_at").eq("user_id", u.user.id).order("created_at", { ascending: true });
+            .from("startups").select("id, name, website_url, description, category, status, logo_url, user_id, slug, founder_name, founder_quote, founder_avatar_url, widget_placement, pending_name, pending_description, edit_status, edit_submitted_at, membership_mode, supporter_until, supporter_cancel_at_period_end, tracking_last_seen_at").eq("user_id", u.user.id).order("created_at", { ascending: true });
           if (fresh) setStartups(fresh as Startup[]);
         } else {
           toast.info("Checkout completed — we're confirming your membership.", { duration: 8000 });
