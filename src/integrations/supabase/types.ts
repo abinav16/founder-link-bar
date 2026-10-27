@@ -788,6 +788,35 @@ export type Database = {
           },
         ]
       }
+      snippet_install_checks: {
+        Row: {
+          checked_at: string
+          detected_at: string | null
+          source_url: string | null
+          startup_id: string
+        }
+        Insert: {
+          checked_at?: string
+          detected_at?: string | null
+          source_url?: string | null
+          startup_id: string
+        }
+        Update: {
+          checked_at?: string
+          detected_at?: string | null
+          source_url?: string | null
+          startup_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "snippet_install_checks_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: true
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       startup_stats_daily: {
         Row: {
           clicks_given: number

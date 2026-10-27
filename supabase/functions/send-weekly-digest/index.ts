@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { escapeHtml, shell, section } from "./template.ts";
 import { FROM, appEmailCc } from "./delivery.ts";
+import { checkLatestSnippet, needsSnippetReminder } from "./snippet.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -108,7 +109,7 @@ serve(async (req) => {
 
     const { data: startups, error: sErr } = await admin
       .from("startups")
-      .select("id, name, website_url, logo_url, user_id, banned, widget_last_heartbeat_at, created_at")
+      .select("id, name, website_url, logo_url, user_id, banned, widget_last_heartbeat_at, widget_last_page_url, created_at")
       .eq("status", "approved")
       .eq("banned", false)
       // Only startups listed for a full week get a weekly summary.
@@ -131,11 +132,11 @@ serve(async (req) => {
       impCount.set(r.shown_startup_id, Number(r.cnt) || 0);
     });
 
-    type DigestStartup = { id: string; name: string; websiteUrl: string; logoUrl: string | null; hb: string | null };
+    type DigestStartup = { id: string; name: string; websiteUrl: string; logoUrl: string | null; hb: string | null; lastPageUrl: string | null };
     const byUser = new Map<string, DigestStartup[]>();
     for (const s of startups ?? []) {
       const owned = byUser.get(s.user_id) ?? [];
-      owned.push({ id: s.id, name: s.name, websiteUrl: s.website_url, logoUrl: s.logo_url, hb: s.widget_last_heartbeat_at });
+      owned.push({ id: s.id, name: s.name, websiteUrl: s.website_url, logoUrl: s.logo_url, hb: s.widget_last_heartbeat_at, lastPageUrl: s.widget_last_page_url });
       byUser.set(s.user_id, owned);
     }
 
@@ -237,6 +238,24 @@ serve(async (req) => {
         const firstVerifiedIds: string[] = [];
         for (const s of userStartups) {
           const impressions = impCount.get(s.id) ?? 0;
+          // Verify immediately before composing this startup's section. Unreachable
+          // sites retain their previous evidence; scans never trigger extra emails.
+          let needsSnippetUpdate = false;
+          try {
+            const { data: previous, error: previousError } = await admin.from('snippet_install_checks').select('detected_at').eq('startup_id', s.id).maybeSingle();
+            if (previousError) throw previousError;
+            const checked = await checkLatestSnippet(s.id, s.websiteUrl, s.lastPageUrl);
+            let detectedAt: string | null = previous?.detected_at ?? null;
+            if (checked.detected || checked.complete) {
+              detectedAt = checked.detected ? new Date().toISOString() : null;
+              const { error: saveError } = await admin.from('snippet_install_checks').upsert({ startup_id: s.id, detected_at: detectedAt, checked_at: new Date().toISOString(), source_url: checked.sourceUrl });
+              if (saveError) throw saveError;
+            }
+            needsSnippetUpdate = needsSnippetReminder(detectedAt);
+          } catch {
+            // A verification/storage outage must not accuse already updated sites.
+            console.warn('Snippet check unavailable; reminder omitted', s.id);
+          }
 
           // Daily rollups keep the digest fast; raw event scans time out.
           const { data: rows } = await admin
@@ -279,6 +298,7 @@ serve(async (req) => {
             rank: `#${rank}`,
             impressionsDelta: delta,
             signupTracking,
+            needsSnippetUpdate,
           }));
         }
 
