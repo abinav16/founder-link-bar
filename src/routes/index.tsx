@@ -792,6 +792,11 @@ function Landing() {
   const [liveFade, setLiveFade] = useState(true);
   const [mockInfoOpen, setMockInfoOpen] = useState(false);
   const [mockDismissed, setMockDismissed] = useState(false);
+  const [blendIndex, setBlendIndex] = useState(0);
+  useEffect(() => {
+    const t = window.setInterval(() => setBlendIndex(i => (i + 1) % 5), 3200);
+    return () => window.clearInterval(t);
+  }, []);
   const [startupBarId, setStartupBarId] = useState<string | null>(null);
   const [startupBarLogo, setStartupBarLogo] = useState<string | null>(null);
   const [siteInput, setSiteInput] = useState("");
@@ -989,7 +994,23 @@ function Landing() {
                 </div>
               </div>
             )}
-            <div className="relative overflow-hidden rounded-xl border border-black/10 bg-white shadow-[0_20px_60px_-20px_rgba(0,0,0,0.15)]">
+            {!mockDismissed && !previewUrl && (
+              <div
+                aria-hidden
+                className="pointer-events-none absolute left-4 top-[84px] z-10 flex items-start gap-1.5 sm:left-8 sm:top-[90px] sm:gap-2"
+                style={{ fontFamily: "'Caveat', cursive", color: "var(--mock-fg)" }}
+              >
+                <svg viewBox="0 0 60 60" fill="none" className="h-10 w-10 shrink-0 sm:h-14 sm:w-14 mock-blend-surface">
+                  <path d="M50 52 C 30 48, 14 34, 12 6" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+                  <path d="M12 6 L 5 14 M 12 6 L 19 13" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+                </svg>
+                <div className="mt-6 rotate-1 text-[16px] leading-[1.05] sm:mt-9 sm:text-[21px] mock-blend-surface">
+                  <div>Auto-blends with your site's colors</div>
+                  <div className="text-[13px] opacity-70 sm:text-[17px]">(matches your background &amp; text color)</div>
+                </div>
+              </div>
+            )}
+            <div className={`mock-blend ${previewUrl ? "" : `mock-blend-${blendIndex}`} relative overflow-hidden rounded-xl border border-black/10 bg-white shadow-[0_20px_60px_-20px_rgba(0,0,0,0.15)]">
               <div className="flex h-9 items-center gap-2 border-b border-black/8 bg-black/[0.02] px-4">
                 <div className="h-2.5 w-2.5 rounded-full bg-red-400/80" />
                 <div className="h-2.5 w-2.5 rounded-full bg-yellow-400/80" />
@@ -998,11 +1019,11 @@ function Landing() {
               </div>
               {!mockDismissed && (
                 <div className="relative border-b border-black/8">
-                  <div className="relative flex h-9 items-center gap-0 bg-white px-2 text-[13px]" style={{ color: "#0f172a" }}>
+                  <div className="mock-blend-surface relative flex h-9 items-center gap-0 px-2 text-[13px]" style={{ background: "var(--mock-bg)", color: "var(--mock-fg)" }}>
                     <button
                       onClick={() => setMockInfoOpen(v => !v)}
                       aria-label="What is this?"
-                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-black/30 transition-colors hover:text-black/60"
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded opacity-50 transition-opacity hover:opacity-80"
                     >
                       <Info size={12} />
                     </button>
@@ -1020,16 +1041,16 @@ function Landing() {
                           className="shrink-0 rounded-sm"
                         />
                         <span className="max-w-[160px] shrink-0 truncate font-medium">{liveStartup?.name ?? "Acme AI"}</span>
-                        <span className="hidden min-w-0 flex-1 truncate text-black/40 sm:block">
+                        <span className="hidden min-w-0 flex-1 truncate sm:block" style={{ color: "var(--mock-muted)" }}>
                           {liveStartup ? `· ${liveStartup.description}` : "· turn meeting notes into action items, automatically"}
                         </span>
                       </div>
                     </div>
-                    <span className="shrink-0 px-2 text-[12px] text-black/60 hover:underline underline-offset-2 cursor-pointer">Visit →</span>
+                    <span className="shrink-0 rounded-full border px-2.5 py-0.5 text-[12px] hover:underline underline-offset-2 cursor-pointer">Visit →</span>
                     <button
                       onClick={() => setMockDismissed(true)}
                       aria-label="Dismiss"
-                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-black/25 transition-colors hover:text-black/50"
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded opacity-40 transition-opacity hover:opacity-70"
                     >
                       <X size={11} />
                     </button>
@@ -1053,16 +1074,16 @@ function Landing() {
                 {previewUrl ? (
                   <SitePreviewSurface url={previewUrl} />
                 ) : (
-                  <div className="flex h-full flex-col justify-center bg-black/[0.02] px-6 py-8 sm:px-10">
+                  <div className="mock-blend-surface flex h-full flex-col justify-end px-6 pb-8 sm:px-10 sm:pb-12" style={{ background: "var(--mock-page)" }}>
                     <div className="mx-auto w-full max-w-xl space-y-3">
-                      <div className="h-4 w-1/3 rounded bg-black/[0.07]" />
-                      <div className="h-3 w-1/2 rounded bg-black/[0.05]" />
-                      <div className="h-3 w-5/12 rounded bg-black/[0.05]" />
+                      <div className="mock-blend-surface h-4 w-1/3 rounded" style={{ background: "var(--mock-skel)" }} />
+                      <div className="mock-blend-surface h-3 w-1/2 rounded" style={{ background: "var(--mock-skel)" }} />
+                      <div className="mock-blend-surface h-3 w-5/12 rounded" style={{ background: "var(--mock-skel)" }} />
                     </div>
-                    <div className="mx-auto mt-8 grid w-full max-w-xl grid-cols-3 gap-3 sm:mt-12 sm:gap-4">
-                      <div className="h-16 rounded-lg bg-black/[0.05] sm:h-20" />
-                      <div className="h-16 rounded-lg bg-black/[0.04] sm:h-20" />
-                      <div className="h-16 rounded-lg bg-black/[0.05] sm:h-20" />
+                    <div className="mx-auto mt-6 grid w-full max-w-xl grid-cols-3 gap-3 sm:mt-8 sm:gap-4">
+                      <div className="mock-blend-surface h-16 rounded-lg sm:h-20" style={{ background: "var(--mock-skel)" }} />
+                      <div className="mock-blend-surface h-16 rounded-lg sm:h-20" style={{ background: "var(--mock-skel)" }} />
+                      <div className="mock-blend-surface h-16 rounded-lg sm:h-20" style={{ background: "var(--mock-skel)" }} />
                     </div>
                   </div>
                 )}
