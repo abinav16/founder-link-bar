@@ -71,6 +71,13 @@
       "when": 1792695276639,
       "tag": "0009_signup_private_table_grants",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793075858234,
+      "tag": "0010_startup_categories",
+      "breakpoints": true
     }
   ]
 }
