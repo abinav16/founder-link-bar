@@ -46,6 +46,7 @@ export const Route = createFileRoute("/")({
       { name: "twitter:image", content: `https://startupbar.co${socialPreviewAsset.url}` },
     ],
     links: [
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@800&display=swap" },
       { rel: "canonical", href: "https://startupbar.co/" },
       {
         rel: "preload",
@@ -917,12 +918,11 @@ function Landing() {
           </p>
 
           <h1
-            className="mt-6 text-[1.9rem] font-medium leading-[1.08] tracking-tight text-black sm:mt-8 sm:text-5xl md:text-7xl"
-            style={{ fontFamily: "var(--font-display)" }}
+            className="mt-6 font-hero-rounded text-[1.9rem] font-extrabold leading-[1.12] tracking-normal text-foreground sm:mt-8 sm:text-5xl md:text-6xl lg:text-[4rem]"
           >
             Founders helping founders
             <br className="hidden sm:block" />{" "}
-            get their <em className="italic">first</em> traffic.
+            get their first traffic.
           </h1>
 
           <p className="mx-auto mt-5 max-w-xl text-base text-black/50 leading-relaxed sm:mt-7 sm:text-lg">
