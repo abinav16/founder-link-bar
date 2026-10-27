@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vitest";
 import { STARTUP_CATEGORIES, isStartupCategory, matchesStartupCategory } from "./startup-categories";
 
 describe("startup categories", () => {
