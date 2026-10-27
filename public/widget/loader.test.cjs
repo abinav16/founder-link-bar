@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const { readFileSync } = require('node:fs');
 const { runInNewContext } = require('node:vm');
 
-function setup({ optOut = false, pointer = true } = {}) {
+function setup({ optOut = false, pointer = true, background = 'rgb(232, 247, 239)', foreground = 'rgb(18, 61, 43)' } = {}) {
   const listeners = {}, sent = [], storage = new Map();
   let now = 0;
   const style = {};
@@ -16,12 +16,13 @@ function setup({ optOut = false, pointer = true } = {}) {
     addEventListener: (name, cb) => { listeners[name] = cb; },
   };
   const window = { innerWidth: 1280, innerHeight: 900, location: { hostname: 'host.example', pathname: '/' }, matchMedia: () => ({ matches: pointer }), addEventListener: (name, cb) => { listeners[name] = cb; } };
+  window.getComputedStyle = () => ({ backgroundColor: background, color: foreground });
   window.top = window;
   runInNewContext(readFileSync(__dirname + '/loader.js', 'utf8'), { window, document, navigator: { userAgent: 'Chrome' }, screen: {}, URL, URLSearchParams, localStorage: { getItem() {} }, sessionStorage: { getItem: k => storage.get(k), setItem: (k, v) => storage.set(k, v) }, Date: { now: () => now }, Math, isFinite, setTimeout: cb => { cb(); return 0; }, clearTimeout() {} });
   const message = (data, source = frame.contentWindow, origin = 'https://startupbar.co') => listeners.message({ data, source, origin });
   message({ type: 'startupbar:exit-ready', ready: true });
   listeners.mousemove();
-  return { sent, style, storage, message, leave: t => { now = t; listeners.mouseleave({ clientY: 0 }); } };
+  return { frame, sent, style, storage, message, leave: t => { now = t; listeners.mouseleave({ clientY: 0 }); } };
 }
 test('exit waits fifteen seconds and only shows once per session', () => {
   const s = setup();
@@ -43,4 +44,15 @@ test('untrusted frame messages cannot dismiss or resize the widget', () => {
   assert.notEqual(s.style.display, 'none');
   s.message({ type: 'startupbar:resize', height: 300 });
   assert.equal(s.style.height, '300px');
+});
+test('existing snippets send host colors in the initial frame URL', () => {
+  const s = setup();
+  const url = new URL(s.frame.src);
+  assert.equal(url.searchParams.get('bg'), '#e8f7ef');
+  assert.equal(url.searchParams.get('fg'), '#123d2b');
+  assert.equal(s.style.cssText.includes('background:#e8f7ef'), true);
+});
+test('transparent host roots use the detected theme fallback', () => {
+  const s = setup({ background: 'rgba(0, 0, 0, 0)' });
+  assert.equal(new URL(s.frame.src).searchParams.get('bg'), '#18181b');
 });
