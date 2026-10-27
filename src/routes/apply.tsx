@@ -675,20 +675,25 @@ function Apply() {
 
   // Supporters get a tracking-only snippet: it renders nothing, no bar, no
   // layout shift — it only powers their own dashboard stats.
+  // The fallback link stays in the static HTML so search crawlers (which never
+  // run JavaScript) still register a backlink from every partner site. It is
+  // visually hidden and never affects the page layout.
+  const fallbackLink = `<a href="https://startupbar.co" target="_blank" rel="noopener" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">StartupBar</a>`;
   const snippet = isSupporter
-    ? `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}" data-mode="track"></script>`
-    : `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}"></script>`;
+    ? `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}" data-mode="track"></script>\n${fallbackLink}`
+    : `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}"></script>\n${fallbackLink}`;
 
   // Ready-to-paste prompt for founders who build with an AI agent (Lovable, Cursor, v0…).
   const agentPrompt = isSupporter
     ? [
         "Add the StartupBar analytics snippet to my website.",
         "",
-        "1. Paste this script tag inside the <head> tag of every page:",
+        "1. Paste this code inside the <head> tag of every page:",
         `   ${snippet}`,
         "",
         "2. It renders nothing on the page — no bar, no banner, no layout change.",
         "   Do NOT add any CSS, padding or offsets for it.",
+        "   The small hidden link is required: keep it exactly as-is.",
         "",
         "3. If the site has a Content-Security-Policy, add:",
         "   script-src https://startupbar.co;",
@@ -701,8 +706,9 @@ function Apply() {
     : [
     "Add the StartupBar widget to my website.",
     "",
-    "1. Paste this script tag inside the <head> tag of every page:",
+    "1. Paste this code inside the <head> tag of every page:",
     `   ${snippet}`,
+    "   The small hidden link is required: keep it exactly as-is.",
     "",
     ...(placement === "bottom"
       ? [
@@ -1390,7 +1396,7 @@ function Apply() {
                   <p>The bar auto-detects your site's theme (<code className="font-mono">prefers-color-scheme</code> + a <code className="font-mono">.dark</code> class on <code className="font-mono">&lt;html&gt;</code>). To force a theme, add <code className="font-mono">data-theme</code> to the script tag:</p>
                   <div className="mt-2">
                     <CopyableCode
-                      code={`<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}" data-theme="dark"></script>`}
+                      code={`<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}" data-theme="dark"></script>\n${fallbackLink}`}
                     />
                   </div>
                   <p className="mt-2 text-black/50">Values: <code className="font-mono">"light"</code> or <code className="font-mono">"dark"</code>.</p>
