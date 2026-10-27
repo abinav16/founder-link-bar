@@ -1,3 +1,4 @@
+import { SiteHeader } from "@/components/SiteHeader";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/privacy")({
@@ -28,12 +29,7 @@ function Logo() {
 function PrivacyPage() {
   return (
     <div className="min-h-screen bg-white">
-      <header className="border-b border-black/8">
-        <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-6">
-          <Logo />
-          <Link to="/" className="text-sm text-black/40 hover:text-black transition-colors">← Back</Link>
-        </div>
-      </header>
+      <SiteHeader />
       <main className="mx-auto max-w-2xl px-6 py-16">
         <h1 className="text-3xl font-semibold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Privacy Policy</h1>
         <p className="mt-2 text-sm text-black/40">Last updated: October 24, 2026</p>

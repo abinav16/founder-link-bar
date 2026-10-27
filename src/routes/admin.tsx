@@ -1,3 +1,5 @@
+import { SiteHeader } from "@/components/SiteHeader";
+import { Button } from "@/components/ui/button";
 import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -324,29 +326,12 @@ function AdminPage() {
 
   return (
     <div className="min-h-dvh bg-[#f7f7f6]">
-      <header className="sticky top-0 z-30 border-b border-black/8 bg-white">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <div className="flex items-center gap-3">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="h-2 w-6 rounded-sm bg-black" />
-              <span className="text-sm font-semibold tracking-tight text-black">StartupBar</span>
-            </Link>
-            <span className="rounded-full bg-black px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white">
-              Admin
-            </span>
-          </div>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <button onClick={load} className="flex items-center gap-1.5 text-sm text-black/40 hover:text-black transition-colors">
-              <RefreshCw className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Refresh</span>
-            </button>
-            <button onClick={signOut} className="flex items-center gap-1.5 rounded-md border border-black/12 px-2 py-1.5 text-sm text-black/60 hover:text-black transition-all sm:px-3">
-              <LogOut className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Sign out</span>
-            </button>
-          </div>
-        </div>
-      </header>
+      <SiteHeader>
+        <div className="border-t border-header-ink/8 bg-header-surface"><div className="mx-auto flex h-11 max-w-6xl items-center justify-between px-5 text-header-ink">
+          <span className="text-xs font-semibold">Admin</span>
+          <Button variant="ghost" size="sm" onClick={load}><RefreshCw />Refresh</Button>
+        </div></div>
+      </SiteHeader>
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
         <BroadcastPanel />

@@ -1,3 +1,4 @@
+import { SiteHeader } from "@/components/SiteHeader";
 import { StartupCategorySelect } from "@/components/StartupCategorySelect";
 import { STARTUP_CATEGORIES, isStartupCategory } from "@/lib/startup-categories";
 import { SUPPORTER_PRICE_USD, SUPPORTER_TRIAL_DAYS } from "@/lib/supporter";
@@ -1012,55 +1013,14 @@ function Apply() {
           </div>
         </div>
       )}
-      <header className="sticky top-0 z-40 border-b border-black/8 bg-white/85 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-          <Link to="/" className="flex items-center gap-2 sb-press">
-            <div className="h-2 w-6 rounded-sm bg-black" />
-            <span className="text-base font-semibold tracking-tight">StartupBar</span>
-          </Link>
-
-          <div className="hidden items-center gap-3 text-sm sm:flex">
-            {[
-              { n: 1 as const, label: "Details" },
-              { n: 2 as const, label: "Install" },
-            ].map((s, i) => (
-              <div key={s.n} className="flex items-center gap-3">
-                {i > 0 && <span className="h-px w-8 bg-black/10" />}
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold transition-colors duration-300 ${
-                      step === s.n ? "bg-black text-white" : step > s.n ? "bg-black/80 text-white" : "bg-black/10 text-black/40"
-                    }`}
-                  >
-                    {step > s.n ? "✓" : s.n}
-                  </span>
-                  <span className={`text-[13px] transition-colors duration-300 ${step === s.n ? "font-medium text-black" : "text-black/40"}`}>
-                    {s.label}
-                  </span>
-                </div>
-              </div>
-            ))}
+      <SiteHeader>
+        <div className="border-t border-header-ink/8 bg-header-surface">
+          <div className="mx-auto flex h-11 max-w-6xl items-center justify-center gap-6 px-5 text-xs text-header-ink/50">
+            {[{ n: 1, label: 'Details' }, { n: 2, label: 'Install' }].map(s => <span key={s.n} className={`flex items-center gap-2 ${step === s.n ? 'font-semibold text-header-ink' : ''}`}><span className={`flex h-5 w-5 items-center justify-center rounded-full ${step >= s.n ? 'bg-header-ink text-header-surface' : 'bg-header-ink/8'}`}>{step > s.n ? '✓' : s.n}</span>{s.label}</span>)}
           </div>
-
-          <div className="flex items-center gap-2 text-sm sm:hidden">
-            <span className="text-[12px] font-medium text-black/50">Step {step} of 2</span>
-          </div>
-
-          {authed ? (
-            <Link to="/dashboard" className="text-sm text-black/40 hover:text-black transition-colors sb-press">Dashboard →</Link>
-          ) : (
-            <Link to="/auth" className="text-sm text-black/40 hover:text-black transition-colors sb-press">
-              <span className="hidden sm:inline">Already a member? </span>Sign in
-            </Link>
-          )}
+          <div className="h-0.5 bg-header-ink/6"><div className={`h-full bg-header-ink transition-[width] duration-500 motion-reduce:transition-none ${step === 1 ? 'w-1/2' : 'w-full'}`} /></div>
         </div>
-        <div className="h-0.5 w-full bg-black/[0.06]">
-          <div
-            className="h-full bg-black transition-[width] duration-500 ease-out"
-            style={{ width: step === 1 ? "50%" : "100%" }}
-          />
-        </div>
-      </header>
+      </SiteHeader>
 
 
       <main>
