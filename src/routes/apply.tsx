@@ -675,9 +675,13 @@ function Apply() {
 
   // Supporters get a tracking-only snippet: it renders nothing, no bar, no
   // layout shift — it only powers their own dashboard stats.
+  // The fallback link stays in the static HTML so search crawlers (which never
+  // run JavaScript) still register a backlink from every partner site. It is
+  // visually hidden and never affects the page layout.
+  const fallbackLink = `<a href="https://startupbar.co" target="_blank" rel="noopener" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">StartupBar</a>`;
   const snippet = isSupporter
-    ? `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}" data-mode="track"></script>`
-    : `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}"></script>`;
+    ? `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}" data-mode="track"></script>\n${fallbackLink}`
+    : `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${startupId}"></script>\n${fallbackLink}`;
 
   // Ready-to-paste prompt for founders who build with an AI agent (Lovable, Cursor, v0…).
   const agentPrompt = isSupporter
