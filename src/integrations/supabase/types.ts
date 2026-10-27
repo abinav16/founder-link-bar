@@ -903,6 +903,7 @@ export type Database = {
       startups: {
         Row: {
           banned: boolean
+          category: string | null
           created_at: string
           description: string
           edit_status: string
@@ -939,6 +940,7 @@ export type Database = {
         }
         Insert: {
           banned?: boolean
+          category?: string | null
           created_at?: string
           description: string
           edit_status?: string
@@ -975,6 +977,7 @@ export type Database = {
         }
         Update: {
           banned?: boolean
+          category?: string | null
           created_at?: string
           description?: string
           edit_status?: string
@@ -1044,6 +1047,7 @@ export type Database = {
         Args: never
         Returns: {
           banned: boolean
+          category: string | null
           created_at: string
           description: string
           edit_status: string
@@ -1178,6 +1182,7 @@ export type Database = {
         Args: never
         Returns: {
           banned: boolean
+          category: string | null
           created_at: string
           description: string
           edit_status: string

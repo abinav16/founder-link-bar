@@ -33,6 +33,7 @@ export interface StartupPageData {
   name: string;
   website_url: string;
   description: string;
+  category: string | null;
   logo_url: string | null;
   created_at: string;
   user_id: string | null;
@@ -89,7 +90,7 @@ export const getStartupPage = createServerFn({ method: "GET" })
     const supabase = getClient();
     const { data: s } = await supabase
       .from("startups")
-      .select("id, slug, name, website_url, description, logo_url, created_at, user_id, founder_name, founder_quote, founder_avatar_url, iframe_blocked, membership_mode, supporter_until" as any)
+      .select("id, slug, name, website_url, description, category, logo_url, created_at, user_id, founder_name, founder_quote, founder_avatar_url, iframe_blocked, membership_mode, supporter_until" as any)
       .eq("slug", data.slug)
       .eq("status", "approved")
       .maybeSingle();
@@ -136,6 +137,7 @@ export const getStartupPage = createServerFn({ method: "GET" })
       name: row.name,
       website_url: row.website_url,
       description: row.description,
+      category: row.category ?? null,
       logo_url: row.logo_url,
       created_at: row.created_at,
       user_id: row.user_id ?? null,

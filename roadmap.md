@@ -1,3 +1,7 @@
+# Startup categories
+- [x] Add a shared category selector to applications and owner editing, with validated storage.
+- [x] Display categories on startup profiles and filter the network directory; verified signed-in save/reload, public profile readback, reversible restoration, and desktop/phone layouts; ten tests pass.
+
 # Partner signup attribution
 - [x] Match application Step 2 to Step 1's width and reuse the compact dashboard tracking design; verify signed-in copy/view/review/save draft flow and stable 208px/368px desktop/phone footprint without submitting or paying.
 - [x] Audit and align Terms, Privacy Policy, FAQ and public signup-tracking documentation; verify visible disclosures, FAQ controls and links, and 13 attribution/consent tests (preview has a pre-existing root hydration warning).

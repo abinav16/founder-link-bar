@@ -1,3 +1,5 @@
+import { STARTUP_CATEGORIES, matchesStartupCategory } from "@/lib/startup-categories";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
@@ -199,6 +201,7 @@ function StartupCard({ s }: { s: Card }) {
             )}
           </div>
         </div>
+        {s.category && <span className="mt-2 inline-flex max-w-full rounded-md border border-border/60 px-2 py-0.5 text-[10px] font-medium text-inherit">{s.category}</span>}
         <p className={[
           "mt-3 text-[13px] leading-relaxed line-clamp-2 sm:min-h-[2.9em]",
           sponsored ? "text-white/65" : "text-black/45",
@@ -322,6 +325,7 @@ function StartupRow({ s }: { s: Card }) {
           <div className="mt-1.5 flex items-center gap-2 min-w-0">
             <FounderChip s={s} />
           </div>
+          {s.category && <span className="mt-2 inline-flex rounded-md border border-border bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">{s.category}</span>}
 
 
 
@@ -882,6 +886,7 @@ function NetworkDashboardPage() {
   const data = Route.useLoaderData() as NetworkDashboardResult;
   const stats = data?.stats;
   const [query, setQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [sortKey, setSortKey] = useState<SortKey>("joined");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [featuredFilter, setFeaturedFilter] = useState<FeaturedFilter>("all");
@@ -907,9 +912,11 @@ function NetworkDashboardPage() {
   const filtered = useMemo(() => {
     let base = q
       ? allStartups.filter((s) =>
-          `${s.name} ${s.description} ${s.website_url}`.toLowerCase().includes(q),
+          `${s.name} ${s.description} ${s.website_url} ${s.category ?? ""}`.toLowerCase().includes(q),
         )
       : allStartups;
+
+    base = base.filter((s) => matchesStartupCategory(s.category, categoryFilter));
 
     if (featuredFilter === "featured") {
       base = base.filter((s) => s.sponsored);
@@ -929,7 +936,7 @@ function NetworkDashboardPage() {
       }
     });
     return sorted;
-  }, [allStartups, q, sortKey, sortDir, featuredFilter]);
+  }, [allStartups, q, sortKey, sortDir, featuredFilter, categoryFilter]);
 
 
   const trending = (() => {
@@ -1008,6 +1015,18 @@ function NetworkDashboardPage() {
             </div>
           </div>
 
+          <div className="mb-4 flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
+            <span className="text-xs font-medium text-muted-foreground">Category</span>
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger aria-label="Filter by category" className="w-full bg-card shadow-none sm:w-56"><SelectValue placeholder="All categories" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All categories</SelectItem>
+                {STARTUP_CATEGORIES.map((category) => <SelectItem key={category} value={category}>{category} ({allStartups.filter((s) => s.category === category).length})</SelectItem>)}
+                <SelectItem value="uncategorized">Not categorized ({allStartups.filter((s) => !s.category).length})</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Sort & filter controls (all viewports) */}
           <div className="mb-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
             <div className="min-w-0 flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
@@ -1077,7 +1096,7 @@ function NetworkDashboardPage() {
           ) : (
             <div className="rounded-2xl bg-white border border-black/[0.06] px-6 py-16 text-center">
               <p className="text-sm text-black/60 font-medium">
-                {featuredFilter === "featured" && !query
+                {categoryFilter !== "all" && !query ? "No startups in this category yet" : featuredFilter === "featured" && !query
                   ? "No featured startups right now"
                   : `No startups match "${query}"`}
               </p>
@@ -1088,7 +1107,7 @@ function NetworkDashboardPage() {
               </p>
               <button
                 type="button"
-                onClick={() => { setQuery(""); setSortKey("joined"); setSortDir("desc"); setFeaturedFilter("all"); }}
+                onClick={() => { setQuery(""); setSortKey("joined"); setSortDir("desc"); setFeaturedFilter("all"); setCategoryFilter("all"); }}
 
                 className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-black px-4 py-2 text-[13px] font-medium text-white hover:bg-black/85 transition-colors"
               >
