@@ -1005,7 +1005,7 @@ function Landing() {
                     fill="none"
                   />
                 </svg>
-                <div className="mt-5 -rotate-2 whitespace-nowrap mock-blend-surface text-[17px] leading-[1.05] sm:mt-8 sm:text-[22px] md:mt-9 md:text-[24px]">
+                <div className={`mt-5 -rotate-2 whitespace-nowrap mock-blend-surface text-[17px] leading-[1.05] sm:mt-8 sm:text-[22px] md:mt-9 md:text-[24px] ${previewUrl ? "rounded-lg px-2 py-1 shadow-sm" : ""}`} style={previewUrl ? { background: "var(--mock-bg)" } : undefined}>
                   <div>The StartupBar widget <span className="text-amber-500" style={{ fontFamily: "ui-sans-serif, system-ui, sans-serif" }}>✦</span></div>
                   <div className="text-[13px] opacity-70 sm:text-[17px] md:text-[19px]">(this is how it looks on your site)</div>
                 </div>

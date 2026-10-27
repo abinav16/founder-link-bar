@@ -4,12 +4,41 @@ import { resolveEmbedUrl } from "@/lib/preview-probe.functions";
 
 /** Renders the visitor's own site inside a browser mock. A server probe picks
  *  the variant that can actually be framed (apex vs www, following redirects);
- *  if none can, we show a live screenshot instead. */
+ *  if none can, we show a live screenshot instead, and finally a site card. */
+function shotUrl(url: string) {
+  return `https://s.wordpress.com/mshots/v1/${encodeURIComponent(url)}?w=1280&h=800`;
+}
+
+function hostOf(url: string) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
+}
+
+function SiteCard({ url, heightCls }: { url: string; heightCls: string }) {
+  const host = hostOf(url);
+  return (
+    <div className={`flex ${heightCls} flex-col items-center justify-center gap-3 bg-black/[0.02]`}>
+      <img
+        src={`https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=128`}
+        alt=""
+        className="h-14 w-14 rounded-xl bg-white p-2 shadow-sm"
+      />
+      <div className="text-base font-semibold text-black/80">{host}</div>
+      <div className="text-xs text-black/40">Your bar will sit on top of this site</div>
+    </div>
+  );
+}
+
 export function SitePreviewSurface({ url, heightCls = "h-[320px] sm:h-[420px]" }: { url: string; heightCls?: string }) {
   const [loaded, setLoaded] = useState(false);
   const [blocked, setBlocked] = useState(false);
   const [shotFailed, setShotFailed] = useState(false);
-  const shot = `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=false&embed=screenshot.url`;
+  const [shotTry, setShotTry] = useState(0);
+  const [shotReady, setShotReady] = useState(false);
+  const shot = `${shotUrl(url)}&t=${shotTry}`;
 
   const probe = useQuery({
     queryKey: ["embed-probe", url],
@@ -23,58 +52,56 @@ export function SitePreviewSurface({ url, heightCls = "h-[320px] sm:h-[420px]" }
     setLoaded(false);
     setBlocked(false);
     setShotFailed(false);
+    setShotTry(0);
+    setShotReady(false);
   }, [url]);
 
-  // Probe says this site refuses framing → go straight to the screenshot.
   useEffect(() => {
     if (probe.isSuccess && !probe.data?.url) setBlocked(true);
   }, [probe.isSuccess, probe.data]);
 
-  // Safety net for sites that pass the header check but still never render.
   useEffect(() => {
     if (!frameUrl || loaded || blocked) return;
     const t = window.setTimeout(() => setBlocked(true), 4000);
     return () => window.clearTimeout(t);
   }, [frameUrl, loaded, blocked]);
 
-  if (blocked) {
-    if (shotFailed) {
-      return (
-        <div className={`flex ${heightCls} items-center justify-center bg-black/[0.02] text-sm text-black/35`}>
-          Preview not available for this site
-        </div>
-      );
+  // mShots returns a tiny "generating" placeholder first; retry a few times.
+  const onShotLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    if (img.naturalWidth >= 600) return setShotReady(true);
+    if (img.naturalWidth < 600 && shotTry < 4) {
+      window.setTimeout(() => setShotTry((n) => n + 1), 2500);
+    } else if (img.naturalWidth < 600) {
+      setShotFailed(true);
     }
+  };
+
+  if (blocked) {
+    if (shotFailed) return <SiteCard url={url} heightCls={heightCls} />;
     return (
-      <img
-        src={shot}
-        alt="Your site preview"
-        onError={() => setShotFailed(true)}
-        className={`${heightCls} w-full bg-black/[0.02] object-cover object-top`}
-      />
+      <div className={`relative ${heightCls} w-full`}>
+        <SiteCard url={url} heightCls={`absolute inset-0 ${heightCls}`} />
+        <img
+          src={shot}
+          alt="Your site preview"
+          onLoad={onShotLoad}
+          onError={() => setShotFailed(true)}
+          className={`relative ${heightCls} w-full object-cover object-top transition-opacity duration-300 ${shotReady ? "opacity-100" : "opacity-0"}`}
+          style={{ background: "transparent" }}
+        />
+      </div>
     );
   }
 
   return (
     <div className={`relative ${heightCls} w-full bg-white`}>
-      {/* Screenshot loads in parallel so something real appears almost instantly. */}
-      {!loaded && !shotFailed && (
-        <img
-          src={shot}
-          alt=""
-          aria-hidden
-          onError={() => setShotFailed(true)}
-          className="absolute inset-0 h-full w-full object-cover object-top"
-        />
-      )}
-      {!loaded && shotFailed && (
-        <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-black/[0.04] to-black/[0.01]" />
-      )}
+      {!loaded && <SiteCard url={url} heightCls={`absolute inset-0 ${heightCls}`} />}
       {frameUrl && (
         <iframe
           src={frameUrl}
           title="Your site preview"
-          className={`h-full w-full transition-opacity duration-200 ${loaded ? "opacity-100" : "opacity-0"}`}
+          className={`relative h-full w-full transition-opacity duration-200 ${loaded ? "opacity-100" : "opacity-0"}`}
           sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
           referrerPolicy="no-referrer"
           onLoad={() => setLoaded(true)}
