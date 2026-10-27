@@ -104,7 +104,7 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
   --color-featured-gold: var(--featured-gold);
   --color-featured-edge: var(--featured-edge);
   --font-display: "Instrument Serif", ui-serif, Georgia, serif;
-  --font-hero-rounded: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-hero-rounded: "Manrope", ui-sans-serif, system-ui, sans-serif;
   --font-quote: "Lora", ui-serif, Georgia, serif;
 }
 
