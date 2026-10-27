@@ -86,6 +86,7 @@ export function section(s: {
   rank: string;
   impressionsDelta: string;
   signupTracking?: { enabled: boolean; verified: number; reported: number } | null;
+  needsSnippetUpdate?: boolean;
 }): string {
   let domain = "";
   try { domain = new URL(s.websiteUrl.startsWith("http") ? s.websiteUrl : `https://${s.websiteUrl}`).hostname.replace(/^www\./, ""); } catch { /* No domain label for invalid URLs. */ }
@@ -107,5 +108,6 @@ export function section(s: {
     </tr></table></td></tr>
     <tr><td style="padding:0 0 24px;font-size:12px;line-height:1.6;color:${theme.muted};">${escapeHtml(s.impressionsDelta)} impressions compared with last week</td></tr>
     ${s.signupTracking?.enabled ? `<tr><td style="padding:0 0 24px;border-top:1px solid ${theme.border};"><p style="margin:18px 0 12px;font-size:14px;font-weight:600;">Signups from the network</p><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="table-layout:fixed;"><tr>${stat('Verified signups', s.signupTracking.verified || '—')}${stat('Success-page reports', s.signupTracking.reported || '—')}${stat('Attribution window', '30 days')}</tr></table><p style="margin:14px 0 0;font-size:12px;line-height:1.6;color:${theme.muted};">Verified signups are reported by your signed signup system; page reports are browser signals, not verified accounts. Counts use this week’s reporting dates. “—” means no confirmations this week; it does not prove no signups occurred.</p></td></tr>` : ''}
+    ${s.needsSnippetUpdate ? `<tr><td style="padding:0 0 24px;border-top:1px solid ${theme.border};"><p style="margin:18px 0 8px;font-size:14px;font-weight:600;">Update your embed snippet</p><p style="margin:0 0 10px;font-size:13px;line-height:1.7;color:${theme.muted};">We haven’t verified the refreshed widget snippet on this startup’s website yet. It includes a StartupBar credit link. <a href="https://startupbar.co/dashboard" style="color:${theme.foreground};text-decoration:underline;">Copy your refreshed code from your dashboard &rarr;</a> and replace the old snippet.</p><p style="margin:0;font-size:12px;line-height:1.7;color:${theme.muted};">If you have already updated your snippet, please ignore this reminder.</p></td></tr>` : ''}
   </table>`;
 }
