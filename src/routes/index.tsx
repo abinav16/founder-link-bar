@@ -963,7 +963,7 @@ function Landing() {
           </div>
 
           {/* Browser mock */}
-          <div className="relative mx-auto mt-4 sm:mt-6 max-w-3xl">
+          <div className={`mock-blend ${previewUrl ? "" : `mock-blend-${blendIndex}`} relative mx-auto mt-4 sm:mt-6 max-w-3xl`}>
 
             {/* Handwritten annotation pointing at the widget bar */}
             {!mockDismissed && (
@@ -1010,7 +1010,7 @@ function Landing() {
                 </div>
               </div>
             )}
-            <div className={`mock-blend ${previewUrl ? "" : `mock-blend-${blendIndex}`} relative overflow-hidden rounded-xl border border-black/10 bg-white shadow-[0_20px_60px_-20px_rgba(0,0,0,0.15)]">
+            <div className="relative overflow-hidden rounded-xl border border-black/10 bg-white shadow-[0_20px_60px_-20px_rgba(0,0,0,0.15)]">
               <div className="flex h-9 items-center gap-2 border-b border-black/8 bg-black/[0.02] px-4">
                 <div className="h-2.5 w-2.5 rounded-full bg-red-400/80" />
                 <div className="h-2.5 w-2.5 rounded-full bg-yellow-400/80" />
