@@ -9,6 +9,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useBidBoard, formatUsd } from "@/lib/bid";
 
 import { SitePreviewSurface } from "@/components/SitePreviewSurface";
+import { resolveEmbedUrl } from "@/lib/preview-probe.functions";
+import { resolveWidgetPalette, widgetMutedColor } from "@/lib/widget-palette";
 import socialPreviewAsset from "@/assets/founders-helping-founders.jpg.asset.json";
 
 function useInView(threshold = 0.12) {
@@ -849,6 +851,20 @@ function Landing() {
 
 
 
+  const previewProbe = useQuery({
+    queryKey: ["embed-probe", previewUrl],
+    queryFn: () => resolveEmbedUrl({ data: { url: previewUrl! } }),
+    enabled: !!previewUrl,
+    staleTime: 10 * 60 * 1000,
+    retry: false,
+  });
+  const previewPaletteStyle = useMemo(() => {
+    if (!previewUrl) return undefined;
+    const p = resolveWidgetPalette(previewProbe.data?.bg, previewProbe.data?.fg);
+    if (!p) return undefined;
+    return { "--mock-bg": p.background, "--mock-fg": p.foreground, "--mock-muted": widgetMutedColor(p) } as React.CSSProperties;
+  }, [previewUrl, previewProbe.data]);
+
   useEffect(() => {
     supabase.from("startups").select("id, logo_url").ilike("website_url", "%startupbar.co%").maybeSingle().then(({ data }) => {
       if (data?.id) setStartupBarId(data.id);
@@ -963,7 +979,7 @@ function Landing() {
           </div>
 
           {/* Browser mock */}
-          <div className={`mock-blend ${previewUrl ? "" : `mock-blend-${blendIndex}`} relative mx-auto mt-4 sm:mt-6 max-w-3xl`}>
+          <div className={`mock-blend ${previewUrl ? "" : `mock-blend-${blendIndex}`} relative mx-auto mt-4 sm:mt-6 max-w-3xl`} style={previewPaletteStyle}>
 
             {/* Handwritten annotation pointing at the widget bar */}
             {!mockDismissed && (
@@ -994,7 +1010,7 @@ function Landing() {
                 </div>
               </div>
             )}
-            {!mockDismissed && !previewUrl && (
+            {!mockDismissed && (
               <div
                 aria-hidden
                 className="pointer-events-none absolute left-4 top-[84px] z-10 flex items-start gap-1.5 sm:left-8 sm:top-[90px] sm:gap-2"
