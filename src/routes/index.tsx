@@ -853,10 +853,14 @@ function Landing() {
 
 
   const previewProbe = useQuery({
-    queryKey: ["embed-probe", previewUrl],
-    queryFn: () => resolveEmbedUrl({ data: { url: previewUrl! } }),
+    queryKey: ["embed-probe-colors-v2", previewUrl],
+    queryFn: () => {
+      if (!previewUrl) throw new Error("A preview URL is required");
+      return resolveEmbedUrl({ data: { url: previewUrl } });
+    },
     enabled: !!previewUrl,
-    staleTime: 10 * 60 * 1000,
+    staleTime: 0,
+    refetchOnWindowFocus: false,
     retry: false,
   });
   const previewPaletteStyle = useMemo(() => {

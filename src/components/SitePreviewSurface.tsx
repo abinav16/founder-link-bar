@@ -45,9 +45,10 @@ export function SitePreviewSurface({ url, heightCls = "h-[320px] sm:h-[420px]" }
   const shot = `${shotUrl(url)}&t=${shotTry}`;
 
   const probe = useQuery({
-    queryKey: ["embed-probe", url],
+    queryKey: ["embed-probe-colors-v2", url],
     queryFn: () => resolveEmbedUrl({ data: { url } }),
-    staleTime: 10 * 60 * 1000,
+    staleTime: 0,
+    refetchOnWindowFocus: false,
     retry: false,
   });
   const frameUrl = probe.data?.url ?? null;
