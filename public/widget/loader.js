@@ -109,9 +109,55 @@
       return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
     }
 
-    var theme = detectTheme();
-    var currentTheme = theme;
-    var bg = theme === 'dark' ? '#18181b' : '#ffffff';
+    // Read only computed presentation colors; no host content leaves the page.
+    function readColor(value) {
+      if (!value || value === 'transparent') return null;
+      var match = value.match(/^rgba?\(([^)]+)\)$/);
+      if (match) {
+        var parts = match[1].split(/[,\s/]+/).filter(Boolean).map(Number);
+        if (parts.length >= 3 && parts.every(isFinite)) return [parts[0], parts[1], parts[2], parts.length > 3 ? parts[3] : 1];
+      }
+      try {
+        var canvas = document.createElement('canvas');
+        canvas.width = canvas.height = 1;
+        var ctx = canvas.getContext('2d', { willReadFrequently: true });
+        if (!ctx) return null;
+        ctx.clearRect(0, 0, 1, 1);
+        ctx.fillStyle = value;
+        ctx.fillRect(0, 0, 1, 1);
+        var pixel = ctx.getImageData(0, 0, 1, 1).data;
+        return [pixel[0], pixel[1], pixel[2], pixel[3] / 255];
+      } catch (e) { return null; }
+    }
+    function colorHex(rgb) {
+      return '#' + rgb.slice(0, 3).map(function(c) { return Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, '0'); }).join('');
+    }
+    function detectPalette() {
+      var mode = detectTheme();
+      var fallback = mode === 'dark' ? [24, 24, 27, 1] : [255, 255, 255, 1];
+      // Explicit founder theme overrides remain authoritative.
+      if (s.getAttribute('data-theme') === 'dark' || s.getAttribute('data-theme') === 'light') {
+        return { theme: mode, background: colorHex(fallback), foreground: mode === 'dark' ? '#f4f4f5' : '#0f172a' };
+      }
+      try {
+        var rootStyle = window.getComputedStyle(document.documentElement);
+        var bodyStyle = document.body && window.getComputedStyle(document.body);
+        var rootBg = readColor(rootStyle.backgroundColor);
+        var bodyBg = bodyStyle && readColor(bodyStyle.backgroundColor);
+        var composite = function(top, bottom) {
+          if (!top) return bottom;
+          return top.slice(0, 3).map(function(c, i) { return c * top[3] + bottom[i] * (1 - top[3]); }).concat(1);
+        };
+        var background = composite(bodyBg, composite(rootBg, fallback));
+        var foreground = bodyStyle && readColor(bodyStyle.color) || readColor(rootStyle.color);
+        return { theme: mode, background: colorHex(background), foreground: foreground ? colorHex(composite(foreground, background)) : (mode === 'dark' ? '#f4f4f5' : '#0f172a') };
+      } catch (e) {
+        return { theme: mode, background: colorHex(fallback), foreground: mode === 'dark' ? '#f4f4f5' : '#0f172a' };
+      }
+    }
+    var palette = detectPalette();
+    var theme = palette.theme;
+    var bg = palette.background;
 
     var ua = navigator.userAgent || '';
     var isIphoneSafari = /iPhone|iPod/.test(ua) && /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|GSA/.test(ua);
@@ -146,7 +192,7 @@
     iframe.setAttribute('data-startupbar-frame', '1');
 
 
-    var iframeSrc = origin + '/widget/bar?host=' + encodeURIComponent(id) + '&theme=' + theme + '&domain=' + encodeURIComponent(window.location.hostname) + '&path=' + encodeURIComponent(window.location.pathname) + (isMobile ? '&mobile=1' : '');
+    var iframeSrc = origin + '/widget/bar?host=' + encodeURIComponent(id) + '&theme=' + theme + '&bg=' + encodeURIComponent(palette.background) + '&fg=' + encodeURIComponent(palette.foreground) + '&domain=' + encodeURIComponent(window.location.hostname) + '&path=' + encodeURIComponent(window.location.pathname) + (isMobile ? '&mobile=1' : '');
     try {
       var pref = document.referrer || '';
       if (pref && pref.length > 0) {
@@ -376,19 +422,36 @@
       } catch (e) {}
     }
 
+    function syncPalette(force) {
+      if (dismissed) return;
+      var next = detectPalette();
+      if (!force && JSON.stringify(next) === JSON.stringify(palette)) return;
+      palette = next;
+      bg = next.background;
+      iframe.style.background = overlayClip ? 'transparent' : bg;
+      iframe.contentWindow.postMessage({ type: 'startupbar:theme', theme: next.theme, background: next.background, foreground: next.foreground }, origin);
+    }
     function startObserver() {
-      var observer = new MutationObserver(function() {
-        var newTheme = detectTheme();
-        if (newTheme !== currentTheme) {
-          currentTheme = newTheme;
-           bg = newTheme === 'dark' ? '#18181b' : '#ffffff';
-           iframe.style.background = overlayClip ? 'transparent' : bg;
-          iframe.contentWindow.postMessage({ type: 'startupbar:theme', theme: newTheme }, '*');
-        }
+      var pending;
+      var schedule = function() {
+        clearTimeout(pending);
+        pending = setTimeout(function() { syncPalette(false); }, 150);
+      };
+      var observer = new MutationObserver(function(records) {
+        if (records.some(function(record) {
+          return record.target !== iframe && (record.type === 'childList' || record.target === document.documentElement || record.target === document.body || (record.target.closest && record.target.closest('head')));
+        })) schedule();
       });
-      var opts = { attributes: true, attributeFilter: ['class', 'data-theme', 'data-color-scheme', 'data-mode', 'color-scheme'] };
-      observer.observe(document.documentElement, opts);
-      if (document.body) observer.observe(document.body, opts);
+      observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['class', 'style', 'data-theme', 'data-color-scheme', 'data-mode', 'color-scheme', 'media', 'href', 'disabled'] });
+      iframe.addEventListener('load', function() { syncPalette(true); });
+      window.addEventListener('startupbar:reinit', schedule);
+      window.addEventListener('startupbar:locationchange', schedule);
+      window.addEventListener('load', schedule);
+      document.addEventListener('transitionend', schedule);
+      document.addEventListener('load', schedule, true);
+      var media = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+      if (media && media.addEventListener) media.addEventListener('change', schedule);
+      syncPalette(true);
     }
 
     function isWidgetVisible() {
