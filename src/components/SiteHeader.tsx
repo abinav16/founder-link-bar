@@ -23,7 +23,7 @@ const links = [
   { to: '/leaderboard', label: 'Leaderboard' },
   { to: '/startupbid', label: 'StartupBid' },
   { to: '/pricing', label: 'Pricing' },
-  { to: '/faq', label: 'FAQ' },
+  { to: '/apply', label: 'Apply' },
 ] as const;
 
 export function SiteHeader({ children }: { children?: ReactNode }) {
