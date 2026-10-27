@@ -1,3 +1,4 @@
+import { SiteHeader } from "@/components/SiteHeader";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -206,10 +207,12 @@ function AuthPage() {
   }
 
   return (
-    <div className="grid min-h-dvh md:grid-cols-2">
+    <div>
+      <SiteHeader />
+      <div className="grid min-h-[calc(100dvh-88px)] md:grid-cols-2">
       <ConstellationPanel />
       <div className="flex flex-col bg-white px-8 py-10 md:px-14">
-        <Link to="/" className="flex items-center gap-2"><div className="h-2 w-6 rounded-sm bg-black" /><span className="text-base font-semibold tracking-tight text-black">StartupBar</span></Link>
+
         <main className="mx-auto mt-auto w-full max-w-sm py-16">
 
           <h1 className="text-3xl font-medium tracking-tight text-black" style={{ fontFamily: "var(--font-display)" }}>{mode === "signin" ? "Welcome back." : "Join the network."}</h1>
@@ -268,6 +271,7 @@ function AuthPage() {
         </main>
         <div className="mt-auto text-center"><Link to="/" className="text-xs text-black/30 hover:text-black/60 transition-colors">← Back to StartupBar.co</Link></div>
 
+      </div>
       </div>
     </div>
   );

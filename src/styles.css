@@ -7,6 +7,9 @@
 /* Embedded recommendations keep their palette independent of host styles. */
 :root {
   --profile-share-paper: #f3f3f1;
+  --header-surface: oklch(1 0 0);
+  --header-ink: oklch(0 0 0);
+  --shadow-header: 0 8px 24px -12px oklch(0 0 0 / 0.18);
   --profile-share-ink: #191919;
   --exit-surface: oklch(1 0 0);
   --exit-ink: oklch(0.2 0.008 260);
@@ -69,6 +72,8 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --color-background: var(--background);
+  --color-header-surface: var(--header-surface);
+  --color-header-ink: var(--header-ink);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
@@ -175,6 +180,9 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
   from { transform: translateY(5px); }
   to   { transform: translateY(0); }
 }
+.site-header-scrolled { box-shadow: var(--shadow-header); }
+@media (max-width: 639px) { .site-header > div:first-child { height: 72px; gap: 12px; } .site-header > div:first-child > a > span { font-size: 19px; } }
+@media (prefers-reduced-motion: reduce) { .site-header, .site-header * { transition: none; } }
 .page-enter {
   animation: page-in 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
 }

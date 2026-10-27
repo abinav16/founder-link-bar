@@ -1,3 +1,4 @@
+import { SiteHeader } from "@/components/SiteHeader";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Loader2, Check, AlertTriangle } from "lucide-react";
@@ -83,12 +84,7 @@ function UnsubscribePage() {
 
   return (
     <div className="min-h-dvh bg-[#f7f7f6] flex flex-col">
-      <header className="border-b border-black/8 bg-white">
-        <div className="mx-auto max-w-3xl px-6 py-4 flex items-center gap-2">
-          <div className="h-2 w-6 rounded-sm bg-black" />
-          <Link to="/" className="text-sm font-semibold tracking-tight text-black">StartupBar</Link>
-        </div>
-      </header>
+      <SiteHeader />
 
       <main className="flex-1 flex items-start justify-center px-4 py-16">
         <div className="w-full max-w-md rounded-2xl border border-black/8 bg-white p-8 shadow-sm">
