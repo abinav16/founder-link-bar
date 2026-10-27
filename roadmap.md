@@ -1,5 +1,5 @@
 # Weekly snippet reminder
-- [ ] Verify installed snippet evidence and conditionally include the reminder in weekly stats; preserve delivery safeguards and test both states.
+- [x] Verify installed snippet evidence and conditionally include the reminder in weekly stats; preserve delivery safeguards, pass 13 email/snippet tests and eight monitoring regressions, preview both states on desktop/phone, and verify live snippets for VerifiedMRR and NotepadPlus without sending emails.
 
 # Startup categories
 - [x] Add a shared category selector to applications and owner editing, with validated storage.
