@@ -729,10 +729,10 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
 
 /* Homepage browser mock: demo host palettes the widget blends into. */
 .mock-blend { --mock-page: oklch(0.985 0 0); --mock-bg: oklch(1 0 0); --mock-fg: oklch(0.21 0.03 265); --mock-muted: color-mix(in oklab, var(--mock-fg) 55%, var(--mock-bg)); --mock-skel: color-mix(in oklab, var(--mock-fg) 7%, var(--mock-page)); }
-.mock-blend-1 { --mock-page: oklch(0.96 0.03 160); --mock-bg: oklch(0.95 0.035 160); --mock-fg: oklch(0.33 0.07 160); }
-.mock-blend-2 { --mock-page: oklch(0.2 0.02 270); --mock-bg: oklch(0.23 0.025 270); --mock-fg: oklch(0.95 0.01 270); }
-.mock-blend-3 { --mock-page: oklch(0.96 0.03 70); --mock-bg: oklch(0.94 0.04 70); --mock-fg: oklch(0.36 0.08 50); }
-.mock-blend-4 { --mock-page: oklch(0.95 0.03 290); --mock-bg: oklch(0.93 0.04 290); --mock-fg: oklch(0.32 0.12 290); }
+.mock-blend-1 { --mock-page: oklch(0.15 0 0); --mock-bg: oklch(0.12 0 0); --mock-fg: oklch(0.98 0 0); }
+.mock-blend-2 { --mock-page: oklch(0.5 0.2 262); --mock-bg: oklch(0.46 0.21 262); --mock-fg: oklch(1 0 0); }
+.mock-blend-3 { --mock-page: oklch(0.52 0.15 150); --mock-bg: oklch(0.48 0.15 150); --mock-fg: oklch(1 0 0); }
+.mock-blend-4 { --mock-page: oklch(0.6 0.21 35); --mock-bg: oklch(0.56 0.21 32); --mock-fg: oklch(1 0 0); }
 .mock-blend-surface { transition: background-color 700ms ease, color 700ms ease, border-color 700ms ease; }
 @media (prefers-reduced-motion: reduce) { .mock-blend-surface { transition: none; } }
 
