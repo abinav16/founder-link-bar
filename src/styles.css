@@ -50,6 +50,7 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
 .sb-visit-cta:hover { background-color: var(--widget-hover) !important; border-color: var(--widget-hover-edge) !important; }
 .sb-widget-icon:hover { background-color: var(--widget-hover) !important; }
 .sb-widget-icon svg { width: 12px; height: 12px; }
+.sb-widget-shell img, .sb-widget-shell div[aria-label$=" logo"] { background-color: var(--widget-hover) !important; color: var(--widget-muted); }
 .sb-marquee-track { display: inline-flex; align-items: center; animation: sb-marquee 18s linear infinite; will-change: transform; }
 .sb-marquee-item { padding-right: 2.5rem; white-space: nowrap; }
 @keyframes sb-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
