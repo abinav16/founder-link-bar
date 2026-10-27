@@ -515,7 +515,7 @@ function StartupBidPage() {
   }, [board.refetch, activity.refetch, stats.refetch, navigate]);
 
   return (
-    <div className="min-h-screen bg-[#fafafa]">
+    <div className="min-h-screen bg-card">
       <SiteHeader />
 
       <main className="mx-auto max-w-5xl px-4 pb-8 pt-4 sm:px-6 sm:pb-12 sm:pt-5">

@@ -51,7 +51,7 @@ export function DashboardLayout({
 
 
   return (
-    <div className="min-h-dvh bg-[#f7f7f6] flex flex-col">
+    <div className="min-h-dvh bg-card flex flex-col">
       <div
         className={`fixed top-0 left-0 right-0 z-50 h-[2px] bg-black/[0.06] transition-opacity ${
           isNavigating ? "opacity-100" : "pointer-events-none opacity-0"
