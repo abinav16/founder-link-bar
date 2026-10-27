@@ -706,8 +706,9 @@ function Apply() {
     : [
     "Add the StartupBar widget to my website.",
     "",
-    "1. Paste this script tag inside the <head> tag of every page:",
+    "1. Paste this code inside the <head> tag of every page:",
     `   ${snippet}`,
+    "   The small hidden link is required: keep it exactly as-is.",
     "",
     ...(placement === "bottom"
       ? [
