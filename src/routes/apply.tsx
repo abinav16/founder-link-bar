@@ -3,13 +3,16 @@ import { StartupCategorySelect } from "@/components/StartupCategorySelect";
 import { STARTUP_CATEGORIES, isStartupCategory } from "@/lib/startup-categories";
 import { SUPPORTER_PRICE_USD, SUPPORTER_TRIAL_DAYS } from "@/lib/supporter";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { trackFunnel } from "@/lib/funnel";
 import { SitePreviewSurface } from "@/components/SitePreviewSurface";
+import { resolveEmbedUrl } from "@/lib/preview-probe.functions";
+import { resolveWidgetPalette, widgetMutedColor } from "@/lib/widget-palette";
 import { emptySignupDraft, type SignupTrackingDraft } from "@/components/SignupTrackingSetup";
 import { ApplySignupTracking } from "@/components/ApplySignupTracking";
 import { saveSignupTracking } from "@/lib/signup-tracking.functions";
@@ -66,11 +69,30 @@ function BarPreview({ name, url, desc, placement = "top", noBar = false }: { nam
       const u = new URL(withProto);
       host = u.hostname;
       href = u.toString();
-    } catch { return; }
-    if (!/^(?=.{4,253}$)([a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,24}$/i.test(host)) return;
+    } catch { setPreviewUrl(null); return; }
+    if (!/^(?=.{4,253}$)([a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,24}$/i.test(host)) { setPreviewUrl(null); return; }
     const t = window.setTimeout(() => setPreviewUrl(href), 250);
     return () => window.clearTimeout(t);
   }, [url]);
+
+  // Share the homepage/site surface probe, including its stylesheet colors.
+  const previewProbe = useQuery({
+    queryKey: ["embed-probe-colors-v2", previewUrl],
+    queryFn: () => {
+      if (!previewUrl) throw new Error("A preview URL is required");
+      return resolveEmbedUrl({ data: { url: previewUrl } });
+    },
+    enabled: !!previewUrl,
+    staleTime: 0,
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+  const palette = resolveWidgetPalette(previewProbe.data?.bg, previewProbe.data?.fg);
+  const paletteStyle = palette ? {
+    "--mock-bg": palette.background,
+    "--mock-fg": palette.foreground,
+    "--mock-muted": widgetMutedColor(palette),
+  } as CSSProperties : undefined;
 
   const previewHost = (() => {
     if (!previewUrl) return "somefounder.com";
@@ -79,17 +101,18 @@ function BarPreview({ name, url, desc, placement = "top", noBar = false }: { nam
 
   const bar = (
     <div
-      className={`flex h-9 items-center gap-2.5 bg-white px-4 ${placement === "top" ? "border-b" : "border-t"} border-black/6`}
+      aria-label="Widget color preview"
+      className={`apply-preview-bar mock-blend-surface flex h-9 items-center gap-2.5 px-4 ${placement === "top" ? "border-b" : "border-t"}`}
     >
-      <span className="rounded-sm bg-black px-1.5 py-0.5 text-[9px] font-bold tracking-widest text-white">STARTUPBAR</span>
+      <span className="apply-preview-brand rounded-sm px-1.5 py-0.5 text-[9px] font-bold tracking-widest">STARTUPBAR</span>
       {favicon && <img src={favicon} alt="" className="h-4 w-4 rounded-sm object-contain" onError={(e) => (e.currentTarget.style.display = "none")} />}
-      <span className="shrink-0 text-[13px] font-medium text-black">{displayName}</span>
-      <span className="hidden truncate text-[12px] text-black/40 sm:block">· {displayDesc}</span>
-      <span className="ml-auto flex shrink-0 items-center gap-1 text-[12px] text-black/50">Visit <ExternalLink className="h-3 w-3" /></span>
+      <span className="shrink-0 text-[13px] font-medium">{displayName}</span>
+      <span className="apply-preview-muted hidden truncate text-[12px] sm:block">· {displayDesc}</span>
+      <span className="apply-preview-muted ml-auto flex shrink-0 items-center gap-1 text-[12px]">Visit <ExternalLink className="h-3 w-3" /></span>
     </div>
   );
   return (
-    <div className="relative overflow-hidden rounded-xl border border-black/10 bg-white shadow-[0_8px_40px_-12px_rgba(0,0,0,0.12)]">
+    <div style={paletteStyle} className="mock-blend relative overflow-hidden rounded-xl border border-black/10 bg-white shadow-[0_8px_40px_-12px_rgba(0,0,0,0.12)]">
       <div className="flex h-8 items-center gap-1.5 border-b border-black/6 bg-black/[0.02] px-3">
         <div className="h-2 w-2 rounded-full bg-red-400/70" />
         <div className="h-2 w-2 rounded-full bg-yellow-400/70" />
@@ -1130,7 +1153,7 @@ function Apply() {
                 <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Live preview</span>
                 <p className="mt-1.5 text-sm text-black/40">This is how your startup will appear on other founders' sites.</p>
                 <div className="mt-5">
-                  <BarPreview key={isSupporter ? "no-bar" : placement} name={name} url={url} desc={desc} placement={placement} noBar={isSupporter} />
+                  <BarPreview name={name} url={url} desc={desc} placement={placement} noBar={isSupporter} />
                 </div>
                 <div className="mt-8 space-y-4 border-t border-black/8 pt-8">
                   {(isSupporter

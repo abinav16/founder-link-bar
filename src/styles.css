@@ -734,6 +734,10 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
 .mock-blend-3 { --mock-page: oklch(0.52 0.15 150); --mock-bg: oklch(0.48 0.15 150); --mock-fg: oklch(1 0 0); }
 .mock-blend-4 { --mock-page: oklch(0.6 0.21 35); --mock-bg: oklch(0.56 0.21 32); --mock-fg: oklch(1 0 0); }
 .mock-blend-surface { transition: background-color 700ms ease, color 700ms ease, border-color 700ms ease; }
+.apply-preview-bar { background: var(--mock-bg); color: var(--mock-fg); border-color: color-mix(in srgb, var(--mock-fg) 18%, var(--mock-bg)); }
+.apply-preview-brand { background: var(--mock-fg); color: var(--mock-bg); transition: background-color 700ms ease, color 700ms ease; }
+.apply-preview-muted { color: var(--mock-muted); transition: color 700ms ease; }
+@media (prefers-reduced-motion: reduce) { .apply-preview-brand, .apply-preview-muted { transition: none; } }
 @media (prefers-reduced-motion: reduce) { .mock-blend-surface { transition: none; } }
 
 /* Preview loader built from the StartupBar logo pill */
