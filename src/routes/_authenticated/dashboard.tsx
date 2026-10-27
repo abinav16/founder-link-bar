@@ -831,11 +831,11 @@ function DashboardPage() {
                     Your stats start the moment the bar goes live
                   </h2>
                   <p className="mt-2 max-w-xl text-sm leading-relaxed text-white/60">
-                    You&rsquo;re approved. Paste one line of code on {startup.name} and publish. That&rsquo;s all it takes for your listing to rotate across the network and for impressions, clicks and your visitor map to fill in.
+                    You&rsquo;re approved. Paste this snippet on {startup.name} and publish. That&rsquo;s all it takes for your listing to rotate across the network and for impressions, clicks and your visitor map to fill in.
                   </p>
                   <div className="mt-6 flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
                     <div className="sb-code-scroll min-w-0 overflow-x-auto rounded-xl border border-white/10 bg-white/[0.05] px-4 py-3">
-                      <code className="whitespace-nowrap font-mono text-[11px] text-white/70">{snippet}</code>
+                      <code className="whitespace-pre font-mono text-[11px] leading-relaxed text-white/70">{snippet}</code>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                       <button
@@ -913,7 +913,7 @@ function DashboardPage() {
                     <p className="mt-1 text-xs text-black/50">
                       {needsInstall
                         ? "We can't see visitors on your site until the StartupBar script is live there. Paste it once and this fills in within minutes."
-                        : "Paste one line of code on your site to unlock your visitor map and on-site stats. Nothing is shown to your visitors."}
+                        : "Paste this snippet on your site to unlock your visitor map and on-site stats. Nothing is shown to your visitors."}
                     </p>
                     <div className="mt-3 flex items-center justify-center gap-2">
                       <button
@@ -1068,7 +1068,7 @@ function DashboardPage() {
                 </div>
                 <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
                   <div className="min-w-0 overflow-x-auto rounded-lg border border-black/8 bg-black/[0.025] px-3 py-2.5">
-                    <code className="whitespace-nowrap font-mono text-[11px] text-black/55">{snippet}</code>
+                    <code className="whitespace-pre font-mono text-[11px] leading-relaxed text-black/55">{snippet}</code>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                   <button

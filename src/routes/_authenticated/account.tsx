@@ -193,7 +193,7 @@ function MembershipSection({ startup, onUpdate }: {
         </p>
         {!trackingLive && (
           <div className="mt-2">
-            <code className="block overflow-x-auto rounded-md border border-black/10 bg-white px-3 py-2 text-[10px] text-black/70">{snippet}</code>
+            <code className="block overflow-x-auto whitespace-pre rounded-md border border-black/10 bg-white px-3 py-2 text-[10px] leading-relaxed text-black/70">{snippet}</code>
             <button
               type="button"
               onClick={() => { navigator.clipboard.writeText(snippet); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
