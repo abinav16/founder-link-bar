@@ -2,11 +2,15 @@ import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { Info, X } from "lucide-react";
 import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { resolveWidgetPalette, widgetMutedColor } from "@/lib/widget-palette";
 import { StartupFavicon } from "@/components/StartupFavicon";
 
 const search = z.object({
   host: z.string().uuid().optional(),
   theme: z.enum(["light", "dark"]).optional(),
+  bg: z.string().optional(),
+  fg: z.string().optional(),
   domain: z.string().optional(),
   path: z.string().optional(),
   sbref: z.string().optional(),
@@ -36,40 +40,20 @@ interface Startup {
   logo_url?: string | null;
 }
 
-const lightTokens = {
-  bg: "#ffffff",
-  border: "#e2e8f0",
-  text: "#0f172a",
-  textMuted: "#475569",
-  labelBg: "#0f172a",
-  labelText: "#ffffff",
-  iconColor: "#94a3b8",
-  infoBg: "#f8fafc",
-  infoBorder: "#e2e8f0",
-  infoText: "#64748b",
-  infoHeading: "#0f172a",
-  infoLink: "#0f172a",
-};
-
-const darkTokens: typeof lightTokens = {
-  bg: "#18181b",
-  border: "#27272a",
-  text: "#f4f4f5",
-  textMuted: "#a1a1aa",
-  labelBg: "#f4f4f5",
-  labelText: "#18181b",
-  iconColor: "#71717a",
-  infoBg: "#27272a",
-  infoBorder: "#3f3f46",
-  infoText: "#a1a1aa",
-  infoHeading: "#f4f4f5",
-  infoLink: "#f4f4f5",
+const widgetTokens = {
+  bg: "var(--widget-bg)", border: "var(--widget-border)",
+  text: "var(--widget-fg)", textMuted: "var(--widget-muted)",
+  labelBg: "var(--widget-fg)", labelText: "var(--widget-bg)",
+  iconColor: "var(--widget-muted)", infoBg: "var(--widget-info-bg)",
+  infoBorder: "var(--widget-border)", infoText: "var(--widget-muted)",
+  infoHeading: "var(--widget-fg)", infoLink: "var(--widget-fg)",
 };
 
 function WidgetBar() {
-  const { host, theme: urlTheme, domain, path, sbref, pref, sid, mobile } = useSearch({ from: "/widget/bar" });
+  const { host, theme: urlTheme, bg, fg, domain, path, sbref, pref, sid, mobile } = useSearch({ from: "/widget/bar" });
   const [activeTheme, setActiveTheme] = useState<"light" | "dark">(urlTheme ?? "light");
-  const tokens = activeTheme === "dark" ? darkTokens : lightTokens;
+  const [palette, setPalette] = useState(() => resolveWidgetPalette(bg, fg));
+  const tokens = widgetTokens;
   // Paint the last startup shown in this session immediately so a page
   // navigation never flashes an empty/generic bar. The real pick request
   // still runs and swaps in fresh content (and owns impression counting).
@@ -102,9 +86,16 @@ function WidgetBar() {
   useEffect(() => {
     function onMessage(e: MessageEvent) {
       if (e.source !== window.parent) return;
+      // Bind messages to the actual embedding origin when the referrer is available.
+      try {
+        if (document.referrer && e.origin !== new URL(document.referrer).origin) return;
+      } catch { return; }
       if (e.data && e.data.type === "startupbar:theme") {
         const t = e.data.theme;
-        if (t === "light" || t === "dark") setActiveTheme(t);
+        if (t === "light" || t === "dark") {
+          setActiveTheme(t);
+          setPalette(resolveWidgetPalette(e.data.background, e.data.foreground));
+        }
       }
       // Exit intent: never expand — just a glance-worthy shake + shimmer on
       // the compact bar, once per session.
@@ -256,7 +247,7 @@ function WidgetBar() {
     color: tokens.labelText,
     fontSize: 10,
     fontWeight: 700,
-    letterSpacing: "0.05em",
+    letterSpacing: 0,
     padding: "3px 6px",
     borderRadius: "999px",
     textDecoration: "none",
@@ -277,34 +268,11 @@ function WidgetBar() {
   };
 
   return (
-    <div ref={wrapperRef} className={`sb-widget-shell ${activeTheme === "dark" ? "sb-widget-dark" : ""} ${placement === "bottom" ? "sb-widget-bottom" : ""}`}>
-      <style>{`
-        .sb-widget-compact:hover { background-color: rgba(0, 0, 0, 0.02) !important; }
-        .sb-widget-dark .sb-widget-compact:hover { background-color: rgba(255, 255, 255, 0.03) !important; }
-        .sb-visit-arrow { display: inline-block; margin-left: 2px; transition: transform 150ms ease; }
-        .sb-visit-cta:hover .sb-visit-arrow { transform: translateX(2px); }
-        .sb-visit-cta:hover { background-color: rgba(0, 0, 0, 0.04) !important; border-color: rgba(0, 0, 0, 0.22) !important; }
-        .sb-widget-dark .sb-visit-cta:hover { background-color: rgba(255, 255, 255, 0.06) !important; border-color: rgba(255, 255, 255, 0.28) !important; }
-        @media (prefers-reduced-motion: reduce) {
-          .sb-visit-arrow { transition: none; }
-          .sb-visit-cta:hover .sb-visit-arrow { transform: none; }
-        }
-      `}</style>
-      {isMobile && (
-        <style>{`
-          @keyframes sb-marquee {
-            0%   { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-          }
-          .sb-marquee-track {
-            display: inline-flex;
-            align-items: center;
-            animation: sb-marquee 18s linear infinite;
-            will-change: transform;
-          }
-          .sb-marquee-item { padding-right: 2.5rem; white-space: nowrap; }
-        `}</style>
-      )}
+    <div ref={wrapperRef} style={palette ? {
+      "--widget-bg": palette.background,
+      "--widget-fg": palette.foreground,
+      "--widget-muted": widgetMutedColor(palette),
+    } as React.CSSProperties : undefined} className={`sb-widget-shell ${activeTheme === "dark" ? "sb-widget-dark" : ""} ${placement === "bottom" ? "sb-widget-bottom" : ""}`}>
       <div
         className={`sb-widget-compact ${exitAttention ? "sb-exit-attention" : ""}`}
         style={{ ...barStyle, cursor: startup ? "pointer" : undefined }}
@@ -315,9 +283,9 @@ function WidgetBar() {
         }}
       >
         {/* Info button — always visible */}
-        <button onClick={(e) => { e.stopPropagation(); setShowInfo(v => !v); }} aria-label="About StartupBar" style={iconBtnStyle}>
+        <Button variant="ghost" size="icon" className="sb-widget-icon" onClick={(e) => { e.stopPropagation(); setShowInfo(v => !v); }} aria-label="About StartupBar" aria-expanded={showInfo} title="About StartupBar" style={iconBtnStyle}>
           <Info size={12} />
-        </button>
+        </Button>
 
         {/* STARTUPBAR badge — hidden on mobile to save space */}
         {!isMobile && (
@@ -347,7 +315,7 @@ function WidgetBar() {
               size={14}
               className="rounded-sm shrink-0"
             />
-            <span style={{ fontWeight: 600, color: tokens.text, flexShrink: 0 }}>{startup.name}</span>
+            <span style={{ fontWeight: 600, color: tokens.text, flexShrink: 1, minWidth: 0, maxWidth: isMobile ? "32%" : "35%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{startup.name}</span>
 
             {/* Description: marquee on mobile, truncated on desktop */}
             {isMobile ? (
@@ -404,13 +372,13 @@ function WidgetBar() {
 
         {/* X button — desktop only */}
         {!isMobile && (
-          <button onClick={(e) => {
+          <Button variant="ghost" size="icon" className="sb-widget-icon" onClick={(e) => {
             e.stopPropagation();
             window.parent.postMessage({ type: "startupbar:resize", height: 0 }, "*");
             setDismissed(true);
-          }} aria-label="Dismiss" style={iconBtnStyle}>
+          }} aria-label="Dismiss" title="Dismiss StartupBar" style={iconBtnStyle}>
             <X size={11} />
-          </button>
+          </Button>
         )}
       </div>
       {showInfo && <InfoPanel tokens={tokens} />}
@@ -418,9 +386,9 @@ function WidgetBar() {
   );
 }
 
-function InfoPanel({ tokens }: { tokens: typeof lightTokens }) {
+function InfoPanel({ tokens }: { tokens: typeof widgetTokens }) {
   return (
-    <div style={{
+    <div className="sb-widget-info" style={{
       borderTop: `1px solid ${tokens.infoBorder}`,
       background: tokens.infoBg,
       padding: "10px 16px 12px",

@@ -31,7 +31,34 @@ html:has(.sb-widget-shell), body:has(.sb-widget-shell) { background: transparent
 html:has(.sb-widget-dark) { color-scheme: dark; }
 /* Keep the compact row in flow so bottom placement cannot clip it above
    the frame, and the info panel contributes its full measured height. */
-.sb-widget-shell { position: relative; width: 100%; background: transparent; }
+.sb-widget-shell {
+  --widget-bg: #ffffff;
+  --widget-fg: #0f172a;
+  --widget-muted: #475569;
+  --widget-border: color-mix(in srgb, var(--widget-fg) 18%, var(--widget-bg));
+  --widget-info-bg: var(--widget-bg);
+  --widget-hover: color-mix(in srgb, var(--widget-fg) 4%, var(--widget-bg));
+  --widget-hover-edge: color-mix(in srgb, var(--widget-fg) 30%, var(--widget-bg));
+  --exit-shimmer: color-mix(in srgb, var(--widget-fg) 15%, transparent);
+  --ring: var(--widget-fg);
+  position: relative; width: 100%; background: transparent;
+}
+.sb-widget-shell.sb-widget-dark { --widget-bg: #18181b; --widget-fg: #f4f4f5; --widget-muted: #a1a1aa; --exit-shimmer: color-mix(in srgb, var(--widget-fg) 15%, transparent); }
+.sb-widget-compact:hover { background-color: var(--widget-hover) !important; }
+.sb-visit-arrow { display: inline-block; margin-left: 2px; transition: transform 150ms ease; }
+.sb-visit-cta:hover .sb-visit-arrow { transform: translateX(2px); }
+.sb-visit-cta:hover { background-color: var(--widget-hover) !important; border-color: var(--widget-hover-edge) !important; }
+.sb-widget-icon:hover { background-color: var(--widget-hover) !important; }
+.sb-widget-icon svg { width: 12px; height: 12px; }
+.sb-widget-shell img, .sb-widget-shell div[aria-label$=" logo"] { background-color: var(--widget-hover) !important; color: var(--widget-muted); }
+.sb-marquee-track { display: inline-flex; align-items: center; animation: sb-marquee 18s linear infinite; will-change: transform; }
+.sb-marquee-item { padding-right: 2.5rem; white-space: nowrap; }
+@keyframes sb-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) {
+  .sb-visit-arrow { transition: none; }
+  .sb-visit-cta:hover .sb-visit-arrow { transform: none; }
+  .sb-marquee-track { animation: none; }
+}
 .sb-widget-compact { position: relative; z-index: 1; opacity: 1; }
 
 /* Exit intent: a glance-worthy nudge, never an expansion. The bar stays

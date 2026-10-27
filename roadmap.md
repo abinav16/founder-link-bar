@@ -1,3 +1,7 @@
+# Automatic widget blending
+- [x] Detect host colors, sync theme changes and apply readable colors across the full widget without snippet changes.
+- [x] Verify live embedded desktop/phone theme changes, real startup picks, info controls and 36px compact height with no runtime errors; all 15 palette/loader/conversion tests pass.
+
 # Weekly snippet reminder
 - [x] Verify installed snippet evidence and conditionally include the reminder in weekly stats; preserve delivery safeguards, pass 13 email/snippet tests and eight monitoring regressions, preview both states on desktop/phone, and verify live snippets for VerifiedMRR and NotepadPlus without sending emails.
 
