@@ -4,7 +4,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { supabase } from "@/integrations/supabase/client";
 import { COUNTRY_CENTROIDS, COUNTRY_NAMES, flagEmoji, jitter, pinPosition } from "@/lib/geo-centroids";
 import { funName, avatarUrl, avatarFallback, handleAvatarError } from "@/lib/fun-name";
-import { LIVE_VISITOR_LIMIT, prependVisitor } from "@/lib/live-visitor-history";
+import { LIVE_VISITOR_LIMIT, prependVisitor, uniqueVisitors, visitorKey } from "@/lib/live-visitor-history";
 
 // Global error hook for avatar <img> tags inside raw HTML strings (map pins/popups).
 // Swaps a failed DiceBear request for a locally generated initial badge.
@@ -108,6 +108,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const pinsRef = useRef<LivePin[]>([]);
   const seenRef = useRef(new Set<string>());
+  const seenVisitorsRef = useRef(new Set<string>());
   const anyApprovedIdRef = useRef<string | null>(null);
   const nameCacheRef = useRef(new Map<string, { name: string; websiteUrl: string | null }>());
 
@@ -351,6 +352,23 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
     const [lat, lng] = position;
     const color = DEVICE_COLORS[device] ?? DEVICE_COLORS.unknown;
     const { name: referrerName, websiteUrl } = await resolveReferrer(hostStartupId, rawReferrer);
+    if (!mapRef.current) return;
+
+    // Same visitor again (bar rotation, refresh, new page): move their single
+    // pin forward instead of adding another person to the globe.
+    const existing = pinsRef.current.find((p) => p.id === id);
+    if (existing) {
+      const ts = createdAtMs ?? Date.now();
+      if (ts <= existing.createdAt) return;
+      if (existing.popup?.isOpen()) {
+        existing.createdAt = ts;
+        syncLivePinIds();
+        return;
+      }
+      existing.marker.remove();
+      existing.popup?.remove();
+      pinsRef.current = pinsRef.current.filter((p) => p !== existing);
+    }
     const referrerFavicon = faviconFor(websiteUrl);
     const name = funName(id);
     const avatar = avatarUrl(id);
@@ -637,6 +655,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
       pinsRef.current = [];
       setLivePinIds([]);
       seenRef.current = new Set<string>();
+      seenVisitorsRef.current = new Set<string>();
       setFeed([]);
       setReferrerCounts(new Map());
       setCountryCounts(new Map());
@@ -648,7 +667,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
 
       let query = supabase
         .from("impressions")
-        .select("id, country, device, host_startup_id, referrer, path, created_at")
+        .select("id, country, device, host_startup_id, referrer, path, created_at, os, browser, session_id")
         .gte("created_at", startOfDay.toISOString())
         // NOTE: a plain .neq() also drops rows where referrer IS NULL (SQL
         // NULL comparison), which silently hid every direct visit from the
@@ -660,12 +679,16 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
       // (widget snippet fires a row per pageview with host_startup_id = this startup).
       if (scopeStartupId) query = query.eq("host_startup_id", scopeStartupId);
       // Network/welcome-page scope: only real landings on startupbar.co itself,
-      // not widget impressions on partner sites.
+      // not widget impressions on partner startups.
       else if (networkMode) query = query.eq("shown_startup_id", STARTUPBAR_SITE_ID);
 
       const { data } = await query;
       if (!data || data.length === 0) return;
 
+      for (const row of data) seenRef.current.add(row.id);
+      // Rows are newest-first, so each visitor keeps their latest page/time.
+      const visitors = uniqueVisitors(data);
+      for (const row of visitors) seenVisitorsRef.current.add(visitorKey(row));
 
       const hostIds = new Set<string>();
       const ctryCounts = new Map<string, { flag: string; count: number }>();
@@ -677,8 +700,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
       const effectiveHost = (hostId: string | null): string | null =>
         scopeStartupId && hostId === scopeStartupId ? null : hostId;
 
-      for (const row of data) {
-        seenRef.current.add(row.id);
+      for (const row of visitors) {
         const country = row.country?.toUpperCase();
         if (country) {
           const cur = ctryCounts.get(country);
@@ -713,24 +735,25 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
       }
 
       const refCounts = new Map<string, number>();
-      for (const row of data) {
+      for (const row of visitors) {
         const name = resolveReferrerSync(effectiveHost(row.host_startup_id), row.referrer);
         refCounts.set(name, (refCounts.get(name) ?? 0) + 1);
       }
 
       // Seed and realtime updates retain the same recent-history window.
-      const seedFeed: FeedEvent[] = data.slice(0, LIVE_VISITOR_LIMIT).map((row) => {
+      const seedFeed: FeedEvent[] = visitors.slice(0, LIVE_VISITOR_LIMIT).map((row) => {
         const code = row.country?.toUpperCase() ?? "US";
         const referrerName = resolveReferrerSync(effectiveHost(row.host_startup_id), row.referrer);
+        const key = visitorKey(row);
         return {
-          id: row.id,
-          name: funName(row.id),
+          id: key,
+          name: funName(key),
           flag: flagEmoji(code),
           country: code,
-          path: (row as { path?: string | null }).path ?? "/",
+          path: row.path ?? "/",
           device: row.device ?? "unknown",
           referrerName,
-          ts: new Date((row as { created_at?: string }).created_at ?? Date.now()).getTime(),
+          ts: new Date(row.created_at ?? Date.now()).getTime(),
         };
       });
       setFeed(seedFeed);
@@ -738,7 +761,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
       setReferrerCounts(refCounts);
       setCountryCounts(ctryCounts);
       setDeviceCounts(devCounts);
-      setRecentCount(data.length);
+      setRecentCount(visitors.length);
 
       // Drop pins on the map for the most recent visitors, so the globe
       // isn't empty when opening a dashboard for a startup that already
@@ -748,18 +771,18 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
         // window pulse; earlier ones are dimmed dots, so the globe matches the
         // list of recent visitors instead of looking empty.
         const nowMs = Date.now();
-        for (const row of data.slice(0, LIVE_VISITOR_LIMIT).reverse()) {
+        for (const row of visitors.slice(0, LIVE_VISITOR_LIMIT).reverse()) {
           const code = row.country?.toUpperCase();
           if (!code) continue;
-          const createdAtMs = new Date((row as { created_at?: string }).created_at ?? nowMs).getTime();
+          const createdAtMs = new Date(row.created_at ?? nowMs).getTime();
           addPin(
-            row.id,
+            visitorKey(row),
             code,
             row.device ?? "unknown",
             effectiveHost(row.host_startup_id),
-            (row as { os?: string | null }).os ?? "unknown",
-            (row as { browser?: string | null }).browser ?? "unknown",
-            (row as { path?: string | null }).path ?? "/",
+            row.os ?? "unknown",
+            row.browser ?? "unknown",
+            row.path ?? "/",
             row.referrer,
             createdAtMs,
           );
@@ -814,6 +837,7 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
           os: string | null;
           browser: string | null;
           path: string | null;
+          session_id: string | null;
         };
         if (seenRef.current.has(row.id)) return;
         seenRef.current.add(row.id);
@@ -821,17 +845,24 @@ export function LiveVisitorMap({ scopeStartupId, title = "Live network activity"
         const code = row.country?.toUpperCase();
         if (!code) return;
 
+        // One session = one visitor: bar rotations and refreshes in the same
+        // tab move that visitor's pin forward instead of adding a new person.
+        const key = visitorKey(row);
+        const isNewVisitor = !seenVisitorsRef.current.has(key);
+        seenVisitorsRef.current.add(key);
+
         const device = row.device ?? "unknown";
         // Same normalization as refreshData: on a host-scoped dashboard, our own
         // startup id is not a referrer — fall through to the URL referrer.
         const effHost = scopeStartupId && row.host_startup_id === scopeStartupId ? null : row.host_startup_id;
-        setRecentCount((c) => c + 1);
-        addPin(row.id, code, device, effHost, row.os ?? "unknown", row.browser ?? "unknown", row.path, row.referrer);
+        if (isNewVisitor) setRecentCount((c) => c + 1);
+        addPin(key, code, device, effHost, row.os ?? "unknown", row.browser ?? "unknown", row.path, row.referrer);
 
         resolveReferrer(effHost, row.referrer).then(({ name: referrerName }) => {
           setFeed((prev) => prependVisitor(prev,
-            { id: row.id, name: funName(row.id), flag: flagEmoji(code), country: code, path: row.path ?? "/", device, referrerName, ts: Date.now() },
+            { id: key, name: funName(key), flag: flagEmoji(code), country: code, path: row.path ?? "/", device, referrerName, ts: Date.now() },
           ));
+          if (!isNewVisitor) return;
 
           setReferrerCounts((prev) => {
             const m = new Map(prev);
