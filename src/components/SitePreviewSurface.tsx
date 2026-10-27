@@ -20,14 +20,18 @@ function hostOf(url: string) {
 function SiteCard({ url, heightCls }: { url: string; heightCls: string }) {
   const host = hostOf(url);
   return (
-    <div className={`flex ${heightCls} flex-col items-center justify-center gap-3 bg-black/[0.02]`}>
-      <img
-        src={`https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=128`}
-        alt=""
-        className="h-14 w-14 rounded-xl bg-white p-2 shadow-sm"
-      />
-      <div className="text-base font-semibold text-black/80">{host}</div>
-      <div className="text-xs text-black/40">Your bar will sit on top of this site</div>
+    <div className={`sb-loader flex ${heightCls} w-full flex-col items-center justify-center gap-5 overflow-hidden`}>
+      <div className="sb-loader-glow" aria-hidden />
+      <div className="relative flex items-center gap-3">
+        <div className="sb-loader-track">
+          <div className="sb-loader-pill" />
+        </div>
+        <span className="text-[26px] font-semibold tracking-tight text-header-ink">StartupBar</span>
+      </div>
+      <div className="relative flex items-center gap-2 text-xs text-header-ink/50">
+        <span>Loading {host}</span>
+        <span className="sb-loader-dots" aria-hidden><i /><i /><i /></span>
+      </div>
     </div>
   );
 }
