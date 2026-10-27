@@ -735,3 +735,22 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
 .mock-blend-4 { --mock-page: oklch(0.95 0.03 290); --mock-bg: oklch(0.93 0.04 290); --mock-fg: oklch(0.32 0.12 290); }
 .mock-blend-surface { transition: background-color 700ms ease, color 700ms ease, border-color 700ms ease; }
 @media (prefers-reduced-motion: reduce) { .mock-blend-surface { transition: none; } }
+
+/* Preview loader built from the StartupBar logo pill */
+.sb-loader { position: relative; background: var(--card); }
+.sb-loader-glow { position: absolute; width: 340px; height: 340px; border-radius: 9999px;
+  background: radial-gradient(circle, color-mix(in oklab, var(--foreground) 9%, transparent), transparent 65%);
+  animation: sb-loader-breathe 2.4s ease-in-out infinite; }
+.sb-loader-track { position: relative; width: 56px; height: 12px; border-radius: 9999px;
+  background: color-mix(in oklab, var(--foreground) 10%, transparent); overflow: hidden; }
+.sb-loader-pill { position: absolute; inset: 0; width: 28px; border-radius: 9999px; background: var(--foreground);
+  animation: sb-loader-slide 1.4s cubic-bezier(.65,0,.35,1) infinite; }
+.sb-loader-dots { display: inline-flex; gap: 3px; }
+.sb-loader-dots i { width: 4px; height: 4px; border-radius: 9999px; background: currentColor;
+  animation: sb-loader-dot 1.2s ease-in-out infinite; }
+.sb-loader-dots i:nth-child(2) { animation-delay: .15s; }
+.sb-loader-dots i:nth-child(3) { animation-delay: .3s; }
+@keyframes sb-loader-slide { 0% { transform: translateX(-28px) scaleX(.6); } 50% { transform: translateX(14px) scaleX(1.3); } 100% { transform: translateX(56px) scaleX(.6); } }
+@keyframes sb-loader-breathe { 0%,100% { transform: scale(.85); opacity: .6; } 50% { transform: scale(1.1); opacity: 1; } }
+@keyframes sb-loader-dot { 0%,100% { opacity: .2; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+@media (prefers-reduced-motion: reduce) { .sb-loader-pill, .sb-loader-glow, .sb-loader-dots i { animation: none; } .sb-loader-pill { transform: translateX(14px); } }
