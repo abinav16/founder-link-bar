@@ -4,7 +4,8 @@ import { LiveVisitorMap } from "@/components/LiveVisitorMap";
 import { SignupTrackingJourney } from "@/components/SignupTrackingJourney";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { ArrowRight, Settings, LogOut, LayoutDashboard, Eye, MousePointerClick, Globe, BarChart2, Users, TrendingUp, Info, X, Trophy, Gavel } from "lucide-react";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useMemo, type CSSProperties } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useBidBoard, formatUsd } from "@/lib/bid";
 
@@ -862,7 +863,7 @@ function Landing() {
     if (!previewUrl) return undefined;
     const p = resolveWidgetPalette(previewProbe.data?.bg, previewProbe.data?.fg);
     if (!p) return undefined;
-    return { "--mock-bg": p.background, "--mock-fg": p.foreground, "--mock-muted": widgetMutedColor(p) } as React.CSSProperties;
+    return { "--mock-bg": p.background, "--mock-fg": p.foreground, "--mock-muted": widgetMutedColor(p) } as CSSProperties;
   }, [previewUrl, previewProbe.data]);
 
   useEffect(() => {
@@ -1020,7 +1021,7 @@ function Landing() {
                   <path d="M50 52 C 30 48, 14 34, 12 6" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
                   <path d="M12 6 L 5 14 M 12 6 L 19 13" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
                 </svg>
-                <div className="mt-6 rotate-1 text-[16px] leading-[1.05] sm:mt-9 sm:text-[21px] mock-blend-surface">
+                <div className={`mt-6 rotate-1 text-[16px] leading-[1.05] sm:mt-9 sm:text-[21px] mock-blend-surface ${previewUrl ? "rounded-lg px-2 py-1 shadow-sm" : ""}`} style={previewUrl ? { background: "var(--mock-bg)" } : undefined}>
                   <div>Auto-blends with your site's colors</div>
                   <div className="text-[13px] opacity-70 sm:text-[17px]">(matches your background &amp; text color)</div>
                 </div>
