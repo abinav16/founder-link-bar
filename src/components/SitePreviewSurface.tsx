@@ -37,6 +37,7 @@ export function SitePreviewSurface({ url, heightCls = "h-[320px] sm:h-[420px]" }
   const [blocked, setBlocked] = useState(false);
   const [shotFailed, setShotFailed] = useState(false);
   const [shotTry, setShotTry] = useState(0);
+  const [shotReady, setShotReady] = useState(false);
   const shot = `${shotUrl(url)}&t=${shotTry}`;
 
   const probe = useQuery({
@@ -52,6 +53,7 @@ export function SitePreviewSurface({ url, heightCls = "h-[320px] sm:h-[420px]" }
     setBlocked(false);
     setShotFailed(false);
     setShotTry(0);
+    setShotReady(false);
   }, [url]);
 
   useEffect(() => {
@@ -67,6 +69,7 @@ export function SitePreviewSurface({ url, heightCls = "h-[320px] sm:h-[420px]" }
   // mShots returns a tiny "generating" placeholder first; retry a few times.
   const onShotLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const img = e.currentTarget;
+    if (img.naturalWidth >= 600) return setShotReady(true);
     if (img.naturalWidth < 600 && shotTry < 4) {
       window.setTimeout(() => setShotTry((n) => n + 1), 2500);
     } else if (img.naturalWidth < 600) {
@@ -84,7 +87,7 @@ export function SitePreviewSurface({ url, heightCls = "h-[320px] sm:h-[420px]" }
           alt="Your site preview"
           onLoad={onShotLoad}
           onError={() => setShotFailed(true)}
-          className={`relative ${heightCls} w-full object-cover object-top ${shotTry === 0 ? "" : ""}`}
+          className={`relative ${heightCls} w-full object-cover object-top transition-opacity duration-300 ${shotReady ? "opacity-100" : "opacity-0"}`}
           style={{ background: "transparent" }}
         />
       </div>
