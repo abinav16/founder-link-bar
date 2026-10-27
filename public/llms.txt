@@ -16,7 +16,7 @@ Notes:
 
 - The bar renders in a sandboxed iframe (36px tall) and never blocks page content.
 - Placement is your choice: show the bar at the top or the bottom of your site, switchable from the dashboard.
-- Theme is auto-detected (light/dark) from your site. Force it with `data-theme="dark"` or `data-theme="light"`.
+- The bar automatically blends with your site's background and text colors, including light/dark mode switches.
 - Visitors can dismiss the bar for their session; nothing is stored beyond a per-session ID used to de-duplicate impressions.
 - The bar survives client-side navigation (Livewire, Turbo, Astro, SPA routers) without reloading or shifting your layout.
 - Works on any site or framework — plain HTML, React, Next.js, Webflow, Framer, etc. No npm package needed.

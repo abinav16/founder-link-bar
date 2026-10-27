@@ -67,7 +67,7 @@ const FAQS: Faq[] = [
     id: "how-to-embed",
     cat: "Widget & install",
     q: "How do I embed the widget?",
-    a: 'Paste this one line just before the closing </body> tag of your site, using the startup ID shown on your Apply/Account page:\n\n<script async src="https://startupbar.co/widget/loader.js" data-startup-id="YOUR-STARTUP-ID"></script>\n\nThere is nothing else to configure. A dark variant is available by adding data-theme="dark".',
+    a: 'Paste this one line just before the closing </body> tag of your site, using the startup ID shown on your Apply/Account page:\n\n<script async src="https://startupbar.co/widget/loader.js" data-startup-id="YOUR-STARTUP-ID"></script>\n\nThere is nothing else to configure. The bar automatically blends with your site\'s background and text colors, including dark mode.',
   },
   {
     id: "where-does-bar-appear",
