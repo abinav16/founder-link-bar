@@ -1,3 +1,6 @@
+# Weekly snippet reminder
+- [ ] Verify installed snippet evidence and conditionally include the reminder in weekly stats; preserve delivery safeguards and test both states.
+
 # Startup categories
 - [x] Add a shared category selector to applications and owner editing, with validated storage.
 - [x] Display categories on startup profiles and filter the network directory; verified signed-in save/reload, public profile readback, reversible restoration, and desktop/phone layouts; ten tests pass.
