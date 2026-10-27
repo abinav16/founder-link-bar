@@ -1,6 +1,7 @@
 /** Static evidence only: JS-generated anchors are not raw-HTML backlinks. */
 export function hasLatestSnippet(html: string, startupId: string): boolean {
-  const source = html.replace(/<!--[\s\S]*?-->/g, '').replace(/<script\b([^>]*)>[\s\S]*?<\/script>/gi, '<script $1></script>');
+  const uncommented = html.replace(/<!--[\s\S]*?-->/g, '');
+  const source = uncommented.replace(/<script\b([^>]*)>[\s\S]*?<\/script\s*>/gi, '<script $1></script>');
   const attr = (tag: string, name: string) => tag.match(new RegExp(`\\s${name}\\s*=\\s*["']([^"']*)["']`, 'i'))?.[1];
   const loader = [...source.matchAll(/<script\b[^>]*>/gi)].some(([tag]) => {
     try {
@@ -8,14 +9,21 @@ export function hasLatestSnippet(html: string, startupId: string): boolean {
       return url.origin === 'https://startupbar.co' && url.pathname === '/widget/loader.js' && attr(tag, 'data-startup-id') === startupId;
     } catch { return false; }
   });
-  const credit = [...source.matchAll(/<a\b[^>]*>[\s\S]*?<\/a>/gi)].some(([tag]) => {
+  // An inline injector can be legitimate install evidence, but the credit
+  // itself must still be an actual static anchor outside script content.
+  const inlineLoader = [...uncommented.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script\s*>/gi)].some(([, js]) =>
+    /createElement\(\s*['"]script['"]\s*\)/.test(js) &&
+    js.includes('https://startupbar.co/widget/loader.js') &&
+    [...js.matchAll(/setAttribute\(\s*['"]data-startup-id['"]\s*,\s*['"]([^'"]+)['"]\s*\)/g)].some(([, value]) => value === startupId),
+  );
+  const credit = [...source.matchAll(/<a\b[^>]*>[\s\S]*?<\/a\s*>/gi)].some(([tag]) => {
     try {
       const url = new URL(attr(tag, 'href') ?? '');
       const text = tag.replace(/<[^>]*>/g, '').trim();
       return url.origin === 'https://startupbar.co' && url.pathname === '/' && !url.search && !url.hash && text === 'StartupBar';
     } catch { return false; }
   });
-  return loader && credit;
+  return (loader || inlineLoader) && credit;
 }
 
 export function needsSnippetReminder(detectedAt: string | null | undefined): boolean {

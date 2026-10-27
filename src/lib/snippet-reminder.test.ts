@@ -20,6 +20,12 @@ describe('conditional weekly snippet reminder', () => {
     expect(hasLatestSnippet(script + `<script>document.write('${anchor}')</script>`, id)).toBe(false);
   });
   it('rejects lookalike credit destinations', () => expect(hasLatestSnippet(script + anchor.replace('startupbar.co', 'startupbar.co.evil.com'), id)).toBe(false));
+  it('accepts multiline closing tags and a legitimate inline loader with static credit', () => {
+    expect(hasLatestSnippet(script + anchor.replace('</a>', '</a\n>'), id)).toBe(true);
+    const inline = `<script>var s=document.createElement('script');s.src='https://startupbar.co/widget/loader.js';s.setAttribute('data-startup-id','${id}');document.body.appendChild(s);</script>`;
+    expect(hasLatestSnippet(inline + anchor, id)).toBe(true);
+    expect(hasLatestSnippet(inline, id)).toBe(false);
+  });
   it('checks the reported inner page when the root still has old code', async () => {
     const checked: string[] = [];
     const fetcher = (async (url: string | URL | Request) => { checked.push(String(url)); return page(String(url).endsWith('/editor') ? script + anchor : script); }) as typeof fetch;
