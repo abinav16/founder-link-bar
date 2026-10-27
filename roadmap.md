@@ -1,6 +1,6 @@
 # Startup categories
-- [ ] Add a shared category selector to applications and owner editing, with validated storage.
-- [ ] Display categories on startup profiles and filter the network directory; verify save/readback and layouts.
+- [x] Add a shared category selector to applications and owner editing, with validated storage.
+- [x] Display categories on startup profiles and filter the network directory; verified signed-in save/reload, public profile readback, reversible restoration, and desktop/phone layouts; ten tests pass.
 
 # Partner signup attribution
 - [x] Match application Step 2 to Step 1's width and reuse the compact dashboard tracking design; verify signed-in copy/view/review/save draft flow and stable 208px/368px desktop/phone footprint without submitting or paying.

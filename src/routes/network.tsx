@@ -1018,7 +1018,7 @@ function NetworkDashboardPage() {
           <div className="mb-4 flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
             <span className="text-xs font-medium text-muted-foreground">Category</span>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger aria-label="Filter by category" className="w-full bg-card shadow-none sm:w-56"><SelectValue /></SelectTrigger>
+              <SelectTrigger aria-label="Filter by category" className="w-full bg-card shadow-none sm:w-56"><SelectValue placeholder="All categories" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All categories</SelectItem>
                 {STARTUP_CATEGORIES.map((category) => <SelectItem key={category} value={category}>{category} ({allStartups.filter((s) => s.category === category).length})</SelectItem>)}
