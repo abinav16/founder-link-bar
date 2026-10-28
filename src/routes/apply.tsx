@@ -1062,7 +1062,7 @@ function Apply() {
 
       {step === 1 && (
 
-        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 md:py-14">
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 md:pb-4 md:pt-14">
           <div className="grid gap-10 md:grid-cols-2 md:gap-24">
             <div>
               <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Step 1 of 2</span>
