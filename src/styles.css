@@ -737,6 +737,26 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
 .apply-preview-bar { background: var(--mock-bg); color: var(--mock-fg); border-color: color-mix(in srgb, var(--mock-fg) 18%, var(--mock-bg)); }
 .apply-preview-brand { background: var(--mock-fg); color: var(--mock-bg); transition: background-color 700ms ease, color 700ms ease; }
 .apply-preview-muted { color: var(--mock-muted); transition: color 700ms ease; }
+/* Reserve room for navigation, application progress and the host bar.
+   Only the form moves; the preview uses the remaining viewport without a scrollbar. */
+@media (min-width: 768px) {
+  .apply-preview-rail {
+    position: sticky;
+    top: 188px;
+    height: min(640px, calc(100dvh - 204px));
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 20px;
+  }
+  .apply-preview-rail .apply-preview-browser { height: 100%; display: flex; flex-direction: column; }
+  .apply-preview-rail .apply-preview-browser > :not(.apply-preview-site) { flex-shrink: 0; }
+  .apply-preview-rail .apply-preview-site { flex: 1; min-height: 0; height: auto; }
+}
+@media (min-width: 768px) and (max-height: 700px) {
+  .apply-preview-rail { gap: 12px; }
+  .apply-preview-rail > :last-child { padding-top: 12px; }
+  .apply-preview-rail > :last-child > :not(:first-child) { margin-top: 8px; }
+}
 @media (prefers-reduced-motion: reduce) { .apply-preview-brand, .apply-preview-muted { transition: none; } }
 @media (prefers-reduced-motion: reduce) { .mock-blend-surface { transition: none; } }
 
