@@ -1,5 +1,5 @@
 # Application placement options
-- [ ] Add Free and annual-price badges and keep the desktop preview visible while the form scrolls.
+- [x] Add Free and annual-price badges and keep the desktop preview visible while the form scrolls; verify all three selections and full preview visibility at desktop size, plus narrow-screen fit.
 
 # Automatic widget blending
 - [x] Detect host colors, sync theme changes and apply readable colors across the full widget without snippet changes.
