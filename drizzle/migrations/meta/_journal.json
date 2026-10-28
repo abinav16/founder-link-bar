@@ -85,6 +85,13 @@
       "when": 1793080964127,
       "tag": "0011_weekly_snippet_install_checks",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1793202006141,
+      "tag": "0012_application_drafts",
+      "breakpoints": true
     }
   ]
 }

@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      application_drafts: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string
+          mode: string | null
+          name: string
+          placement: string | null
+          startup_id: string
+          submitted_at: string | null
+          updated_at: string
+          user_id: string
+          website_url: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string
+          mode?: string | null
+          name: string
+          placement?: string | null
+          startup_id: string
+          submitted_at?: string | null
+          updated_at?: string
+          user_id: string
+          website_url: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string
+          mode?: string | null
+          name?: string
+          placement?: string | null
+          startup_id?: string
+          submitted_at?: string | null
+          updated_at?: string
+          user_id?: string
+          website_url?: string
+        }
+        Relationships: []
+      }
       application_events: {
         Row: {
           applicant_email: string | null
@@ -1117,6 +1159,20 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      admin_application_drafts: {
+        Args: never
+        Returns: {
+          category: string
+          description: string
+          email: string
+          name: string
+          placement: string
+          startup_id: string
+          updated_at: string
+          user_id: string
+          website_url: string
+        }[]
       }
       admin_founder_info: {
         Args: { _user_ids: string[] }
