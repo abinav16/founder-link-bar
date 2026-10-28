@@ -334,6 +334,7 @@ function AdminPage() {
       </SiteHeader>
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+        <DraftApplicationsPanel />
         <BroadcastPanel />
         <UnsubReasonsPanel />
        <OrphanPaymentsPanel />
@@ -1346,3 +1347,41 @@ function OrphanPaymentsPanel() {
   );
 }
 
+
+type DraftRow = { user_id: string; startup_id: string; name: string; website_url: string; description: string; category: string | null; placement: string | null; email: string | null; updated_at: string };
+
+function DraftApplicationsPanel() {
+  const [open, setOpen] = useState(false);
+  const [rows, setRows] = useState<DraftRow[] | null>(null);
+  useEffect(() => {
+    void supabase.rpc("admin_application_drafts" as never).then(({ data }) => setRows((data as DraftRow[] | null) ?? []));
+  }, []);
+  return (
+    <section className="mb-8 rounded-2xl border border-black/8 bg-white">
+      <button onClick={() => setOpen((v) => !v)} className="flex w-full items-center justify-between px-5 py-3.5 text-left">
+        <div>
+          <h2 className="text-sm font-semibold tracking-tight text-black">Unfinished applications</h2>
+          <p className="text-xs text-black/50">
+            {rows ? `${rows.length} founders finished step 1 but haven't submitted` : "Loading…"}
+          </p>
+        </div>
+        <span className="text-xs text-black/40">{open ? "Hide" : "Show"}</span>
+      </button>
+      {open && rows && (
+        <div className="border-t border-black/8 divide-y divide-black/5">
+          {rows.length === 0 && <div className="px-5 py-4 text-xs text-black/50">None right now.</div>}
+          {rows.map((r) => (
+            <div key={r.startup_id} className="px-5 py-3 text-xs">
+              <div className="flex items-center justify-between gap-3">
+                <a href={r.website_url} target="_blank" rel="noopener noreferrer" className="font-semibold text-black hover:underline">{r.name}</a>
+                <span className="text-black/40">{new Date(r.updated_at).toLocaleString()}</span>
+              </div>
+              <div className="mt-0.5 text-black/60">{r.email ?? "unknown"} · {r.category ?? "No category"} · {r.placement ?? "top"}</div>
+              {r.description && <div className="mt-1 text-black/50 line-clamp-2">{r.description}</div>}
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
