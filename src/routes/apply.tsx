@@ -779,6 +779,16 @@ function Apply() {
     }
     setStep(2);
     window.scrollTo({ top: 0, behavior: "smooth" });
+    // Save the in-progress application so admins can see founders who stop at install.
+    if (!resubmitId && startupId) {
+      void supabase.auth.getUser().then(({ data: u }) => {
+        if (!u.user) return;
+        return supabase.from("application_drafts").upsert({
+          user_id: u.user.id, startup_id: startupId, name, website_url: url,
+          description: desc, category: category || null, placement, mode, updated_at: new Date().toISOString(),
+        });
+      });
+    }
   }
 
   async function handlePayment() {
