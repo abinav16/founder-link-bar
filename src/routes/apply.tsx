@@ -1,4 +1,5 @@
 import { SiteHeader } from "@/components/SiteHeader";
+import { Button } from "@/components/ui/button";
 import { StartupCategorySelect } from "@/components/StartupCategorySelect";
 import { STARTUP_CATEGORIES, isStartupCategory } from "@/lib/startup-categories";
 import { SUPPORTER_PRICE_USD, SUPPORTER_TRIAL_DAYS } from "@/lib/supporter";
@@ -112,7 +113,7 @@ function BarPreview({ name, url, desc, placement = "top", noBar = false }: { nam
     </div>
   );
   return (
-    <div style={paletteStyle} className="mock-blend relative overflow-hidden rounded-xl border border-black/10 bg-white shadow-[0_8px_40px_-12px_rgba(0,0,0,0.12)]">
+    <div style={paletteStyle} className="apply-preview-browser mock-blend relative overflow-hidden rounded-xl border border-black/10 bg-white shadow-[0_8px_40px_-12px_rgba(0,0,0,0.12)]">
       <div className="flex h-8 items-center gap-1.5 border-b border-black/6 bg-black/[0.02] px-3">
         <div className="h-2 w-2 rounded-full bg-red-400/70" />
         <div className="h-2 w-2 rounded-full bg-yellow-400/70" />
@@ -120,9 +121,9 @@ function BarPreview({ name, url, desc, placement = "top", noBar = false }: { nam
         <div className="ml-2 truncate text-[10px] text-black/25">{previewHost}</div>
       </div>
       {!noBar && placement === "top" && bar}
-      <div className="relative h-[260px] w-full overflow-hidden">
+      <div className="apply-preview-site relative h-[260px] w-full overflow-hidden">
         {previewUrl ? (
-          <SitePreviewSurface url={previewUrl} heightCls="h-[260px]" />
+          <SitePreviewSurface url={previewUrl} heightCls="h-full" />
         ) : (
           <div className="space-y-2 px-4 py-6">
             <div className="h-3 w-2/3 rounded-full bg-black/5" />
@@ -1061,7 +1062,7 @@ function Apply() {
 
       {step === 1 && (
 
-        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 md:py-14">
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 md:pb-4 md:pt-14">
           <div className="grid gap-10 md:grid-cols-2 md:gap-24">
             <div>
               <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Step 1 of 2</span>
@@ -1109,26 +1110,30 @@ function Apply() {
                   </div>
                 </Field>
                 <Field label="Bar placement" hint="Where the bar sits on your own site. You can change this anytime in your account.">
-                  <div className="grid w-full grid-cols-3 gap-1 rounded-lg border border-black/12 bg-black/[0.02] p-1 sm:inline-flex sm:w-auto sm:gap-0">
+                  <div className="grid w-full grid-cols-3 gap-1 rounded-lg border border-header-ink/12 bg-header-ink/[0.02] p-1">
                     {(["top", "bottom"] as const).map((p) => (
-                      <button
+                      <Button
                         key={p}
                         type="button"
+                        variant="ghost"
                         onClick={() => { setPlacement(p); setMode("widget"); }}
                         aria-pressed={!isSupporter && placement === p}
-                        className={`rounded-md px-2 py-2 text-sm font-medium capitalize transition sm:px-4 sm:py-1.5 ${!isSupporter && placement === p ? "bg-white text-black shadow-sm" : "text-black/45 hover:text-black/70"}`}
+                        className={`h-auto min-w-0 flex-col gap-1 rounded-md px-2 py-2.5 text-sm font-medium transition sm:flex-row sm:gap-2 ${!isSupporter && placement === p ? "bg-header-surface text-header-ink shadow-sm hover:bg-header-surface" : "text-header-ink/45 hover:bg-header-ink/5 hover:text-header-ink/70"}`}
                       >
-                        {p}
-                      </button>
+                        <span className="capitalize">{p}</span>
+                        <span className="rounded-full bg-header-ink/6 px-2 py-0.5 text-[10px] font-semibold leading-none text-header-ink/65">Free</span>
+                      </Button>
                     ))}
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
                       onClick={() => setMode("supporter")}
                       aria-pressed={isSupporter}
-                      className={`whitespace-nowrap rounded-md px-2 py-2 text-sm font-medium transition sm:px-4 sm:py-1.5 ${isSupporter ? "bg-white text-black shadow-sm" : "text-black/45 hover:text-black/70"}`}
+                      className={`h-auto min-w-0 flex-col gap-1 rounded-md px-2 py-2.5 text-sm font-medium transition sm:flex-row sm:gap-2 ${isSupporter ? "bg-header-surface text-header-ink shadow-sm hover:bg-header-surface" : "text-header-ink/45 hover:bg-header-ink/5 hover:text-header-ink/70"}`}
                     >
-                      No Bar
-                    </button>
+                      <span>No Bar</span>
+                      <span className="rounded-full bg-header-ink px-2 py-0.5 text-[10px] font-semibold leading-none text-header-surface">${SUPPORTER_PRICE_USD}/yr</span>
+                    </Button>
                   </div>
                   {isSupporter ? (
                     <SupporterStory />
@@ -1149,13 +1154,15 @@ function Apply() {
             </div>
 
             <div className="hidden md:block">
-              <div className="sticky top-10">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Live preview</span>
-                <p className="mt-1.5 text-sm text-black/40">This is how your startup will appear on other founders' sites.</p>
-                <div className="mt-5">
+              <div className="apply-preview-rail">
+                <div>
+                  <span className="text-[11px] font-semibold uppercase text-header-ink/35">Live preview</span>
+                  <p className="mt-1.5 text-sm text-header-ink/40">This is how your startup will appear on other founders' sites.</p>
+                </div>
+                <div className="min-h-0">
                   <BarPreview name={name} url={url} desc={desc} placement={placement} noBar={isSupporter} />
                 </div>
-                <div className="mt-8 space-y-4 border-t border-black/8 pt-8">
+                <div className="space-y-3 border-t border-header-ink/8 pt-4">
                   {(isSupporter
                     ? [
                         "Your startup will appear across the network at an average member's share.",
