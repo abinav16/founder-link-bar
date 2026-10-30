@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Maximize, Minimize, Pause, Play, RotateCcw, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import promo from "@/assets/startupbar-promo.mp4.asset.json";
@@ -18,6 +18,12 @@ export function PromoVideo() {
   const [duration, setDuration] = useState(49.16);
   const [fullscreen, setFullscreen] = useState(false);
   const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const update = () => setFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", update);
+    return () => document.removeEventListener("fullscreenchange", update);
+  }, []);
 
   async function togglePlayback() {
     const video = videoRef.current;
@@ -44,7 +50,7 @@ export function PromoVideo() {
           </div>
           <span className="font-mono text-xs text-muted-foreground">00:49</span>
         </div>
-        <div ref={frameRef} className="promo-player" onFullscreenChange={() => setFullscreen(Boolean(document.fullscreenElement))}>
+        <div ref={frameRef} className="promo-player">
           <div className="promo-screen">
             <video
               ref={videoRef} src={promo.url} poster={poster.url} preload="none" playsInline muted={muted}
