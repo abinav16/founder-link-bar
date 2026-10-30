@@ -1,4 +1,5 @@
 import { SiteHeader } from "@/components/SiteHeader";
+import { PromoVideo } from "@/components/PromoVideo";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { LiveVisitorMap } from "@/components/LiveVisitorMap";
 import { SignupTrackingJourney } from "@/components/SignupTrackingJourney";
@@ -1116,6 +1117,7 @@ function Landing() {
         </div>
       </section>
 
+      <PromoVideo />
       <HowItWorks />
 
       {/* Live Network Map */}
