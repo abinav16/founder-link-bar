@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Maximize, Minimize, Pause, Play, RotateCcw, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import promo from "@/assets/startupbar-promo.mp4.asset.json";
+import webPromo from "@/assets/startupbar-promo.webm.asset.json";
 import poster from "@/assets/startupbar-promo-poster.jpg.asset.json";
 
 function timestamp(seconds: number) {
@@ -53,14 +54,17 @@ export function PromoVideo() {
         <div ref={frameRef} className="promo-player">
           <div className="promo-screen">
             <video
-              ref={videoRef} src={promo.url} poster={poster.url} preload="none" playsInline muted={muted}
+              ref={videoRef} poster={poster.url} preload="none" playsInline muted={muted}
               aria-label="StartupBar promotional video"
               onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => setPlaying(false)}
               onTimeUpdate={(event) => setTime(event.currentTarget.currentTime)}
               onLoadedMetadata={(event) => setDuration(event.currentTarget.duration)}
               onError={() => setError(true)}
               onClick={() => void togglePlayback()}
-            />
+            >
+              <source src={webPromo.url} type="video/webm" />
+              <source src={promo.url} type="video/mp4" />
+            </video>
             {!playing && (
               <Button variant="ghost" className="promo-play" aria-label={started ? "Resume promo video" : "Play promo video"} onClick={() => void togglePlayback()}>
                 <Play fill="currentColor" /><span>{started ? "Continue watching" : "Watch the film"}</span>
