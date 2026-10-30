@@ -6,6 +6,33 @@
 
 /* Embedded recommendations keep their palette independent of host styles. */
 :root {
+  --promo-surface: oklch(0.16 0 0);
+  --promo-ink: oklch(0.98 0 0);
+  --promo-muted: oklch(0.65 0 0);
+  --promo-edge: oklch(0.3 0 0);
+  --promo-hover: oklch(0.26 0 0);
+  --shadow-promo: 0 24px 60px -30px oklch(0 0 0 / 0.28);
+}
+.promo-brand-mark { width: 27px; height: 12px; border-radius: 999px; background: var(--foreground); }
+.promo-player { overflow: hidden; border: 1px solid var(--border); border-radius: 8px; background: var(--promo-surface); box-shadow: var(--shadow-promo); }
+.promo-screen { position: relative; aspect-ratio: 16 / 9; background: var(--card); }
+.promo-screen video { display: block; width: 100%; height: 100%; object-fit: contain; cursor: pointer; }
+.promo-play { position: absolute; left: 50%; bottom: 8%; transform: translateX(-50%); height: 48px; padding: 0 22px; border-radius: 999px; background: var(--promo-surface); color: var(--promo-ink); box-shadow: var(--shadow-promo); transition: background 180ms, box-shadow 180ms; }
+.promo-play:hover { background: var(--promo-hover); color: var(--promo-ink); }
+.promo-play svg { width: 16px; height: 16px; }
+.promo-controls { display: flex; align-items: center; gap: 12px; padding: 10px 16px; color: var(--promo-ink); }
+.promo-control { flex-shrink: 0; color: var(--promo-ink); border-radius: 50%; }
+.promo-control:hover { background: var(--promo-hover); color: var(--promo-ink); }
+.promo-time { font: 11px ui-monospace, monospace; color: var(--promo-muted); min-width: 30px; font-variant-numeric: tabular-nums; }
+.promo-seek { appearance: none; width: 100%; min-width: 20px; height: 4px; border-radius: 99px; background: var(--promo-edge); cursor: pointer; accent-color: var(--promo-ink); }
+.promo-seek::-webkit-slider-thumb { appearance: none; width: 10px; height: 10px; border-radius: 50%; background: var(--promo-ink); }
+.promo-seek::-moz-range-thumb { width: 10px; height: 10px; border: 0; border-radius: 50%; background: var(--promo-ink); }
+.promo-seek:focus-visible { outline: 2px solid var(--promo-ink); outline-offset: 6px; }
+.promo-player:fullscreen { display: flex; flex-direction: column; justify-content: center; border: 0; border-radius: 0; }
+.promo-player:fullscreen .promo-screen { flex: 1; min-height: 0; aspect-ratio: auto; background: var(--promo-surface); }
+@media (max-width: 640px) { .promo-controls { gap: 6px; padding: 8px; } .promo-control { width: 30px; height: 30px; } .promo-play { height: 40px; font-size: 12px; } }
+@media (prefers-reduced-motion: reduce) { .promo-play { transition: none; } }
+:root {
   --profile-share-paper: #f3f3f1;
   --header-surface: oklch(1 0 0);
   --header-ink: oklch(0 0 0);
