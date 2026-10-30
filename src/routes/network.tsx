@@ -201,7 +201,7 @@ function StartupCard({ s }: { s: Card }) {
             )}
           </div>
         </div>
-        {s.category && <span className="mt-2 inline-flex max-w-full rounded-md border border-border/60 px-2 py-0.5 text-[10px] font-medium text-inherit">{s.category}</span>}
+        {s.category && <span className={["mt-2 inline-flex max-w-full rounded-md border px-2 py-0.5 text-[10px] font-medium", sponsored ? "border-white/25 bg-white/10 text-white/85" : "border-border bg-muted text-muted-foreground"].join(" ")}>{s.category}</span>}
         <p className={[
           "mt-3 text-[13px] leading-relaxed line-clamp-2 sm:min-h-[2.9em]",
           sponsored ? "text-white/65" : "text-black/45",
