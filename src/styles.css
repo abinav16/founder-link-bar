@@ -235,41 +235,33 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
   to   { transform: translateY(0); }
 }
 .leaderboard-switch {
-  --ranking-surface: var(--card);
   --ranking-ink: var(--header-ink);
-  --ranking-active: var(--header-ink);
-  --ranking-active-ink: var(--header-surface);
   --ranking-edge: var(--border);
-  --shadow-ranking: 0 2px 5px color-mix(in oklab, var(--ranking-ink) 12%, transparent);
   position: relative;
-  isolation: isolate;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  width: min(370px, 100%);
-  padding: 4px;
-  border: 1px solid var(--ranking-edge);
-  border-radius: 8px;
-  background: var(--ranking-surface);
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  width: min(340px, 100%);
+  border-bottom: 1px solid var(--ranking-edge);
 }
-.dark .leaderboard-switch { --ranking-ink: var(--foreground); --ranking-active: var(--foreground); --ranking-active-ink: var(--card); }
+.dark .leaderboard-switch { --ranking-ink: var(--foreground); }
 .leaderboard-switch::before {
   content: "";
   position: absolute;
-  inset: 4px auto 4px 4px;
-  width: calc((100% - 8px) / 2);
-  border-radius: 5px;
-  background: var(--ranking-active);
-  box-shadow: var(--shadow-ranking);
-  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
-  z-index: -1;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  width: 42.5%;
+  background: var(--ranking-ink);
+  transition: left 300ms cubic-bezier(0.22, 1, 0.36, 1), width 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
 }
-.leaderboard-switch[data-selection="given"]::before { transform: translateX(100%); }
+.leaderboard-switch[data-selection="given"]::before { left: 42.5%; width: 57.5%; }
 .leaderboard-switch .leaderboard-switch-option {
-  height: 40px;
+  height: 48px;
   min-width: 0;
-  padding: 0 8px;
+  padding: 0 10px;
   gap: 8px;
-  border-radius: 5px;
+  border-radius: 0;
   background: transparent;
   color: var(--muted-foreground);
   font-size: 13px;
@@ -278,7 +270,7 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
   transition: color 200ms ease;
 }
 .leaderboard-switch .leaderboard-switch-option:hover { background: transparent; color: var(--ranking-ink); }
-.leaderboard-switch .leaderboard-switch-option[aria-pressed="true"] { color: var(--ranking-active-ink); }
+.leaderboard-switch .leaderboard-switch-option[aria-pressed="true"] { color: var(--ranking-ink); }
 .leaderboard-switch-option svg { opacity: 0.7; transition: opacity 200ms ease; }
 .leaderboard-switch-option[aria-pressed="true"] svg { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .leaderboard-switch::before, .leaderboard-switch .leaderboard-switch-option, .leaderboard-switch-option svg { transition: none; } }
