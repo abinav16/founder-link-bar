@@ -5,7 +5,8 @@ import { SponsoredRail } from "@/components/SponsoredRail";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { getLeaderboard, getNetworkActivity, type LeaderboardRow } from "@/lib/leaderboard.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { Trophy, ExternalLink, Info } from "lucide-react";
+import { Trophy, ExternalLink, Info, Zap } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useFeaturedStartupIds } from "@/lib/featured";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -272,23 +273,32 @@ function LeaderboardPage() {
           </h1>
         </div>
 
-        <div className="inline-flex rounded-xl border border-black/10 bg-black/[0.03] p-1 gap-1 self-start sm:self-end">
-          <button
+        <div
+          className="leaderboard-switch self-start sm:self-end"
+          role="group"
+          aria-label="Leaderboard ranking"
+          data-selection={tab}
+        >
+          <Button
+            type="button"
+            variant="ghost"
+            aria-pressed={tab === "received"}
             onClick={() => setTab("received")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              tab === "received" ? "bg-black text-white shadow-sm" : "text-black/50 hover:text-black"
-            }`}
+            className="leaderboard-switch-option"
           >
-            🏆 Most Seen
-          </button>
-          <button
+            <Trophy aria-hidden="true" />
+            <span>Most Seen</span>
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            aria-pressed={tab === "given"}
             onClick={() => setTab("given")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              tab === "given" ? "bg-black text-white shadow-sm" : "text-black/50 hover:text-black"
-            }`}
+            className="leaderboard-switch-option"
           >
-            ⚡ Top Contributors
-          </button>
+            <Zap aria-hidden="true" />
+            <span>Top Contributors</span>
+          </Button>
         </div>
       </div>
 
