@@ -444,7 +444,7 @@ function AdminPage() {
                     const badge: "checking" | "live" | "hidden" | "csp-blocked" | "wrong-id" | "track-mode" | "consent-blocked" | "conditional" | "installed-unseen" | "removed" | "missing" | "error" | "idle" =
                       e.state === "checking" ? "checking"
                       : scriptIdMismatch ? "wrong-id"
-                      : scriptTrackMode && !s.is_supporter ? "track-mode"
+                      : scriptTrackMode && !(s as { supporter_subscription_id?: string | null }).supporter_subscription_id ? "track-mode"
                       : scriptCspBlocked ? "csp-blocked"
                       : scriptConsentBlocked ? "consent-blocked"
                       : scriptRemoved ? "removed"
