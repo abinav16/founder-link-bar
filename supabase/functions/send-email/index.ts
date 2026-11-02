@@ -12,11 +12,13 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-async function sendEmail(to: string | string[], subject: string, html: string) {
+async function sendEmail(to: string | string[], subject: string, html: string, bccAdmin = false) {
+  const copy = appEmailCc(to);
+  const copyField = bccAdmin && copy.cc ? { bcc: copy.cc } : copy;
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: FROM, to, subject, html, ...appEmailCc(to) }),
+    body: JSON.stringify({ from: FROM, to, subject, html, ...copyField }),
   });
   if (!res.ok) throw new Error(await res.text());
 }
@@ -655,6 +657,17 @@ serve(async (req) => {
             ${p(`Once the site is back up and serving normally, please reapply at <a href="https://startupbar.co/apply" style="color:#0a0a0a;">startupbar.co/apply</a>.`)}
           `,
         },
+        track_mode: {
+          subject: `${name} — please re-paste your StartupBar snippet`,
+          heading: "The bar isn't showing on your site",
+          reasonLine: "Snippet uses track-only mode, so the bar stays hidden",
+          body: `
+            ${p(`Your snippet on ${strong(site)} includes ${strong('data-mode="track"')}. That setting is reserved for Supporter members and hides the bar, so visitors never see it.`)}
+            ${p(`Please replace your current snippet with this one, inside the ${strong("&lt;head&gt;")} of your site:`)}
+            <pre style="margin:0 0 16px 0;background:#fafafa;border:1px solid #e4e4e7;border-radius:8px;padding:14px 16px;font-size:13px;line-height:1.5;color:#0a0a0a;overflow-x:auto;white-space:pre-wrap;word-break:break-all;">&lt;script async src="https://startupbar.co/widget/loader.js" data-startup-id="${String(data.startupId).replace(/[^a-zA-Z0-9-]/g, "")}"&gt;&lt;/script&gt;</pre>
+            ${p(`Once it's live, reapply at <a href="https://startupbar.co/apply" style="color:#0a0a0a;">startupbar.co/apply</a> and we'll approve you as soon as the bar shows up.`)}
+          `,
+        },
         generic: {
           subject: `Update on your StartupBar application — ${name}`,
           heading: "Update on your application",
@@ -704,7 +717,7 @@ serve(async (req) => {
       return new Response("Unknown email type", { status: 400, headers: corsHeaders });
     }
 
-    await sendEmail(to, subject, html);
+    await sendEmail(to, subject, html, type === "startup-rejected" && data?.reason === "track_mode");
     return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     console.error("send-email error:", e);
