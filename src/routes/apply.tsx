@@ -496,7 +496,7 @@ function Apply() {
   const [resubmitId, setResubmitId] = useState<string>(initial.resubmitId);
   const [startupId, setStartupId] = useState<string>(() => initial.resubmitId || initial.startupId || crypto.randomUUID());
   const [copied, setCopied] = useState(false);
-  const [verifyStatus, setVerifyStatus] = useState<"idle" | "checking" | "live" | "csp" | "csp-frame" | "csp-img" | "not-found" | "error">("idle");
+  const [verifyStatus, setVerifyStatus] = useState<"idle" | "checking" | "live" | "csp" | "csp-frame" | "csp-img" | "not-found" | "track" | "error">("idle");
   const [verifyMsg, setVerifyMsg] = useState("");
 
   const [loading, setLoading] = useState(false);
@@ -861,7 +861,10 @@ function Apply() {
       }
 
       const json = await res.json();
-      if (json.installed && json.cspFrameBlocked) {
+      if (json.installed && json.trackMode && !isSupporter) {
+        setVerifyStatus("track");
+        setVerifyMsg('Your script has data-mode="track" (the No Bar Supporter mode), which hides the bar completely. Replace it with the snippet above and check again.');
+      } else if (json.installed && json.cspFrameBlocked) {
         setVerifyStatus("csp-frame");
         setVerifyMsg("Your script loads, but your CSP is blocking the StartupBar iframe. Visitors see a broken frame where the bar should be.");
       } else if (json.installed && json.cspBlocked) {
@@ -1265,6 +1268,7 @@ function Apply() {
               verifyStatus === "live" ? "border-l-emerald-500" :
               verifyStatus === "csp" ? "border-l-red-500" :
               verifyStatus === "csp-frame" ? "border-l-red-500" :
+              verifyStatus === "track" ? "border-l-red-500" :
               verifyStatus === "csp-img" ? "border-l-amber-500" :
               verifyStatus === "not-found" ? "border-l-amber-500" :
               verifyStatus === "error" ? "border-l-black/20" :
@@ -1366,6 +1370,11 @@ function Apply() {
                 </div>
               )}
 
+              {verifyStatus === "track" && (
+                <div role="alert" className="mt-3 flex items-start gap-2 text-sm text-red-700">
+                  <span className="font-medium">{verifyMsg}</span>
+                </div>
+              )}
               {verifyStatus === "error" && (
                 <div className="mt-4 flex items-start gap-2.5 rounded-lg bg-black/[0.03] px-4 py-3 text-sm text-black/60">
                   <XCircle className="mt-0.5 h-4 w-4 shrink-0" />

@@ -120,6 +120,7 @@ type EmbedState =
       suspicious: boolean;
       cspBlocked: boolean;
       idMismatch: boolean;
+      trackMode: boolean;
       installedId: string | null;
       consentBlocked: boolean;
       consentVendor: string | null;
@@ -186,6 +187,7 @@ function AdminPage() {
             suspicious: !!j.suspicious,
             cspBlocked: !!j.cspBlocked,
             idMismatch: !!j.idMismatch,
+            trackMode: !!j.trackMode,
             installedId: j.installedId ?? null,
             consentBlocked: !!j.consentBlocked,
             consentVendor: j.consentVendor ?? null,
@@ -413,6 +415,7 @@ function AdminPage() {
                     const scriptSuspicious = e.state === "installed" && e.suspicious;
                     const scriptCspBlocked = e.state === "installed" && e.cspBlocked;
                     const scriptIdMismatch = e.state === "installed" && e.idMismatch;
+                    const scriptTrackMode = e.state === "installed" && e.trackMode;
                     const installedIdValue = e.state === "installed" ? e.installedId : null;
                     const scriptConsentBlocked = e.state === "installed" && e.consentBlocked;
                     const consentVendorName = e.state === "installed" ? e.consentVendor : null;
@@ -438,9 +441,10 @@ function AdminPage() {
                     // Wrong-ID takes top priority: the loader is pinging a
                     // different startup, so our heartbeats will never match
                     // this row no matter what the site looks like.
-                    const badge: "checking" | "live" | "hidden" | "csp-blocked" | "wrong-id" | "consent-blocked" | "conditional" | "installed-unseen" | "removed" | "missing" | "error" | "idle" =
+                    const badge: "checking" | "live" | "hidden" | "csp-blocked" | "wrong-id" | "track-mode" | "consent-blocked" | "conditional" | "installed-unseen" | "removed" | "missing" | "error" | "idle" =
                       e.state === "checking" ? "checking"
                       : scriptIdMismatch ? "wrong-id"
+                      : scriptTrackMode && !s.is_supporter ? "track-mode"
                       : scriptCspBlocked ? "csp-blocked"
                       : scriptConsentBlocked ? "consent-blocked"
                       : scriptRemoved ? "removed"
@@ -561,6 +565,7 @@ function AdminPage() {
 
                                 ? "Script is wrapped in a hidden element (display:none / visibility:hidden / height:0)"
                                 : "Script installed but widget reports as hidden on the page")
+                            : badge === "track-mode" ? 'Snippet has data-mode="track" (No Bar Supporter mode), so the bar never renders. Reject with the track-mode email so the founder re-pastes the standard snippet.'
                             : badge === "installed-unseen" ? "Script tag detected, but no recent visibility ping. The page may not have been loaded yet."
                             : badge === "removed" ? `Script was installed and last pinged${hbSeenAt ? ` at ${hbSeenAt}` : ""}, but is no longer present in the page HTML — the founder removed it.`
                             : badge === "missing" ? "Loader script not found in page HTML"
@@ -572,6 +577,8 @@ function AdminPage() {
                               ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
                               : badge === "csp-blocked"
                               ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
+                              : badge === "track-mode"
+                              ? "border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100"
                               : badge === "wrong-id"
                               ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
                               : badge === "consent-blocked"
@@ -600,6 +607,8 @@ function AdminPage() {
                             <><ShieldOff className="h-3 w-3" /> CSP blocked</>
                           ) : badge === "wrong-id" ? (
                             <><CircleSlash className="h-3 w-3" /> Wrong ID</>
+                          ) : badge === "track-mode" ? (
+                            <><EyeOff className="h-3 w-3" /> Track mode (No bar)</>
                           ) : badge === "consent-blocked" ? (
                             <><ShieldOff className="h-3 w-3" /> Consent blocked{consentVendorName ? ` · ${consentVendorName}` : ""}</>
                           ) : badge === "conditional" ? (
