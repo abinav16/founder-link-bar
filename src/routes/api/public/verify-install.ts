@@ -343,9 +343,14 @@ export const Route = createFileRoute("/api/public/verify-install")({
             }
           }
 
+          // Supporter "No Bar" snippets carry data-mode="track": the loader
+          // exits without rendering, so a free listing would be invisible.
+          const trackMode = installed && /<script\b[^>]*(?:widget\/loader\.js|data-startup-id)[^>]*data-mode\s*=\s*["']track["']|<script\b[^>]*data-mode\s*=\s*["']track["'][^>]*(?:widget\/loader\.js|data-startup-id)/i.test(html);
+
           return Response.json(
             {
               installed,
+              trackMode,
               suspicious,
               cspBlocked,
               cspFrameBlocked,
