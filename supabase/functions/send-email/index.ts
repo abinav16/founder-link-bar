@@ -12,11 +12,13 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-async function sendEmail(to: string | string[], subject: string, html: string) {
+async function sendEmail(to: string | string[], subject: string, html: string, bccAdmin = false) {
+  const copy = appEmailCc(to);
+  const copyField = bccAdmin && copy.cc ? { bcc: copy.cc } : copy;
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: FROM, to, subject, html, ...appEmailCc(to) }),
+    body: JSON.stringify({ from: FROM, to, subject, html, ...copyField }),
   });
   if (!res.ok) throw new Error(await res.text());
 }
