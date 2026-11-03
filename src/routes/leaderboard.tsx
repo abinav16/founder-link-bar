@@ -5,7 +5,7 @@ import { SponsoredRail } from "@/components/SponsoredRail";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { getLeaderboard, getNetworkActivity, type LeaderboardRow } from "@/lib/leaderboard.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { Trophy, ExternalLink, Info, Zap } from "lucide-react";
+import { Trophy, ExternalLink, Info, Zap, ArrowUpRight, Eye, MousePointer2, Clock3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useFeaturedStartupIds } from "@/lib/featured";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -344,180 +344,77 @@ function LeaderboardPage() {
       ) : (
         <>
           {podium.length > 0 && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
-              <div className="lg:col-span-2">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-black/30 mb-3">Top 3</p>
-                <div className="grid grid-cols-3 gap-3 items-end">
+            <div className="leaderboard-overview">
+              <section className="leaderboard-podium" aria-label="Top three startups">
+                <div className="leaderboard-section-heading">
+                  <h2><Trophy aria-hidden="true" /> Top 3</h2>
+                  <span>{RANGE_OPTIONS.find((option) => option.key === range)?.label}</span>
+                </div>
+                <div className="leaderboard-podium-grid">
                   {podiumDisplay.map((row: LeaderboardRow) => {
                     const originalIndex = podium.findIndex((r: LeaderboardRow) => r.id === row.id);
-                    const dark = row.sponsored || (originalIndex === 0 && !row.supporter);
+                    const identity = (
+                      <>
+                        <StartupFavicon url={row.website_url} name={row.name} logoUrl={row.logo_url} size={40} className="leaderboard-podium-logo" />
+                        <h3>{row.name}</h3>
+                      </>
+                    );
                     return (
-                      <div
-                        key={row.id}
-                        className={`rounded-2xl border flex flex-col items-center text-center p-3 transition-all relative overflow-hidden ${
-                          row.sponsored
-                            ? "sb-sponsored border-[oklch(0.72_0.13_75)]"
-                            : row.supporter
-                              ? "sb-featured-row"
-                              : dark
-                                ? "bg-black border-black lg:-mt-3 shadow-xl shadow-black/15 z-10"
-                                : "bg-white border-black/8"
-                        }`}
-                      >
-                        {dark && !row.sponsored && (
-                          <p className="text-[8px] font-bold tracking-[0.15em] uppercase text-white/40 mb-1">Leader</p>
-                        )}
-                        {row.sponsored ? (
-                          <span className="absolute top-2 left-1/2 -translate-x-1/2 text-[8px] font-bold uppercase tracking-[0.12em] text-[oklch(0.82_0.13_75)]">Featured</span>
-                        ) : row.supporter ? (
-                          <span className="absolute top-2 left-1/2 -translate-x-1/2 text-[8px] font-bold uppercase tracking-[0.12em] text-[oklch(0.5_0.11_70)]">Supporter</span>
-                        ) : null}
-                        {isNew(row.created_at) && (
-                          <NewBadge className="absolute top-2 right-2" />
-                        )}
-                        <div className="text-xl mb-1">{MEDALS[originalIndex]}</div>
-                        {(() => {
-                          const inner = (
-                            <>
-                              <StartupFavicon
-                                url={row.website_url}
-                                name={row.name}
-                                logoUrl={row.logo_url}
-                                size={28}
-                                className={`rounded-lg mb-2 bg-white ${dark ? "ring-2 ring-white/20" : "ring-1 ring-black/8"}`}
-                              />
-                              <p className={`font-semibold text-xs truncate w-full ${dark ? "text-white" : "text-black"}`}>
-                                {row.name}
-                              </p>
-                            </>
-                          );
-                          return row.slug ? (
-                            <Link
-                              to="/startup/$slug"
-                              params={{ slug: row.slug }}
-                              className="flex flex-col items-center w-full hover:opacity-80 transition-opacity"
-                            >
-                              {inner}
-                            </Link>
-                          ) : (
-                            inner
-                          );
-                        })()}
-
-                        {row.id === myId && (
-                          <span className={`mt-0.5 rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase ${
-                            dark ? "bg-white/20 text-white" : "bg-black text-white"
-                          }`}>You</span>
-                        )}
-                        <div className="mt-2 w-full">
-                          <div className={`text-xl font-bold tabular-nums ${dark ? "text-white" : "text-black"}`}>
-                            {primaryMetric(row).toLocaleString()}
-                          </div>
-                          <div className={`text-[8px] uppercase tracking-widest font-semibold mt-0.5 ${dark ? "text-white/40" : "text-black/30"}`}>
-                            {(tab === "received" ? "impressions" : "given") +
-                              (range === "today" ? " today" : range === "week" ? " · 7d" : "")}
-                          </div>
+                      <article key={row.id} className={`leaderboard-podium-card ${row.sponsored ? "sb-sponsored" : row.supporter ? "sb-featured-row" : ""}`} data-rank={originalIndex + 1}>
+                        <div className="leaderboard-podium-topline">
+                          <span className="leaderboard-rank" aria-label={`Rank ${originalIndex + 1}`}>{String(originalIndex + 1).padStart(2, "0")}</span>
+                          <span className="leaderboard-podium-status">
+                            {originalIndex === 0 && <Trophy aria-hidden="true" />}
+                            {row.sponsored ? "Featured" : row.supporter ? "Supporter" : originalIndex === 0 ? "Leading" : ""}
+                          </span>
                         </div>
-                        <div className={`mt-2 pt-2 border-t w-full flex gap-3 justify-center ${dark ? "border-white/10" : "border-black/6"}`}>
-                          {tab === "received" ? (
-                            <>
-                              <div>
-                                <div className={`text-xs font-semibold ${dark ? "text-white" : "text-black"}`}>{clicksMetric(row)}</div>
-                                <div className={`text-[8px] uppercase tracking-wide ${dark ? "text-white/35" : "text-black/30"}`}>Clicks</div>
-                              </div>
-                              <div>
-                                <div className={`text-xs font-semibold ${dark ? "text-white" : "text-black"}`}>{ctr(row)}</div>
-                                <div className={`text-[8px] uppercase tracking-wide ${dark ? "text-white/35" : "text-black/30"}`}>CTR</div>
-                              </div>
-                            </>
-                          ) : (
-                            <div>
-                              <div className={`text-xs font-semibold ${dark ? "text-white" : "text-black"}`}>{receivedMetric(row)}</div>
-                              <div className={`text-[8px] uppercase tracking-wide ${dark ? "text-white/35" : "text-black/30"}`}>Received</div>
-                            </div>
-                          )}
+                        {row.slug ? (
+                          <Link to="/startup/$slug" params={{ slug: row.slug }} className="leaderboard-podium-identity">{identity}</Link>
+                        ) : <div className="leaderboard-podium-identity">{identity}</div>}
+                        <div className="leaderboard-podium-tags">
+                          {row.id === myId && <span>You</span>}
+                          {isNew(row.created_at) && <span>New</span>}
                         </div>
-                        <a
-                          href={`/api/public/widget/click?id=${row.id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={`mt-2 inline-flex items-center gap-1 text-[10px] font-semibold transition-opacity hover:opacity-70 ${
-                            dark ? "text-white/60" : "text-black/40"
-                          }`}
-                        >
-                          Visit site <ExternalLink className="h-2.5 w-2.5" />
-                        </a>
-                      </div>
+                        <div className="leaderboard-podium-total">
+                          <strong>{primaryMetric(row).toLocaleString()}</strong>
+                          <span>{(tab === "received" ? "Impressions" : "Impressions given") + (range === "today" ? " today" : range === "week" ? " · 7d" : "")}</span>
+                        </div>
+                        <div className="leaderboard-podium-details">
+                          {tab === "received" ? <>
+                            <div><strong>{clicksMetric(row).toLocaleString()}</strong><span>Clicks</span></div>
+                            <div><strong>{ctr(row)}</strong><span>CTR</span></div>
+                          </> : <div><strong>{receivedMetric(row).toLocaleString()}</strong><span>Received</span></div>}
+                        </div>
+                        <Button variant="ghost" asChild className="leaderboard-podium-visit">
+                          <a href={`/api/public/widget/click?id=${row.id}`} target="_blank" rel="noopener noreferrer" aria-label={`Visit ${row.name}`}>
+                            Visit site <ArrowUpRight aria-hidden="true" />
+                          </a>
+                        </Button>
+                      </article>
                     );
                   })}
                 </div>
-              </div>
-
-              <div className="lg:col-span-1 flex flex-col">
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-black/30">Network Activity</p>
-                  <p className="text-[10px] text-black/35 text-right whitespace-nowrap">Resets 5:30 AM IST</p>
+              </section>
+              <section className="leaderboard-activity" aria-label="Network activity">
+                <div className="leaderboard-section-heading">
+                  <h2><Zap aria-hidden="true" /> Network activity</h2>
                 </div>
-                <div className="rounded-xl border border-black/8 bg-white p-3 flex-1 flex flex-col">
-                  <div className="grid grid-cols-2 gap-2 flex-1 min-h-0">
-                    <div className="rounded-lg bg-black/[0.03] p-2.5 flex flex-col justify-between">
-                      <div className="flex items-center gap-1">
-                        <div className="h-1 w-1 rounded-full bg-black/25" />
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-black/35">Yesterday</span>
-                      </div>
-                      <div>
-                        <div className="text-xl font-bold tabular-nums text-black leading-none">
-                          {activity?.yesterdayImpressions.toLocaleString() ?? "—"}
-                        </div>
-                        <div className="text-[10px] uppercase tracking-wide text-black/40 mt-1">Impressions</div>
-                      </div>
-                    </div>
-                    <div className="rounded-lg bg-black/[0.03] p-2.5 flex flex-col justify-between">
-                      <div className="flex items-center gap-1">
-                        <div className="h-1 w-1 rounded-full bg-black/25" />
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-black/35">Yesterday</span>
-                      </div>
-                      <div>
-                        <div className="text-xl font-bold tabular-nums text-black leading-none">
-                          {activity?.yesterdayClicks.toLocaleString() ?? "—"}
-                        </div>
-                        <div className="text-[10px] uppercase tracking-wide text-black/40 mt-1">Clicks</div>
-                      </div>
-                    </div>
-                    <div className="rounded-lg bg-black p-2.5 flex flex-col justify-between">
-                      <div className="flex items-center gap-1">
-                        <span className="relative flex h-1 w-1">
-                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-60" />
-                          <span className="relative inline-flex h-1 w-1 rounded-full bg-white" />
-                        </span>
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-white/60">Today</span>
-                      </div>
-                      <div>
-                        <div className="text-xl font-bold tabular-nums text-white leading-none">
-                          {activity?.todayImpressions.toLocaleString() ?? "—"}
-                        </div>
-                        <div className="text-[10px] uppercase tracking-wide text-white/50 mt-1">Impressions</div>
-                      </div>
-                    </div>
-                    <div className="rounded-lg bg-black p-2.5 flex flex-col justify-between">
-                      <div className="flex items-center gap-1">
-                        <span className="relative flex h-1 w-1">
-                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-60" />
-                          <span className="relative inline-flex h-1 w-1 rounded-full bg-white" />
-                        </span>
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-white/60">Today</span>
-                      </div>
-                      <div>
-                        <div className="text-xl font-bold tabular-nums text-white leading-none">
-                          {activity?.todayClicks.toLocaleString() ?? "—"}
-                        </div>
-                        <div className="text-[10px] uppercase tracking-wide text-white/50 mt-1">Clicks</div>
-                      </div>
-                    </div>
+                <div className="leaderboard-activity-period" data-period="today">
+                  <div className="leaderboard-activity-period-heading"><h3>Today</h3><span className="leaderboard-live"><i /> Live</span></div>
+                  <div className="leaderboard-activity-values">
+                    <div><strong>{activity?.todayImpressions.toLocaleString() ?? "—"}</strong><span><Eye aria-hidden="true" /> Impressions</span></div>
+                    <div><strong>{activity?.todayClicks.toLocaleString() ?? "—"}</strong><span><MousePointer2 aria-hidden="true" /> Clicks</span></div>
                   </div>
                 </div>
-
-              </div>
+                <div className="leaderboard-activity-period" data-period="yesterday">
+                  <div className="leaderboard-activity-period-heading"><h3>Yesterday</h3></div>
+                  <div className="leaderboard-activity-values">
+                    <div><strong>{activity?.yesterdayImpressions.toLocaleString() ?? "—"}</strong><span><Eye aria-hidden="true" /> Impressions</span></div>
+                    <div><strong>{activity?.yesterdayClicks.toLocaleString() ?? "—"}</strong><span><MousePointer2 aria-hidden="true" /> Clicks</span></div>
+                  </div>
+                </div>
+                <p className="leaderboard-activity-reset"><Clock3 aria-hidden="true" /> Resets at 5:30 AM IST</p>
+              </section>
             </div>
           )}
 
