@@ -19,6 +19,7 @@ import { ApplySignupTracking } from "@/components/ApplySignupTracking";
 import { saveSignupTracking } from "@/lib/signup-tracking.functions";
 import { normalizeSuccessPath } from "@/lib/signup-tracking";
 import { useServerFn } from "@tanstack/react-start";
+import { EmailSnippetHandoff } from "@/components/EmailSnippetHandoff";
 
 import {
   ArrowRight, ArrowLeft, ExternalLink,
@@ -440,6 +441,24 @@ function readInitialFromUrl() {
       resubmitId: "",
       startupId: sidFromUrl || draft?.startupId || "",
     };
+  }
+  // Desktop handoff from the "email me my snippet" email: restore the details
+  // and pin the emailed install ID so the pasted snippet matches.
+  if (p.get("resume") === "1" && sidFromUrl) {
+    const resumed = {
+      step: 1 as 1 | 2, name: (p.get("name") ?? "").slice(0, 80), url: (p.get("url") ?? "").slice(0, 200),
+      desc: (p.get("desc") ?? "").slice(0, 300), category: p.get("cat") ?? "", quote: "",
+      placement: p.get("placement") === "bottom" ? "bottom" : "top", mode: "widget", startupId: sidFromUrl,
+    };
+    writeDraft(resumed);
+    const key = hostKey(resumed.url);
+    if (key) {
+      const map = readInstallIds();
+      map[key] = sidFromUrl;
+      try { localStorage.setItem(INSTALL_IDS_KEY, JSON.stringify(map)); } catch { /* ignore */ }
+    }
+    window.history.replaceState({}, "", "/apply");
+    return { step: 1 as 1 | 2, name: resumed.name, url: resumed.url, desc: resumed.desc, paid: false, paymentId: "", resubmitId: "", startupId: sidFromUrl };
   }
   const resubmitId = p.get("resubmit") ?? "";
   if (resubmitId) {
@@ -1164,6 +1183,17 @@ function Apply() {
                   {isSupporter ? `${SUPPORTER_TRIAL_DAYS} days free, then $${SUPPORTER_PRICE_USD}/year · Cancel anytime` : "Free forever · We review within 24h · No commitment"}
                 </p>
               </form>
+              {authed === false && !isSupporter && (
+                <div className="mt-6">
+                  <EmailSnippetHandoff
+                    startupId={startupId} name={name} url={url} desc={desc} category={category} placement={placement}
+                    validate={() => {
+                      const parsed = schema.safeParse({ name, website_url: url, description: desc, category, founder_quote: quote });
+                      return parsed.success ? null : (parsed.error.issues[0]?.message ?? "Fill in your startup details first");
+                    }}
+                  />
+                </div>
+              )}
             </div>
 
             <div className="hidden md:block">

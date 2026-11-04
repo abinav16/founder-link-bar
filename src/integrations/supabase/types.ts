@@ -830,6 +830,36 @@ export type Database = {
           },
         ]
       }
+      snippet_handoffs: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          ip_hash: string | null
+          name: string
+          startup_id: string
+          website_url: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          ip_hash?: string | null
+          name: string
+          startup_id: string
+          website_url: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          ip_hash?: string | null
+          name?: string
+          startup_id?: string
+          website_url?: string
+        }
+        Relationships: []
+      }
       snippet_install_checks: {
         Row: {
           checked_at: string
