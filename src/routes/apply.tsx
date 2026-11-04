@@ -441,6 +441,24 @@ function readInitialFromUrl() {
       startupId: sidFromUrl || draft?.startupId || "",
     };
   }
+  // Desktop handoff from the "email me my snippet" email: restore the details
+  // and pin the emailed install ID so the pasted snippet matches.
+  if (p.get("resume") === "1" && sidFromUrl) {
+    const resumed = {
+      step: 1 as 1 | 2, name: (p.get("name") ?? "").slice(0, 80), url: (p.get("url") ?? "").slice(0, 200),
+      desc: (p.get("desc") ?? "").slice(0, 300), category: p.get("cat") ?? "", quote: "",
+      placement: p.get("placement") === "bottom" ? "bottom" : "top", mode: "widget", startupId: sidFromUrl,
+    };
+    writeDraft(resumed);
+    const key = hostKey(resumed.url);
+    if (key) {
+      const map = readInstallIds();
+      map[key] = sidFromUrl;
+      try { localStorage.setItem(INSTALL_IDS_KEY, JSON.stringify(map)); } catch { /* ignore */ }
+    }
+    window.history.replaceState({}, "", "/apply");
+    return { step: 1 as 1 | 2, name: resumed.name, url: resumed.url, desc: resumed.desc, paid: false, paymentId: "", resubmitId: "", startupId: sidFromUrl };
+  }
   const resubmitId = p.get("resubmit") ?? "";
   if (resubmitId) {
     return { step: 2 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "", resubmitId, startupId: "" };
