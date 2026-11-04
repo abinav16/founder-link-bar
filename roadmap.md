@@ -1,6 +1,3 @@
-# Leaderboard overview redesign
-- [x] Refine top-three cards and network activity without changing rankings; verified live data, profile/tracked links, ranking and range switches, desktop/phone screenshots, no horizontal overflow or browser errors.
-
 # Application placement options
 - [x] Add Free and annual-price badges and keep the desktop preview visible while the form scrolls; verify all three selections and full preview visibility at desktop size, plus narrow-screen fit.
 
