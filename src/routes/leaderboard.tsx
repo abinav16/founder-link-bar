@@ -398,9 +398,7 @@ function LeaderboardPage() {
               <section className="leaderboard-activity" aria-label="Network activity">
                 <div className="leaderboard-section-heading">
                   <h2><Zap aria-hidden="true" /> Network activity</h2>
-                  <p className="leaderboard-activity-reset"><Clock3 aria-hidden="true" /> Resets at 5:30 AM IST</p>
                 </div>
-                <div className="leaderboard-activity-comparison">
                 <div className="leaderboard-activity-period" data-period="today">
                   <div className="leaderboard-activity-period-heading"><h3>Today</h3><span className="leaderboard-live"><i /> Live</span></div>
                   <div className="leaderboard-activity-values">
@@ -415,7 +413,7 @@ function LeaderboardPage() {
                     <div><strong>{activity?.yesterdayClicks.toLocaleString() ?? "—"}</strong><span><MousePointer2 aria-hidden="true" /> Clicks</span></div>
                   </div>
                 </div>
-                </div>
+                <p className="leaderboard-activity-reset"><Clock3 aria-hidden="true" /> Resets at 5:30 AM IST</p>
               </section>
             </div>
           )}

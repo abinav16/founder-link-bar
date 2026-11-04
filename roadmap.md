@@ -1,5 +1,4 @@
 # Leaderboard overview redesign
-- [x] Contain featured shimmer with clipped, isolated cards and replace stretched overview with compact podium cards and horizontal activity; verified live rankings, range switches, desktop/phone screenshots, no overflow or browser errors.
 - [x] Refine top-three cards and network activity without changing rankings; verified live data, profile/tracked links, ranking and range switches, desktop/phone screenshots, no horizontal overflow or browser errors.
 
 # Application placement options
