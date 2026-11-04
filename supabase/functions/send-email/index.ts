@@ -12,8 +12,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-async function sendEmail(to: string | string[], subject: string, html: string, bccAdmin = false) {
-  const copy = appEmailCc(to);
+async function sendEmail(to: string | string[], subject: string, html: string, bccAdmin = false, noCopy = false) {
+  const copy = noCopy ? {} : appEmailCc(to);
   const copyField = bccAdmin && copy.cc ? { bcc: copy.cc } : copy;
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -86,6 +86,47 @@ serve(async (req) => {
   try {
     const { type, data } = await req.json();
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    // ---- Guest "email me my snippet" handoff (no account yet) ----
+    // Public on purpose: in-app browsers (Instagram, X) can't sign in easily.
+    // Abuse is bounded: fixed template, 3/hour per email, 6/hour per IP,
+    // admin never copied, content is only the founder's own form input.
+    if (type === "save-snippet") {
+      const json = (b: unknown, status = 200) => new Response(JSON.stringify(b), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      const email = String(data?.email ?? "").trim().toLowerCase();
+      const sid = String(data?.startupId ?? "");
+      const name = String(data?.name ?? "").trim().slice(0, 80);
+      const site = String(data?.url ?? "").trim().slice(0, 200);
+      const desc = String(data?.desc ?? "").trim().slice(0, 300);
+      const cat = String(data?.category ?? "").slice(0, 40);
+      const placement = data?.placement === "bottom" ? "bottom" : "top";
+      if (!/^[^\s@]{1,64}@[^\s@]{1,190}\.[a-z]{2,}$/i.test(email)) return json({ error: "Enter a valid email" }, 400);
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sid) || !name || !site) return json({ error: "Missing details" }, 400);
+      const ip = (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim();
+      const ipHash = ip ? Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(ip)))).map((b) => b.toString(16).padStart(2, "0")).join("") : null;
+      const since = new Date(Date.now() - 3600_000).toISOString();
+      const { count: byEmail } = await supabase.from("snippet_handoffs").select("id", { count: "exact", head: true }).eq("email", email).gte("created_at", since);
+      const { count: byIp } = ipHash ? await supabase.from("snippet_handoffs").select("id", { count: "exact", head: true }).eq("ip_hash", ipHash).gte("created_at", since) : { count: 0 };
+      if ((byEmail ?? 0) >= 3 || (byIp ?? 0) >= 6) return json({ error: "Too many emails sent. Try again in an hour." }, 429);
+      await supabase.from("snippet_handoffs").insert({ email, startup_id: sid, name, website_url: site, ip_hash: ipHash });
+
+      const q = new URLSearchParams({ resume: "1", sid, name, url: site, desc, cat, placement });
+      const resumeUrl = `https://startupbar.co/apply?${q.toString()}`;
+      const script = `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${sid}"></script>`;
+      const pre = "background:#f5f5f5;border:1px solid #e5e5e5;border-radius:8px;padding:14px;font-family:Menlo,Consolas,monospace;font-size:12px;line-height:1.6;white-space:pre-wrap;word-break:break-all;margin:0 0 20px;";
+      const prompt = `Add this script tag inside the <head> of every page of my site, exactly as written:\n${script}\nThe widget is a 36px bar pinned to the ${placement} of the page and handles its own spacing. Do not change anything else.`;
+      const bodyHtml = `
+        <p style="margin:0 0 16px;font-size:15px;line-height:1.7;">Here's everything you need to put <strong>${escapeHtml(name)}</strong> on StartupBar. Open this on your laptop when you're at your code editor.</p>
+        <p style="margin:0 0 8px;font-size:14px;font-weight:600;">1. Paste this in the &lt;head&gt; of ${escapeHtml(site)}</p>
+        <pre style="${pre}">${escapeHtml(script)}</pre>
+        <p style="margin:0 0 8px;font-size:14px;font-weight:600;">Using an AI builder? Give it this prompt</p>
+        <pre style="${pre}">${escapeHtml(prompt)}</pre>
+        <p style="margin:0 0 20px;font-size:14px;font-weight:600;">2. Finish your application (your details are saved)</p>
+        <a href="${escapeHtml(resumeUrl)}" style="display:inline-block;background:#111111;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:12px 22px;border-radius:8px;">Continue my application →</a>
+        <p style="margin:20px 0 0;font-size:13px;line-height:1.7;color:#666666;">You'll sign in with Google or email in one step, then we check the script and you're done. Didn't ask for this? Just ignore it.</p>`;
+      await sendEmail(email, `Your StartupBar snippet for ${name}`, shell({ heading: "Finish on desktop in 30 seconds.", bodyHtml }), false, true);
+      return json({ ok: true });
+    }
 
     // Require an authenticated caller for every email type. Prevents anyone on
     // the internet from spamming arbitrary addresses or triggering misleading
