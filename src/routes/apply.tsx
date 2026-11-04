@@ -19,6 +19,7 @@ import { ApplySignupTracking } from "@/components/ApplySignupTracking";
 import { saveSignupTracking } from "@/lib/signup-tracking.functions";
 import { normalizeSuccessPath } from "@/lib/signup-tracking";
 import { useServerFn } from "@tanstack/react-start";
+import { EmailSnippetHandoff } from "@/components/EmailSnippetHandoff";
 
 import {
   ArrowRight, ArrowLeft, ExternalLink,
@@ -1182,6 +1183,17 @@ function Apply() {
                   {isSupporter ? `${SUPPORTER_TRIAL_DAYS} days free, then $${SUPPORTER_PRICE_USD}/year · Cancel anytime` : "Free forever · We review within 24h · No commitment"}
                 </p>
               </form>
+              {authed === false && !isSupporter && (
+                <div className="mt-6">
+                  <EmailSnippetHandoff
+                    startupId={startupId} name={name} url={url} desc={desc} category={category} placement={placement}
+                    validate={() => {
+                      const parsed = schema.safeParse({ name, website_url: url, description: desc, category, founder_quote: quote });
+                      return parsed.success ? null : (parsed.error.issues[0]?.message ?? "Fill in your startup details first");
+                    }}
+                  />
+                </div>
+              )}
             </div>
 
             <div className="hidden md:block">
