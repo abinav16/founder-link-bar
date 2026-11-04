@@ -115,7 +115,7 @@ serve(async (req) => {
       // Must match the snippet shown on /apply Step 2 exactly (script + backlink).
       const script = `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${sid}"></script>\n<a href="https://startupbar.co" target="_blank" rel="noopener" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">StartupBar</a>`;
       const pre = "background:#f5f5f5;border:1px solid #e5e5e5;border-radius:8px;padding:14px;font-family:Menlo,Consolas,monospace;font-size:12px;line-height:1.6;white-space:pre-wrap;word-break:break-all;margin:0 0 20px;";
-      const prompt = `Add this script tag inside the <head> of every page of my site, exactly as written:\n${script}\nThe widget is a 36px bar pinned to the ${placement} of the page and handles its own spacing. Do not change anything else.`;
+      const prompt = `Add this snippet to every page of my site exactly as written (script tag in the <head>, the hidden StartupBar link right after it or in the <body>):\n${script}\nThe widget is a 36px bar pinned to the ${placement} of the page and handles its own spacing. Do not change anything else.`;
       const bodyHtml = `
         <p style="margin:0 0 16px;font-size:15px;line-height:1.7;">Here's everything you need to put <strong>${escapeHtml(name)}</strong> on StartupBar. Open this on your laptop when you're at your code editor.</p>
         <p style="margin:0 0 8px;font-size:14px;font-weight:600;">1. Paste this in the &lt;head&gt; of ${escapeHtml(site)}</p>
