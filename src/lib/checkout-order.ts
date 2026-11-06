@@ -26,7 +26,7 @@ export function buildOrderLines(plan: OrderPlanInput, o: { needsListing: boolean
   }
   if (plan.newsletter === true) {
     newsletterDate = parseNewsletterDate(plan.newsletterDate) ?? null;
-    if (!newsletterDate) return null;
+    if (!newsletterDate || newsletterDate < new Date().toISOString().slice(0, 10)) return null;
     recipients = Math.max(0, Math.floor(o.audience));
     items.push({ kind: "newsletter", cents: Math.max(100, Math.round(recipients * NEWSLETTER_PRICE_PER_FOUNDER_USD * 100)), productEnv: "DODO_NEWSLETTER_PRODUCT_ID" });
   }
