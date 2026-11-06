@@ -23,3 +23,14 @@ describe("checkout plans", () => {
     expect(parsePlan({ base: "clicks", clicks: 7 }).clicks).toBe(500);
   });
 });
+
+import { listingKind as _lk, planTotalUsd as _pt } from "./checkout-plans";
+import { describe as _d, it as _i, expect as _e } from "vitest";
+_d("additional listing fee", () => {
+  _i("first startup is free", () => _e(_pt({ base: "free" }, 0, _lk({ existingCount: 0, hasPrepaid: false, resubmit: false }))).toBe(0));
+  _i("second startup costs $9.99", () => _e(_pt({ base: "free" }, 0, _lk({ existingCount: 1, hasPrepaid: false, resubmit: false }))).toBe(9.99));
+  _i("prepaid credit makes it $0", () => _e(_pt({ base: "free" }, 0, _lk({ existingCount: 2, hasPrepaid: true, resubmit: false }))).toBe(0));
+  _i("resubmission is free", () => _e(_pt({ base: "free" }, 0, _lk({ existingCount: 3, hasPrepaid: false, resubmit: true }))).toBe(0));
+  _i("supporter pays nothing today", () => _e(_pt({ base: "supporter" }, 0, "additional")).toBe(0));
+  _i("fee adds to clicks", () => _e(_pt({ base: "clicks", clicks: 100 }, 0, "additional")).toBe(58.99));
+});

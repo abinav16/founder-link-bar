@@ -401,7 +401,7 @@ function pinnedInstallId(rawUrl: string, fallback: string): string {
 import { PlanOptions, OrderSummary } from "@/components/apply/PlanPicker";
 import { DeviceStage, StageRail } from "@/components/apply/DeviceStage";
 import { WidgetBarMock } from "@/components/apply/WidgetBarMock";
-import { parsePlan, type CheckoutPlan } from "@/lib/checkout-plans";
+import { parsePlan, listingKind, type CheckoutPlan } from "@/lib/checkout-plans";
 import type { PreviewFocus } from "@/lib/apply-preview-slides";
 
 function readDraft(): { step: 1 | 2; name: string; url: string; desc: string; startupId: string } | null {
@@ -554,6 +554,7 @@ function Apply() {
   const [loading, setLoading] = useState(false);
   const [existingCount, setExistingCount] = useState(0);
   const [hasPrepaid, setHasPrepaid] = useState(false);
+  const listing = listingKind({ existingCount, hasPrepaid, resubmit: !!resubmitId });
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [verifyingPayment, setVerifyingPayment] = useState(initial.paid && !!initial.paymentId);
   const [autoSubmitPending, setAutoSubmitPending] = useState(false);
