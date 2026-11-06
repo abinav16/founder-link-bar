@@ -981,7 +981,7 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
 .wmock.is-featured { box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--featured-gold) 45%, transparent); }
 
 /* ---- Stage v2: side by side devices, phone matches laptop height, steady layout ---- */
-.stage { --site-h: clamp(220px, 36dvh, 380px); grid-template-rows: auto auto; align-content: center; gap: 2.25rem; padding: 3rem 2.5rem; }
+.stage { --site-h: clamp(200px, 34dvh, 360px); grid-template-columns: minmax(0,1fr); grid-template-rows: auto auto; align-content: center; gap: 2.25rem; padding: 3rem 2.5rem; }
 .stage-glow { display: none; }
 .stage-devices { display: flex; align-items: flex-end; justify-content: center; gap: 1.5rem; }
 .stage-laptop { flex: 1 1 0; min-width: 0; width: auto; max-width: 640px; }
@@ -989,7 +989,7 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
 .stage-laptop-screen .apply-preview-site { height: var(--site-h); }
 .stage-laptop-screen.is-clean .apply-preview-site { height: calc(var(--site-h) + 36px); }
 .stage-laptop-screen.is-clean .sb-no-bar-label, .stage-laptop-screen.is-clean .sb-confetti-burst { display: none; }
-.stage-phone { position: relative; right: auto; bottom: auto; flex-shrink: 0; height: calc(var(--site-h) + 94px); width: auto; aspect-ratio: 9 / 19.5;
+.stage-phone { position: relative; right: auto; bottom: auto; flex-shrink: 0; height: calc(var(--site-h) + 94px); width: calc((var(--site-h) + 94px) * 0.46); min-width: 0; aspect-ratio: auto;
   margin-bottom: 12px; border-radius: 2rem; padding: 6px; }
 .stage-phone-screen { border-radius: 1.65rem; }
 .stage-phone-notch { top: 8px; width: 56px; height: 14px; margin-left: -28px; }
