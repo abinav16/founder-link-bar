@@ -4,6 +4,7 @@ import type { CheckoutPlan } from "@/lib/checkout-plans";
 import { findPack } from "@/lib/checkout-plans";
 import { useAudience } from "./PlanPicker";
 import { DesktopNetworkMock, MobileNetworkMock } from "./NetworkMocks";
+import { previewSlides, type PreviewSlide } from "@/lib/apply-preview-slides";
 
 /**
  * Sticky rail that never drifts: its sticky offset equals its natural position,
@@ -38,7 +39,7 @@ export function StageRail({ children }: { children: ReactNode }) {
   );
 }
 
-type SlideId = "site" | "network" | "list" | "leaderboard" | "digest";
+type SlideId = PreviewSlide;
 const SLIDE_LABEL: Record<SlideId, string> = {
   site: "Your site", network: "Featured rails", list: "Network list", leaderboard: "Leaderboard", digest: "Sunday digest",
 };
@@ -57,22 +58,18 @@ export function DeviceStage({
   const displayDesc = desc.trim() || "Your one liner goes here";
   const favicon = url ? `https://www.google.com/s2/favicons?domain=${url}&sz=64` : null;
 
-  const slides = useMemo<SlideId[]>(() => {
-    const s: SlideId[] = ["site"];
-    if (featured) s.push("network", "list", "leaderboard");
-    if (newsletter) s.push("digest");
-    return s;
-  }, [featured, newsletter]);
+  const slides = useMemo(() => previewSlides(plan), [plan.base, plan.newsletter]);
   const slideKey = slides.join(",");
 
-  const [active, setActive] = useState<SlideId>("site");
+  const [selectedSlide, setActive] = useState<SlideId>(() => slides[0]);
+  const active = slides.includes(selectedSlide) ? selectedSlide : slides[0];
   const [paused, setPaused] = useState(false);
   // Jump to the newest showcase when an option is turned on.
   const prev = useRef({ featured, newsletter });
   useEffect(() => {
     if (featured && !prev.current.featured) setActive("network");
     else if (newsletter && !prev.current.newsletter) setActive("digest");
-    else if (!slides.includes(active)) setActive("site");
+    else if (!slides.includes(selectedSlide)) setActive(slides[0]);
     prev.current = { featured, newsletter };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slideKey]);
