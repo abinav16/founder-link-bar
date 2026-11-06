@@ -20,6 +20,9 @@ import { saveSignupTracking } from "@/lib/signup-tracking.functions";
 import { normalizeSuccessPath } from "@/lib/signup-tracking";
 import { useServerFn } from "@tanstack/react-start";
 import { EmailSnippetHandoff } from "@/components/EmailSnippetHandoff";
+import { getNewsletterBookedDates } from "@/lib/newsletter-availability.functions";
+import { isNewsletterDateAvailable } from "@/lib/newsletter-slots";
+import { parseISO } from "date-fns";
 
 import {
   ArrowRight, ArrowLeft, ExternalLink,
@@ -498,6 +501,7 @@ function Apply() {
     try { return JSON.parse(readRawDraft() ?? "{}")?.placement === "bottom" ? "bottom" : "top"; } catch { return "top"; }
   });
   const saveTracking = useServerFn(saveSignupTracking);
+  const checkNewsletterDates = useServerFn(getNewsletterBookedDates);
   const [tracking, setTracking] = useState<SignupTrackingDraft>(() => {
     try { return JSON.parse(readRawDraft() ?? '{}').tracking ?? emptySignupDraft; } catch { return emptySignupDraft; }
   });
@@ -803,7 +807,23 @@ function Apply() {
     confirmPlan();
   }
 
-  function confirmPlan() {
+  async function validateNewsletterSelection() {
+    if (!plan.newsletter || plan.base === "supporter") return true;
+    try {
+      const booked = await checkNewsletterDates();
+      if (!plan.newsletterDate || !isNewsletterDateAvailable(parseISO(plan.newsletterDate), booked)) {
+        toast.error("Please choose an available Sunday for your newsletter spot.");
+        return false;
+      }
+      return true;
+    } catch {
+      toast.error("We could not check newsletter availability. Please try again.");
+      return false;
+    }
+  }
+
+  async function confirmPlan() {
+    if (!(await validateNewsletterSelection())) return;
     const m = plan.base === "supporter" ? "supporter" : "widget";
     setMode(m);
     goToStep2(m);
@@ -937,6 +957,7 @@ function Apply() {
 
   async function onSubmit(opts?: { supporterSubscriptionId?: string }) {
     const supporterSub = opts?.supporterSubscriptionId;
+    if (!(await validateNewsletterSelection())) { setStep(1); return; }
     setLoading(true);
     try {
       const { data: userData } = await supabase.auth.getUser();

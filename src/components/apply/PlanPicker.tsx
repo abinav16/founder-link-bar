@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { getNewsletterBookedDates } from "@/lib/newsletter-availability.functions";
 import { ArrowRight, Check, Mail, MousePointerClick, ShieldCheck, Sparkles, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -12,7 +14,7 @@ import { CalendarDays } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { isNewsletterSunday, newsletterDateLabel } from "@/lib/newsletter-slots";
+import { isNewsletterDateAvailable, nextAvailableNewsletterSunday, newsletterDateLabel } from "@/lib/newsletter-slots";
 import type { PreviewFocus } from "@/lib/apply-preview-slides";
 
 export function useAudience() {
@@ -23,6 +25,14 @@ export function useAudience() {
       return typeof data === "number" && data > 0 ? data : 0;
     },
     staleTime: 5 * 60_000,
+  });
+}
+
+export function useNewsletterAvailability() {
+  const getDates = useServerFn(getNewsletterBookedDates);
+  return useQuery({
+    queryKey: ["newsletter-booked-dates"], queryFn: () => getDates(),
+    staleTime: 0, refetchInterval: 30_000, retry: 1,
   });
 }
 
@@ -97,6 +107,16 @@ export function usePlanPricing(plan: CheckoutPlan) {
 
 export function PlanOptions({ plan, onChange, startupName, onFocusPreview }: { plan: CheckoutPlan; onChange: (p: CheckoutPlan) => void; startupName: string; onFocusPreview?: (f: PreviewFocus) => void }) {
   const { audience, pack, nlPrice, isSupporter } = usePlanPricing(plan);
+  const availability = useNewsletterAvailability();
+  const booked = availability.data ?? [];
+  const ready = availability.isSuccess && !availability.isError;
+  const dateUnavailable = !!plan.newsletterDate && ready && !isNewsletterDateAvailable(parseISO(plan.newsletterDate), booked);
+  useEffect(() => {
+    if (plan.newsletter && !isSupporter && !plan.newsletterDate && ready) {
+      const date = nextAvailableNewsletterSunday(booked);
+      if (date) onChange({ ...plan, newsletterDate: date });
+    }
+  }, [plan, isSupporter, ready, availability.data, onChange]);
   return (
     <div className="space-y-4" role="radiogroup" aria-label="Plan">
           <PlanCard
@@ -152,17 +172,22 @@ export function PlanOptions({ plan, onChange, startupName, onFocusPreview }: { p
               <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Preferred send date</span>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button type="button" variant="outline" onClick={() => onFocusPreview?.("newsletter")} className="mt-2 h-auto w-full justify-between gap-3 px-4 py-3 text-left text-sm font-medium">
+                  <Button type="button" variant="outline" disabled={!ready} onClick={() => { onFocusPreview?.("newsletter"); void availability.refetch(); }} className="mt-2 h-auto w-full justify-between gap-3 px-4 py-3 text-left text-sm font-medium">
                     {newsletterDateLabel(plan.newsletterDate)} <CalendarDays className="h-4 w-4 text-muted-foreground" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar mode="single" selected={plan.newsletterDate ? parseISO(plan.newsletterDate) : undefined}
-                    disabled={(d) => !isNewsletterSunday(d)}
-                    onSelect={(d) => { if (!d) return; onFocusPreview?.("newsletter"); onChange({ ...plan, base: isSupporter ? "free" : plan.base, newsletter: true, newsletterDate: format(d, "yyyy-MM-dd") }); }}
+                    defaultMonth={plan.newsletterDate ? parseISO(plan.newsletterDate) : undefined}
+                    disabled={(d) => !ready || !isNewsletterDateAvailable(d, booked)}
+                    onSelect={(d) => { if (!d || !ready || !isNewsletterDateAvailable(d, booked)) return; onFocusPreview?.("newsletter"); onChange({ ...plan, base: isSupporter ? "free" : plan.base, newsletter: true, newsletterDate: format(d, "yyyy-MM-dd") }); }}
                     className="p-3 pointer-events-auto" />
                 </PopoverContent>
               </Popover>
+              <p role={availability.isError || dateUnavailable ? "alert" : "status"} className="mt-2 text-xs text-muted-foreground">
+                {availability.isError ? "We could not check availability. Please try again." : !ready ? "Checking available Sundays…" : dateUnavailable ? "This Sunday is no longer available. Please choose another date." : "Booked Sundays are unavailable. Your date is confirmed only after payment."}
+              </p>
+              {availability.isError && <Button type="button" size="sm" variant="outline" className="mt-2" onClick={() => void availability.refetch()}>Try again</Button>}
               <p className="mt-2 text-xs text-muted-foreground">Sponsor card for {startupName.trim() || "your startup"} in that Sunday's founder email.</p>
             </div>
             <ul className="mt-4 space-y-2">
@@ -190,6 +215,8 @@ export function PlanOptions({ plan, onChange, startupName, onFocusPreview }: { p
 
 export function OrderSummary({ plan, onContinue, label = "Continue to install" }: { plan: CheckoutPlan; onContinue?: () => void; label?: string }) {
   const { pack, nlPrice, total, isSupporter } = usePlanPricing(plan);
+  const availability = useNewsletterAvailability();
+  const newsletterBlocked = !!plan.newsletter && !isSupporter && (!availability.isSuccess || availability.isError || !plan.newsletterDate || !isNewsletterDateAvailable(parseISO(plan.newsletterDate), availability.data ?? []));
   return (
         <aside className="checkout-summary is-docked">
           <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Your order</span>
@@ -202,9 +229,9 @@ export function OrderSummary({ plan, onContinue, label = "Continue to install" }
             <span className="text-sm text-muted-foreground">Due today</span>
             <span className="text-3xl font-semibold tracking-tight text-foreground"><RollingNumber value={total} decimals={total % 1 ? 2 : 0} /></span>
           </div>
-          <button type={onContinue ? "button" : "submit"} onClick={onContinue} className="group mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-85">
+          <Button disabled={newsletterBlocked} type={onContinue ? "button" : "submit"} onClick={onContinue} className="group mt-6 h-auto w-full gap-2 py-3.5 text-sm font-medium">
             {label} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-          </button>
+          </Button>
           <p className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
             <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             {total > 0 ? "Nothing is charged yet. You pay after your install is verified, and boosts start when we approve your listing." : "No card needed. We review every listing within 24 hours."}

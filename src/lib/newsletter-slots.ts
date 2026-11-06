@@ -1,7 +1,19 @@
-import { format, isValid, parseISO, startOfDay } from "date-fns";
+import { addDays, format, isValid, parseISO, startOfDay } from "date-fns";
 
 export function isNewsletterSunday(date: Date, now = new Date()): boolean {
   return isValid(date) && date.getDay() === 0 && startOfDay(date) > startOfDay(now);
+}
+
+export function isNewsletterDateAvailable(date: Date, bookedDates: readonly string[], now = new Date()): boolean {
+  return isNewsletterSunday(date, now) && !bookedDates.includes(format(date, "yyyy-MM-dd"));
+}
+
+export function nextAvailableNewsletterSunday(bookedDates: readonly string[], now = new Date()): string | undefined {
+  let date = addDays(startOfDay(now), 1);
+  for (let i = 0; i < 730; i++, date = addDays(date, 1)) {
+    if (isNewsletterDateAvailable(date, bookedDates, now)) return format(date, "yyyy-MM-dd");
+  }
+  return undefined;
 }
 
 export function parseNewsletterDate(value: unknown): string | undefined {

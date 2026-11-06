@@ -1,0 +1,1 @@
+- Newsletter availability uses a public date-only RPC and browser-safe calendar helpers; saved choices do not reserve issues. A database unique index prevents overlapping active bookings, and future paid checkout must atomically claim dates before issuing payment sessions.
