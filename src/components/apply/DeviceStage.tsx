@@ -23,7 +23,7 @@ export function StageRail({ children }: { children: ReactNode }) {
       setTop(Math.max(Math.round(natural), Math.round(headerBottom + 12)));
     };
     measure();
-    const t = window.setTimeout(measure, 400);
+    const t = window.setTimeout(measure, 800);
     window.addEventListener("resize", measure);
     return () => { window.clearTimeout(t); window.removeEventListener("resize", measure); };
   }, []);
