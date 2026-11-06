@@ -999,3 +999,5 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
 .stage-title { margin-top: .35rem; font-size: 1.75rem; font-weight: 600; letter-spacing: -0.025em; line-height: 1.15; color: var(--foreground); }
 .stage-sub { margin-top: .4rem; font-size: 15px; line-height: 1.5; color: var(--muted-foreground); }
 @media (prefers-reduced-motion: reduce) { .stage-caption-inner { animation: none; } }
+.wmock-name { max-width: 45%; flex-shrink: 0; }
+.wmock.is-mobile .wmock-name { max-width: 45%; }
