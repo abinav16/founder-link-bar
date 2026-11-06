@@ -1,3 +1,6 @@
+# Application snippet email
+- [ ] Add one-tap email on free application Step 2 for signed-in founders, reuse guest email handoff without weakening sign-in, and verify full-code desktop continuation.
+
 # Application placement options
 - [x] Add Free and annual-price badges and keep the desktop preview visible while the form scrolls; verify all three selections and full preview visibility at desktop size, plus narrow-screen fit.
 
