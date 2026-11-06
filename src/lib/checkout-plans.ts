@@ -41,9 +41,24 @@ export function findPack(clicks: number | undefined): ClickPack | undefined {
   return CLICK_PACKS.find((p) => p.clicks === clicks);
 }
 
+/** One-time fee for each startup after a founder's first listing. */
+export const ADDITIONAL_LISTING_PRICE_USD = 9.99;
+
+export type ListingKind = "first" | "additional" | "prepaid" | "resubmit";
+
+export function listingKind(o: { existingCount: number; hasPrepaid: boolean; resubmit: boolean }): ListingKind {
+  if (o.resubmit) return "resubmit";
+  if (o.existingCount < 1) return "first";
+  return o.hasPrepaid ? "prepaid" : "additional";
+}
+
+export function listingFeeUsd(plan: CheckoutPlan, kind: ListingKind): number {
+  return plan.base !== "supporter" && kind === "additional" ? ADDITIONAL_LISTING_PRICE_USD : 0;
+}
+
 /** Total due today (Supporter starts with a free trial, so $0 today). */
-export function planTotalUsd(plan: CheckoutPlan, recipients: number): number {
-  let t = 0;
+export function planTotalUsd(plan: CheckoutPlan, recipients: number, kind: ListingKind = "first"): number {
+  let t = listingFeeUsd(plan, kind);
   if (plan.base === "clicks") t += findPack(plan.clicks)?.priceUsd ?? 0;
   if (plan.newsletter && plan.base !== "supporter") t += newsletterPriceUsd(recipients);
   return Math.round(t * 100) / 100;
