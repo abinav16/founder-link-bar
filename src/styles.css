@@ -1131,3 +1131,24 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
 .digest-preview.is-mobile { padding: 12px 8px 8px; } .digest-preview.is-mobile .digest-envelope { display: none; }
 .digest-preview.is-mobile .digest-paper { height: 100%; padding: 18px 16px; border: 0; box-shadow: none; } .digest-preview.is-mobile h2 { font-size: 21px; }
 @media (prefers-reduced-motion: reduce) { .mk-slide.is-on .digest-sponsor { animation: none; } }
+/* Keep the sponsor and its visit action visible inside both device screens. */
+.digest-preview:not(.is-mobile) .digest-paper { padding: 16px 28px; }
+.digest-preview .digest-rule { margin: 8px 0; }
+.digest-preview .digest-sponsor { margin-top: 8px; padding: 8px 0; }
+.digest-preview .digest-stat-lines { margin: 8px 0; gap: 4px; }
+.digest-preview .digest-paper h2 { margin: 5px 0 6px; }
+.digest-preview.is-mobile { padding: 5px 3px; }
+.digest-preview.is-mobile .digest-paper { padding: 9px 9px; }
+.digest-preview.is-mobile .digest-brand { font-size: 9px; gap: 4px; }
+.digest-preview.is-mobile .digest-brand img { width: 13px; height: 13px; }
+.digest-preview.is-mobile .digest-meta { font-size: 6px; }
+.digest-preview.is-mobile h2 { font-size: 14px; }
+.digest-preview.is-mobile .digest-greeting { font-size: 7px; }
+.digest-preview.is-mobile .digest-intro { font-size: 6.5px; line-height: 1.4; }
+.digest-preview.is-mobile .digest-startup { gap: 5px; margin-top: 6px; }
+.digest-preview.is-mobile .digest-startup img, .digest-preview.is-mobile .digest-logo { width: 17px; height: 17px; }
+.digest-preview.is-mobile .digest-startup h3 { font-size: 8px; }
+.digest-preview.is-mobile .digest-startup p { font-size: 6px; white-space: normal; }
+.digest-preview.is-mobile .digest-visit { font-size: 6px; margin-top: 6px; padding: 5px 6px; }
+.digest-preview.is-mobile .digest-paper footer { font-size: 6px; }
+.digest-preview.is-mobile .digest-paper footer span { font-size: 5px; }
