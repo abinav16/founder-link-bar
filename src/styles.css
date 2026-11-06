@@ -901,3 +901,49 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
   .checkout-rise, .checkout-card, .checkout-summary, .checkout-line, .checkout-card.is-selected .checkout-radio { animation: none; }
   .checkout-card, .checkout-card-body, .checkout-pack { transition: none; }
 }
+
+/* ---- /apply locked device stage ---- */
+.apply-stage-rail { position: sticky; top: 140px; height: calc(100dvh - 160px); min-height: 520px; }
+.stage { position: relative; height: 100%; display: grid; grid-template-rows: minmax(0,1fr) auto; gap: 1.25rem;
+  border-radius: 2rem; background: color-mix(in oklab, var(--foreground) 3.5%, var(--background)); padding: 2.5rem 2rem 2rem; overflow: hidden; }
+.stage-glow { position: absolute; inset: -20%; pointer-events: none; transition: background 900ms ease;
+  background: radial-gradient(40% 40% at 45% 45%, color-mix(in oklab, var(--foreground) 6%, transparent), transparent 70%); }
+.stage-glow[data-mode="featured"], .stage-glow[data-mode="supporter"] {
+  background: radial-gradient(42% 42% at 45% 45%, color-mix(in oklab, var(--featured-gold) 28%, transparent), transparent 70%); }
+.stage-devices { position: relative; display: flex; align-items: center; justify-content: center; min-height: 0; }
+.stage-laptop { width: min(88%, 640px); animation: stage-enter 900ms cubic-bezier(.2,.8,.2,1) both; }
+.stage-laptop-lid { position: relative; border-radius: 1.1rem 1.1rem .4rem .4rem; background: var(--featured-surface); padding: 14px 12px 12px;
+  box-shadow: 0 40px 80px -40px color-mix(in oklab, var(--foreground) 55%, transparent); }
+.stage-camera { position: absolute; top: 5px; left: 50%; width: 4px; height: 4px; margin-left: -2px; border-radius: 9999px; background: var(--featured-muted); opacity: .5; }
+.stage-laptop-screen { border-radius: .45rem; overflow: hidden; background: var(--card); transition: box-shadow 600ms ease; }
+.stage-laptop-screen .apply-preview-browser { border-radius: 0; border: 0; box-shadow: none; }
+.stage-laptop-screen .apply-preview-site { height: clamp(200px, 34dvh, 340px); }
+.stage-laptop-screen.is-featured { box-shadow: 0 0 0 1px var(--featured-edge); }
+.stage-laptop-base { height: 12px; margin: 0 -7%; border-radius: 0 0 1rem 1rem;
+  background: linear-gradient(to bottom, color-mix(in oklab, var(--featured-surface) 70%, var(--background)), var(--featured-surface)); }
+.stage-phone { position: absolute; right: 2%; bottom: 4%; width: 128px; aspect-ratio: 9/19; border-radius: 1.6rem; background: var(--featured-surface); padding: 5px;
+  box-shadow: 0 30px 60px -25px color-mix(in oklab, var(--foreground) 60%, transparent); animation: stage-enter 900ms 180ms cubic-bezier(.2,.8,.2,1) both; }
+.stage-phone-screen { position: relative; height: 100%; border-radius: 1.3rem; background: var(--card); overflow: hidden; }
+.stage-phone-notch { position: absolute; top: 5px; left: 50%; width: 38px; height: 10px; margin-left: -19px; border-radius: 9999px; background: var(--featured-surface); }
+.stage-phone-bar { display: flex; align-items: center; gap: 4px; height: 20px; padding: 0 6px; font-size: 8px; color: var(--foreground); border-color: var(--border);
+  background: var(--card); transition: background 500ms ease, color 500ms ease; animation: checkout-rise 500ms ease both; }
+.stage-phone-brand { font-size: 6px; font-weight: 800; padding: 1px 2px; border-radius: 2px; background: var(--foreground); color: var(--background); }
+.stage-phone-bar.is-featured, .apply-preview-bar.is-featured { background: var(--featured-surface) !important; color: var(--featured-text) !important; border-color: var(--featured-edge) !important; }
+.stage-phone-bar.is-featured svg, .apply-preview-bar.is-featured .apply-preview-brand { color: var(--featured-surface); background: var(--featured-gold); }
+.apply-preview-bar.is-featured .apply-preview-muted { color: var(--featured-muted) !important; }
+.stage-phone-bar.is-featured svg { background: none; color: var(--featured-gold); }
+.stage-callout { position: absolute; display: flex; align-items: center; gap: .6rem; max-width: 220px; border-radius: 1rem; padding: .7rem .9rem;
+  backdrop-filter: blur(16px); animation: stage-callout 650ms cubic-bezier(.2,.9,.25,1.2) both; }
+.stage-callout-featured { top: 6%; left: 3%; background: var(--featured-surface); color: var(--featured-text); border: 1px solid var(--featured-edge);
+  box-shadow: 0 20px 40px -20px color-mix(in oklab, var(--featured-gold) 70%, transparent); }
+.stage-callout-featured svg { color: var(--featured-gold); }
+.stage-callout-mail { bottom: 6%; left: 3%; background: color-mix(in oklab, var(--card) 88%, transparent); border: 1px solid var(--border);
+  box-shadow: 0 20px 40px -24px color-mix(in oklab, var(--foreground) 50%, transparent); }
+.stage-float-in { animation: checkout-pop 500ms ease both; }
+.stage-caption { position: relative; max-width: 34rem; animation: checkout-rise 600ms ease both; }
+@keyframes stage-enter { from { opacity: 0; transform: translateY(24px) scale(.97); } to { opacity: 1; transform: none; } }
+@keyframes stage-callout { from { opacity: 0; transform: translateY(10px) scale(.9); } to { opacity: 1; transform: none; } }
+.checkout-summary.is-docked { position: sticky; top: auto; bottom: 1rem; z-index: 10; padding: 1.1rem 1.25rem; }
+.checkout-section-head { padding-top: 2.5rem; border-top: 1px solid var(--border); }
+@media (max-width: 767px) { .checkout-summary.is-docked { bottom: .5rem; } }
+@media (prefers-reduced-motion: reduce) { .stage-laptop, .stage-phone, .stage-callout, .stage-caption, .stage-phone-bar, .stage-float-in { animation: none; } .stage-glow { transition: none; } }
