@@ -828,7 +828,6 @@ function Apply() {
       navigate({ to: "/auth" });
       return;
     }
-    setChoosingPlan(false);
     setStep(2);
     window.scrollTo({ top: 0, behavior: "smooth" });
     // Save the in-progress application so admins can see founders who stop at install.
