@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createHmac, timingSafeEqual } from "crypto";
 import { supporterTerm } from "../../../../supabase/functions/create-dodo-checkout/supporter-term";
+import { isPaidSupporterCharge } from "@/lib/supporter-newsletter";
 
 // Dodo Payments uses the standard-webhooks spec:
 //   Headers: webhook-id, webhook-timestamp, webhook-signature
@@ -245,6 +246,26 @@ export const Route = createFileRoute("/api/public/dodo-webhook")({
           if (supporterError) {
             console.error("[dodo-webhook] Supporter update failed", supporterError);
             return new Response("Membership update failed", { status: 500 });
+          }
+
+          // Subscription activation also covers the free trial. Only a verified
+          // live payment for this exact subscription can mint the one-time bonus.
+          if (type === "payment.succeeded" || type === "payment.completed") {
+            const chargeId = typeof data.payment_id === "string" ? data.payment_id : undefined;
+            if (!chargeId) return new Response("Missing charge identifier", { status: 502 });
+            const chargeRes = await fetch(`https://live.dodopayments.com/payments/${encodeURIComponent(chargeId)}`, { headers: { Authorization: `Bearer ${apiKey}` } });
+            if (!chargeRes.ok) return new Response("Charge lookup failed", { status: 502 });
+            const charge = await chargeRes.json() as { status?: string; currency?: string; total_amount?: number; subscription_id?: string };
+            if (isPaidSupporterCharge(charge, paymentId)) {
+              const { data: owner } = await supabaseAdmin.auth.admin.getUserById(userId);
+              const email = owner.user?.email;
+              const { shell } = await import("../../../../supabase/functions/send-email/template");
+              const { FROM, appEmailCc } = await import("../../../../supabase/functions/send-email/delivery");
+              const html = shell({ heading: "Your complimentary newsletter spot is ready.", bodyHtml: '<p>Your first annual Supporter payment is confirmed. Your membership includes one complimentary Sunday newsletter sponsorship.</p><p>Choose an available Sunday from your StartupBar dashboard after your listing is approved.</p><p><a href="https://startupbar.co/dashboard">Choose your Sunday →</a></p>' });
+              const notification = email ? { message_id: `supporter-newsletter/${startupId}`, idempotency_key: `supporter-newsletter/${startupId}`, to: email, from: FROM, sender_domain: "startupbar.co", subject: "Your complimentary StartupBar newsletter spot is ready", html, text: "Your first annual Supporter payment is confirmed. Choose your complimentary Sunday newsletter spot at https://startupbar.co/dashboard after your listing is approved.", purpose: "transactional", label: "supporter-newsletter", ...appEmailCc(email) } : null;
+              const { error: grantError } = await supabaseAdmin.rpc("grant_supporter_newsletter", { _startup_id: startupId, _user_id: userId, _subscription_id: paymentId, _payment_id: chargeId, _amount_cents: charge.total_amount ?? 0, _currency: charge.currency ?? "", _notification: notification });
+              if (grantError) { console.error("[dodo-webhook] Newsletter entitlement failed", grantError); return new Response("Newsletter benefit update failed", { status: 500 }); }
+            }
           }
 
           return new Response("ok", { status: 200 });
