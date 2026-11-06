@@ -1142,8 +1142,8 @@ function Apply() {
       {step === 1 && (
 
         <div className="checkout-rise mx-auto max-w-[1400px] px-4 py-8 sm:px-6 md:pb-4 md:pt-10">
-          <div className="grid gap-10 md:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] md:gap-14">
-            <div className="hidden md:block md:order-1">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:gap-14">
+            <div className="min-w-0 lg:order-1">
               <StageRail>
                 <DeviceStage
                   name={name} desc={desc} url={url} placement={placement} plan={plan} focus={previewFocus}
@@ -1152,7 +1152,7 @@ function Apply() {
                 />
               </StageRail>
             </div>
-            <div className="md:order-2">
+            <div className="min-w-0 lg:order-2">
               <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Step 1 of 2</span>
               <h1 className="mt-4 text-3xl font-medium leading-tight tracking-tight sm:text-4xl md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
                 Your startup details.

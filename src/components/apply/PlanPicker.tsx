@@ -81,15 +81,15 @@ function PlanCard({ selected, onSelect, icon, title, price, tagline, children, g
       style={{ animationDelay: `${delay}ms` }}
       className={`checkout-card ${selected ? "is-selected" : ""} ${gold ? "is-gold" : ""}`}
     >
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 sm:flex sm:justify-between sm:gap-4">
+        <div className="flex min-w-0 items-start gap-2 sm:items-center sm:gap-3">
           <span className="checkout-icon">{icon}</span>
-          <div>
+          <div className="min-w-0">
             <h3 className="text-base font-semibold tracking-tight text-foreground">{title}</h3>
             <p className="mt-0.5 text-[13px] text-muted-foreground">{tagline}</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <div className="whitespace-nowrap text-right text-lg font-semibold tracking-tight text-foreground">{price}</div>
           <span className="checkout-radio" aria-hidden><Check className="h-3 w-3" /></span>
         </div>
@@ -172,11 +172,11 @@ export function PlanOptions({ plan, onChange, startupName, onFocusPreview }: { p
               <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Preferred send date</span>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button type="button" variant="outline" disabled={!ready} onClick={() => { onFocusPreview?.("newsletter"); void availability.refetch(); }} className="mt-2 h-auto w-full justify-between gap-3 px-4 py-3 text-left text-sm font-medium">
-                    {newsletterDateLabel(plan.newsletterDate)} <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                  <Button type="button" variant="outline" disabled={!ready} onClick={() => { onFocusPreview?.("newsletter"); void availability.refetch(); }} className="mt-2 h-auto w-full justify-between gap-3 whitespace-normal px-3 py-3 text-left text-sm font-medium">
+                    <span className="min-w-0">{newsletterDateLabel(plan.newsletterDate)}</span> <CalendarDays className="h-4 w-4 shrink-0 text-muted-foreground" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto max-w-[calc(100vw-2rem)] p-0" align="start">
                   <Calendar mode="single" selected={plan.newsletterDate ? parseISO(plan.newsletterDate) : undefined}
                     defaultMonth={plan.newsletterDate ? parseISO(plan.newsletterDate) : undefined}
                     disabled={(d) => !ready || !isNewsletterDateAvailable(d, booked)}
