@@ -2,7 +2,6 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode }
 import { Mail, Sparkles, Trophy } from "lucide-react";
 import type { CheckoutPlan } from "@/lib/checkout-plans";
 import { findPack } from "@/lib/checkout-plans";
-import { WidgetBarMock } from "./WidgetBarMock";
 import { useAudience } from "./PlanPicker";
 
 /**
@@ -51,9 +50,9 @@ const OTHERS = [
 ];
 
 export function DeviceStage({
-  laptop, name, desc, url, placement, plan,
+  laptop, mobile, name, desc, url, plan,
 }: {
-  laptop: ReactNode; name: string; desc: string; url: string; placement: "top" | "bottom"; plan: CheckoutPlan;
+  laptop: ReactNode; mobile: ReactNode; name: string; desc: string; url: string; placement: "top" | "bottom"; plan: CheckoutPlan;
 }) {
   const featured = plan.base === "clicks";
   const supporter = plan.base === "supporter";
@@ -106,8 +105,6 @@ export function DeviceStage({
   const chrome = (host: string) => (
     <div className="mk-chrome"><i /><i /><i /><span>{host}</span></div>
   );
-
-  const phoneBar = <WidgetBarMock mobile name={displayName} desc={displayDesc} favicon={favicon} placement={placement} featured={featured} />;
 
   return (
     <div className="stage" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
@@ -213,19 +210,7 @@ export function DeviceStage({
                   <div className="min-w-0"><b>StartupBar</b><span>Featured this week: {displayName}</span></div>
                 </div>
               )}
-              <div className="flex h-full flex-col pt-7">
-                {!supporter && placement === "top" && phoneBar}
-                <div className="flex-1 space-y-2 px-3 py-4">
-                  <div className="h-2.5 w-3/4 rounded-full bg-foreground/10" />
-                  <div className="h-2.5 w-1/2 rounded-full bg-foreground/10" />
-                  <div className="mt-4 h-24 rounded-lg bg-foreground/[0.05]" />
-                  <div className="h-2 w-full rounded-full bg-foreground/[0.07]" />
-                  <div className="h-2 w-5/6 rounded-full bg-foreground/[0.07]" />
-                  <div className="h-2 w-2/3 rounded-full bg-foreground/[0.07]" />
-                  <div className="mt-4 h-7 w-24 rounded-full bg-foreground/[0.12]" />
-                </div>
-                {!supporter && placement === "bottom" && phoneBar}
-              </div>
+              <div className="stage-phone-site">{mobile}</div>
             </div>
           </div>
         </div>
