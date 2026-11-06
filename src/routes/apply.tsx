@@ -672,7 +672,6 @@ function Apply() {
         if (r.status === "paid") { ok = true; orderPaid.current = { listing: !!r.listing }; break; }
         await new Promise((res) => setTimeout(res, 1500 * (attempt + 1)));
       }
-      if (orderPaid.current || ok) attempt4: { break attempt4; }
       for (let attempt = 0; attempt < 4 && !cancelled && !orderPaid.current; attempt++) {
         const { data, error } = await supabase.functions.invoke("verify-dodo-payment", {
           body: { payment_id: initial.paymentId },
