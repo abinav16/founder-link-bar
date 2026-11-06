@@ -947,3 +947,10 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
 .checkout-section-head { padding-top: 2.5rem; border-top: 1px solid var(--border); }
 @media (max-width: 767px) { .checkout-summary.is-docked { bottom: .5rem; } }
 @media (prefers-reduced-motion: reduce) { .stage-laptop, .stage-phone, .stage-callout, .stage-caption, .stage-phone-bar, .stage-float-in { animation: none; } .stage-glow { transition: none; } }
+.checkout-summary.is-docked { background: var(--card); backdrop-filter: none; box-shadow: 0 -12px 40px -20px color-mix(in oklab, var(--foreground) 35%, transparent), 0 24px 60px -40px color-mix(in oklab, var(--foreground) 50%, transparent); }
+.checkout-summary.is-docked > ul { margin-top: .6rem; gap: .25rem; font-size: 13px; }
+.checkout-summary.is-docked > ul > li + li { margin-top: .35rem; }
+.checkout-summary.is-docked > div { margin-top: .75rem; padding-top: .75rem; }
+.checkout-summary.is-docked > div > span:last-child { font-size: 1.6rem; }
+.checkout-summary.is-docked > button { margin-top: .85rem; }
+.checkout-summary.is-docked > p { display: none; }
