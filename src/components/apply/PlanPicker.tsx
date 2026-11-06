@@ -8,7 +8,7 @@ import {
 } from "@/lib/checkout-plans";
 import { SUPPORTER_PRICE_USD, SUPPORTER_TRIAL_DAYS } from "@/lib/supporter";
 
-function useAudience() {
+export function useAudience() {
   return useQuery({
     queryKey: ["newsletter-audience"],
     queryFn: async () => {
