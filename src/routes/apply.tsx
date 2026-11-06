@@ -53,7 +53,7 @@ const schema = z.object({
   founder_quote: z.string().trim().max(280).optional(),
 });
 
-function BarPreview({ name, url, desc, placement = "top", noBar = false }: { name: string; url: string; desc: string; placement?: "top" | "bottom"; noBar?: boolean }) {
+function BarPreview({ name, url, desc, placement = "top", noBar = false, featured = false }: { name: string; url: string; desc: string; placement?: "top" | "bottom"; noBar?: boolean; featured?: boolean }) {
   const displayName = name || "Your Startup";
   const displayDesc = desc || "Your one-liner goes here";
   const favicon = url ? `https://www.google.com/s2/favicons?domain=${url}&sz=32` : null;
@@ -104,9 +104,9 @@ function BarPreview({ name, url, desc, placement = "top", noBar = false }: { nam
   const bar = (
     <div
       aria-label="Widget color preview"
-      className={`apply-preview-bar mock-blend-surface flex h-9 items-center gap-2.5 px-4 ${placement === "top" ? "border-b" : "border-t"}`}
+      className={`apply-preview-bar mock-blend-surface flex h-9 items-center gap-2.5 px-4 ${featured ? "is-featured" : ""} ${placement === "top" ? "border-b" : "border-t"}`}
     >
-      <span className="apply-preview-brand rounded-sm px-1.5 py-0.5 text-[9px] font-bold tracking-widest">STARTUPBAR</span>
+      <span className="apply-preview-brand rounded-sm px-1.5 py-0.5 text-[9px] font-bold tracking-widest">{featured ? "FEATURED" : "STARTUPBAR"}</span>
       {favicon && <img src={favicon} alt="" className="h-4 w-4 rounded-sm object-contain" onError={(e) => (e.currentTarget.style.display = "none")} />}
       <span className="shrink-0 text-[13px] font-medium">{displayName}</span>
       <span className="apply-preview-muted hidden truncate text-[12px] sm:block">· {displayDesc}</span>
@@ -404,7 +404,8 @@ function pinnedInstallId(rawUrl: string, fallback: string): string {
   return fallback;
 }
 
-import { PlanPicker } from "@/components/apply/PlanPicker";
+import { PlanOptions, OrderSummary } from "@/components/apply/PlanPicker";
+import { DeviceStage } from "@/components/apply/DeviceStage";
 import { parsePlan, type CheckoutPlan } from "@/lib/checkout-plans";
 
 function readDraft(): { step: 1 | 2; name: string; url: string; desc: string; startupId: string } | null {
@@ -519,7 +520,6 @@ function Apply() {
     if (typeof window === "undefined") return parsePlan(null);
     try { const d = JSON.parse(readRawDraft() ?? "{}"); return d.plan ? parsePlan(d.plan) : parsePlan(d.mode === "supporter" ? { base: "supporter" } : null); } catch { return parsePlan(null); }
   });
-  const [choosingPlan, setChoosingPlan] = useState(false);
 
   const [resubmitId, setResubmitId] = useState<string>(initial.resubmitId);
   const [startupId, setStartupId] = useState<string>(() => initial.resubmitId || initial.startupId || crypto.randomUUID());
@@ -806,8 +806,7 @@ function Apply() {
       toast.error(parsed.error.issues[0]?.message ?? "Invalid input");
       return;
     }
-    setChoosingPlan(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    confirmPlan();
   }
 
   function confirmPlan() {
@@ -829,7 +828,6 @@ function Apply() {
       navigate({ to: "/auth" });
       return;
     }
-    setChoosingPlan(false);
     setStep(2);
     window.scrollTo({ top: 0, behavior: "smooth" });
     // Save the in-progress application so admins can see founders who stop at install.
@@ -1106,9 +1104,9 @@ function Apply() {
       <SiteHeader>
         <div className="border-t border-header-ink/8 bg-header-surface">
           <div className="mx-auto flex h-11 max-w-6xl items-center justify-center gap-6 px-5 text-xs text-header-ink/50">
-            {(() => { const cur = step === 2 ? 3 : choosingPlan ? 2 : 1; return [{ n: 1, label: 'Details' }, { n: 2, label: 'Plan' }, { n: 3, label: 'Install' }].map(s => <span key={s.n} className={`flex items-center gap-2 ${cur === s.n ? 'font-semibold text-header-ink' : ''}`}><span className={`flex h-5 w-5 items-center justify-center rounded-full transition-colors duration-500 ${cur >= s.n ? 'bg-header-ink text-header-surface' : 'bg-header-ink/8'}`}>{cur > s.n ? '✓' : s.n}</span>{s.label}</span>); })()}
+            {(() => { const cur = step === 2 ? 2 : 1; return [{ n: 1, label: 'Details' }, { n: 2, label: 'Install' }].map(s => <span key={s.n} className={`flex items-center gap-2 ${cur === s.n ? 'font-semibold text-header-ink' : ''}`}><span className={`flex h-5 w-5 items-center justify-center rounded-full transition-colors duration-500 ${cur >= s.n ? 'bg-header-ink text-header-surface' : 'bg-header-ink/8'}`}>{cur > s.n ? '✓' : s.n}</span>{s.label}</span>); })()}
           </div>
-          <div className="h-0.5 bg-header-ink/6"><div className={`h-full bg-header-ink transition-[width] duration-500 motion-reduce:transition-none ${step === 2 ? 'w-full' : choosingPlan ? 'w-2/3' : 'w-1/3'}`} /></div>
+          <div className="h-0.5 bg-header-ink/6"><div className={`h-full bg-header-ink transition-[width] duration-500 motion-reduce:transition-none ${step === 2 ? 'w-full' : 'w-1/2'}`} /></div>
         </div>
       </SiteHeader>
 
@@ -1126,16 +1124,20 @@ function Apply() {
         </div>
       )}
 
-      {step === 1 && choosingPlan && (
-        <PlanPicker plan={plan} onChange={setPlan} startupName={name} onBack={() => setChoosingPlan(false)} onContinue={confirmPlan} />
-      )}
+      {step === 1 && (
 
-      {step === 1 && !choosingPlan && (
-
-        <div className="checkout-rise mx-auto max-w-6xl px-4 py-8 sm:px-6 md:pb-4 md:pt-14">
-          <div className="grid gap-10 md:grid-cols-2 md:gap-24">
-            <div>
-              <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Step 1 of 3</span>
+        <div className="checkout-rise mx-auto max-w-[1400px] px-4 py-8 sm:px-6 md:pb-4 md:pt-10">
+          <div className="grid gap-10 md:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] md:gap-14">
+            <div className="hidden md:block md:order-1">
+              <div className="apply-stage-rail">
+                <DeviceStage
+                  name={name} desc={desc} url={url} placement={placement} plan={plan}
+                  laptop={<BarPreview name={name} url={url} desc={desc} placement={placement} noBar={plan.base === "supporter"} featured={plan.base === "clicks"} />}
+                />
+              </div>
+            </div>
+            <div className="md:order-2">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Step 1 of 2</span>
               <h1 className="mt-4 text-3xl font-medium leading-tight tracking-tight sm:text-4xl md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
                 Your startup details.
               </h1>
@@ -1199,13 +1201,14 @@ function Apply() {
                       Top placement earns you more free impressions from the network. Our reciprocity algorithm rewards the most visible bars with more visibility in return. Bottom is still supported if it fits your layout.
                     </p>
                 </Field>
-                <button type="submit" className="group flex w-full items-center justify-center gap-2 rounded-lg bg-black py-3.5 text-sm font-medium text-white transition-all hover:bg-black/80">
-                  Next — Choose your plan
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                </button>
-                <p className="text-center text-xs text-black/30">
-                  Free plan available · We review within 24h · No commitment
-                </p>
+                <section className="checkout-section-head">
+                  <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl" style={{ fontFamily: "var(--font-display)" }}>
+                    Plan. <span className="text-muted-foreground">Choose how {name.trim() || "your startup"} grows.</span>
+                  </h2>
+                  <p className="mt-2 text-sm text-muted-foreground">Free is genuinely free. Paid options only add reach — you pay for results, never for time.</p>
+                </section>
+                <PlanOptions plan={plan} onChange={setPlan} startupName={name} />
+                <OrderSummary plan={plan} />
               </form>
               {authed === false && !isSupporter && (
                 <div className="mt-6">
@@ -1220,36 +1223,6 @@ function Apply() {
               )}
             </div>
 
-            <div className="hidden md:block">
-              <div className="apply-preview-rail">
-                <div>
-                  <span className="text-[11px] font-semibold uppercase text-header-ink/35">Live preview</span>
-                  <p className="mt-1.5 text-sm text-header-ink/40">This is how your startup will appear on other founders' sites.</p>
-                </div>
-                <div className="min-h-0">
-                  <BarPreview name={name} url={url} desc={desc} placement={placement} noBar={isSupporter} />
-                </div>
-                <div className="space-y-3 border-t border-header-ink/8 pt-4">
-                  {(isSupporter
-                    ? [
-                        "Your startup will appear across the network at an average member's share.",
-                        "Nothing is shown on your website: No bar and no layout changes.",
-                        "Your listing is highlighted in gold on the network page and the leaderboard.",
-                        "The optional analytics code unlocks your visitor map and on-site stats. Your listing works without it.",
-                      ]
-                    : [
-                        "Your bar will show on sites across the network as soon as you're approved.",
-                        "In return, you'll show one other startup on your site — completely automatic.",
-                        "Cancel anytime by removing the script tag. No lock-in, no fees.",
-                      ]).map((t) => (
-                    <div key={t} className="flex items-start gap-3">
-                      <div className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
-                      <p className="text-[13px] leading-relaxed text-black/45">{t}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       )}
@@ -1262,7 +1235,7 @@ function Apply() {
             <ArrowLeft className="h-3.5 w-3.5" /> Back
           </button>
 
-          <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Step 3 of 3</span>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Step 2 of 2</span>
           <h1 className="mt-4 font-display text-3xl font-medium leading-tight sm:text-4xl md:text-5xl">
             {isSupporter ? "Your analytics line (optional)." : "Install the script."}
           </h1>

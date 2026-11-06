@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, ArrowRight, Check, Mail, MousePointerClick, ShieldCheck, Sparkles, EyeOff } from "lucide-react";
+import { ArrowRight, Check, Mail, MousePointerClick, ShieldCheck, Sparkles, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   CLICK_PACKS, findPack, newsletterPriceUsd, NEWSLETTER_PRICE_PER_FOUNDER_USD, packSavingsPct, perClick, planTotalUsd,
@@ -82,34 +82,16 @@ function PlanCard({ selected, onSelect, icon, title, price, tagline, children, g
   );
 }
 
-export function PlanPicker({
-  plan, onChange, onBack, onContinue, startupName,
-}: {
-  plan: CheckoutPlan; onChange: (p: CheckoutPlan) => void; onBack: () => void; onContinue: () => void; startupName: string;
-}) {
+export function usePlanPricing(plan: CheckoutPlan) {
   const { data: audience = 0 } = useAudience();
   const pack = findPack(plan.clicks) ?? CLICK_PACKS[2];
-  const nlPrice = newsletterPriceUsd(audience);
-  const total = planTotalUsd(plan, audience);
-  const isSupporter = plan.base === "supporter";
+  return { audience, pack, nlPrice: newsletterPriceUsd(audience), total: planTotalUsd(plan, audience), isSupporter: plan.base === "supporter" };
+}
 
+export function PlanOptions({ plan, onChange, startupName }: { plan: CheckoutPlan; onChange: (p: CheckoutPlan) => void; startupName: string }) {
+  const { audience, pack, nlPrice, isSupporter } = usePlanPricing(plan);
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 md:pt-14">
-      <button onClick={onBack} className="mb-8 flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
-        <ArrowLeft className="h-3.5 w-3.5" /> Back to details
-      </button>
-      <div className="checkout-rise">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-muted-foreground">Step 2 of 3</span>
-        <h1 className="mt-4 max-w-2xl text-3xl font-medium leading-tight tracking-tight sm:text-4xl md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
-          Choose how {startupName.trim() || "your startup"} grows.
-        </h1>
-        <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
-          Free is genuinely free. Paid options only add reach — and you pay for results we can prove, never for time.
-        </p>
-      </div>
-
-      <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_340px] lg:gap-12">
-        <div className="space-y-4" role="radiogroup" aria-label="Plan">
+    <div className="space-y-4" role="radiogroup" aria-label="Plan">
           <PlanCard
             delay={0} selected={plan.base === "free"} onSelect={() => onChange({ ...plan, base: "free" })}
             icon={<Sparkles className="h-4 w-4" />} title="Network listing" tagline="Show the bar, get shown back." price="Free"
@@ -183,9 +165,14 @@ export function PlanPicker({
               <Bullet>Gold highlight on the network page and leaderboard.</Bullet>
             </ul>
           </PlanCard>
-        </div>
+    </div>
+  );
+}
 
-        <aside className="checkout-summary">
+export function OrderSummary({ plan, onContinue, label = "Continue to install" }: { plan: CheckoutPlan; onContinue?: () => void; label?: string }) {
+  const { pack, nlPrice, total, isSupporter } = usePlanPricing(plan);
+  return (
+        <aside className="checkout-summary is-docked">
           <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Your order</span>
           <ul className="mt-4 space-y-3 text-sm">
             <li className="flex justify-between gap-3"><span className="text-foreground">{isSupporter ? "No Bar Supporter" : "Network listing"}</span><span className="text-muted-foreground">{isSupporter ? `${SUPPORTER_TRIAL_DAYS}-day trial` : "Free"}</span></li>
@@ -196,15 +183,13 @@ export function PlanPicker({
             <span className="text-sm text-muted-foreground">Due today</span>
             <span className="text-3xl font-semibold tracking-tight text-foreground"><RollingNumber value={total} decimals={total % 1 ? 2 : 0} /></span>
           </div>
-          <button type="button" onClick={onContinue} className="group mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-85">
-            Continue to install <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+          <button type={onContinue ? "button" : "submit"} onClick={onContinue} className="group mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-85">
+            {label} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </button>
           <p className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
             <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             {total > 0 ? "Nothing is charged yet. You pay after your install is verified, and boosts start when we approve your listing." : "No card needed. We review every listing within 24 hours."}
           </p>
         </aside>
-      </div>
-    </div>
   );
 }
