@@ -57,6 +57,7 @@ function PlanCard({ selected, onSelect, icon, title, price, tagline, children, g
     <div
       role={role}
       aria-checked={selected}
+      aria-label={title}
       tabIndex={0}
       onClick={onSelect}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(); } }}
