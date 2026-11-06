@@ -231,13 +231,13 @@ function Top3({ you, compact }: { you: MockYou; compact?: boolean }) {
     <div className={`grid grid-cols-3 items-end ${compact ? "gap-1.5" : "gap-3"}`}>
       <div className={`featured-glass mk-you relative flex flex-col items-center rounded-2xl border text-center text-featured-text ${pad}`}>
         <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-featured-gold">Featured</span>
-                <span className="mt-1 grid h-8 w-8 place-items-center rounded-full border border-featured-text/15"><StartupFavicon url={you.url} name={you.name} size={20} /></span>
+        <span className="mt-1 grid h-8 w-8 place-items-center rounded-full border border-featured-text/15"><StartupFavicon url={you.url} name={you.name} size={20} /></span>
         <p className={`mt-1.5 w-full truncate font-semibold ${nm}`}>{you.name}</p>
         <p className={`${num} font-semibold`}>105</p>
         <p className="text-[8px] uppercase tracking-[0.15em] text-featured-muted">Impressions today</p>
       </div>
       {[0, 1].map((k) => (
-        <GhostBox key={k} className={`flex flex-col items-center gap-2 rounded-2xl ${compact ? "p-3" : "p-5"} ${k === 0 ? "order-first" : ""}`}>
+        <GhostBox key={k} className={`flex flex-col items-center gap-2 rounded-2xl ${compact ? "p-3" : "p-5"}`}>
           <span className="h-8 w-8 rounded-full bg-muted" />
           <Bar w="60%" h={8} /><Bar w="35%" h={14} /><Bar w="70%" h={5} />
         </GhostBox>
