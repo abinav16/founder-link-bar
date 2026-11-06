@@ -14,4 +14,10 @@ describe("selected option previews", () => {
   it("adds the digest to selected click placements without the site", () => {
     expect(previewSlides({ base: "clicks", clicks: 500, newsletter: true })).toEqual(["network", "list", "leaderboard", "digest"]);
   });
+  it("focuses only the newsletter while retaining a selected click pack", () => {
+    expect(previewSlides({ base: "clicks", clicks: 500, newsletter: true }, "newsletter")).toEqual(["digest"]);
+  });
+  it("focuses only click placements when the click option is clicked", () => {
+    expect(previewSlides({ base: "clicks", clicks: 500, newsletter: true }, "clicks")).toEqual(["network", "list", "leaderboard"]);
+  });
 });
