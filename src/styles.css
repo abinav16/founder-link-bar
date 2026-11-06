@@ -845,3 +845,63 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
 @keyframes sb-loader-breathe { 0%,100% { transform: scale(.85); opacity: .6; } 50% { transform: scale(1.1); opacity: 1; } }
 @keyframes sb-loader-dot { 0%,100% { opacity: .2; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
 @media (prefers-reduced-motion: reduce) { .sb-loader-pill, .sb-loader-glow, .sb-loader-dots i { animation: none; } .sb-loader-pill { transform: translateX(14px); } }
+
+/* ── /apply checkout plan picker ──────────────────────────────────── */
+@keyframes checkout-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes checkout-pop { 0% { transform: scale(.6); opacity: 0; } 70% { transform: scale(1.12); } 100% { transform: scale(1); opacity: 1; } }
+.checkout-rise { animation: checkout-rise 600ms cubic-bezier(.2,.8,.2,1) both; }
+.checkout-card {
+  position: relative; cursor: pointer; border-radius: 1.25rem; padding: 1.25rem 1.35rem;
+  border: 1px solid var(--border); background: var(--card);
+  box-shadow: 0 1px 2px color-mix(in oklab, var(--foreground) 4%, transparent);
+  animation: checkout-rise 650ms cubic-bezier(.2,.8,.2,1) both;
+  transition: transform 350ms cubic-bezier(.2,.8,.2,1), box-shadow 350ms ease, border-color 250ms ease;
+  outline: none;
+}
+.checkout-card:hover { transform: translateY(-2px); box-shadow: 0 14px 34px -22px color-mix(in oklab, var(--foreground) 45%, transparent); }
+.checkout-card:focus-visible { box-shadow: 0 0 0 3px color-mix(in oklab, var(--foreground) 18%, transparent); }
+.checkout-card.is-selected { border-color: var(--foreground); box-shadow: 0 0 0 1px var(--foreground), 0 18px 40px -26px color-mix(in oklab, var(--foreground) 55%, transparent); }
+.checkout-card.is-gold.is-selected { border-color: var(--featured-edge); box-shadow: 0 0 0 1px var(--featured-edge), 0 18px 44px -24px color-mix(in oklab, var(--featured-edge) 60%, transparent); }
+.checkout-card.is-gold::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(135deg, color-mix(in oklab, var(--featured-gold) 9%, transparent), transparent 45%);
+}
+.checkout-icon { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: .75rem; background: var(--muted); color: var(--foreground); }
+.checkout-card.is-gold .checkout-icon { background: color-mix(in oklab, var(--featured-gold) 22%, var(--muted)); }
+.checkout-radio {
+  display: grid; place-items: center; width: 1.35rem; height: 1.35rem; border-radius: 9999px;
+  border: 1.5px solid var(--border); color: transparent; transition: all 250ms ease;
+}
+.checkout-card.is-selected .checkout-radio { background: var(--foreground); border-color: var(--foreground); color: var(--background); animation: checkout-pop 380ms ease both; }
+.checkout-card-body { display: grid; grid-template-rows: 0fr; opacity: .55; transition: grid-template-rows 450ms cubic-bezier(.2,.8,.2,1), opacity 300ms ease, margin 300ms ease; }
+.checkout-card-body > * { min-height: 0; overflow: hidden; }
+.checkout-card.is-selected .checkout-card-body { grid-template-rows: 1fr; opacity: 1; margin-top: 1.1rem; }
+.checkout-card-body { grid-template-columns: 1fr; }
+.checkout-card-body:has(> :nth-child(2)) { display: block; max-height: 0; overflow: hidden; transition: max-height 500ms cubic-bezier(.2,.8,.2,1), opacity 300ms ease, margin 300ms ease; }
+.checkout-card.is-selected .checkout-card-body:has(> :nth-child(2)) { max-height: 40rem; }
+.checkout-pack {
+  position: relative; display: flex; flex-direction: column; align-items: flex-start; text-align: left;
+  border-radius: .9rem; border: 1px solid var(--border); background: var(--background); padding: .8rem .85rem;
+  transition: transform 250ms ease, border-color 250ms ease, box-shadow 250ms ease;
+}
+.checkout-pack:hover { transform: translateY(-1px); }
+.checkout-pack.is-on { border-color: var(--featured-edge); box-shadow: 0 0 0 1px var(--featured-edge); background: color-mix(in oklab, var(--featured-gold) 7%, var(--background)); }
+.checkout-pack-flag {
+  position: absolute; top: -.55rem; right: .6rem; border-radius: 9999px; padding: .1rem .5rem; font-size: 9px; font-weight: 600;
+  letter-spacing: .04em; text-transform: uppercase; background: var(--featured-surface); color: var(--featured-gold);
+}
+.checkout-mail-preview { border-radius: .9rem; border: 1px dashed var(--border); background: var(--muted); padding: .9rem 1rem; }
+.checkout-divider { display: flex; align-items: center; gap: .75rem; padding: .75rem 0 .25rem; font-size: 11px; color: var(--muted-foreground); text-transform: uppercase; letter-spacing: .18em; }
+.checkout-divider::before, .checkout-divider::after { content: ""; height: 1px; flex: 1; background: var(--border); }
+.checkout-summary {
+  align-self: start; position: sticky; top: 7.5rem; border-radius: 1.5rem; border: 1px solid var(--border);
+  background: color-mix(in oklab, var(--card) 82%, transparent); backdrop-filter: blur(18px); padding: 1.5rem;
+  box-shadow: 0 24px 60px -40px color-mix(in oklab, var(--foreground) 50%, transparent);
+  animation: checkout-rise 700ms 120ms cubic-bezier(.2,.8,.2,1) both;
+}
+.checkout-line { animation: checkout-rise 350ms ease both; }
+@media (max-width: 1023px) { .checkout-summary { position: sticky; bottom: .75rem; top: auto; } }
+@media (prefers-reduced-motion: reduce) {
+  .checkout-rise, .checkout-card, .checkout-summary, .checkout-line, .checkout-card.is-selected .checkout-radio { animation: none; }
+  .checkout-card, .checkout-card-body, .checkout-pack { transition: none; }
+}
