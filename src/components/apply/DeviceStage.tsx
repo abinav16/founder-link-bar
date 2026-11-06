@@ -1,8 +1,9 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { Mail, Sparkles, Trophy } from "lucide-react";
+import { Mail } from "lucide-react";
 import type { CheckoutPlan } from "@/lib/checkout-plans";
 import { findPack } from "@/lib/checkout-plans";
 import { useAudience } from "./PlanPicker";
+import { DesktopNetworkMock, MobileNetworkMock } from "./NetworkMocks";
 
 /**
  * Sticky rail that never drifts: its sticky offset equals its natural position,
@@ -37,17 +38,10 @@ export function StageRail({ children }: { children: ReactNode }) {
   );
 }
 
-type SlideId = "site" | "home" | "network" | "leaderboard" | "digest";
+type SlideId = "site" | "network" | "list" | "leaderboard" | "digest";
 const SLIDE_LABEL: Record<SlideId, string> = {
-  site: "Your site", home: "Homepage spot", network: "Network", leaderboard: "Leaderboard", digest: "Sunday digest",
+  site: "Your site", network: "Featured rails", list: "Network list", leaderboard: "Leaderboard", digest: "Sunday digest",
 };
-const OTHERS = [
-  { n: "Lumen Notes", d: "Notes that link themselves" },
-  { n: "Shipfast CRM", d: "Pipeline for tiny teams" },
-  { n: "Pixel Forge", d: "Icons from a single prompt" },
-  { n: "Quietly", d: "Focus timer for builders" },
-  { n: "Formcraft", d: "Forms people finish" },
-];
 
 export function DeviceStage({
   laptop, mobile, name, desc, url, plan,
@@ -65,7 +59,7 @@ export function DeviceStage({
 
   const slides = useMemo<SlideId[]>(() => {
     const s: SlideId[] = ["site"];
-    if (featured) s.push("home", "network", "leaderboard");
+    if (featured) s.push("network", "list", "leaderboard");
     if (newsletter) s.push("digest");
     return s;
   }, [featured, newsletter]);
@@ -76,7 +70,7 @@ export function DeviceStage({
   // Jump to the newest showcase when an option is turned on.
   const prev = useRef({ featured, newsletter });
   useEffect(() => {
-    if (featured && !prev.current.featured) setActive("home");
+    if (featured && !prev.current.featured) setActive("network");
     else if (newsletter && !prev.current.newsletter) setActive("digest");
     else if (!slides.includes(active)) setActive("site");
     prev.current = { featured, newsletter };
@@ -95,12 +89,15 @@ export function DeviceStage({
     : active === "digest"
       ? { e: "Sunday digest", t: "First thing in every inbox.", s: `Your sponsor card leads the email to ${audience ? audience.toLocaleString() : "every"} founders.` }
       : featured
-        ? { e: "Guaranteed clicks", t: "Featured on every screen.", s: `Gold highlight on the homepage, network and leaderboard until ${pack?.clicks.toLocaleString() ?? ""} real clicks arrive.` }
+        ? { e: "Guaranteed clicks", t: "Featured on every screen.", s: `Gold spot in the featured rails, network list and leaderboard on desktop and mobile until ${pack?.clicks.toLocaleString() ?? ""} real clicks arrive.` }
         : { e: "Network listing", t: "One bar. Every member site.", s: "Your startup rotates across the network on desktop and mobile." };
 
   const Fav = ({ size = 16 }: { size?: number }) => favicon
     ? <img src={favicon} alt="" width={size} height={size} className="shrink-0 rounded" onError={(e) => (e.currentTarget.style.visibility = "hidden")} />
     : <span className="shrink-0 rounded bg-foreground/15" style={{ width: size, height: size }} />;
+
+  const you = { name: displayName, desc: displayDesc, url };
+  const isMockPage = active === "network" || active === "list" || active === "leaderboard";
 
   const chrome = (host: string) => (
     <div className="mk-chrome"><i /><i /><i /><span>{host}</span></div>
@@ -116,62 +113,11 @@ export function DeviceStage({
               <div className="stage-laptop-screen">
                 <div className={`mk-slide ${active === "site" ? "is-on" : ""}`}>{laptop}</div>
 
-                {featured && (
-                  <div className={`mk-slide mk-page ${active === "home" ? "is-on" : ""}`} aria-hidden={active !== "home"}>
-                    {chrome("startupbar.co")}
-                    <div className="mk-body">
-                      <div className="mk-nav"><b>StartupBar</b><span>Network</span><span>Leaderboard</span><span>Pricing</span></div>
-                      <div className="mk-home">
-                        <div className="mk-hero">
-                          <p className="mk-h1">Grow with founders,<br />not ads.</p>
-                          <p className="mk-p">A free traffic exchange for indie startups.</p>
-                          <span className="mk-btn">Join the network</span>
-                        </div>
-                        <div className="mk-rail">
-                          <p className="mk-eyebrow">Featured</p>
-                          <div className="mk-gold mk-slot is-you"><Fav size={18} /><div className="min-w-0"><b>{displayName}</b><span>{displayDesc}</span></div><Sparkles className="mk-spark" /></div>
-                          <div className="mk-slot"><span className="mk-dot" /><div className="min-w-0"><b>{OTHERS[0].n}</b><span>{OTHERS[0].d}</span></div></div>
-                          <div className="mk-slot is-empty">Open spot</div>
-                        </div>
-                      </div>
-                    </div>
+                {featured && (["network", "list", "leaderboard"] as const).map((pg) => (
+                  <div key={pg} className={`mk-slide ${active === pg ? "is-on" : ""}`} aria-hidden={active !== pg}>
+                    <DesktopNetworkMock page={pg} you={you} />
                   </div>
-                )}
-
-                {featured && (
-                  <div className={`mk-slide mk-page ${active === "network" ? "is-on" : ""}`} aria-hidden={active !== "network"}>
-                    {chrome("startupbar.co/network")}
-                    <div className="mk-body">
-                      <p className="mk-h2">The network</p>
-                      <div className="mk-grid">
-                        <div className="mk-gold mk-card is-you"><div className="flex items-center gap-1.5"><Fav size={16} /><b>{displayName}</b></div><span>{displayDesc}</span><em><Sparkles /> Featured</em></div>
-                        {OTHERS.map((o) => (
-                          <div key={o.n} className="mk-card"><div className="flex items-center gap-1.5"><span className="mk-dot" /><b>{o.n}</b></div><span>{o.d}</span></div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {featured && (
-                  <div className={`mk-slide mk-page ${active === "leaderboard" ? "is-on" : ""}`} aria-hidden={active !== "leaderboard"}>
-                    {chrome("startupbar.co/leaderboard")}
-                    <div className="mk-body">
-                      <p className="mk-h2">Leaderboard</p>
-                      <div className="mk-table">
-                        {[OTHERS[1], null, OTHERS[2], OTHERS[3], OTHERS[4]].map((o, i) => (
-                          <div key={i} className={`mk-row ${o ? "" : "mk-gold is-you"}`}>
-                            <span className="mk-rank">{i + 1}</span>
-                            {o ? <span className="mk-dot" /> : <Fav size={14} />}
-                            <b>{o ? o.n : displayName}</b>
-                            {!o && <em><Trophy /> Featured</em>}
-                            <span className="mk-num">{(4820 - i * 730).toLocaleString()}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
+                ))}
 
                 {newsletter && (
                   <div className={`mk-slide mk-page ${active === "digest" ? "is-on" : ""}`} aria-hidden={active !== "digest"}>
@@ -210,7 +156,14 @@ export function DeviceStage({
                   <div className="min-w-0"><b>StartupBar</b><span>Featured this week: {displayName}</span></div>
                 </div>
               )}
-              <div className="stage-phone-site">{mobile}</div>
+              <div className="stage-phone-site">
+                <div className={`mk-slide ${isMockPage ? "" : "is-on"}`}>{mobile}</div>
+                {featured && (["network", "list", "leaderboard"] as const).map((pg) => (
+                  <div key={pg} className={`mk-slide ${active === pg ? "is-on" : ""}`}>
+                    <MobileNetworkMock page={pg} you={you} />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
