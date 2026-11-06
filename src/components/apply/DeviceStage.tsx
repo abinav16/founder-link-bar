@@ -84,14 +84,16 @@ export function DeviceStage({
     ? { e: "No Bar Supporter", t: "Your site stays untouched.", s: "Listed across the network. Nothing added to your pages." }
     : active === "digest"
       ? { e: "Sunday digest", t: "First thing in every inbox.", s: `Your sponsor card leads the email to ${audience ? audience.toLocaleString() : "every"} founders.` }
-      : featured
+      : active !== "site" && featured
         ? { e: "Guaranteed clicks", t: "Featured on every screen.", s: `Gold spot in the featured rails, network list and leaderboard on desktop and mobile until ${pack?.clicks.toLocaleString() ?? ""} real clicks arrive.` }
         : { e: "Network listing", t: "One bar. Every member site.", s: "Your startup rotates across the network on desktop and mobile." };
 
   const you = { name: displayName, desc: displayDesc, url };
+  const heading = active === "digest" ? "Sunday newsletter" : active === "site" ? (supporter ? "No Bar Supporter" : "Network listing") : "Guaranteed clicks";
 
   return (
     <div className="stage" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+      <h2 className="text-lg font-semibold text-foreground" aria-live="polite">{heading}</h2>
       <div className="stage-devices">
         <div className="stage-row">
           <div className="stage-laptop">

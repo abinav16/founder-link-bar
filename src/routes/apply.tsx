@@ -519,6 +519,32 @@ function Apply() {
   });
 
   const [previewFocus, setPreviewFocus] = useState<PreviewFocus | undefined>();
+  const previewClickUntil = useRef(0);
+  function focusSelectedPreview(focus: PreviewFocus) {
+    previewClickUntil.current = performance.now() + 700;
+    setPreviewFocus(focus);
+  }
+  useEffect(() => {
+    if (step !== 1) return;
+    let frame = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        if (performance.now() < previewClickUntil.current) return;
+        const header = document.querySelector(".site-header");
+        const boundary = (header?.getBoundingClientRect().bottom ?? 140) + 180;
+        let focus: PreviewFocus = "site";
+        document.querySelectorAll<HTMLElement>('[data-preview-section][data-preview-selected="true"]').forEach((section) => {
+          if (section.getBoundingClientRect().top > boundary) return;
+          const value = section.dataset.previewSection;
+          if (value === "site" || value === "clicks" || value === "newsletter") focus = value;
+        });
+        setPreviewFocus(focus);
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => { window.removeEventListener("scroll", onScroll); cancelAnimationFrame(frame); };
+  }, [step]);
   const [resubmitId, setResubmitId] = useState<string>(initial.resubmitId);
   const [startupId, setStartupId] = useState<string>(() => initial.resubmitId || initial.startupId || crypto.randomUUID());
   const [copied, setCopied] = useState(false);
@@ -1223,7 +1249,7 @@ function Apply() {
                   </h2>
                   <p className="mt-2 text-sm text-muted-foreground">Free is genuinely free. Paid options only add reach. You pay for results, never for time.</p>
                 </section>
-                <PlanOptions plan={plan} onChange={setPlan} startupName={name} onFocusPreview={setPreviewFocus} />
+                <PlanOptions plan={plan} onChange={setPlan} startupName={name} onFocusPreview={focusSelectedPreview} />
                 <OrderSummary plan={plan} />
               </form>
               {authed === false && !isSupporter && (
