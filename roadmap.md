@@ -61,6 +61,7 @@
 - [x] Verify the rendered email at desktop and phone widths.
 
 # Supporter pricing and trial
+- [ ] Add one complimentary Sunday sponsorship after the first confirmed annual payment, with owner-only dashboard booking and retry-safe credit handling.
 - [x] Update all current Supporter prices and disclose the seven-day free trial.
 - [x] Align activation, expiry and cancellation with Dodo's actual trial/billing dates.
 - [x] Ensure all Dodo payment paths use live credentials and products.
