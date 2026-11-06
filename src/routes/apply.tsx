@@ -446,7 +446,7 @@ function readInitialFromUrl() {
   // and pin the emailed install ID so the pasted snippet matches.
   if (p.get("resume") === "1" && sidFromUrl) {
     const resumed = {
-      step: 1 as 1 | 2, name: (p.get("name") ?? "").slice(0, 80), url: (p.get("url") ?? "").slice(0, 200),
+      step: 2 as 1 | 2, name: (p.get("name") ?? "").slice(0, 80), url: (p.get("url") ?? "").slice(0, 200),
       desc: (p.get("desc") ?? "").slice(0, 300), category: p.get("cat") ?? "", quote: "",
       placement: p.get("placement") === "bottom" ? "bottom" : "top", mode: "widget", startupId: sidFromUrl,
     };
@@ -458,7 +458,7 @@ function readInitialFromUrl() {
       try { localStorage.setItem(INSTALL_IDS_KEY, JSON.stringify(map)); } catch { /* ignore */ }
     }
     window.history.replaceState({}, "", "/apply");
-    return { step: 1 as 1 | 2, name: resumed.name, url: resumed.url, desc: resumed.desc, paid: false, paymentId: "", resubmitId: "", startupId: sidFromUrl };
+    return { step: 2 as 1 | 2, name: resumed.name, url: resumed.url, desc: resumed.desc, paid: false, paymentId: "", resubmitId: "", startupId: sidFromUrl };
   }
   const resubmitId = p.get("resubmit") ?? "";
   if (resubmitId) {
@@ -484,6 +484,7 @@ function Apply() {
   const navigate = useNavigate();
   const initial = (typeof window !== "undefined" ? readInitialFromUrl() : { step: 1 as 1 | 2, name: "", url: "", desc: "", paid: false, paymentId: "", resubmitId: "", startupId: "" });
   const [authed, setAuthed] = useState<boolean | null>(null);
+  const [accountEmail, setAccountEmail] = useState<string | null>(null);
   const [step, setStep] = useState<1 | 2>(initial.step);
   const [name, setName] = useState(initial.name);
   const [url, setUrl] = useState(initial.url);
@@ -537,7 +538,15 @@ function Apply() {
 
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setAuthed(!!data.user));
+    supabase.auth.getUser().then(({ data }) => {
+      setAuthed(!!data.user);
+      setAccountEmail(data.user?.email ?? null);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthed(!!session?.user);
+      setAccountEmail(session?.user.email ?? null);
+    });
+    return () => subscription.unsubscribe();
   }, []);
 
   // Funnel breadcrumbs: without these, an application that is started and
@@ -1281,6 +1290,18 @@ function Apply() {
           </div>
 
           {/* Install checklist card */}
+          {!isSupporter && authed !== null && (
+            <div className="mt-6">
+              <EmailSnippetHandoff
+                startupId={startupId} name={name} url={url} desc={desc} category={category} placement={placement}
+                accountEmail={accountEmail}
+                validate={() => {
+                  const parsed = schema.safeParse({ name, website_url: url, description: desc, category, founder_quote: quote });
+                  return parsed.success ? null : (parsed.error.issues[0]?.message ?? "Fill in your startup details first");
+                }}
+              />
+            </div>
+          )}
           <div className="apply-install-grid mt-6 grid gap-8 border-y border-border py-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-12">
             <div className="min-w-0">
             {/* Embed code */}
