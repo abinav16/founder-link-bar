@@ -396,7 +396,7 @@ function pinnedInstallId(rawUrl: string, fallback: string): string {
 }
 
 import { PlanOptions, OrderSummary } from "@/components/apply/PlanPicker";
-import { DeviceStage } from "@/components/apply/DeviceStage";
+import { DeviceStage, StageRail } from "@/components/apply/DeviceStage";
 import { WidgetBarMock } from "@/components/apply/WidgetBarMock";
 import { parsePlan, type CheckoutPlan } from "@/lib/checkout-plans";
 
@@ -1121,12 +1121,12 @@ function Apply() {
         <div className="checkout-rise mx-auto max-w-[1400px] px-4 py-8 sm:px-6 md:pb-4 md:pt-10">
           <div className="grid gap-10 md:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] md:gap-14">
             <div className="hidden md:block md:order-1">
-              <div className="apply-stage-rail">
+              <StageRail>
                 <DeviceStage
                   name={name} desc={desc} url={url} placement={placement} plan={plan}
                   laptop={<BarPreview name={name} url={url} desc={desc} placement={placement} noBar={plan.base === "supporter"} featured={plan.base === "clicks"} />}
                 />
-              </div>
+              </StageRail>
             </div>
             <div className="md:order-2">
               <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Step 1 of 2</span>
