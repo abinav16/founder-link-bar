@@ -399,6 +399,7 @@ import { PlanOptions, OrderSummary } from "@/components/apply/PlanPicker";
 import { DeviceStage, StageRail } from "@/components/apply/DeviceStage";
 import { WidgetBarMock } from "@/components/apply/WidgetBarMock";
 import { parsePlan, type CheckoutPlan } from "@/lib/checkout-plans";
+import type { PreviewFocus } from "@/lib/apply-preview-slides";
 
 function readDraft(): { step: 1 | 2; name: string; url: string; desc: string; startupId: string } | null {
   if (typeof window === "undefined") return null;
@@ -513,6 +514,7 @@ function Apply() {
     try { const d = JSON.parse(readRawDraft() ?? "{}"); return d.plan ? parsePlan(d.plan) : parsePlan(d.mode === "supporter" ? { base: "supporter" } : null); } catch { return parsePlan(null); }
   });
 
+  const [previewFocus, setPreviewFocus] = useState<PreviewFocus | undefined>();
   const [resubmitId, setResubmitId] = useState<string>(initial.resubmitId);
   const [startupId, setStartupId] = useState<string>(() => initial.resubmitId || initial.startupId || crypto.randomUUID());
   const [copied, setCopied] = useState(false);
@@ -1123,7 +1125,7 @@ function Apply() {
             <div className="hidden md:block md:order-1">
               <StageRail>
                 <DeviceStage
-                  name={name} desc={desc} url={url} placement={placement} plan={plan}
+                  name={name} desc={desc} url={url} placement={placement} plan={plan} focus={previewFocus}
                   laptop={<BarPreview name={name} url={url} desc={desc} placement={placement} noBar={plan.base === "supporter"} featured={plan.base === "clicks"} />}
                   mobile={<BarPreview mobile name={name} url={url} desc={desc} placement={placement} noBar={plan.base === "supporter"} featured={plan.base === "clicks"} />}
                 />
@@ -1200,7 +1202,7 @@ function Apply() {
                   </h2>
                   <p className="mt-2 text-sm text-muted-foreground">Free is genuinely free. Paid options only add reach. You pay for results, never for time.</p>
                 </section>
-                <PlanOptions plan={plan} onChange={setPlan} startupName={name} />
+                <PlanOptions plan={plan} onChange={setPlan} startupName={name} onFocusPreview={setPreviewFocus} />
                 <OrderSummary plan={plan} />
               </form>
               {authed === false && !isSupporter && (
