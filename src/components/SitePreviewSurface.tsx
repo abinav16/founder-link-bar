@@ -20,17 +20,17 @@ function hostOf(url: string) {
 function SiteCard({ url, heightCls }: { url: string; heightCls: string }) {
   const host = hostOf(url);
   return (
-    <div className={`sb-loader flex ${heightCls} w-full flex-col items-center justify-center gap-5 overflow-hidden`}>
+    <div className={`@container sb-loader flex ${heightCls} w-full flex-col items-center justify-center gap-3 overflow-hidden px-4 @[320px]:gap-5`} role="status">
       <div className="sb-loader-glow" aria-hidden />
-      <div className="relative flex items-center gap-3">
-        <div className="sb-loader-track">
+      <div className="relative flex min-w-0 max-w-full flex-col items-center gap-2 @[320px]:flex-row @[320px]:gap-3">
+        <div className="sb-loader-track shrink-0">
           <div className="sb-loader-pill" />
         </div>
-        <span className="text-[26px] font-semibold tracking-tight text-header-ink">StartupBar</span>
+        <span className="text-lg font-semibold tracking-tight text-header-ink @[320px]:text-[26px]">StartupBar</span>
       </div>
-      <div className="relative flex items-center gap-2 text-xs text-header-ink/50">
-        <span>Loading {host}</span>
-        <span className="sb-loader-dots" aria-hidden><i /><i /><i /></span>
+      <div className="relative flex min-w-0 max-w-full flex-col items-center gap-1.5 text-center text-[11px] text-header-ink/50 @[320px]:flex-row @[320px]:gap-2 @[320px]:text-xs">
+        <span className="min-w-0 max-w-full truncate">Loading {host}</span>
+        <span className="sb-loader-dots shrink-0" aria-hidden><i /><i /><i /></span>
       </div>
     </div>
   );
