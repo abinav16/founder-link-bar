@@ -1,7 +1,5 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, ArrowUpRight, ChevronsRight, Globe, Info, Menu, Plus, Star, Trophy, Zap } from "lucide-react";
-import { fetchFeaturedSlots, type FeaturedSlot } from "@/lib/featured";
+import { ArrowRight, ArrowUpRight, ChevronsRight, Globe, Info, Menu, Star, Trophy, Zap } from "lucide-react";
 import { StartupFavicon } from "@/components/StartupFavicon";
 
 /**
@@ -12,14 +10,6 @@ import { StartupFavicon } from "@/components/StartupFavicon";
 export type MockYou = { name: string; desc: string; url: string };
 export type MockPage = "network" | "list" | "leaderboard";
 
-const OTHERS = [
-  { n: "PDF Compiler", f: "PDF Compiler", c: "Productivity", d: "Enter data once. Populate multiple PDFs within seconds.", i: "5.3K", k: 31 },
-  { n: "Doot", f: "Akshay Panchavati", c: "Productivity", d: "The scheduling back and forth with tenants and contractors, handled.", i: "5.6K", k: 27 },
-  { n: "Auto Scheduler", f: "J Neumann", c: "Productivity", d: "Automatically add your to dos to your Google calendar around existing events.", i: "6.2K", k: 38 },
-  { n: "ToolsForImage", f: "Nandan Padia", c: "Design", d: "Every image tool, one place.", i: "11.3K", k: 47 },
-  { n: "Securelint", f: "Sundar Lal", c: "Productivity", d: "Protect sensitive data in your browser with real time secret masking.", i: "9.3K", k: 149 },
-  { n: "Daily Cricket Grid", f: "Pranay", c: "Other", d: "A daily IPL puzzle. Name the cricketer who fits the grid.", i: "9.7K", k: 87 },
-];
 
 /** Renders children at a fixed design width, scaled to the container. */
 export function Scaled({ width, children }: { width: number; children: ReactNode }) {
@@ -46,8 +36,13 @@ export function Scaled({ width, children }: { width: number; children: ReactNode
   );
 }
 
-function useSlots() {
-  return useQuery({ queryKey: ["featured-slots"], queryFn: fetchFeaturedSlots, staleTime: 60_000 }).data ?? [];
+/** Neutral placeholder line: other startups stay blank so yours stands out. */
+function Bar({ w, h = 8, className = "" }: { w: string | number; h?: number; className?: string }) {
+  return <span aria-hidden className={`block shrink-0 rounded-full bg-muted ${className}`} style={{ width: w, height: h }} />;
+}
+
+function GhostBox({ className = "", children }: { className?: string; children?: ReactNode }) {
+  return <div aria-hidden className={`rounded-xl border border-border bg-card ${className}`}>{children}</div>;
 }
 
 function Logo({ small }: { small?: boolean }) {
@@ -99,56 +94,30 @@ function RailCard({ name, founder, desc, url, logo, index, you }: { name: string
   );
 }
 
-function EmptySlot({ i }: { i: number }) {
+function EmptySlot() {
   return (
-    <div className="flex min-h-[80px] flex-1 flex-col items-center justify-center gap-2 rounded-lg border border-border p-3 text-center text-muted-foreground">
-      <span className="grid h-9 w-9 place-items-center rounded-full border border-border"><Plus className="h-4 w-4" /></span>
-      <span className="text-xs font-medium">Your startup here</span>
-      <span className="text-[10px]">Book spot {i} ↗</span>
-    </div>
+    <GhostBox className="flex min-h-[80px] flex-1 flex-col justify-center gap-2.5 p-3">
+      <span className="flex items-center gap-2"><span className="h-8 w-8 rounded-lg bg-muted" /><Bar w="55%" /></span>
+      <Bar w="85%" h={6} /><Bar w="65%" h={6} />
+    </GhostBox>
   );
 }
 
-function Rail({ side, you, slots }: { side: "left" | "right"; you: MockYou; slots: FeaturedSlot[] }) {
+function Rail({ side, you }: { side: "left" | "right"; you: MockYou }) {
   const idx = side === "left" ? [1, 2, 3, 4] : [5, 6, 7, 8];
-  // You take spot 1; live featured startups keep the bottom of the right rail.
-  const others = slots.slice(0, 2);
   return (
-    <aside className="flex min-h-0 flex-col gap-2.5 overflow-hidden">
-      {idx.map((i) => {
-        if (i === 1) return <RailCard key={i} you index={1} name={you.name} founder="You" desc={you.desc} url={you.url} />;
-        const o = i === 7 ? others[0] : i === 8 ? others[1] : undefined;
-        if (o) return <RailCard key={i} index={i} name={o.name} founder={o.founder_name || "Founder"} desc={o.description} url={o.website_url} logo={o.logo_url} />;
-        return <EmptySlot key={i} i={i} />;
-      })}
+    <aside className="flex min-h-0 flex-col gap-2.5 overflow-hidden pb-4">
+      {idx.map((i) =>
+        i === 1 ? <RailCard key={i} you index={1} name={you.name} founder="You" desc={you.desc} url={you.url} /> : <EmptySlot key={i} />,
+      )}
     </aside>
   );
 }
 
-const DOTS = Array.from({ length: 46 }, (_, i) => i);
-
 function GlobePill({ you, compact }: { you: MockYou; compact?: boolean }) {
   return (
-    <div className={`relative overflow-hidden rounded-full bg-featured-surface ${compact ? "h-[150px]" : "h-[230px]"}`}>
-      <div className={`absolute inset-x-[4%] ${compact ? "top-[22px] grid-cols-12 gap-1.5" : "top-[40px] grid-cols-[repeat(23,minmax(0,1fr))] gap-2"} grid`}>
-        {DOTS.slice(0, compact ? 36 : 46).map((i) => (
-          <span key={i} className="aspect-square rounded-full border border-featured-text/20" style={{ background: `color-mix(in oklab, var(--featured-text) ${45 + ((i * 37) % 50)}%, var(--featured-surface))` }} />
-        ))}
-      </div>
-      <div className={`absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center ${compact ? "gap-2" : "gap-6"}`}>
-        {[["94", "Startups"], ["1.1%", "Network CTR"]].map(([v, l]) => (
-          <div key={l} className={`rounded-xl border border-featured-text/15 bg-featured-surface/85 text-center backdrop-blur ${compact ? "px-2.5 py-1.5" : "px-5 py-3"}`}>
-            <p className={`${compact ? "text-[16px]" : "text-[26px]"} font-bold text-featured-text`}>{v}</p>
-            <p className="text-[8px] font-semibold uppercase tracking-[0.15em] text-featured-muted">{l}</p>
-          </div>
-        ))}
-        {!compact && (
-          <span className="flex items-center gap-2 rounded-full bg-featured-surface px-5 py-3 text-[20px] font-semibold text-featured-text">
-            <span className="h-2 w-6 rounded-full bg-featured-text" /> StartupBar
-          </span>
-        )}
-      </div>
-      <span className="mk-you absolute bottom-[18%] right-[16%] grid h-9 w-9 place-items-center rounded-full border-2 border-featured-gold bg-featured-surface">
+    <div aria-hidden className={`relative overflow-hidden rounded-full border border-border bg-muted/60 ${compact ? "h-[110px]" : "h-[180px]"}`}>
+      <span className="mk-you absolute bottom-[22%] right-[16%] grid h-9 w-9 place-items-center rounded-full border-2 border-featured-gold bg-featured-surface">
         <StartupFavicon url={you.url} name={you.name} size={22} />
       </span>
     </div>
@@ -192,6 +161,38 @@ function GridCard({ name, founder, cat, desc, url, you, impressions, clicks }: {
   );
 }
 
+function GhostCard() {
+  return (
+    <GhostBox className="flex flex-col gap-3 rounded-2xl p-5">
+      <span className="flex items-center gap-2"><span className="h-10 w-10 rounded-xl bg-muted" /><span className="flex flex-1 flex-col gap-1.5"><Bar w="60%" h={10} /><Bar w="35%" h={6} /></span></span>
+      <Bar w={64} h={14} className="rounded-md" />
+      <Bar w="90%" h={7} /><Bar w="70%" h={7} />
+      <span className="h-12 rounded-xl border border-border" />
+    </GhostBox>
+  );
+}
+
+function GhostRow({ mobile }: { mobile?: boolean }) {
+  return (
+    <div aria-hidden className="flex items-center gap-3 border-b border-border py-4">
+      <span className="h-9 w-9 shrink-0 rounded-lg bg-muted" />
+      <span className="flex flex-1 flex-col gap-2"><Bar w="35%" h={9} /><Bar w={mobile ? "75%" : "55%"} h={6} /></span>
+      {!mobile && <Bar w={180} h={9} />}
+    </div>
+  );
+}
+
+function GhostBoardRow({ compact }: { compact?: boolean }) {
+  return (
+    <GhostBox className={`flex items-center gap-3 px-4 ${compact ? "py-3" : "py-4"}`}>
+      <Bar w={14} h={8} />
+      <span className="h-9 w-9 shrink-0 rounded-full bg-muted" />
+      <span className="flex flex-1 flex-col gap-2"><Bar w="40%" h={9} /><Bar w="65%" h={6} /></span>
+      {!compact && <Bar w={160} h={9} />}
+    </GhostBox>
+  );
+}
+
 function ListRow({ name, founder, cat, desc, url, you, impressions, clicks, mobile }: { name: string; founder: string; cat: string; desc: string; url: string; you?: boolean; impressions: string; clicks: number; mobile?: boolean }) {
   return (
     <div className={`relative overflow-hidden py-4 ${you ? "sb-featured-row mk-you my-1 rounded-xl border px-3" : "border-b border-border"}`}>
@@ -230,28 +231,17 @@ function Top3({ you, compact }: { you: MockYou; compact?: boolean }) {
     <div className={`grid grid-cols-3 items-end ${compact ? "gap-1.5" : "gap-3"}`}>
       <div className={`featured-glass mk-you relative flex flex-col items-center rounded-2xl border text-center text-featured-text ${pad}`}>
         <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-featured-gold">Featured</span>
-        <span className="mt-1 text-[11px]">🥈</span>
         <span className="mt-1 grid h-8 w-8 place-items-center rounded-full border border-featured-text/15"><StartupFavicon url={you.url} name={you.name} size={20} /></span>
         <p className={`mt-1.5 w-full truncate font-semibold ${nm}`}>{you.name}</p>
         <p className={`${num} font-semibold`}>105</p>
         <p className="text-[8px] uppercase tracking-[0.15em] text-featured-muted">Impressions today</p>
       </div>
-      <div className={`relative flex flex-col items-center rounded-2xl bg-foreground text-center text-background ${compact ? "p-3" : "p-5"}`}>
-        <span className="text-[9px] font-semibold uppercase tracking-[0.2em] opacity-60">Leader</span>
-        <span className="mt-1 text-[11px]">🥇</span>
-        <span className="mt-1 grid h-8 w-8 place-items-center rounded-full bg-background"><span className="h-1.5 w-5 rounded-full bg-foreground" /></span>
-        <p className={`mt-1.5 font-semibold ${nm}`}>StartupBar</p>
-        <p className={`${num} font-semibold`}>147</p>
-        <p className="text-[8px] uppercase tracking-[0.15em] opacity-60">Impressions today</p>
-      </div>
-      <div className={`relative flex flex-col items-center rounded-2xl border border-border bg-card text-center ${pad}`}>
-        <span className="text-[9px] opacity-0">.</span>
-        <span className="mt-1 text-[11px]">🥉</span>
-        <span className="mt-1 grid h-8 w-8 place-items-center rounded-full border border-border"><StartupFavicon url="" name="iXtr" size={20} /></span>
-        <p className={`mt-1.5 font-semibold ${nm}`}>iXtr</p>
-        <p className={`${num} font-semibold`}>103</p>
-        <p className="text-[8px] uppercase tracking-[0.15em] text-muted-foreground">Impressions today</p>
-      </div>
+      {[0, 1].map((k) => (
+        <GhostBox key={k} className={`flex flex-col items-center gap-2 rounded-2xl ${compact ? "p-3" : "p-5"}`}>
+          <span className="h-8 w-8 rounded-full bg-muted" />
+          <Bar w="60%" h={8} /><Bar w="35%" h={14} /><Bar w="70%" h={5} />
+        </GhostBox>
+      ))}
     </div>
   );
 }
@@ -304,21 +294,17 @@ function LeaderboardBody({ you, compact }: { you: MockYou; compact?: boolean }) 
         <Top3 you={you} compact={compact} />
         {!compact && (
           <div className="grid grid-cols-2 gap-2 rounded-2xl border border-border p-2">
-            {[["Yesterday", "7,906", "Impressions"], ["Yesterday", "18", "Clicks"], ["Today", "4,163", "Impressions"], ["Today", "9", "Clicks"]].map(([a, v, l], i) => (
-              <div key={i} className={`rounded-xl p-3 ${i > 1 ? "bg-foreground text-background" : "bg-muted text-foreground"}`}>
-                <p className="text-[9px] font-semibold uppercase tracking-[0.15em] opacity-60">● {a}</p>
-                <p className="mt-2 text-[22px] font-semibold">{v}</p>
-                <p className="text-[9px] uppercase tracking-[0.15em] opacity-60">{l}</p>
-              </div>
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} aria-hidden className="flex flex-col gap-2 rounded-xl bg-muted/60 p-3"><Bar w="40%" h={5} className="bg-border" /><Bar w="55%" h={14} className="bg-border" /></div>
             ))}
           </div>
         )}
       </div>
       <div className="space-y-2">
-        <BoardRow compact={compact} rank="🥇" name="StartupBar" desc="Add one line of code. Your startup appears on founder sites." url="" impr={147} clicks={1} ctr="0.7%" />
-        <BoardRow compact={compact} you rank="🥈" name={you.name} desc={you.desc} url={you.url} impr={105} clicks={4} ctr="3.8%" />
-        <BoardRow compact={compact} rank="🥉" name="iXtr" desc="Smarter tools for everyday builders." url="" impr={103} clicks={0} ctr="0.0%" />
-        <BoardRow compact={compact} rank="4" name={OTHERS[3].n} desc={OTHERS[3].d} url="" impr={98} clicks={2} ctr="2.0%" />
+        <GhostBoardRow compact={compact} />
+        <BoardRow compact={compact} you rank="2" name={you.name} desc={you.desc} url={you.url} impr={105} clicks={4} ctr="3.8%" />
+        <GhostBoardRow compact={compact} />
+        <GhostBoardRow compact={compact} />
       </div>
     </div>
   );
@@ -326,7 +312,6 @@ function LeaderboardBody({ you, compact }: { you: MockYou; compact?: boolean }) 
 
 /** Desktop page at 1280px. */
 export function DesktopNetworkMock({ page, you }: { page: MockPage; you: MockYou }) {
-  const slots = useSlots();
   const host = page === "leaderboard" ? "startupbar.co/leaderboard" : "startupbar.co/network";
   return (
     <Scaled width={1280}>
@@ -337,7 +322,7 @@ export function DesktopNetworkMock({ page, you }: { page: MockPage; you: MockYou
         </div>
         <DesktopHeader page={page} />
         <div className="grid min-h-0 flex-1 grid-cols-[220px_minmax(0,1fr)_220px] gap-6 px-5 pt-4">
-          <Rail side="left" you={you} slots={slots} />
+          <Rail side="left" you={you} />
           <main className="min-h-0 overflow-hidden">
             {page === "network" && (
               <div className="space-y-6">
@@ -345,7 +330,7 @@ export function DesktopNetworkMock({ page, you }: { page: MockPage; you: MockYou
                 <SectionLabel>Trending · last 24h</SectionLabel>
                 <div className="grid grid-cols-3 gap-4">
                   <GridCard you name={you.name} founder="You" cat="Featured" desc={you.desc} url={you.url} impressions="1.2K" clicks={42} />
-                  {OTHERS.slice(4, 6).map((o) => <GridCard key={o.n} name={o.n} founder={o.f} cat={o.c} desc={o.d} url="" impressions={o.i} clicks={o.k} />)}
+                  <GhostCard /><GhostCard />
                 </div>
               </div>
             )}
@@ -355,14 +340,14 @@ export function DesktopNetworkMock({ page, you }: { page: MockPage; you: MockYou
                   <span>All startups</span>
                   <span className="flex gap-12 pr-14"><span>Joined</span><span>Impr.</span><span>Clicks</span></span>
                 </div>
-                {OTHERS.slice(0, 2).map((o) => <ListRow key={o.n} name={o.n} founder={o.f} cat={o.c} desc={o.d} url="" impressions={o.i} clicks={o.k} />)}
+                <GhostRow /><GhostRow />
                 <ListRow you name={you.name} founder="You" cat="Featured" desc={you.desc} url={you.url} impressions="1.2K" clicks={42} />
-                {OTHERS.slice(2, 4).map((o) => <ListRow key={o.n} name={o.n} founder={o.f} cat={o.c} desc={o.d} url="" impressions={o.i} clicks={o.k} />)}
+                <GhostRow /><GhostRow /><GhostRow />
               </div>
             )}
             {page === "leaderboard" && <LeaderboardBody you={you} />}
           </main>
-          <Rail side="right" you={you} slots={slots} />
+          <Rail side="right" you={you} />
         </div>
       </div>
     </Scaled>
@@ -371,7 +356,6 @@ export function DesktopNetworkMock({ page, you }: { page: MockPage; you: MockYou
 
 /** Mobile page at 390px: compact featured banner replaces the rails. */
 export function MobileNetworkMock({ page, you }: { page: MockPage; you: MockYou }) {
-  const slots = useSlots();
   return (
     <Scaled width={390}>
       <div className="flex h-full flex-col bg-background font-sans text-foreground">
@@ -382,13 +366,15 @@ export function MobileNetworkMock({ page, you }: { page: MockPage; you: MockYou 
         <div className="grid shrink-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 border-b border-border bg-background px-4 py-2">
           <span className="grid h-8 w-8 place-items-center rounded-full border border-border text-muted-foreground"><Info className="h-4 w-4" /></span>
           <div className="flex min-w-0 gap-2 overflow-hidden">
-            {[{ name: you.name, url: you.url, logo: null as string | null, you: true }, ...slots.slice(0, 2).map((s) => ({ name: s.name, url: s.website_url, logo: s.logo_url, you: false }))].map((c, i) => (
+            {[{ name: you.name, url: you.url, logo: null as string | null, you: true }].map((c, i) => (
               <span key={i} className={`featured-glass relative flex h-11 shrink-0 items-center gap-2.5 overflow-hidden rounded-lg border px-3 ${c.you ? "mk-you" : ""}`}>
                 <span className="grid h-6 w-6 place-items-center overflow-hidden rounded-md bg-featured-surface"><StartupFavicon url={c.url} name={c.name} logoUrl={c.logo} size={18} /></span>
                 <span className="max-w-[8rem] truncate text-[13px] font-semibold text-featured-text">{c.name}</span>
                 <ArrowUpRight className="h-3.5 w-3.5 text-featured-gold" />
               </span>
             ))}
+            <span aria-hidden className="h-11 w-28 shrink-0 rounded-lg border border-border bg-card" />
+            <span aria-hidden className="h-11 w-28 shrink-0 rounded-lg border border-border bg-card" />
           </div>
         </div>
         <div className="min-h-0 flex-1 overflow-hidden px-4 pt-4">
@@ -397,14 +383,14 @@ export function MobileNetworkMock({ page, you }: { page: MockPage; you: MockYou 
               <GlobePill you={you} compact />
               <SectionLabel>Trending</SectionLabel>
               <GridCard you name={you.name} founder="You" cat="Featured" desc={you.desc} url={you.url} impressions="1.2K" clicks={42} />
-              <GridCard name={OTHERS[4].n} founder={OTHERS[4].f} cat={OTHERS[4].c} desc={OTHERS[4].d} url="" impressions={OTHERS[4].i} clicks={OTHERS[4].k} />
+              <GhostCard />
             </div>
           )}
           {page === "list" && (
             <div>
-              <ListRow mobile name={OTHERS[0].n} founder={OTHERS[0].f} cat={OTHERS[0].c} desc={OTHERS[0].d} url="" impressions="" clicks={0} />
+              <GhostRow mobile />
               <ListRow mobile you name={you.name} founder="You" cat="Featured" desc={you.desc} url={you.url} impressions="" clicks={0} />
-              {OTHERS.slice(1, 4).map((o) => <ListRow mobile key={o.n} name={o.n} founder={o.f} cat={o.c} desc={o.d} url="" impressions="" clicks={0} />)}
+              <GhostRow mobile /><GhostRow mobile /><GhostRow mobile />
             </div>
           )}
           {page === "leaderboard" && <LeaderboardBody you={you} compact />}
