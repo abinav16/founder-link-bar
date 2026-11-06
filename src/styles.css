@@ -896,7 +896,7 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
   animation: checkout-rise 700ms 120ms cubic-bezier(.2,.8,.2,1) both;
 }
 .checkout-line { animation: checkout-rise 350ms ease both; }
-@media (max-width: 1023px) { .checkout-summary { position: sticky; bottom: .75rem; top: auto; } }
+@media (max-width: 1023px) { .checkout-summary { position: static; } }
 @media (prefers-reduced-motion: reduce) {
   .checkout-rise, .checkout-card, .checkout-summary, .checkout-line, .checkout-card.is-selected .checkout-radio { animation: none; }
   .checkout-card, .checkout-card-body, .checkout-pack { transition: none; }

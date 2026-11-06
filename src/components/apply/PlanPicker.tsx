@@ -73,7 +73,7 @@ function PlanCard({ selected, onSelect, icon, title, price, tagline, children, g
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="text-right text-lg font-semibold tracking-tight text-foreground">{price}</div>
+          <div className="whitespace-nowrap text-right text-lg font-semibold tracking-tight text-foreground">{price}</div>
           <span className="checkout-radio" aria-hidden><Check className="h-3 w-3" /></span>
         </div>
       </div>
