@@ -519,12 +519,18 @@ function Apply() {
   });
 
   const [previewFocus, setPreviewFocus] = useState<PreviewFocus | undefined>();
+  const previewClickUntil = useRef(0);
+  function focusSelectedPreview(focus: PreviewFocus) {
+    previewClickUntil.current = performance.now() + 700;
+    setPreviewFocus(focus);
+  }
   useEffect(() => {
     if (step !== 1) return;
     let frame = 0;
     const onScroll = () => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
+        if (performance.now() < previewClickUntil.current) return;
         const header = document.querySelector(".site-header");
         const boundary = (header?.getBoundingClientRect().bottom ?? 140) + 180;
         let focus: PreviewFocus = "site";
@@ -1243,7 +1249,7 @@ function Apply() {
                   </h2>
                   <p className="mt-2 text-sm text-muted-foreground">Free is genuinely free. Paid options only add reach. You pay for results, never for time.</p>
                 </section>
-                <PlanOptions plan={plan} onChange={setPlan} startupName={name} onFocusPreview={setPreviewFocus} />
+                <PlanOptions plan={plan} onChange={setPlan} startupName={name} onFocusPreview={focusSelectedPreview} />
                 <OrderSummary plan={plan} />
               </form>
               {authed === false && !isSupporter && (
