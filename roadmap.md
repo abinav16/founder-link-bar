@@ -1,4 +1,5 @@
 # Application snippet email
+- [ ] Match newsletter device previews to the weekly email, focus on the clicked option and save a preferred Sunday date in the application draft.
 - [x] Add one-tap email on free application Step 2 for signed-in founders; preserve guest Step 1 handoff and sign-in gate. Verified signed-in desktop resume, real email send to the owner's inbox (HTTP 200 + visible confirmation), guest restoration, phone fit, full script/backlink email template and six passing recipient/delivery tests.
 
 # Application placement options
