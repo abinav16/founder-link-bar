@@ -1,5 +1,5 @@
 # Application snippet email
-- [ ] Add one-tap email on free application Step 2 for signed-in founders, reuse guest email handoff without weakening sign-in, and verify full-code desktop continuation.
+- [x] Add one-tap email on free application Step 2 for signed-in founders; preserve guest Step 1 handoff and sign-in gate. Verified signed-in desktop resume, real email send to the owner's inbox (HTTP 200 + visible confirmation), guest restoration, phone fit, full script/backlink email template and six passing recipient/delivery tests.
 
 # Application placement options
 - [x] Add Free and annual-price badges and keep the desktop preview visible while the form scrolls; verify all three selections and full preview visibility at desktop size, plus narrow-screen fit.
