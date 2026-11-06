@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
-import { Mail, MousePointerClick, Sparkles, EyeOff } from "lucide-react";
 import type { CheckoutPlan } from "@/lib/checkout-plans";
 import { findPack } from "@/lib/checkout-plans";
+import { WidgetBarMock } from "./WidgetBarMock";
 
-/** Locked left-hand stage: laptop + phone showing where the bar and featured spot appear. */
+/** Locked stage: laptop and phone side by side, showing the real bar design on each screen. */
 export function DeviceStage({
   laptop, name, desc, url, placement, plan,
 }: {
@@ -14,93 +14,54 @@ export function DeviceStage({
   const newsletter = !!plan.newsletter && !supporter;
   const pack = findPack(plan.clicks);
   const displayName = name.trim() || "Your Startup";
+  const displayDesc = desc.trim() || "Your one liner goes here";
   const favicon = url ? `https://www.google.com/s2/favicons?domain=${url}&sz=32` : null;
 
   const caption = supporter
-    ? { t: "Nothing on your site.", s: "You're listed across the network — no bar, no layout changes." }
+    ? { e: "No Bar Supporter", t: "Your site stays untouched.", s: "Listed across the network. Nothing added to your pages." }
     : featured
-      ? { t: "Featured, everywhere.", s: `Gold spot in the bar until ${pack?.clicks.toLocaleString() ?? ""} real clicks arrive.` }
-      : { t: "One bar. Whole network.", s: "Your startup rotates on every member's site, on every screen." };
+      ? { e: "Guaranteed clicks", t: "Featured on every screen.", s: `Your spot stays live until ${pack?.clicks.toLocaleString() ?? ""} real clicks arrive.` }
+      : { e: "Network listing", t: "One bar. Every member site.", s: newsletter ? "Plus a feature in the Sunday digest." : "Your startup rotates across the network on desktop and mobile." };
 
-  const phoneBar = (
-    <div className={`stage-phone-bar ${featured ? "is-featured" : ""} ${placement === "top" ? "border-b" : "border-t"}`}>
-      {featured ? <Sparkles className="h-2.5 w-2.5 shrink-0" /> : <span className="stage-phone-brand">SB</span>}
-      {favicon && <img src={favicon} alt="" className="h-3 w-3 rounded-sm" onError={(e) => (e.currentTarget.style.display = "none")} />}
-      <span className="truncate font-medium">{displayName}</span>
-      <span className="ml-auto shrink-0 opacity-60">Visit</span>
-    </div>
-  );
+  const phoneBar = <WidgetBarMock mobile name={displayName} desc={displayDesc} favicon={favicon} placement={placement} featured={featured} />;
 
   return (
     <div className="stage">
-      <div className="stage-glow" data-mode={supporter ? "supporter" : featured ? "featured" : "free"} aria-hidden />
-
       <div className="stage-devices">
-        {/* Laptop */}
         <div className="stage-laptop">
           <div className="stage-laptop-lid">
             <span className="stage-camera" aria-hidden />
-            <div className={`stage-laptop-screen ${featured ? "is-featured" : ""}`}>{laptop}</div>
+            <div className={`stage-laptop-screen ${supporter ? "is-clean" : ""}`}>{laptop}</div>
           </div>
           <div className="stage-laptop-base" aria-hidden />
         </div>
 
-        {/* Phone */}
         <div className="stage-phone" aria-hidden>
-          <div className="stage-phone-screen">
+          <div className="stage-phone-screen mock-blend">
             <span className="stage-phone-notch" />
-            <div className="flex h-full flex-col pt-5">
+            <div className="flex h-full flex-col pt-7">
               {!supporter && placement === "top" && phoneBar}
-              <div className="flex-1 space-y-1.5 px-2.5 py-3">
-                <div className="h-2 w-3/4 rounded-full bg-foreground/10" />
-                <div className="h-2 w-1/2 rounded-full bg-foreground/10" />
-                <div className="mt-3 h-14 rounded-md bg-foreground/[0.05]" />
+              <div className="flex-1 space-y-2 px-3 py-4">
+                <div className="h-2.5 w-3/4 rounded-full bg-foreground/10" />
+                <div className="h-2.5 w-1/2 rounded-full bg-foreground/10" />
+                <div className="mt-4 h-24 rounded-lg bg-foreground/[0.05]" />
                 <div className="h-2 w-full rounded-full bg-foreground/[0.07]" />
                 <div className="h-2 w-5/6 rounded-full bg-foreground/[0.07]" />
                 <div className="h-2 w-2/3 rounded-full bg-foreground/[0.07]" />
+                <div className="mt-4 h-7 w-24 rounded-full bg-foreground/[0.12]" />
               </div>
               {!supporter && placement === "bottom" && phoneBar}
-              {supporter && (
-                <div className="stage-float-in absolute inset-x-3 top-1/2 -translate-y-1/2 rounded-full border border-border bg-card px-2 py-1 text-center text-[9px] font-semibold text-foreground">
-                  No bar
-                </div>
-              )}
             </div>
           </div>
         </div>
-
-        {/* Floating callouts */}
-        {featured && (
-          <div key={`f-${pack?.clicks}`} className="stage-callout stage-callout-featured">
-            <MousePointerClick className="h-3.5 w-3.5" />
-            <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] opacity-70">Featured spot</p>
-              <p className="truncate text-xs font-semibold">{pack?.clicks.toLocaleString()} guaranteed clicks</p>
-            </div>
-          </div>
-        )}
-        {newsletter && (
-          <div className="stage-callout stage-callout-mail">
-            <Mail className="h-3.5 w-3.5 shrink-0" />
-            <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Sunday digest</p>
-              <p className="truncate text-xs font-semibold text-foreground">{displayName}</p>
-              <p className="truncate text-[10px] text-muted-foreground">{desc.trim() || "Your one-liner, first in the inbox"}</p>
-            </div>
-          </div>
-        )}
-        {supporter && (
-          <div className="stage-callout stage-callout-featured">
-            <EyeOff className="h-3.5 w-3.5" />
-            <p className="text-xs font-semibold">Gold listing · no bar</p>
-          </div>
-        )}
       </div>
 
-      <div key={caption.t} className="stage-caption">
-        <p className="text-xl font-semibold tracking-tight text-foreground" style={{ fontFamily: "var(--font-display)" }}>
-          {caption.t} <span className="text-muted-foreground">{caption.s}</span>
-        </p>
+      <div className="stage-caption">
+        <div key={caption.t} className="stage-caption-inner">
+          <p className="stage-eyebrow">{caption.e}</p>
+          <p className="stage-title">{caption.t}</p>
+          <p className="stage-sub">{caption.s}</p>
+        </div>
       </div>
     </div>
   );
