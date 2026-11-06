@@ -519,6 +519,26 @@ function Apply() {
   });
 
   const [previewFocus, setPreviewFocus] = useState<PreviewFocus | undefined>();
+  useEffect(() => {
+    if (step !== 1) return;
+    let frame = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const header = document.querySelector(".site-header");
+        const boundary = (header?.getBoundingClientRect().bottom ?? 140) + 180;
+        let focus: PreviewFocus = "site";
+        document.querySelectorAll<HTMLElement>('[data-preview-section][data-preview-selected="true"]').forEach((section) => {
+          if (section.getBoundingClientRect().top > boundary) return;
+          const value = section.dataset.previewSection;
+          if (value === "site" || value === "clicks" || value === "newsletter") focus = value;
+        });
+        setPreviewFocus(focus);
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => { window.removeEventListener("scroll", onScroll); cancelAnimationFrame(frame); };
+  }, [step]);
   const [resubmitId, setResubmitId] = useState<string>(initial.resubmitId);
   const [startupId, setStartupId] = useState<string>(() => initial.resubmitId || initial.startupId || crypto.randomUUID());
   const [copied, setCopied] = useState(false);

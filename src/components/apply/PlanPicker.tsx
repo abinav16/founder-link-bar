@@ -75,6 +75,8 @@ function PlanCard({ selected, onSelect, icon, title, price, tagline, children, g
       role={role}
       aria-checked={selected}
       aria-label={title}
+      data-preview-section={title === "Guaranteed clicks" ? "clicks" : title === "Sunday newsletter spot" ? "newsletter" : "site"}
+      data-preview-selected={selected ? "true" : "false"}
       tabIndex={0}
       onClick={onSelect}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(); } }}
