@@ -1110,3 +1110,45 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
 }
 .stage-phone-site > .mk-slide { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) { .mk-you { animation: none; } }
+
+/* Apply newsletter preview mirrors the monochrome weekly email. */
+.digest-preview { height: 100%; overflow: hidden; background: var(--secondary); color: var(--foreground); padding: 3.5%; }
+.digest-envelope { display: flex; justify-content: space-between; gap: 8px; margin: 0 auto 7px; max-width: 520px; font-size: 8px; color: var(--muted-foreground); }
+.digest-paper { margin: 0 auto; max-width: 520px; height: calc(100% - 15px); overflow: hidden; background: var(--background); border: 1px solid var(--border); padding: 5.5% 7%; box-shadow: 0 16px 40px -28px color-mix(in oklab, var(--foreground) 50%, transparent); }
+.digest-brand { display: flex; align-items: center; gap: 7px; font-size: 12px; } .digest-brand img { width: 20px; height: 20px; object-fit: contain; }
+.digest-rule { height: 1px; background: var(--border); margin: 13px 0 15px; }
+.digest-meta { font-size: 7.5px; font-weight: 500; color: var(--muted-foreground); }
+.digest-paper h2 { margin: 6px 0 9px; font-size: 19px; line-height: 1.15; font-weight: 700; letter-spacing: -0.03em; }
+.digest-greeting { font-size: 9px; } .digest-intro { margin-top: 3px; font-size: 8.5px; line-height: 1.6; color: var(--muted-foreground); }
+.digest-sponsor { margin-top: 14px; padding: 12px 0 13px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.digest-startup { display: flex; align-items: center; gap: 9px; margin-top: 9px; min-width: 0; }
+.digest-startup img, .digest-logo { width: 25px; height: 25px; border-radius: 6px; flex-shrink: 0; background: var(--muted); }
+.digest-startup h3 { font-size: 11px; font-weight: 600; } .digest-startup p { font-size: 8px; color: var(--muted-foreground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.digest-visit { display: inline-block; margin-top: 11px; padding: 6px 10px; border-radius: 5px; background: var(--foreground); color: var(--background); font-size: 8px; font-weight: 600; }
+.digest-stat-lines { display: grid; gap: 6px; margin: 14px 0; } .digest-stat-lines i { height: 5px; border-radius: 9px; background: var(--muted); } .digest-stat-lines i:nth-child(2) { width: 76%; } .digest-stat-lines i:nth-child(3) { width: 52%; }
+.digest-paper footer { font-size: 8px; font-weight: 600; } .digest-paper footer span { font-size: 6.5px; font-weight: 400; color: var(--muted-foreground); }
+.mk-slide.is-on .digest-sponsor { animation: mk-lift 650ms 180ms cubic-bezier(.2,.9,.25,1.2) both; }
+.digest-preview.is-mobile { padding: 12px 8px 8px; } .digest-preview.is-mobile .digest-envelope { display: none; }
+.digest-preview.is-mobile .digest-paper { height: 100%; padding: 18px 16px; border: 0; box-shadow: none; } .digest-preview.is-mobile h2 { font-size: 21px; }
+@media (prefers-reduced-motion: reduce) { .mk-slide.is-on .digest-sponsor { animation: none; } }
+/* Keep the sponsor and its visit action visible inside both device screens. */
+.digest-preview:not(.is-mobile) .digest-paper { padding: 16px 28px; }
+.digest-preview .digest-rule { margin: 8px 0; }
+.digest-preview .digest-sponsor { margin-top: 8px; padding: 8px 0; }
+.digest-preview .digest-stat-lines { margin: 8px 0; gap: 4px; }
+.digest-preview .digest-paper h2 { margin: 5px 0 6px; }
+.digest-preview.is-mobile { padding: 5px 3px; }
+.digest-preview.is-mobile .digest-paper { padding: 9px 9px; }
+.digest-preview.is-mobile .digest-brand { font-size: 9px; gap: 4px; }
+.digest-preview.is-mobile .digest-brand img { width: 13px; height: 13px; }
+.digest-preview.is-mobile .digest-meta { font-size: 6px; }
+.digest-preview.is-mobile h2 { font-size: 14px; }
+.digest-preview.is-mobile .digest-greeting { font-size: 7px; }
+.digest-preview.is-mobile .digest-intro { font-size: 6.5px; line-height: 1.4; }
+.digest-preview.is-mobile .digest-startup { gap: 5px; margin-top: 6px; }
+.digest-preview.is-mobile .digest-startup img, .digest-preview.is-mobile .digest-logo { width: 17px; height: 17px; }
+.digest-preview.is-mobile .digest-startup h3 { font-size: 8px; }
+.digest-preview.is-mobile .digest-startup p { font-size: 6px; white-space: normal; }
+.digest-preview.is-mobile .digest-visit { font-size: 6px; margin-top: 6px; padding: 5px 6px; }
+.digest-preview.is-mobile .digest-paper footer { font-size: 6px; }
+.digest-preview.is-mobile .digest-paper footer span { font-size: 5px; }

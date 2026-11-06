@@ -1,10 +1,10 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { Mail } from "lucide-react";
 import type { CheckoutPlan } from "@/lib/checkout-plans";
 import { findPack } from "@/lib/checkout-plans";
 import { useAudience } from "./PlanPicker";
 import { DesktopNetworkMock, MobileNetworkMock } from "./NetworkMocks";
-import { previewSlides, type PreviewSlide } from "@/lib/apply-preview-slides";
+import { previewSlides, type PreviewFocus, type PreviewSlide } from "@/lib/apply-preview-slides";
+import { NewsletterPreview } from "./NewsletterPreview";
 
 /**
  * Sticky rail that never drifts: its sticky offset equals its natural position,
@@ -45,9 +45,9 @@ const SLIDE_LABEL: Record<SlideId, string> = {
 };
 
 export function DeviceStage({
-  laptop, mobile, name, desc, url, plan,
+  laptop, mobile, name, desc, url, plan, focus,
 }: {
-  laptop: ReactNode; mobile: ReactNode; name: string; desc: string; url: string; placement: "top" | "bottom"; plan: CheckoutPlan;
+  laptop: ReactNode; mobile: ReactNode; name: string; desc: string; url: string; placement: "top" | "bottom"; plan: CheckoutPlan; focus?: PreviewFocus;
 }) {
   const featured = plan.base === "clicks";
   const supporter = plan.base === "supporter";
@@ -56,9 +56,8 @@ export function DeviceStage({
   const audience = useAudience().data ?? 0;
   const displayName = name.trim() || "Your Startup";
   const displayDesc = desc.trim() || "Your one liner goes here";
-  const favicon = url ? `https://www.google.com/s2/favicons?domain=${url}&sz=64` : null;
 
-  const slides = useMemo(() => previewSlides(plan), [plan.base, plan.newsletter]);
+  const slides = useMemo(() => previewSlides(plan, focus), [plan.base, plan.newsletter, focus]);
   const slideKey = slides.join(",");
 
   const [selectedSlide, setActive] = useState<SlideId>(() => slides[0]);
@@ -89,16 +88,7 @@ export function DeviceStage({
         ? { e: "Guaranteed clicks", t: "Featured on every screen.", s: `Gold spot in the featured rails, network list and leaderboard on desktop and mobile until ${pack?.clicks.toLocaleString() ?? ""} real clicks arrive.` }
         : { e: "Network listing", t: "One bar. Every member site.", s: "Your startup rotates across the network on desktop and mobile." };
 
-  const Fav = ({ size = 16 }: { size?: number }) => favicon
-    ? <img src={favicon} alt="" width={size} height={size} className="shrink-0 rounded" onError={(e) => (e.currentTarget.style.visibility = "hidden")} />
-    : <span className="shrink-0 rounded bg-foreground/15" style={{ width: size, height: size }} />;
-
   const you = { name: displayName, desc: displayDesc, url };
-  const isMockPage = active === "network" || active === "list" || active === "leaderboard";
-
-  const chrome = (host: string) => (
-    <div className="mk-chrome"><i /><i /><i /><span>{host}</span></div>
-  );
 
   return (
     <div className="stage" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
@@ -118,25 +108,7 @@ export function DeviceStage({
 
                 {newsletter && (
                   <div className={`mk-slide mk-page ${active === "digest" ? "is-on" : ""}`} aria-hidden={active !== "digest"}>
-                    {chrome("Mail")}
-                    <div className="mk-mail">
-                      <div className="mk-inbox">
-                        <div className="mk-mrow is-on"><b>StartupBar</b><span>Your week in the network</span></div>
-                        <div className="mk-mrow"><b>Stripe</b><span>Payout sent</span></div>
-                        <div className="mk-mrow"><b>GitHub</b><span>New star on repo</span></div>
-                        <div className="mk-mrow"><b>Linear</b><span>Weekly summary</span></div>
-                      </div>
-                      <div className="mk-email">
-                        <p className="mk-subj">Your week in the network</p>
-                        <p className="mk-from">StartupBar · Sunday, 9:00 AM</p>
-                        <div className="mk-sponsor">
-                          <p className="mk-eyebrow">This week's featured sponsor</p>
-                          <div className="flex items-center gap-2"><Fav size={22} /><div className="min-w-0"><b>{displayName}</b><span>{displayDesc}</span></div></div>
-                          <span className="mk-sbtn">Visit {displayName} →</span>
-                        </div>
-                        <div className="mk-lines"><i /><i /><i /></div>
-                      </div>
-                    </div>
+                    <NewsletterPreview name={name} desc={desc} url={url} date={plan.newsletterDate} />
                   </div>
                 )}
               </div>
@@ -147,14 +119,9 @@ export function DeviceStage({
           <div className="stage-phone" aria-hidden>
             <div className="stage-phone-screen mock-blend">
               <span className="stage-phone-notch" />
-              {newsletter && (
-                <div key={active === "digest" ? "n-on" : "n-off"} className={`mk-notify ${active === "digest" ? "is-on" : ""}`}>
-                  <span className="mk-notify-icon"><Mail /></span>
-                  <div className="min-w-0"><b>StartupBar</b><span>Featured this week: {displayName}</span></div>
-                </div>
-              )}
               <div className="stage-phone-site">
-                <div className={`mk-slide ${isMockPage ? "" : "is-on"}`}>{mobile}</div>
+                <div className={`mk-slide ${active === "site" ? "is-on" : ""}`}>{mobile}</div>
+                {newsletter && <div className={`mk-slide ${active === "digest" ? "is-on" : ""}`}><NewsletterPreview mobile name={name} desc={desc} url={url} date={plan.newsletterDate} /></div>}
                 {featured && (["network", "list", "leaderboard"] as const).map((pg) => (
                   <div key={pg} className={`mk-slide ${active === pg ? "is-on" : ""}`}>
                     <MobileNetworkMock page={pg} you={you} />

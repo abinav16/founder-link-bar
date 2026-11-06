@@ -1,4 +1,5 @@
 // Pricing rules for the /apply plan picker. Pure and browser-safe.
+import { parseNewsletterDate } from "./newsletter-slots";
 
 export type ClickPack = { clicks: number; priceUsd: number; popular?: boolean };
 
@@ -16,6 +17,7 @@ export type CheckoutPlan = {
   base: "free" | "clicks" | "supporter";
   clicks?: number;
   newsletter?: boolean;
+  newsletterDate?: string;
 };
 
 export const DEFAULT_PLAN: CheckoutPlan = { base: "free" };
@@ -52,5 +54,5 @@ export function parsePlan(v: unknown): CheckoutPlan {
   const o = v as Record<string, unknown>;
   const base = o.base === "clicks" || o.base === "supporter" ? o.base : "free";
   const clicks = base === "clicks" && findPack(Number(o.clicks)) ? Number(o.clicks) : base === "clicks" ? 500 : undefined;
-  return { base, clicks, newsletter: base !== "supporter" && o.newsletter === true };
+  return { base, clicks, newsletter: base !== "supporter" && o.newsletter === true, newsletterDate: base !== "supporter" ? parseNewsletterDate(o.newsletterDate) : undefined };
 }

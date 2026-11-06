@@ -7,6 +7,13 @@ import {
   type CheckoutPlan,
 } from "@/lib/checkout-plans";
 import { SUPPORTER_PRICE_USD, SUPPORTER_TRIAL_DAYS } from "@/lib/supporter";
+import { format, parseISO } from "date-fns";
+import { CalendarDays } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { isNewsletterSunday, newsletterDateLabel } from "@/lib/newsletter-slots";
+import type { PreviewFocus } from "@/lib/apply-preview-slides";
 
 export function useAudience() {
   return useQuery({
@@ -88,12 +95,12 @@ export function usePlanPricing(plan: CheckoutPlan) {
   return { audience, pack, nlPrice: newsletterPriceUsd(audience), total: planTotalUsd(plan, audience), isSupporter: plan.base === "supporter" };
 }
 
-export function PlanOptions({ plan, onChange, startupName }: { plan: CheckoutPlan; onChange: (p: CheckoutPlan) => void; startupName: string }) {
+export function PlanOptions({ plan, onChange, startupName, onFocusPreview }: { plan: CheckoutPlan; onChange: (p: CheckoutPlan) => void; startupName: string; onFocusPreview?: (f: PreviewFocus) => void }) {
   const { audience, pack, nlPrice, isSupporter } = usePlanPricing(plan);
   return (
     <div className="space-y-4" role="radiogroup" aria-label="Plan">
           <PlanCard
-            delay={0} selected={plan.base === "free"} onSelect={() => onChange({ ...plan, base: "free" })}
+            delay={0} selected={plan.base === "free"} onSelect={() => { onFocusPreview?.("site"); onChange({ ...plan, base: "free" }); }}
             icon={<Sparkles className="h-4 w-4" />} title="Network listing" tagline="Show the bar, get shown back." price="Free"
           >
             <ul className="space-y-2">
@@ -105,7 +112,7 @@ export function PlanOptions({ plan, onChange, startupName }: { plan: CheckoutPla
 
           <PlanCard
             delay={70} gold selected={plan.base === "clicks"}
-            onSelect={() => onChange({ ...plan, base: "clicks", clicks: plan.clicks ?? 500 })}
+            onSelect={() => { onFocusPreview?.("clicks"); onChange({ ...plan, base: "clicks", clicks: plan.clicks ?? 500 }); }}
             icon={<MousePointerClick className="h-4 w-4" />} title="Guaranteed clicks" tagline="Featured spot until every click is delivered."
             price={<><RollingNumber value={pack.priceUsd} /><span className="block text-[11px] font-normal text-muted-foreground">one-time</span></>}
           >
@@ -116,7 +123,7 @@ export function PlanOptions({ plan, onChange, startupName }: { plan: CheckoutPla
                 return (
                   <button
                     key={p.clicks} type="button" aria-pressed={on}
-                    onClick={() => onChange({ ...plan, base: "clicks", clicks: p.clicks })}
+                    onClick={() => { onFocusPreview?.("clicks"); onChange({ ...plan, base: "clicks", clicks: p.clicks }); }}
                     className={`checkout-pack ${on ? "is-on" : ""}`}
                   >
                     {p.popular && <span className="checkout-pack-flag">Most chosen</span>}
@@ -137,14 +144,26 @@ export function PlanOptions({ plan, onChange, startupName }: { plan: CheckoutPla
 
           <PlanCard
             delay={140} role="checkbox" selected={!!plan.newsletter && !isSupporter}
-            onSelect={() => onChange({ ...plan, base: isSupporter ? "free" : plan.base, newsletter: !plan.newsletter || isSupporter })}
+            onSelect={() => { const on = !plan.newsletter || isSupporter; onFocusPreview?.(on ? "newsletter" : plan.base === "clicks" ? "clicks" : "site"); onChange({ ...plan, base: isSupporter ? "free" : plan.base, newsletter: on }); }}
             icon={<Mail className="h-4 w-4" />} title="Sunday newsletter spot" tagline="Add-on · Sponsor card in the weekly founder digest."
             price={<><RollingNumber value={nlPrice} decimals={2} /><span className="block text-[11px] font-normal text-muted-foreground">one send</span></>}
           >
-            <div className="checkout-mail-preview">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">This week's featured sponsor</span>
-              <p className="mt-1.5 text-sm font-semibold text-foreground">{startupName.trim() || "Your startup"}</p>
-              <p className="text-xs text-muted-foreground">Your logo, one-liner and a direct link. The first thing founders see.</p>
+            <div className="checkout-mail-preview" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Preferred send date</span>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button type="button" variant="outline" onClick={() => onFocusPreview?.("newsletter")} className="mt-2 h-auto w-full justify-between gap-3 px-4 py-3 text-left text-sm font-medium">
+                    {newsletterDateLabel(plan.newsletterDate)} <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={plan.newsletterDate ? parseISO(plan.newsletterDate) : undefined}
+                    disabled={(d) => !isNewsletterSunday(d)}
+                    onSelect={(d) => { if (!d) return; onFocusPreview?.("newsletter"); onChange({ ...plan, base: isSupporter ? "free" : plan.base, newsletter: true, newsletterDate: format(d, "yyyy-MM-dd") }); }}
+                    className="p-3 pointer-events-auto" />
+                </PopoverContent>
+              </Popover>
+              <p className="mt-2 text-xs text-muted-foreground">Sponsor card for {startupName.trim() || "your startup"} in that Sunday's founder email.</p>
             </div>
             <ul className="mt-4 space-y-2">
               <Bullet>${NEWSLETTER_PRICE_PER_FOUNDER_USD.toFixed(2)} per founder · {audience ? `${audience.toLocaleString()} founders on the list today` : "priced from the live list"}.</Bullet>
@@ -155,7 +174,7 @@ export function PlanOptions({ plan, onChange, startupName }: { plan: CheckoutPla
           <div className="checkout-divider"><span>Or skip the bar entirely</span></div>
 
           <PlanCard
-            delay={210} selected={isSupporter} onSelect={() => onChange({ base: "supporter" })}
+            delay={210} selected={isSupporter} onSelect={() => { onFocusPreview?.("site"); onChange({ base: "supporter" }); }}
             icon={<EyeOff className="h-4 w-4" />} title="No Bar Supporter" tagline="Get listed without showing anything on your site."
             price={<>${SUPPORTER_PRICE_USD}<span className="block text-[11px] font-normal text-muted-foreground">per year</span></>}
           >
@@ -177,7 +196,7 @@ export function OrderSummary({ plan, onContinue, label = "Continue to install" }
           <ul className="mt-4 space-y-3 text-sm">
             <li className="flex justify-between gap-3"><span className="text-foreground">{isSupporter ? "No Bar Supporter" : "Network listing"}</span><span className="text-muted-foreground">{isSupporter ? `${SUPPORTER_TRIAL_DAYS}-day trial` : "Free"}</span></li>
             {plan.base === "clicks" && <li className="checkout-line flex justify-between gap-3"><span className="text-foreground">{pack.clicks.toLocaleString()} guaranteed clicks</span><span className="text-foreground">${pack.priceUsd}</span></li>}
-            {plan.newsletter && !isSupporter && <li className="checkout-line flex justify-between gap-3"><span className="text-foreground">Newsletter spot</span><span className="text-foreground">${nlPrice.toFixed(2)}</span></li>}
+            {plan.newsletter && !isSupporter && <li className="checkout-line flex justify-between gap-3"><span className="text-foreground">Newsletter spot<span className="block text-xs text-muted-foreground">{newsletterDateLabel(plan.newsletterDate)}</span></span><span className="text-foreground">${nlPrice.toFixed(2)}</span></li>}
           </ul>
           <div className="mt-5 flex items-end justify-between border-t border-border pt-5">
             <span className="text-sm text-muted-foreground">Due today</span>
