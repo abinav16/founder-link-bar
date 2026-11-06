@@ -1186,16 +1186,16 @@ function Apply() {
                         key={p}
                         type="button"
                         variant="ghost"
-                        onClick={() => { setPlacement(p); setMode("widget"); }}
-                        aria-pressed={!isSupporter && placement === p}
-                        className={`h-auto min-w-0 flex-col gap-1 rounded-md px-2 py-2.5 text-sm font-medium transition sm:flex-row sm:gap-2 ${!isSupporter && placement === p ? "bg-header-surface text-header-ink shadow-sm hover:bg-header-surface" : "text-header-ink/45 hover:bg-header-ink/5 hover:text-header-ink/70"}`}
+                        onClick={() => setPlacement(p)}
+                        aria-pressed={placement === p}
+                        className={`h-auto min-w-0 flex-col gap-1 rounded-md px-2 py-2.5 text-sm font-medium transition sm:flex-row sm:gap-2 ${placement === p ? "bg-header-surface text-header-ink shadow-sm hover:bg-header-surface" : "text-header-ink/45 hover:bg-header-ink/5 hover:text-header-ink/70"}`}
                       >
                         <span className="capitalize">{p}</span>
                         <span className="rounded-full bg-header-ink/6 px-2 py-0.5 text-[10px] font-semibold leading-none text-header-ink/65">Free</span>
                       </Button>
                     ))}
                   </div>
-                  {isSupporter ? (
+                  {false ? (
                     <SupporterStory />
                   ) : (
                     <p className="mt-2 text-xs leading-relaxed text-black/40">
