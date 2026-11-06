@@ -99,6 +99,13 @@
       "when": 1793817323903,
       "tag": "0013_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1793962502795,
+      "tag": "0014_checkout_plans",
+      "breakpoints": true
     }
   ]
 }
