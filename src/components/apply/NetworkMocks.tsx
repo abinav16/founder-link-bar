@@ -132,7 +132,7 @@ function GlobePill({ you, compact }: { you: MockYou; compact?: boolean }) {
     <div className={`relative overflow-hidden rounded-full bg-featured-surface ${compact ? "h-[150px]" : "h-[230px]"}`}>
       <div className={`absolute inset-x-[4%] ${compact ? "top-[22px] grid-cols-12 gap-1.5" : "top-[40px] grid-cols-[repeat(23,minmax(0,1fr))] gap-2"} grid`}>
         {DOTS.slice(0, compact ? 36 : 46).map((i) => (
-          <span key={i} className="aspect-square rounded-full border border-featured-text/20" style={{ background: `color-mix(in oklab, var(--featured-text) ${12 + ((i * 37) % 60)}%, var(--featured-surface))` }} />
+          <span key={i} className="aspect-square rounded-full border border-featured-text/20" style={{ background: `color-mix(in oklab, var(--featured-text) ${45 + ((i * 37) % 50)}%, var(--featured-surface))` }} />
         ))}
       </div>
       <div className={`absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center ${compact ? "gap-2" : "gap-6"}`}>
