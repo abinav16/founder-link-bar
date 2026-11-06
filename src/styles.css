@@ -1101,3 +1101,12 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
 .mk-notify-icon { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 6px; flex-shrink: 0; background: var(--foreground); color: var(--background); }
 .mk-notify-icon svg { width: 11px; height: 11px; }
 @media (prefers-reduced-motion: reduce) { .mk-slide, .mk-notify { transition: none; } .mk-gold::after, .mk-slide.is-on .is-you, .mk-slide.is-on .mk-sponsor { animation: none; } }
+
+/* Showcase mocks: your spot gently pulses so it is easy to find. */
+.mk-you { animation: mk-you-pulse 2.6s ease-in-out infinite; }
+@keyframes mk-you-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--featured-gold) 0%, transparent); }
+  50% { box-shadow: 0 0 0 4px color-mix(in oklab, var(--featured-gold) 45%, transparent), 0 14px 30px -14px color-mix(in oklab, var(--featured-edge) 70%, transparent); }
+}
+.stage-phone-site > .mk-slide { overflow: hidden; }
+@media (prefers-reduced-motion: reduce) { .mk-you { animation: none; } }
