@@ -954,3 +954,50 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
 .checkout-summary.is-docked > div > span:last-child { font-size: 1.6rem; }
 .checkout-summary.is-docked > button { margin-top: .85rem; }
 .checkout-summary.is-docked > p { display: none; }
+
+/* ---- Widget bar replica (mirrors widget.bar.tsx) ---- */
+.wmock { display: flex; align-items: center; gap: 8px; height: 36px; width: 100%; padding: 0 6px; box-sizing: border-box; flex-shrink: 0;
+  background: var(--mock-bg); color: var(--mock-fg); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; line-height: 1;
+  border-color: color-mix(in srgb, var(--mock-fg) 12%, var(--mock-bg)); }
+.wmock.is-top { border-bottom-width: 1px; } .wmock.is-bottom { border-top-width: 1px; }
+.wmock-icon { display: grid; place-items: center; width: 22px; height: 22px; flex-shrink: 0; color: var(--mock-muted); }
+.wmock-icon svg { width: 12px; height: 12px; }
+.wmock-label { flex-shrink: 0; padding: 3px 6px; border-radius: 999px; font-size: 10px; font-weight: 700; background: var(--mock-fg); color: var(--mock-bg); transition: background-color 500ms ease, color 500ms ease; }
+.wmock.is-featured .wmock-label { background: var(--featured-gold); color: var(--featured-surface); }
+.wmock-content { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+.wmock-content.is-centered { justify-content: center; }
+.wmock-fav { width: 14px; height: 14px; border-radius: 2px; flex-shrink: 0; object-fit: contain; }
+.wmock-fav-empty { background: color-mix(in srgb, var(--mock-fg) 12%, var(--mock-bg)); }
+.wmock-name { font-weight: 600; min-width: 0; max-width: 35%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 1; }
+.wmock-desc { color: var(--mock-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 0 1 auto; }
+.wmock-marquee { flex: 1; overflow: hidden; min-width: 0; color: var(--mock-muted); }
+.wmock-cta { flex-shrink: 0; display: inline-flex; gap: 3px; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; line-height: 1.4;
+  border: 1px solid color-mix(in srgb, var(--mock-fg) 14%, var(--mock-bg)); }
+.wmock.is-mobile { height: 30px; gap: 6px; font-size: 10.5px; }
+.wmock.is-mobile .wmock-icon { width: 16px; height: 16px; } .wmock.is-mobile .wmock-icon svg { width: 10px; height: 10px; }
+.wmock.is-mobile .wmock-fav { width: 12px; height: 12px; }
+.wmock.is-mobile .wmock-name { max-width: 32%; }
+.wmock.is-mobile .wmock-cta { font-size: 10px; padding: 1px 7px; }
+.wmock.is-featured { box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--featured-gold) 45%, transparent); }
+
+/* ---- Stage v2: side by side devices, phone matches laptop height, steady layout ---- */
+.stage { --site-h: clamp(200px, 34dvh, 360px); grid-template-columns: minmax(0,1fr); grid-template-rows: auto auto; align-content: center; gap: 2.25rem; padding: 3rem 2.5rem; }
+.stage-glow { display: none; }
+.stage-devices { display: flex; align-items: flex-end; justify-content: center; gap: 1.5rem; }
+.stage-laptop { flex: 1 1 0; min-width: 0; width: auto; max-width: 640px; }
+.stage-laptop-base { margin: 0 -4%; }
+.stage-laptop-screen .apply-preview-site { height: var(--site-h); }
+.stage-laptop-screen.is-clean .apply-preview-site { height: calc(var(--site-h) + 36px); }
+.stage-laptop-screen.is-clean .sb-no-bar-label, .stage-laptop-screen.is-clean .sb-confetti-burst { display: none; }
+.stage-phone { position: relative; right: auto; bottom: auto; flex-shrink: 0; height: calc(var(--site-h) + 94px); width: calc((var(--site-h) + 94px) * 0.46); min-width: 0; aspect-ratio: auto;
+  margin-bottom: 12px; border-radius: 2rem; padding: 6px; }
+.stage-phone-screen { border-radius: 1.65rem; }
+.stage-phone-notch { top: 8px; width: 56px; height: 14px; margin-left: -28px; }
+.stage-caption { min-height: 6.5rem; max-width: 36rem; animation: none; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif; }
+.stage-caption-inner { animation: checkout-rise 500ms cubic-bezier(.2,.8,.2,1) both; }
+.stage-eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .02em; color: var(--muted-foreground); }
+.stage-title { margin-top: .35rem; font-size: 1.75rem; font-weight: 600; letter-spacing: -0.025em; line-height: 1.15; color: var(--foreground); }
+.stage-sub { margin-top: .4rem; font-size: 15px; line-height: 1.5; color: var(--muted-foreground); }
+@media (prefers-reduced-motion: reduce) { .stage-caption-inner { animation: none; } }
+.wmock-name { max-width: 45%; flex-shrink: 0; }
+.wmock.is-mobile .wmock-name { max-width: 45%; }
