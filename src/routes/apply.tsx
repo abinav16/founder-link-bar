@@ -53,7 +53,7 @@ const schema = z.object({
   founder_quote: z.string().trim().max(280).optional(),
 });
 
-function BarPreview({ name, url, desc, placement = "top", noBar = false, featured = false }: { name: string; url: string; desc: string; placement?: "top" | "bottom"; noBar?: boolean; featured?: boolean }) {
+function BarPreview({ name, url, desc, placement = "top", noBar = false, featured = false, mobile = false }: { name: string; url: string; desc: string; placement?: "top" | "bottom"; noBar?: boolean; featured?: boolean; mobile?: boolean }) {
   const displayName = name || "Your Startup";
   const displayDesc = desc || "Your one-liner goes here";
   const favicon = url ? `https://www.google.com/s2/favicons?domain=${url}&sz=32` : null;
@@ -102,20 +102,20 @@ function BarPreview({ name, url, desc, placement = "top", noBar = false, feature
   })();
 
   const bar = (
-    <WidgetBarMock name={displayName} desc={displayDesc} favicon={favicon} placement={placement} featured={featured} />
+    <WidgetBarMock mobile={mobile} name={displayName} desc={displayDesc} favicon={favicon} placement={placement} featured={featured} />
   );
   return (
-    <div style={paletteStyle} className="apply-preview-browser mock-blend relative overflow-hidden rounded-xl border border-black/10 bg-white shadow-[0_8px_40px_-12px_rgba(0,0,0,0.12)]">
-      <div className="flex h-8 items-center gap-1.5 border-b border-black/6 bg-black/[0.02] px-3">
+    <div style={paletteStyle} className={`apply-preview-browser mock-blend relative overflow-hidden rounded-xl border border-black/10 bg-white shadow-[0_8px_40px_-12px_rgba(0,0,0,0.12)] ${mobile ? "apply-preview-mobile" : ""}`}>
+      {!mobile && <div className="flex h-8 items-center gap-1.5 border-b border-black/6 bg-black/[0.02] px-3">
         <div className="h-2 w-2 rounded-full bg-red-400/70" />
         <div className="h-2 w-2 rounded-full bg-yellow-400/70" />
         <div className="h-2 w-2 rounded-full bg-green-400/70" />
         <div className="ml-2 truncate text-[10px] text-black/25">{previewHost}</div>
-      </div>
+      </div>}
       {!noBar && placement === "top" && bar}
       <div className="apply-preview-site relative h-[260px] w-full overflow-hidden">
         {previewUrl ? (
-          <SitePreviewSurface url={previewUrl} heightCls="h-full" />
+          <SitePreviewSurface url={previewUrl} heightCls="h-full" viewportWidth={mobile ? 390 : 1280} />
         ) : (
           <div className="space-y-2 px-4 py-6">
             <div className="h-3 w-2/3 rounded-full bg-black/5" />
@@ -1125,6 +1125,7 @@ function Apply() {
                 <DeviceStage
                   name={name} desc={desc} url={url} placement={placement} plan={plan}
                   laptop={<BarPreview name={name} url={url} desc={desc} placement={placement} noBar={plan.base === "supporter"} featured={plan.base === "clicks"} />}
+                  mobile={<BarPreview mobile name={name} url={url} desc={desc} placement={placement} noBar={plan.base === "supporter"} featured={plan.base === "clicks"} />}
                 />
               </StageRail>
             </div>
