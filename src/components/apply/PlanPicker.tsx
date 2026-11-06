@@ -5,7 +5,7 @@ import { getNewsletterBookedDates } from "@/lib/newsletter-availability.function
 import { ArrowRight, Check, Mail, MousePointerClick, ShieldCheck, Sparkles, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  CLICK_PACKS, findPack, newsletterPriceUsd, NEWSLETTER_PRICE_PER_FOUNDER_USD, packSavingsPct, perClick, planTotalUsd,
+  CLICK_PACKS, findPack, newsletterPriceUsd, NEWSLETTER_PRICE_PER_FOUNDER_USD, packSavingsPct, perClick, planTotalUsd, listingFeeUsd, ADDITIONAL_LISTING_PRICE_USD, type ListingKind,
   type CheckoutPlan,
 } from "@/lib/checkout-plans";
 import { SUPPORTER_PRICE_USD, SUPPORTER_TRIAL_DAYS } from "@/lib/supporter";
@@ -101,14 +101,22 @@ function PlanCard({ selected, onSelect, icon, title, price, tagline, children, g
   );
 }
 
-export function usePlanPricing(plan: CheckoutPlan) {
+const LISTING_LABEL: Record<ListingKind, { title: string; price: string; note: string }> = {
+  first: { title: "Network listing", price: "Free", note: "Your first startup is free." },
+  additional: { title: "Additional listing", price: `$${ADDITIONAL_LISTING_PRICE_USD}`, note: "One-time fee for each extra startup you list." },
+  prepaid: { title: "Additional listing", price: "Prepaid", note: "Uses a listing credit you already paid for." },
+  resubmit: { title: "Resubmission", price: "Free", note: "Resubmitting a listing is always free." },
+};
+
+export function usePlanPricing(plan: CheckoutPlan, kind: ListingKind = "first") {
   const { data: audience = 0 } = useAudience();
   const pack = findPack(plan.clicks) ?? CLICK_PACKS[2];
-  return { audience, pack, nlPrice: newsletterPriceUsd(audience), total: planTotalUsd(plan, audience), isSupporter: plan.base === "supporter" };
+  return { audience, pack, nlPrice: newsletterPriceUsd(audience), total: planTotalUsd(plan, audience, kind), listingFee: listingFeeUsd(plan, kind), isSupporter: plan.base === "supporter" };
 }
 
-export function PlanOptions({ plan, onChange, startupName, onFocusPreview }: { plan: CheckoutPlan; onChange: (p: CheckoutPlan) => void; startupName: string; onFocusPreview?: (f: PreviewFocus) => void }) {
-  const { audience, pack, nlPrice, isSupporter } = usePlanPricing(plan);
+export function PlanOptions({ plan, onChange, startupName, onFocusPreview, listing = "first", guest = false }: { plan: CheckoutPlan; onChange: (p: CheckoutPlan) => void; startupName: string; onFocusPreview?: (f: PreviewFocus) => void; listing?: ListingKind; guest?: boolean }) {
+  const { audience, pack, nlPrice, isSupporter } = usePlanPricing(plan, listing);
+  const L = LISTING_LABEL[listing];
   const availability = useNewsletterAvailability();
   const booked = availability.data ?? [];
   const ready = availability.isSuccess && !availability.isError;
@@ -123,9 +131,11 @@ export function PlanOptions({ plan, onChange, startupName, onFocusPreview }: { p
     <div className="space-y-4" role="radiogroup" aria-label="Plan">
           <PlanCard
             delay={0} selected={plan.base === "free"} onSelect={() => { onFocusPreview?.("site"); onChange({ ...plan, base: "free" }); }}
-            icon={<Sparkles className="h-4 w-4" />} title="Network listing" tagline="Show the bar, get shown back." price="Free"
+            icon={<Sparkles className="h-4 w-4" />} title={L.title} tagline="Show the bar, get shown back."
+            price={listing === "additional" ? <>{L.price}<span className="block text-[11px] font-normal text-muted-foreground">one-time</span></> : L.price}
           >
             <ul className="space-y-2">
+              {listing !== "first" ? <Bullet><span className="font-medium text-foreground">{L.note}</span></Bullet> : guest ? <Bullet>First startup is free. Extra startups are ${ADDITIONAL_LISTING_PRICE_USD} each, confirmed after sign-in.</Bullet> : null}
               <Bullet>Your startup rotates across every site in the network.</Bullet>
               <Bullet>One small bar on your site in return, fully automatic.</Bullet>
               <Bullet>Remove the script anytime. No card, no lock-in.</Bullet>
@@ -215,15 +225,16 @@ export function PlanOptions({ plan, onChange, startupName, onFocusPreview }: { p
   );
 }
 
-export function OrderSummary({ plan, onContinue, label = "Continue to install" }: { plan: CheckoutPlan; onContinue?: () => void; label?: string }) {
-  const { pack, nlPrice, total, isSupporter } = usePlanPricing(plan);
+export function OrderSummary({ plan, onContinue, label = "Continue to install", listing = "first" }: { plan: CheckoutPlan; onContinue?: () => void; label?: string; listing?: ListingKind }) {
+  const { pack, nlPrice, total, isSupporter, listingFee } = usePlanPricing(plan, listing);
+  const L = LISTING_LABEL[listing];
   const availability = useNewsletterAvailability();
   const newsletterBlocked = !!plan.newsletter && !isSupporter && (!availability.isSuccess || availability.isError || !plan.newsletterDate || !isNewsletterDateAvailable(parseISO(plan.newsletterDate), availability.data ?? []));
   return (
         <aside className="checkout-summary is-docked">
           <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Your order</span>
           <ul className="mt-4 space-y-3 text-sm">
-            <li className="flex justify-between gap-3"><span className="text-foreground">{isSupporter ? "No Bar Supporter" : "Network listing"}</span><span className="text-muted-foreground">{isSupporter ? `${SUPPORTER_TRIAL_DAYS}-day trial` : "Free"}</span></li>
+            <li className="flex justify-between gap-3"><span className="text-foreground">{isSupporter ? "No Bar Supporter" : L.title}</span><span className={listingFee ? "text-foreground" : "text-muted-foreground"}>{isSupporter ? `${SUPPORTER_TRIAL_DAYS}-day trial` : listingFee ? `$${listingFee.toFixed(2)}` : L.price}</span></li>
             {plan.base === "clicks" && <li className="checkout-line flex justify-between gap-3"><span className="text-foreground">{pack.clicks.toLocaleString()} guaranteed clicks</span><span className="text-foreground">${pack.priceUsd}</span></li>}
             {plan.newsletter && !isSupporter && <li className="checkout-line flex justify-between gap-3"><span className="text-foreground">Newsletter spot<span className="block text-xs text-muted-foreground">{newsletterDateLabel(plan.newsletterDate)}</span></span><span className="text-foreground">${nlPrice.toFixed(2)}</span></li>}
           </ul>

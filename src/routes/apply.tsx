@@ -1249,8 +1249,8 @@ function Apply() {
                   </h2>
                   <p className="mt-2 text-sm text-muted-foreground">Free is genuinely free. Paid options only add reach. You pay for results, never for time.</p>
                 </section>
-                <PlanOptions plan={plan} onChange={setPlan} startupName={name} onFocusPreview={focusSelectedPreview} />
-                <OrderSummary plan={plan} />
+                <PlanOptions plan={plan} onChange={setPlan} startupName={name} onFocusPreview={focusSelectedPreview} listing={listing} guest={authed === false} />
+                <OrderSummary plan={plan} listing={listing} />
               </form>
               {authed === false && !isSupporter && (
                 <div className="mt-6">
