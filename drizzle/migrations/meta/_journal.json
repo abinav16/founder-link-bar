@@ -127,6 +127,13 @@
       "when": 1793974241852,
       "tag": "0017_supporter_newsletter_entitlement",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1793974649260,
+      "tag": "0018_supporter_newsletter_notification_copy",
+      "breakpoints": true
     }
   ]
 }
