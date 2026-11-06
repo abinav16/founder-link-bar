@@ -12,5 +12,5 @@ export function parseNewsletterDate(value: unknown): string | undefined {
 
 export function newsletterDateLabel(value?: string): string {
   const valid = parseNewsletterDate(value);
-  return valid ? format(parseISO(valid), "Sunday, d MMMM yyyy") : "Choose a Sunday";
+  return valid ? format(parseISO(valid), "EEEE, d MMMM yyyy") : "Choose a Sunday";
 }
