@@ -1606,6 +1606,12 @@ export type Database = {
         }[]
       }
       public_newsletter_audience: { Args: never; Returns: number }
+      public_newsletter_booked_dates: {
+        Args: never
+        Returns: {
+          send_date: string
+        }[]
+      }
       public_startup_24h: {
         Args: { _ids: string[] }
         Returns: {
