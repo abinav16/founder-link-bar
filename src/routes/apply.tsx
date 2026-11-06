@@ -404,6 +404,9 @@ function pinnedInstallId(rawUrl: string, fallback: string): string {
   return fallback;
 }
 
+import { PlanPicker } from "@/components/apply/PlanPicker";
+import { parsePlan, type CheckoutPlan } from "@/lib/checkout-plans";
+
 function readDraft(): { step: 1 | 2; name: string; url: string; desc: string; startupId: string } | null {
   if (typeof window === "undefined") return null;
   try {
@@ -512,6 +515,11 @@ function Apply() {
     try { return JSON.parse(readRawDraft() ?? "{}")?.mode === "supporter" ? "supporter" : "widget"; } catch { return "widget"; }
   });
   const isSupporter = mode === "supporter";
+  const [plan, setPlan] = useState<CheckoutPlan>(() => {
+    if (typeof window === "undefined") return parsePlan(null);
+    try { const d = JSON.parse(readRawDraft() ?? "{}"); return d.plan ? parsePlan(d.plan) : parsePlan(d.mode === "supporter" ? { base: "supporter" } : null); } catch { return parsePlan(null); }
+  });
+  const [choosingPlan, setChoosingPlan] = useState(false);
 
   const [resubmitId, setResubmitId] = useState<string>(initial.resubmitId);
   const [startupId, setStartupId] = useState<string>(() => initial.resubmitId || initial.startupId || crypto.randomUUID());
@@ -723,8 +731,8 @@ function Apply() {
     if (typeof window === "undefined") return;
     if (resubmitId) return; // resubmits are URL-driven — don't overwrite the fresh-apply draft
     if (!name && !url && !desc && !quote) return;
-    writeDraft({ step, name, url, desc, category, quote, placement, mode, startupId, tracking });
-  }, [step, name, url, desc, category, quote, placement, mode, resubmitId, startupId, tracking]);
+    writeDraft({ step, name, url, desc, category, quote, placement, mode, startupId, tracking, plan });
+  }, [step, name, url, desc, category, quote, placement, mode, resubmitId, startupId, tracking, plan]);
 
   // Supporters get a tracking-only snippet: it renders nothing, no bar, no
   // layout shift — it only powers their own dashboard stats.
@@ -791,8 +799,24 @@ function Apply() {
     setTimeout(() => setCopied(false), 1500);
   }
 
-  function goToStep2(e: React.FormEvent) {
+  function openPlans(e: React.FormEvent) {
     e.preventDefault();
+    const parsed = schema.safeParse({ name, website_url: url, description: desc, category, founder_quote: quote });
+    if (!parsed.success) {
+      toast.error(parsed.error.issues[0]?.message ?? "Invalid input");
+      return;
+    }
+    setChoosingPlan(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function confirmPlan() {
+    const m = plan.base === "supporter" ? "supporter" : "widget";
+    setMode(m);
+    goToStep2(m);
+  }
+
+  function goToStep2(mode: "widget" | "supporter") {
     const parsed = schema.safeParse({ name, website_url: url, description: desc, category, founder_quote: quote });
     if (!parsed.success) {
       toast.error(parsed.error.issues[0]?.message ?? "Invalid input");
@@ -800,11 +824,12 @@ function Apply() {
     }
     if (!authed) {
       // Save draft at step 1 — user must sign in before reaching the install step.
-      writeDraft({ step: 1, name, url, desc, category, quote, placement, mode, startupId });
+      writeDraft({ step: 1, name, url, desc, category, quote, placement, mode, startupId, plan });
       sessionStorage.setItem("startupbar:auth-next", "/apply");
       navigate({ to: "/auth" });
       return;
     }
+    setChoosingPlan(false);
     setStep(2);
     window.scrollTo({ top: 0, behavior: "smooth" });
     // Save the in-progress application so admins can see founders who stop at install.
@@ -813,7 +838,7 @@ function Apply() {
         if (!u.user) return;
         return supabase.from("application_drafts").upsert({
           user_id: u.user.id, startup_id: startupId, name, website_url: url,
-          description: desc, category: category || null, placement, mode, updated_at: new Date().toISOString(),
+          description: desc, category: category || null, placement, mode, checkout_plan: plan, updated_at: new Date().toISOString(),
         });
       });
     }
@@ -1081,9 +1106,9 @@ function Apply() {
       <SiteHeader>
         <div className="border-t border-header-ink/8 bg-header-surface">
           <div className="mx-auto flex h-11 max-w-6xl items-center justify-center gap-6 px-5 text-xs text-header-ink/50">
-            {[{ n: 1, label: 'Details' }, { n: 2, label: 'Install' }].map(s => <span key={s.n} className={`flex items-center gap-2 ${step === s.n ? 'font-semibold text-header-ink' : ''}`}><span className={`flex h-5 w-5 items-center justify-center rounded-full ${step >= s.n ? 'bg-header-ink text-header-surface' : 'bg-header-ink/8'}`}>{step > s.n ? '✓' : s.n}</span>{s.label}</span>)}
+            {(() => { const cur = step === 2 ? 3 : choosingPlan ? 2 : 1; return [{ n: 1, label: 'Details' }, { n: 2, label: 'Plan' }, { n: 3, label: 'Install' }].map(s => <span key={s.n} className={`flex items-center gap-2 ${cur === s.n ? 'font-semibold text-header-ink' : ''}`}><span className={`flex h-5 w-5 items-center justify-center rounded-full transition-colors duration-500 ${cur >= s.n ? 'bg-header-ink text-header-surface' : 'bg-header-ink/8'}`}>{cur > s.n ? '✓' : s.n}</span>{s.label}</span>); })()}
           </div>
-          <div className="h-0.5 bg-header-ink/6"><div className={`h-full bg-header-ink transition-[width] duration-500 motion-reduce:transition-none ${step === 1 ? 'w-1/2' : 'w-full'}`} /></div>
+          <div className="h-0.5 bg-header-ink/6"><div className={`h-full bg-header-ink transition-[width] duration-500 motion-reduce:transition-none ${step === 2 ? 'w-full' : choosingPlan ? 'w-2/3' : 'w-1/3'}`} /></div>
         </div>
       </SiteHeader>
 
@@ -1101,12 +1126,16 @@ function Apply() {
         </div>
       )}
 
-      {step === 1 && (
+      {step === 1 && choosingPlan && (
+        <PlanPicker plan={plan} onChange={setPlan} startupName={name} onBack={() => setChoosingPlan(false)} onContinue={confirmPlan} />
+      )}
 
-        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 md:pb-4 md:pt-14">
+      {step === 1 && !choosingPlan && (
+
+        <div className="checkout-rise mx-auto max-w-6xl px-4 py-8 sm:px-6 md:pb-4 md:pt-14">
           <div className="grid gap-10 md:grid-cols-2 md:gap-24">
             <div>
-              <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Step 1 of 2</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Step 1 of 3</span>
               <h1 className="mt-4 text-3xl font-medium leading-tight tracking-tight sm:text-4xl md:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
                 Your startup details.
               </h1>
@@ -1121,7 +1150,7 @@ function Apply() {
                 </div>
               )}
 
-              <form onSubmit={goToStep2} className="mt-10 space-y-7">
+              <form onSubmit={openPlans} className="mt-10 space-y-7">
                 <Field label="Startup name" hint="The name shown in the bar across the network.">
                   <input required maxLength={60} value={name} onChange={(e) => setName(e.target.value)} placeholder="Acme AI" className={inputCls} />
                 </Field>
@@ -1151,7 +1180,7 @@ function Apply() {
                   </div>
                 </Field>
                 <Field label="Bar placement" hint="Where the bar sits on your own site. You can change this anytime in your account.">
-                  <div className="grid w-full grid-cols-3 gap-1 rounded-lg border border-header-ink/12 bg-header-ink/[0.02] p-1">
+                  <div className="grid w-full grid-cols-2 gap-1 rounded-lg border border-header-ink/12 bg-header-ink/[0.02] p-1">
                     {(["top", "bottom"] as const).map((p) => (
                       <Button
                         key={p}
@@ -1165,16 +1194,6 @@ function Apply() {
                         <span className="rounded-full bg-header-ink/6 px-2 py-0.5 text-[10px] font-semibold leading-none text-header-ink/65">Free</span>
                       </Button>
                     ))}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => setMode("supporter")}
-                      aria-pressed={isSupporter}
-                      className={`h-auto min-w-0 flex-col gap-1 rounded-md px-2 py-2.5 text-sm font-medium transition sm:flex-row sm:gap-2 ${isSupporter ? "bg-header-surface text-header-ink shadow-sm hover:bg-header-surface" : "text-header-ink/45 hover:bg-header-ink/5 hover:text-header-ink/70"}`}
-                    >
-                      <span>No Bar</span>
-                      <span className="rounded-full bg-header-ink px-2 py-0.5 text-[10px] font-semibold leading-none text-header-surface">${SUPPORTER_PRICE_USD}/yr</span>
-                    </Button>
                   </div>
                   {isSupporter ? (
                     <SupporterStory />
@@ -1185,11 +1204,11 @@ function Apply() {
                   )}
                 </Field>
                 <button type="submit" className="group flex w-full items-center justify-center gap-2 rounded-lg bg-black py-3.5 text-sm font-medium text-white transition-all hover:bg-black/80">
-                  {isSupporter ? "Next — Supporter setup" : "Next — Install the script"}
+                  Next — Choose your plan
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </button>
                 <p className="text-center text-xs text-black/30">
-                  {isSupporter ? `${SUPPORTER_TRIAL_DAYS} days free, then $${SUPPORTER_PRICE_USD}/year · Cancel anytime` : "Free forever · We review within 24h · No commitment"}
+                  Free plan available · We review within 24h · No commitment
                 </p>
               </form>
               {authed === false && !isSupporter && (
@@ -1247,7 +1266,7 @@ function Apply() {
             <ArrowLeft className="h-3.5 w-3.5" /> Back
           </button>
 
-          <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Step 2 of 2</span>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Step 3 of 3</span>
           <h1 className="mt-4 font-display text-3xl font-medium leading-tight sm:text-4xl md:text-5xl">
             {isSupporter ? "Your analytics line (optional)." : "Install the script."}
           </h1>
