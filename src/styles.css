@@ -984,7 +984,7 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
 .stage { --site-h: clamp(220px, 36dvh, 380px); grid-template-rows: auto auto; align-content: center; gap: 2.25rem; padding: 3rem 2.5rem; }
 .stage-glow { display: none; }
 .stage-devices { display: flex; align-items: flex-end; justify-content: center; gap: 1.5rem; }
-.stage-laptop { flex: 1 1 auto; min-width: 0; width: auto; max-width: 640px; }
+.stage-laptop { flex: 1 1 0; min-width: 0; width: auto; max-width: 640px; }
 .stage-laptop-base { margin: 0 -4%; }
 .stage-laptop-screen .apply-preview-site { height: var(--site-h); }
 .stage-laptop-screen.is-clean .apply-preview-site { height: calc(var(--site-h) + 36px); }
