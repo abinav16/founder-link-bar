@@ -560,6 +560,8 @@ function Apply() {
   const createOrder = useServerFn(createOrderCheckout);
   const confirmOrder = useServerFn(confirmOrderPayment);
   const listing = listingKind({ existingCount, hasPrepaid, resubmit: !!resubmitId });
+  const addOns = !resubmitId && planHasPaidAddOns(plan);
+  const payNow = !isSupporter && (addOns || listing === "additional");
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [verifyingPayment, setVerifyingPayment] = useState(initial.paid && !!initial.paymentId);
   const [autoSubmitPending, setAutoSubmitPending] = useState(false);
@@ -1575,7 +1577,7 @@ function Apply() {
             const footnote = isSupporter
               ? `${SUPPORTER_TRIAL_DAYS} days free, then $${SUPPORTER_PRICE_USD}/year including tax. Card required. Cancel before the trial ends to avoid a charge.`
               : !verified ? "Verify your install to continue. You only pay once the script is live."
-              : payNow ? "Secure checkout by Dodo Payments. Boosts start when we approve your listing; if we reject it, you get a full refund."
+              : payNow ? "Secure checkout by Dodo Payments. Boosts start when we approve your listing."
               : "Script verified. We review every listing within 24 hours.";
             return (
               <div className="install-rail">
