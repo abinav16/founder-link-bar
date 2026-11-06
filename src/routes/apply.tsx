@@ -520,7 +520,6 @@ function Apply() {
     if (typeof window === "undefined") return parsePlan(null);
     try { const d = JSON.parse(readRawDraft() ?? "{}"); return d.plan ? parsePlan(d.plan) : parsePlan(d.mode === "supporter" ? { base: "supporter" } : null); } catch { return parsePlan(null); }
   });
-  const [choosingPlan, setChoosingPlan] = useState(false);
 
   const [resubmitId, setResubmitId] = useState<string>(initial.resubmitId);
   const [startupId, setStartupId] = useState<string>(() => initial.resubmitId || initial.startupId || crypto.randomUUID());
