@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getNewsletterBookedDates } from "@/lib/newsletter-availability.functions";
@@ -225,13 +226,13 @@ export function PlanOptions({ plan, onChange, startupName, onFocusPreview, listi
   );
 }
 
-export function OrderSummary({ plan, onContinue, label = "Continue to install", listing = "first" }: { plan: CheckoutPlan; onContinue?: () => void; label?: string; listing?: ListingKind }) {
+export function OrderSummary({ plan, onContinue, label = "Continue to install", listing = "first", disabled = false, footnote, className = "is-docked", skipDateCheck = false }: { plan: CheckoutPlan; onContinue?: () => void; label?: React.ReactNode; listing?: ListingKind; disabled?: boolean; footnote?: React.ReactNode; className?: string; skipDateCheck?: boolean }) {
   const { pack, nlPrice, total, isSupporter, listingFee } = usePlanPricing(plan, listing);
   const L = LISTING_LABEL[listing];
   const availability = useNewsletterAvailability();
-  const newsletterBlocked = !!plan.newsletter && !isSupporter && (!availability.isSuccess || availability.isError || !plan.newsletterDate || !isNewsletterDateAvailable(parseISO(plan.newsletterDate), availability.data ?? []));
+  const newsletterBlocked = !skipDateCheck && !!plan.newsletter && !isSupporter && (!availability.isSuccess || availability.isError || !plan.newsletterDate || !isNewsletterDateAvailable(parseISO(plan.newsletterDate), availability.data ?? []));
   return (
-        <aside className="checkout-summary is-docked">
+        <aside className={`checkout-summary ${className}`}>
           <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Your order</span>
           <ul className="mt-4 space-y-3 text-sm">
             <li className="flex justify-between gap-3"><span className="text-foreground">{isSupporter ? "No Bar Supporter" : L.title}</span><span className={listingFee ? "text-foreground" : "text-muted-foreground"}>{isSupporter ? `${SUPPORTER_TRIAL_DAYS}-day trial` : listingFee ? `$${listingFee.toFixed(2)}` : L.price}</span></li>
@@ -242,12 +243,12 @@ export function OrderSummary({ plan, onContinue, label = "Continue to install", 
             <span className="text-sm text-muted-foreground">Due today</span>
             <span className="text-3xl font-semibold tracking-tight text-foreground"><RollingNumber value={total} decimals={total % 1 ? 2 : 0} /></span>
           </div>
-          <Button disabled={newsletterBlocked} type={onContinue ? "button" : "submit"} onClick={onContinue} className="group mt-6 h-auto w-full gap-2 py-3.5 text-sm font-medium">
+          <Button disabled={newsletterBlocked || disabled} type={onContinue ? "button" : "submit"} onClick={onContinue} className="group mt-6 h-auto w-full gap-2 py-3.5 text-sm font-medium">
             {label} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Button>
           <p className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
             <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            {total > 0 ? "Nothing is charged yet. You pay after your install is verified, and boosts start when we approve your listing." : "No card needed. We review every listing within 24 hours."}
+            {footnote ?? (total > 0 ? "Nothing is charged yet. You pay after your install is verified, and boosts start when we approve your listing." : "No card needed. We review every listing within 24 hours.")}
           </p>
         </aside>
   );
