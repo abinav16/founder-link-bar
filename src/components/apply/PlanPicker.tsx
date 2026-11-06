@@ -10,6 +10,7 @@ import { SUPPORTER_PRICE_USD, SUPPORTER_TRIAL_DAYS } from "@/lib/supporter";
 import { format, parseISO } from "date-fns";
 import { CalendarDays } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { isNewsletterSunday, newsletterDateLabel } from "@/lib/newsletter-slots";
 import type { PreviewFocus } from "@/lib/apply-preview-slides";
@@ -147,13 +148,13 @@ export function PlanOptions({ plan, onChange, startupName, onFocusPreview }: { p
             icon={<Mail className="h-4 w-4" />} title="Sunday newsletter spot" tagline="Add-on · Sponsor card in the weekly founder digest."
             price={<><RollingNumber value={nlPrice} decimals={2} /><span className="block text-[11px] font-normal text-muted-foreground">one send</span></>}
           >
-            <div className="checkout-mail-preview" onClick={(e) => e.stopPropagation()}>
+            <div className="checkout-mail-preview" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
               <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Preferred send date</span>
               <Popover>
                 <PopoverTrigger asChild>
-                  <button type="button" onClick={() => onFocusPreview?.("newsletter")} className="mt-2 flex w-full items-center justify-between gap-3 rounded-xl border border-border bg-background px-4 py-3 text-left text-sm font-medium text-foreground">
+                  <Button type="button" variant="outline" onClick={() => onFocusPreview?.("newsletter")} className="mt-2 h-auto w-full justify-between gap-3 px-4 py-3 text-left text-sm font-medium">
                     {newsletterDateLabel(plan.newsletterDate)} <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                  </button>
+                  </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar mode="single" selected={plan.newsletterDate ? parseISO(plan.newsletterDate) : undefined}

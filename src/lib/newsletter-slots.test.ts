@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { isNewsletterSunday, parseNewsletterDate } from "./newsletter-slots";
+import { parsePlan } from "./checkout-plans";
 
 describe("newsletter Sunday dates", () => {
   const now = new Date(2026, 10, 6);
@@ -16,5 +17,8 @@ describe("newsletter Sunday dates", () => {
     expect(parseNewsletterDate("2026-11-08")).toBe("2026-11-08");
     expect(parseNewsletterDate("2026-11-09")).toBeUndefined();
     expect(parseNewsletterDate("2026-99-99")).toBeUndefined();
+  });
+  it("restores the selected Sunday from the saved checkout plan", () => {
+    expect(parsePlan({ base: "clicks", clicks: 500, newsletter: true, newsletterDate: "2026-11-08" }).newsletterDate).toBe("2026-11-08");
   });
 });
