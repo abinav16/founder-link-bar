@@ -8,6 +8,7 @@ import { PromoteButton } from "@/components/FeaturedBookingDialog";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { LiveVisitorMap } from "@/components/LiveVisitorMap";
 import { SignupTrackingPanel } from "@/components/SignupTrackingPanel";
+import { SupporterNewsletter } from "@/components/SupporterNewsletter";
 
 function DashboardPending() {
   return (
@@ -889,6 +890,7 @@ function DashboardPage() {
             </div>
 
             <SignupTrackingPanel startupId={startup.id} range={range} status={startup.status} />
+            {isSupporter && <SupporterNewsletter key={startup.id} startupId={startup.id} approved={startup.status === "approved"} />}
 
             <div className={`rounded-xl border border-black/8 bg-white p-6 transition-opacity ${rangeLoading ? "opacity-60" : ""}`}>
               <div className="flex items-center justify-between">
