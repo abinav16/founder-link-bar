@@ -102,16 +102,7 @@ function BarPreview({ name, url, desc, placement = "top", noBar = false, feature
   })();
 
   const bar = (
-    <div
-      aria-label="Widget color preview"
-      className={`apply-preview-bar mock-blend-surface flex h-9 items-center gap-2.5 px-4 ${featured ? "is-featured" : ""} ${placement === "top" ? "border-b" : "border-t"}`}
-    >
-      <span className="apply-preview-brand rounded-sm px-1.5 py-0.5 text-[9px] font-bold tracking-widest">{featured ? "FEATURED" : "STARTUPBAR"}</span>
-      {favicon && <img src={favicon} alt="" className="h-4 w-4 rounded-sm object-contain" onError={(e) => (e.currentTarget.style.display = "none")} />}
-      <span className="shrink-0 text-[13px] font-medium">{displayName}</span>
-      <span className="apply-preview-muted hidden truncate text-[12px] sm:block">· {displayDesc}</span>
-      <span className="apply-preview-muted ml-auto flex shrink-0 items-center gap-1 text-[12px]">Visit <ExternalLink className="h-3 w-3" /></span>
-    </div>
+    <WidgetBarMock name={displayName} desc={displayDesc} favicon={favicon} placement={placement} featured={featured} />
   );
   return (
     <div style={paletteStyle} className="apply-preview-browser mock-blend relative overflow-hidden rounded-xl border border-black/10 bg-white shadow-[0_8px_40px_-12px_rgba(0,0,0,0.12)]">
@@ -406,6 +397,7 @@ function pinnedInstallId(rawUrl: string, fallback: string): string {
 
 import { PlanOptions, OrderSummary } from "@/components/apply/PlanPicker";
 import { DeviceStage } from "@/components/apply/DeviceStage";
+import { WidgetBarMock } from "@/components/apply/WidgetBarMock";
 import { parsePlan, type CheckoutPlan } from "@/lib/checkout-plans";
 
 function readDraft(): { step: 1 | 2; name: string; url: string; desc: string; startupId: string } | null {
