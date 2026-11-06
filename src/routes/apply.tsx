@@ -402,6 +402,8 @@ import { PlanOptions, OrderSummary } from "@/components/apply/PlanPicker";
 import { DeviceStage, StageRail } from "@/components/apply/DeviceStage";
 import { WidgetBarMock } from "@/components/apply/WidgetBarMock";
 import { parsePlan, listingKind, type CheckoutPlan } from "@/lib/checkout-plans";
+import { planHasPaidAddOns } from "@/lib/checkout-order";
+import { createOrderCheckout, confirmOrderPayment } from "@/lib/checkout-order.functions";
 import type { PreviewFocus } from "@/lib/apply-preview-slides";
 
 function readDraft(): { step: 1 | 2; name: string; url: string; desc: string; startupId: string } | null {
@@ -554,7 +556,12 @@ function Apply() {
   const [loading, setLoading] = useState(false);
   const [existingCount, setExistingCount] = useState(0);
   const [hasPrepaid, setHasPrepaid] = useState(false);
+  const orderPaid = useRef<{ listing: boolean } | null>(null);
+  const createOrder = useServerFn(createOrderCheckout);
+  const confirmOrder = useServerFn(confirmOrderPayment);
   const listing = listingKind({ existingCount, hasPrepaid, resubmit: !!resubmitId });
+  const addOns = !resubmitId && planHasPaidAddOns(plan);
+  const payNow = !isSupporter && (addOns || listing === "additional");
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [verifyingPayment, setVerifyingPayment] = useState(initial.paid && !!initial.paymentId);
   const [autoSubmitPending, setAutoSubmitPending] = useState(false);
@@ -660,7 +667,14 @@ function Apply() {
     let cancelled = false;
     (async () => {
       let ok = false;
+      // Combined add-on orders confirm through their own server check first.
       for (let attempt = 0; attempt < 4 && !cancelled; attempt++) {
+        const r = await confirmOrder({ data: { paymentId: initial.paymentId } }).catch(() => ({ status: "error" as const }));
+        if (r.status === "not_order") break;
+        if (r.status === "paid") { ok = true; orderPaid.current = { listing: !!r.listing }; break; }
+        await new Promise((res) => setTimeout(res, 1500 * (attempt + 1)));
+      }
+      for (let attempt = 0; attempt < 4 && !cancelled && !orderPaid.current; attempt++) {
         const { data, error } = await supabase.functions.invoke("verify-dodo-payment", {
           body: { payment_id: initial.paymentId },
         });
@@ -703,7 +717,7 @@ function Apply() {
       return;
     }
 
-    if (hasPrepaid) {
+    if (hasPrepaid || (orderPaid.current && !orderPaid.current.listing)) {
       setAutoSubmitPending(false);
       onSubmit();
       return;
@@ -883,11 +897,31 @@ function Apply() {
     }
   }
 
+  async function handleOrderPayment() {
+    if (!orderPaid.current && !(await validateNewsletterSelection())) return;
+    setPaymentLoading(true);
+    writeDraft({ step: 2, name, url, desc, category, quote, placement, mode, startupId, plan });
+    const returnUrl = `${window.location.origin}/apply?paid=true&sid=${encodeURIComponent(startupId)}`;
+    const r = await createOrder({ data: { startupId, plan, returnUrl } }).catch(() => ({ ok: false as const, reason: "error" as const }));
+    setPaymentLoading(false);
+    if (r.ok) { window.location.href = r.paymentLink; return; }
+    const msg: Record<string, string> = {
+      date_taken: "That Sunday was just booked. Please pick another date.",
+      addons_unavailable: "Paid boosts are not open yet. Choose Free to submit now, or try again soon.",
+      already_submitted: "This startup is already submitted.",
+      nothing_to_pay: "Nothing to pay for this plan.",
+      invalid: "Please check your plan and try again.",
+      error: "Could not create payment session. Please try again.",
+    };
+    toast.error(msg[r.reason] ?? msg.error);
+    if (r.reason === "date_taken") setStep(1);
+  }
+
   async function handlePayment() {
     setPaymentLoading(true);
     // Persist the draft so we can restore state after Dodo redirects back —
     // we deliberately keep the return URL tiny (no PII in query string).
-    writeDraft({ step: 2, name, url, desc, category, quote, placement, mode, startupId });
+    writeDraft({ step: 2, name, url, desc, category, quote, placement, mode, startupId, plan });
 
     const { data: u } = await supabase.auth.getUser();
     const returnUrl = `${window.location.origin}/apply?paid=true&sid=${encodeURIComponent(startupId)}`;
@@ -984,7 +1018,8 @@ function Apply() {
 
   async function onSubmit(opts?: { supporterSubscriptionId?: string }) {
     const supporterSub = opts?.supporterSubscriptionId;
-    if (!(await validateNewsletterSelection())) { setStep(1); return; }
+    // A paid order already holds its newsletter date, so it reads as booked.
+    if (!orderPaid.current && !(await validateNewsletterSelection())) { setStep(1); return; }
     setLoading(true);
     try {
       const { data: userData } = await supabase.auth.getUser();
@@ -1086,6 +1121,9 @@ function Apply() {
         }
         setLoading(false);
       }
+
+      // Deliver any paid clicks/newsletter spot now that the listing exists.
+      await supabase.rpc("fulfil_checkout_orders", { _startup_id: resubmitId || startupId }).then(() => {}, () => {});
 
       if (trackingReady) {
         try { await saveTracking({ data: { startupId: resubmitId || startupId, ...tracking } }); }
@@ -1273,52 +1311,49 @@ function Apply() {
 
       {step === 2 && (
 
-        <div className="apply-install-page mx-auto max-w-6xl px-4 py-8 sm:px-6 md:py-14">
-          <button onClick={() => setStep(1)} className="mb-8 flex items-center gap-1.5 text-sm text-black/40 hover:text-black transition-colors">
-            <ArrowLeft className="h-3.5 w-3.5" /> Back
+        <div className="apply-install-page checkout-rise mx-auto max-w-[1400px] px-4 py-8 sm:px-6 md:py-12">
+          <div className="install-layout">
+          <div className="min-w-0">
+          <button onClick={() => setStep(1)} className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
+            <ArrowLeft className="h-3.5 w-3.5" /> Back to plan
           </button>
 
-          <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-black/35">Step 2 of 2</span>
-          <h1 className="mt-4 font-display text-3xl font-medium leading-tight sm:text-4xl md:text-5xl">
-            {isSupporter ? "Your analytics line (optional)." : "Install the script."}
-          </h1>
-          <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
-            {isSupporter
-               ? <>One invisible line. It shows nothing on your site it only unlocks your visitor map, visits and click stats. Skip it or add it later.</>
-              : <>Paste this once inside the <code className="rounded bg-black/8 px-1.5 py-0.5 font-mono text-sm">&lt;head&gt;</code> of your site, then verify it's live.</>}
-          </p>
+          <section className="checkout-section-head">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-muted-foreground">Step 2 of 2</span>
+            <h1 className="stage-title mt-3">
+              {isSupporter ? <>Analytics. <span className="text-muted-foreground">Optional, invisible.</span></> : <>Install. <span className="text-muted-foreground">Then go live.</span></>}
+            </h1>
+            <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
+              {isSupporter
+                ? <>One invisible line. It shows nothing on your site, it only unlocks your visitor map, visits and click stats. Skip it or add it later.</>
+                : <>Paste one line inside the <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">&lt;head&gt;</code> of your site, verify it, then submit.</>}
+            </p>
+          </section>
+
+          <div className="install-chip mt-6">
+            {url && <StartupFavicon url={url} name={name} size={22} className="rounded-md" />}
+            <div className="min-w-0">
+              <p className="font-medium text-foreground">{name}</p>
+              <p className="truncate text-xs text-muted-foreground">{url}</p>
+            </div>
+            <button onClick={() => setStep(1)} className="ml-auto text-xs font-medium text-muted-foreground transition-colors hover:text-foreground">Edit</button>
+          </div>
+
+          <ol className="install-progress mt-6" aria-label="Install progress">
+            {[
+              { n: 1, label: "Copy code", done: true },
+              { n: 2, label: "Verify live", done: verifyStatus === "live" || verifyStatus === "csp-img" },
+              { n: 3, label: payNow ? "Pay & submit" : "Submit", done: false },
+            ].map((st) => (
+              <li key={st.n} className={st.done ? "is-done" : ""}><span>{st.done ? "✓" : st.n}</span>{st.label}</li>
+            ))}
+          </ol>
 
           {isSupporter && (
-            <div className="mt-5 flex items-start gap-3 rounded-xl border border-black/10 bg-black/[0.02] px-4 py-3 text-xs leading-relaxed text-black/50">
-              <p>
-                <strong className="font-medium text-black">If you skip it:</strong> your listing, rotation, profile, badge and network stats all work exactly the same. Only your visitor map and on-site stats stay locked.
-              </p>
-            </div>
+            <p className="mt-5 rounded-2xl border border-border bg-muted/40 px-4 py-3 text-xs leading-relaxed text-muted-foreground">
+              <strong className="font-medium text-foreground">If you skip it:</strong> your listing, rotation, profile, badge and network stats all work exactly the same. Only your visitor map and on-site stats stay locked.
+            </p>
           )}
-
-          {/* Progress pills */}
-          <div className="mt-6 flex items-center gap-2 text-[11px] font-medium text-black/50">
-            {[
-              { n: 1, label: "Paste", active: true },
-              { n: 2, label: "Verify", active: verifyStatus !== "idle" },
-              { n: 3, label: isSupporter ? "Pay & submit" : "Submit", active: isSupporter || verifyStatus === "live" || verifyStatus === "csp-img" },
-            ].map((s, i) => (
-              <div key={s.n} className="flex items-center gap-2">
-                <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-semibold ${s.active ? "bg-black text-white" : "bg-black/8 text-black/40"}`}>{s.n}</span>
-                <span className={s.active ? "text-black" : ""}>{s.label}</span>
-                {i < 2 && <span className="mx-1 h-px w-6 bg-black/10" />}
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-8 flex items-center gap-3 rounded-xl border border-black/8 bg-black/[0.02] px-5 py-4">
-            {url && <StartupFavicon url={url} name={name} size={20} className="rounded-sm" />}
-            <div className="min-w-0">
-              <p className="font-medium text-black">{name}</p>
-              <p className="truncate text-xs text-black/40">{url}</p>
-            </div>
-            <button onClick={() => setStep(1)} className="ml-auto text-xs text-black/35 hover:text-black transition-colors">Edit</button>
-          </div>
 
           {/* Install checklist card */}
           {!isSupporter && authed !== null && (
@@ -1333,7 +1368,7 @@ function Apply() {
               />
             </div>
           )}
-          <div className="apply-install-grid mt-6 grid gap-8 border-y border-border py-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-12">
+          <div className="apply-install-grid install-card mt-6 grid gap-8">
             <div className="min-w-0">
             {/* Embed code */}
             <div className="border-b border-border pb-6">
@@ -1523,51 +1558,33 @@ function Apply() {
             </div>
           </div>
 
-          <ApplySignupTracking value={tracking} onChange={setTracking} startupId={startupId} />
+          <div className="install-card mt-6">
+            <ApplySignupTracking value={tracking} onChange={setTracking} startupId={startupId} />
+          </div>
+          </div>
 
-          <div className="mt-8 space-y-3 lg:ml-auto lg:max-w-md">
-            {(() => {
-              const needsPayment = !resubmitId && existingCount >= 1 && !hasPrepaid;
-              const verified = verifyStatus === "live" || verifyStatus === "csp-img";
-              const busy = loading || paymentLoading || verifyingPayment;
-              // Supporters pay instead of showing the bar, so verification is
-              // never a gate for them — the snippet is optional.
-              const disabled = isSupporter ? busy : (!verified || busy);
-              const onClick = isSupporter
-                ? handleSupporterPayment
-                : needsPayment
-                ? handlePayment
-                : () => onSubmit();
-              const label = verifyingPayment
-                ? "Verifying payment…"
-                : loading
-                ? "Submitting…"
-                : paymentLoading
-                ? "Redirecting to payment…"
-                : isSupporter
-                ? `Start ${SUPPORTER_TRIAL_DAYS}-day free trial & submit →`
-                : needsPayment
-                ? "Pay $9.99 & submit →"
-                : "Submit application";
-              return (
-                <button
-                  onClick={onClick}
-                  disabled={disabled}
-                  className="group flex w-full items-center justify-center gap-2 rounded-lg bg-black py-3.5 text-sm font-medium text-white transition-all hover:bg-black/80 disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  {label}
-                </button>
-              );
-            })()}
-            <p className="text-center text-xs text-black/30">
-              {isSupporter
-                ? `${SUPPORTER_TRIAL_DAYS} days free, then $${SUPPORTER_PRICE_USD}/year including tax. Card required. Cancel before the trial ends to avoid a charge. Analytics code is optional.`
-                : verifyStatus !== "live" && verifyStatus !== "csp-img"
-                ? "Install the script and verify it's live to continue."
-                : !resubmitId && existingCount >= 1 && !hasPrepaid
-                ? "Script verified ✓ — one-time $9.99 for additional listings."
-                : "Script verified ✓ — you're all set."}
-            </p>
+          {(() => {
+            const verified = verifyStatus === "live" || verifyStatus === "csp-img";
+            const busy = loading || paymentLoading || verifyingPayment;
+            const disabled = isSupporter ? busy : (!verified || busy);
+            const onClick = isSupporter ? handleSupporterPayment : payNow ? (addOns ? handleOrderPayment : handlePayment) : () => onSubmit();
+            const label = verifyingPayment ? "Verifying payment…"
+              : loading ? "Submitting…"
+              : paymentLoading ? "Opening secure checkout…"
+              : isSupporter ? `Start ${SUPPORTER_TRIAL_DAYS}-day free trial`
+              : payNow ? "Pay & submit"
+              : "Submit application";
+            const footnote = isSupporter
+              ? `${SUPPORTER_TRIAL_DAYS} days free, then $${SUPPORTER_PRICE_USD}/year including tax. Card required. Cancel before the trial ends to avoid a charge.`
+              : !verified ? "Verify your install to continue. You only pay once the script is live."
+              : payNow ? "Secure checkout by Dodo Payments. Boosts start when we approve your listing."
+              : "Script verified. We review every listing within 24 hours.";
+            return (
+              <div className="install-rail">
+                <OrderSummary plan={plan} listing={listing} onContinue={onClick} label={label} disabled={disabled} footnote={footnote} className="is-rail" skipDateCheck />
+              </div>
+            );
+          })()}
           </div>
         </div>
 

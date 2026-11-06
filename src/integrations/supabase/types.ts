@@ -236,6 +236,63 @@ export type Database = {
           },
         ]
       }
+      checkout_orders: {
+        Row: {
+          clicks: number | null
+          clicks_cents: number
+          created_at: string
+          dodo_payment_id: string | null
+          expires_at: string
+          fulfilled_at: string | null
+          id: string
+          listing_cents: number
+          newsletter_cents: number
+          newsletter_date: string | null
+          newsletter_recipients: number | null
+          paid_at: string | null
+          startup_id: string
+          status: string
+          total_cents: number
+          user_id: string
+        }
+        Insert: {
+          clicks?: number | null
+          clicks_cents?: number
+          created_at?: string
+          dodo_payment_id?: string | null
+          expires_at?: string
+          fulfilled_at?: string | null
+          id?: string
+          listing_cents?: number
+          newsletter_cents?: number
+          newsletter_date?: string | null
+          newsletter_recipients?: number | null
+          paid_at?: string | null
+          startup_id: string
+          status?: string
+          total_cents: number
+          user_id: string
+        }
+        Update: {
+          clicks?: number | null
+          clicks_cents?: number
+          created_at?: string
+          dodo_payment_id?: string | null
+          expires_at?: string
+          fulfilled_at?: string | null
+          id?: string
+          listing_cents?: number
+          newsletter_cents?: number
+          newsletter_date?: string | null
+          newsletter_recipients?: number | null
+          paid_at?: string | null
+          startup_id?: string
+          status?: string
+          total_cents?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       click_boosts: {
         Row: {
           activated_at: string | null
@@ -1382,6 +1439,7 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      fulfil_checkout_orders: { Args: { _startup_id: string }; Returns: number }
       get_my_profile: {
         Args: never
         Returns: {

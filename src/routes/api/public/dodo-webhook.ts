@@ -157,6 +157,12 @@ export const Route = createFileRoute("/api/public/dodo-webhook")({
           type === "subscription.active" ||
           type === "subscription.renewed" ||
           (data.metadata?.kind === "supporter" && type === "subscription.updated");
+        if (data.metadata?.kind === "order") {
+          const { markOrderPaid, markOrderFailed } = await import("@/lib/checkout-order.server");
+          if (isSucceeded) await markOrderPaid(data.metadata, paymentId);
+          else if (["failed", "cancelled", "canceled", "expired"].includes(status) || type === "payment.failed" || type === "payment.cancelled") await markOrderFailed(data.metadata.order_id);
+          return new Response("ok", { status: 200 });
+        }
         if (!isSucceeded) {
           return new Response("ok", { status: 200 });
         }
