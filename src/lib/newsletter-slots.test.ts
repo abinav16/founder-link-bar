@@ -1,9 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { isNewsletterSunday, parseNewsletterDate } from "./newsletter-slots";
+import { isNewsletterSunday, parseNewsletterDate, isNewsletterDateAvailable, nextAvailableNewsletterSunday } from "./newsletter-slots";
 import { parsePlan } from "./checkout-plans";
 
 describe("newsletter Sunday dates", () => {
   const now = new Date(2026, 10, 6);
+  it("rejects a booked Sunday", () => {
+    expect(isNewsletterDateAvailable(new Date(2026, 10, 8), ["2026-11-08"], now)).toBe(false);
+  });
+  it("allows an unbooked future Sunday", () => {
+    expect(isNewsletterDateAvailable(new Date(2026, 10, 15), ["2026-11-08"], now)).toBe(true);
+  });
+  it("defaults to the first unbooked Sunday", () => {
+    expect(nextAvailableNewsletterSunday(["2026-11-08", "2026-11-15"], now)).toBe("2026-11-22");
+  });
+  it("does not default to today's issue", () => {
+    expect(nextAvailableNewsletterSunday([], new Date(2026, 10, 8))).toBe("2026-11-15");
+  });
   it("allows a future Sunday", () => {
     expect(isNewsletterSunday(new Date(2026, 10, 8), now)).toBe(true);
   });
