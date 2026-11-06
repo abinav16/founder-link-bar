@@ -182,9 +182,15 @@ export const Route = createFileRoute("/api/public/dodo-webhook")({
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+        // Renewal payment metadata can be absent. Resolve only subscriptions
+        // already linked to a Supporter; the live lookup below verifies identity.
+        if (!data.metadata?.kind && subscriptionId && (type === "payment.succeeded" || type === "payment.completed")) {
+          const { data: member } = await supabaseAdmin.from("startups").select("id,user_id").eq("supporter_subscription_id", subscriptionId).maybeSingle();
+          if (member) data.metadata = { kind: "supporter", startup_id: member.id, user_id: member.user_id };
+        }
 
         // Resolve user_id from metadata first, then customer email.
-        let userId: string | null = metaUserId ?? null;
+        let userId: string | null = data.metadata?.user_id ?? metaUserId ?? null;
         if (!userId && customerEmail) {
           const { data: authList } = await supabaseAdmin.auth.admin.listUsers();
           const match = authList?.users?.find(
