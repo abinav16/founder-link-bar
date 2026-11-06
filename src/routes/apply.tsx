@@ -402,6 +402,8 @@ import { PlanOptions, OrderSummary } from "@/components/apply/PlanPicker";
 import { DeviceStage, StageRail } from "@/components/apply/DeviceStage";
 import { WidgetBarMock } from "@/components/apply/WidgetBarMock";
 import { parsePlan, listingKind, type CheckoutPlan } from "@/lib/checkout-plans";
+import { planHasPaidAddOns } from "@/lib/checkout-order";
+import { createOrderCheckout, confirmOrderPayment } from "@/lib/checkout-order.functions";
 import type { PreviewFocus } from "@/lib/apply-preview-slides";
 
 function readDraft(): { step: 1 | 2; name: string; url: string; desc: string; startupId: string } | null {
@@ -554,6 +556,9 @@ function Apply() {
   const [loading, setLoading] = useState(false);
   const [existingCount, setExistingCount] = useState(0);
   const [hasPrepaid, setHasPrepaid] = useState(false);
+  const orderPaid = useRef<{ listing: boolean } | null>(null);
+  const createOrder = useServerFn(createOrderCheckout);
+  const confirmOrder = useServerFn(confirmOrderPayment);
   const listing = listingKind({ existingCount, hasPrepaid, resubmit: !!resubmitId });
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [verifyingPayment, setVerifyingPayment] = useState(initial.paid && !!initial.paymentId);
@@ -660,7 +665,15 @@ function Apply() {
     let cancelled = false;
     (async () => {
       let ok = false;
+      // Combined add-on orders confirm through their own server check first.
       for (let attempt = 0; attempt < 4 && !cancelled; attempt++) {
+        const r = await confirmOrder({ data: { paymentId: initial.paymentId } }).catch(() => ({ status: "error" as const }));
+        if (r.status === "not_order") break;
+        if (r.status === "paid") { ok = true; orderPaid.current = { listing: !!r.listing }; break; }
+        await new Promise((res) => setTimeout(res, 1500 * (attempt + 1)));
+      }
+      if (orderPaid.current || ok) attempt4: { break attempt4; }
+      for (let attempt = 0; attempt < 4 && !cancelled && !orderPaid.current; attempt++) {
         const { data, error } = await supabase.functions.invoke("verify-dodo-payment", {
           body: { payment_id: initial.paymentId },
         });
@@ -703,7 +716,7 @@ function Apply() {
       return;
     }
 
-    if (hasPrepaid) {
+    if (hasPrepaid || (orderPaid.current && !orderPaid.current.listing)) {
       setAutoSubmitPending(false);
       onSubmit();
       return;
@@ -883,11 +896,31 @@ function Apply() {
     }
   }
 
+  async function handleOrderPayment() {
+    if (!orderPaid.current && !(await validateNewsletterSelection())) return;
+    setPaymentLoading(true);
+    writeDraft({ step: 2, name, url, desc, category, quote, placement, mode, startupId, plan });
+    const returnUrl = `${window.location.origin}/apply?paid=true&sid=${encodeURIComponent(startupId)}`;
+    const r = await createOrder({ data: { startupId, plan, returnUrl } }).catch(() => ({ ok: false as const, reason: "error" as const }));
+    setPaymentLoading(false);
+    if (r.ok) { window.location.href = r.paymentLink; return; }
+    const msg: Record<string, string> = {
+      date_taken: "That Sunday was just booked. Please pick another date.",
+      addons_unavailable: "Paid boosts are not open yet. Choose Free to submit now, or try again soon.",
+      already_submitted: "This startup is already submitted.",
+      nothing_to_pay: "Nothing to pay for this plan.",
+      invalid: "Please check your plan and try again.",
+      error: "Could not create payment session. Please try again.",
+    };
+    toast.error(msg[r.reason] ?? msg.error);
+    if (r.reason === "date_taken") setStep(1);
+  }
+
   async function handlePayment() {
     setPaymentLoading(true);
     // Persist the draft so we can restore state after Dodo redirects back —
     // we deliberately keep the return URL tiny (no PII in query string).
-    writeDraft({ step: 2, name, url, desc, category, quote, placement, mode, startupId });
+    writeDraft({ step: 2, name, url, desc, category, quote, placement, mode, startupId, plan });
 
     const { data: u } = await supabase.auth.getUser();
     const returnUrl = `${window.location.origin}/apply?paid=true&sid=${encodeURIComponent(startupId)}`;
@@ -984,7 +1017,8 @@ function Apply() {
 
   async function onSubmit(opts?: { supporterSubscriptionId?: string }) {
     const supporterSub = opts?.supporterSubscriptionId;
-    if (!(await validateNewsletterSelection())) { setStep(1); return; }
+    // A paid order already holds its newsletter date, so it reads as booked.
+    if (!orderPaid.current && !(await validateNewsletterSelection())) { setStep(1); return; }
     setLoading(true);
     try {
       const { data: userData } = await supabase.auth.getUser();
@@ -1086,6 +1120,9 @@ function Apply() {
         }
         setLoading(false);
       }
+
+      // Deliver any paid clicks/newsletter spot now that the listing exists.
+      await supabase.rpc("fulfil_checkout_orders", { _startup_id: resubmitId || startupId }).then(() => {}, () => {});
 
       if (trackingReady) {
         try { await saveTracking({ data: { startupId: resubmitId || startupId, ...tracking } }); }
