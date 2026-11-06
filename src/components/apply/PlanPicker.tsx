@@ -176,12 +176,13 @@ export function PlanOptions({ plan, onChange, startupName, onFocusPreview, listi
           </PlanCard>
 
           <PlanCard
-            delay={140} role="checkbox" selected={!!plan.newsletter && !isSupporter}
-            onSelect={() => { const on = !plan.newsletter || isSupporter; onFocusPreview?.(on ? "newsletter" : plan.base === "clicks" ? "clicks" : "site"); onChange({ ...plan, base: isSupporter ? "free" : plan.base, newsletter: on }); }}
+            delay={140} role="checkbox" selected={!!plan.newsletter || isSupporter}
+            onSelect={() => { if (isSupporter) { onFocusPreview?.("newsletter"); return; } const on = !plan.newsletter; onFocusPreview?.(on ? "newsletter" : plan.base === "clicks" ? "clicks" : "site"); onChange({ ...plan, newsletter: on }); }}
             icon={<Mail className="h-4 w-4" />} title="Sunday newsletter spot" tagline="Add-on · Sponsor card in the weekly founder digest."
-            price={<><RollingNumber value={nlPrice} decimals={2} /><span className="block text-[11px] font-normal text-muted-foreground">one send</span></>}
+            price={isSupporter ? <><span className="text-sm">Included</span><span className="block text-[11px] font-normal text-muted-foreground">one send</span></> : <><RollingNumber value={nlPrice} decimals={2} /><span className="block text-[11px] font-normal text-muted-foreground">one send</span></>}
           >
             <div className="checkout-mail-preview" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+              {isSupporter ? <p className="text-sm leading-relaxed text-muted-foreground">Complimentary with Supporter. Choose an available Sunday from your dashboard after your first annual payment clears. No date is reserved during the trial.</p> : <>
               <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Preferred send date</span>
               <Popover>
                 <PopoverTrigger asChild>
@@ -202,10 +203,11 @@ export function PlanOptions({ plan, onChange, startupName, onFocusPreview, listi
               </p>
               {availability.isError && <Button type="button" size="sm" variant="outline" className="mt-2" onClick={() => void availability.refetch()}>Try again</Button>}
               <p className="mt-2 text-xs text-muted-foreground">Sponsor card for {startupName.trim() || "your startup"} in that Sunday's founder email.</p>
+              </>}
             </div>
             <ul className="mt-4 space-y-2">
-              <Bullet>${NEWSLETTER_PRICE_PER_FOUNDER_USD.toFixed(2)} per founder · {audience ? `${audience.toLocaleString()} founders on the list today` : "priced from the live list"}.</Bullet>
-              <Bullet>Price locks in at checkout. Works with Free or Guaranteed clicks.</Bullet>
+              {isSupporter ? <Bullet>One complimentary sponsorship after your first ${SUPPORTER_PRICE_USD} annual payment.</Bullet> : <><Bullet>${NEWSLETTER_PRICE_PER_FOUNDER_USD.toFixed(2)} per founder · {audience ? `${audience.toLocaleString()} founders on the list today` : "priced from the live list"}.</Bullet>
+              <Bullet>Price locks in at checkout. Works with Free or Guaranteed clicks.</Bullet></>}
             </ul>
           </PlanCard>
 
@@ -220,6 +222,7 @@ export function PlanOptions({ plan, onChange, startupName, onFocusPreview, listi
               <Bullet>{SUPPORTER_TRIAL_DAYS} days free, then ${SUPPORTER_PRICE_USD}/year. Cancel anytime.</Bullet>
               <Bullet>Shown across the network at an average member's share.</Bullet>
               <Bullet>Gold highlight on the network page and leaderboard.</Bullet>
+              <Bullet>One complimentary Sunday newsletter sponsorship, unlocked after your first annual payment clears.</Bullet>
             </ul>
           </PlanCard>
     </div>
@@ -238,6 +241,7 @@ export function OrderSummary({ plan, onContinue, label = "Continue to install", 
             <li className="flex justify-between gap-3"><span className="text-foreground">{isSupporter ? "No Bar Supporter" : L.title}</span><span className={listingFee ? "text-foreground" : "text-muted-foreground"}>{isSupporter ? `${SUPPORTER_TRIAL_DAYS}-day trial` : listingFee ? `$${listingFee.toFixed(2)}` : L.price}</span></li>
             {plan.base === "clicks" && <li className="checkout-line flex justify-between gap-3"><span className="text-foreground">{pack.clicks.toLocaleString()} guaranteed clicks</span><span className="text-foreground">${pack.priceUsd}</span></li>}
             {plan.newsletter && !isSupporter && <li className="checkout-line flex justify-between gap-3"><span className="text-foreground">Newsletter spot<span className="block text-xs text-muted-foreground">{newsletterDateLabel(plan.newsletterDate)}</span></span><span className="text-foreground">${nlPrice.toFixed(2)}</span></li>}
+            {isSupporter && <li className="checkout-line flex justify-between gap-3"><span className="text-foreground">Sunday newsletter spot<span className="block text-xs text-muted-foreground">Unlocks after first annual payment</span></span><span className="text-muted-foreground">Complimentary</span></li>}
           </ul>
           <div className="mt-5 flex items-end justify-between border-t border-border pt-5">
             <span className="text-sm text-muted-foreground">Due today</span>
@@ -248,7 +252,7 @@ export function OrderSummary({ plan, onContinue, label = "Continue to install", 
           </Button>
           <p className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
             <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            {footnote ?? (total > 0 ? "Nothing is charged yet. You pay after your install is verified, and boosts start when we approve your listing." : "No card needed. We review every listing within 24 hours.")}
+            {footnote ?? (isSupporter ? `${SUPPORTER_TRIAL_DAYS} days free, then $${SUPPORTER_PRICE_USD}/year. A card is required. Your newsletter spot unlocks after payment, not during the trial.` : total > 0 ? "Nothing is charged yet. You pay after your install is verified, and boosts start when we approve your listing." : "No card needed. We review every listing within 24 hours.")}
           </p>
         </aside>
   );

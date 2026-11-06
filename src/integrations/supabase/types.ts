@@ -1269,6 +1269,60 @@ export type Database = {
         }
         Relationships: []
       }
+      supporter_newsletter_entitlements: {
+        Row: {
+          amount_cents: number
+          claimed_at: string | null
+          created_at: string
+          currency: string
+          id: string
+          payment_id: string
+          sponsorship_id: string | null
+          startup_id: string
+          subscription_id: string
+          user_id: string
+        }
+        Insert: {
+          amount_cents: number
+          claimed_at?: string | null
+          created_at?: string
+          currency: string
+          id?: string
+          payment_id: string
+          sponsorship_id?: string | null
+          startup_id: string
+          subscription_id: string
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          claimed_at?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          payment_id?: string
+          sponsorship_id?: string | null
+          startup_id?: string
+          subscription_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supporter_newsletter_entitlements_sponsorship_id_fkey"
+            columns: ["sponsorship_id"]
+            isOneToOne: false
+            referencedRelation: "newsletter_sponsorships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supporter_newsletter_entitlements_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: true
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -1376,6 +1430,10 @@ export type Database = {
           id: string
           user_id: string
         }[]
+      }
+      claim_supporter_newsletter: {
+        Args: { _send_date: string; _startup_id: string }
+        Returns: string
       }
       claim_weekly_digest: {
         Args: { _email: string; _test?: boolean }
@@ -1495,6 +1553,18 @@ export type Database = {
         }
       }
       get_startup_rank: { Args: { _startup_id: string }; Returns: number }
+      grant_supporter_newsletter: {
+        Args: {
+          _amount_cents: number
+          _currency: string
+          _notification?: Json
+          _payment_id: string
+          _startup_id: string
+          _subscription_id: string
+          _user_id: string
+        }
+        Returns: boolean
+      }
       is_approved_host: { Args: { _id: string }; Returns: boolean }
       is_approved_startup: { Args: { _id: string }; Returns: boolean }
       is_supporter: { Args: { _id: string }; Returns: boolean }
