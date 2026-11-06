@@ -17,6 +17,7 @@ export type Database = {
       application_drafts: {
         Row: {
           category: string | null
+          checkout_plan: Json | null
           created_at: string
           description: string
           mode: string | null
@@ -30,6 +31,7 @@ export type Database = {
         }
         Insert: {
           category?: string | null
+          checkout_plan?: Json | null
           created_at?: string
           description?: string
           mode?: string | null
@@ -43,6 +45,7 @@ export type Database = {
         }
         Update: {
           category?: string | null
+          checkout_plan?: Json | null
           created_at?: string
           description?: string
           mode?: string | null
@@ -229,6 +232,56 @@ export type Database = {
             columns: ["entry_id"]
             isOneToOne: false
             referencedRelation: "bid_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      click_boosts: {
+        Row: {
+          activated_at: string | null
+          clicks_delivered: number
+          clicks_purchased: number
+          completed_at: string | null
+          created_at: string
+          dodo_payment_id: string | null
+          id: string
+          price_cents: number
+          startup_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          activated_at?: string | null
+          clicks_delivered?: number
+          clicks_purchased: number
+          completed_at?: string | null
+          created_at?: string
+          dodo_payment_id?: string | null
+          id?: string
+          price_cents: number
+          startup_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          activated_at?: string | null
+          clicks_delivered?: number
+          clicks_purchased?: number
+          completed_at?: string | null
+          created_at?: string
+          dodo_payment_id?: string | null
+          id?: string
+          price_cents?: number
+          startup_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "click_boosts_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
             referencedColumns: ["id"]
           },
         ]
@@ -539,6 +592,50 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      newsletter_sponsorships: {
+        Row: {
+          created_at: string
+          dodo_payment_id: string | null
+          id: string
+          price_cents: number
+          recipients: number
+          send_date: string | null
+          startup_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dodo_payment_id?: string | null
+          id?: string
+          price_cents: number
+          recipients: number
+          send_date?: string | null
+          startup_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dodo_payment_id?: string | null
+          id?: string
+          price_cents?: number
+          recipients?: number
+          send_date?: string | null
+          startup_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "newsletter_sponsorships_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payments: {
         Row: {
@@ -1508,6 +1605,7 @@ export type Database = {
           total_impressions: number
         }[]
       }
+      public_newsletter_audience: { Args: never; Returns: number }
       public_startup_24h: {
         Args: { _ids: string[] }
         Returns: {
