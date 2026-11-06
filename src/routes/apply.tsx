@@ -1194,10 +1194,10 @@ function Apply() {
                     </p>
                 </Field>
                 <section className="checkout-section-head">
-                  <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl" style={{ fontFamily: "var(--font-display)" }}>
+                  <h2 className="stage-title">
                     Plan. <span className="text-muted-foreground">Choose how {name.trim() || "your startup"} grows.</span>
                   </h2>
-                  <p className="mt-2 text-sm text-muted-foreground">Free is genuinely free. Paid options only add reach — you pay for results, never for time.</p>
+                  <p className="mt-2 text-sm text-muted-foreground">Free is genuinely free. Paid options only add reach. You pay for results, never for time.</p>
                 </section>
                 <PlanOptions plan={plan} onChange={setPlan} startupName={name} />
                 <OrderSummary plan={plan} />

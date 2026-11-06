@@ -98,7 +98,7 @@ export function PlanOptions({ plan, onChange, startupName }: { plan: CheckoutPla
           >
             <ul className="space-y-2">
               <Bullet>Your startup rotates across every site in the network.</Bullet>
-              <Bullet>One small bar on your site in return — fully automatic.</Bullet>
+              <Bullet>One small bar on your site in return, fully automatic.</Bullet>
               <Bullet>Remove the script anytime. No card, no lock-in.</Bullet>
             </ul>
           </PlanCard>
@@ -144,7 +144,7 @@ export function PlanOptions({ plan, onChange, startupName }: { plan: CheckoutPla
             <div className="checkout-mail-preview">
               <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">This week's featured sponsor</span>
               <p className="mt-1.5 text-sm font-semibold text-foreground">{startupName.trim() || "Your startup"}</p>
-              <p className="text-xs text-muted-foreground">Your logo, one-liner and a direct link — first thing founders see.</p>
+              <p className="text-xs text-muted-foreground">Your logo, one-liner and a direct link. The first thing founders see.</p>
             </div>
             <ul className="mt-4 space-y-2">
               <Bullet>${NEWSLETTER_PRICE_PER_FOUNDER_USD.toFixed(2)} per founder · {audience ? `${audience.toLocaleString()} founders on the list today` : "priced from the live list"}.</Bullet>
