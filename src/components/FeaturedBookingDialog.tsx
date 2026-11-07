@@ -653,20 +653,8 @@ export function PromoteButton({
     );
   }
 
-  return (
-    <>
-      <Tag
-        {...(interactive as object)}
-        onClick={(e: React.MouseEvent) => {
-          stop(e);
-          setOpen(true);
-        }}
-        className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-black px-3.5 py-1.5 text-xs font-medium text-white transition-opacity hover:opacity-85 ${className}`}
-      >
-        <Sparkles className="h-3.5 w-3.5 text-[oklch(0.82_0.13_85)]" /> Promote
-      </Tag>
-
-      <FeaturedBookingDialog open={open} onOpenChange={setOpen} preselectStartupId={startupId} />
-    </>
-  );
+  // The monthly featured subscription is retired: only existing subscribers
+  // see their slot (to manage/cancel). Featured placement now comes from
+  // Guaranteed Click packs.
+  return null;
 }

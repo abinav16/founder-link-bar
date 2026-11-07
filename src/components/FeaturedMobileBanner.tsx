@@ -71,16 +71,11 @@ export function FeaturedMobileBanner(_props: { slots?: number[] }) {
           <PopoverContent align="start" className="w-72 text-sm">
             <p className="font-semibold text-foreground">Featured spots</p>
             <p className="mt-1 text-muted-foreground">
-              A limited set of {FEATURED_SLOT_COUNT} paid spots shown across the network and
-              leaderboard pages. Featured startups get permanent placement, a gold highlight and
-              tracked clicks — ${FEATURED_PRICE_USD} {FEATURED_BILLING_LABEL}.
+              Startups with a Guaranteed Clicks pack are featured here and get priority in the
+              bar until every click is delivered. Packs start at $49, one-time.
             </p>
-            <Button
-              type="button"
-              onClick={() => setOpen(true)}
-              className="mt-3 w-full text-xs"
-            >
-              Book a spot
+            <Button asChild className="mt-3 w-full text-xs">
+              <a href="/pricing#clicks">See click packs</a>
             </Button>
           </PopoverContent>
         </Popover>

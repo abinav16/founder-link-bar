@@ -78,18 +78,16 @@ export function SponsoredRail({ side = "right" }: { side?: "left" | "right" }) {
           if (taken) return <FeaturedCard key={i} slot={taken} />;
           return (
             <Button
+              asChild
               variant="outline"
               key={i}
-              type="button"
-              onClick={() => {
-                setSlot(i);
-                setOpen(true);
-              }}
               className="group relative flex h-auto min-h-[80px] w-full flex-1 flex-col items-center justify-center gap-2 rounded-lg border-border bg-transparent p-3 text-center text-muted-foreground shadow-none transition-colors hover:border-foreground/25 hover:bg-card hover:text-foreground"
             >
-              <span className="grid h-9 w-9 place-items-center rounded-full border border-border transition-transform duration-300 motion-safe:group-hover:rotate-90"><Plus className="h-4 w-4" /></span>
-              <span className="text-xs font-medium">Your startup here</span>
-              <span className="text-[10px] font-normal text-muted-foreground">Book spot {i} <span aria-hidden>↗</span></span>
+              <a href="/pricing#clicks">
+                <span className="grid h-9 w-9 place-items-center rounded-full border border-border transition-transform duration-300 motion-safe:group-hover:rotate-90"><Plus className="h-4 w-4" /></span>
+                <span className="text-xs font-medium">Your startup here</span>
+                <span className="text-[10px] font-normal text-muted-foreground">Guaranteed clicks from $49 <span aria-hidden>↗</span></span>
+              </a>
             </Button>
           );
         })}
