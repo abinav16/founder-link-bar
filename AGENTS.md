@@ -34,3 +34,4 @@
 - Keep application signup tracking in a draft-only wrapper around the shared compact setup and journey, so it matches the dashboard without creating keys or saving settings before a startup exists.
 - Keep application Step 2 in a viewport-height flex shell with installation-only scrolling and a non-scrolling order grid track; this pins payment controls without overlaying instructions on desktop or phones.
 - Share the startup category vocabulary and selector across application, owner editing and directory filters; validate stored values in the database and leave legacy listings uncategorized rather than guessing their category.
+- Banner ads live in ad_campaigns with budget-weighted random rotation (public_pick_banners) and service-only view debits (record_ad_event via /api/public/ad/event); side featured rails are retired so ads stay inline in lists without fixed slots.
