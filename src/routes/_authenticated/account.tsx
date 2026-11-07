@@ -10,6 +10,7 @@ import { Save, User, Globe, Trash2, Plus, ChevronDown, ChevronUp, ExternalLink, 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { AvatarCropDialog } from "@/components/AvatarCropDialog";
 import { PromoteButton } from "@/components/FeaturedBookingDialog";
+import { BoostClicksButton } from "@/components/BoostClicksDialog";
 import { deleteMyAccount } from "@/lib/account.functions";
 
 export const Route = createFileRoute("/_authenticated/account")({
@@ -410,6 +411,11 @@ function StartupCard({ startup, onUpdate, onDelete }: {
             <PromoteButton startupId={startup.id} as="span" showCancel />
           </span>
         )}
+        {startup.status === "approved" && !expanded && (
+          <span className="hidden shrink-0 sm:inline-flex">
+            <BoostClicksButton startupId={startup.id} startupName={startup.name} />
+          </span>
+        )}
         <span
           role="link"
           tabIndex={-1}
@@ -435,6 +441,7 @@ function StartupCard({ startup, onUpdate, onDelete }: {
           {startup.status === "approved" && (
             <div className="mb-4 flex flex-wrap items-center gap-2 sm:hidden">
               <PromoteButton startupId={startup.id} showCancel />
+              <BoostClicksButton startupId={startup.id} startupName={startup.name} />
             </div>
           )}
           <form onSubmit={onSubmitClick} className="space-y-4">
