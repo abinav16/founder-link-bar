@@ -1,9 +1,7 @@
-import { useState } from "react";
 import { ArrowUpRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { StartupFavicon } from "@/components/StartupFavicon";
-import { FeaturedBookingDialog } from "@/components/FeaturedBookingDialog";
 import { fetchFeaturedSlots, railSlots, type FeaturedSlot } from "@/lib/featured";
 
 /**
@@ -60,9 +58,7 @@ function FeaturedCard({ slot }: { slot: FeaturedSlot }) {
 
 
 export function SponsoredRail({ side = "right" }: { side?: "left" | "right" }) {
-  const [open, setOpen] = useState(false);
-  const [slot, setSlot] = useState<number | undefined>(undefined);
-  const { data: booked = [], refetch } = useQuery({
+  const { data: booked = [] } = useQuery({
     queryKey: ["featured-slots"],
     queryFn: fetchFeaturedSlots,
     staleTime: 60_000,
@@ -94,12 +90,6 @@ export function SponsoredRail({ side = "right" }: { side?: "left" | "right" }) {
         </div>
       </div>
 
-      <FeaturedBookingDialog
-        open={open}
-        onOpenChange={setOpen}
-        initialSlot={slot}
-        onBooked={() => void refetch()}
-      />
     </aside>
   );
 }

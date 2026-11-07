@@ -3,9 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowUpRight, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StartupFavicon } from "@/components/StartupFavicon";
-import { FeaturedBookingDialog } from "@/components/FeaturedBookingDialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { fetchFeaturedSlots, FEATURED_PRICE_USD, FEATURED_BILLING_LABEL, FEATURED_SLOT_COUNT } from "@/lib/featured";
+import { fetchFeaturedSlots } from "@/lib/featured";
 
 /**
  * Tracks the bottom edge of the sticky site header. When the StartupBar widget
@@ -44,9 +43,8 @@ function useHeaderOffset() {
  * Sticks under the header while scrolling and scrolls horizontally.
  */
 export function FeaturedMobileBanner(_props: { slots?: number[] }) {
-  const [open, setOpen] = useState(false);
   const headerOffset = useHeaderOffset();
-  const { data: booked = [], refetch } = useQuery({
+  const { data: booked = [] } = useQuery({
     queryKey: ["featured-slots"],
     queryFn: fetchFeaturedSlots,
     staleTime: 60_000,
@@ -99,7 +97,6 @@ export function FeaturedMobileBanner(_props: { slots?: number[] }) {
         </div>
       </div>
 
-      <FeaturedBookingDialog open={open} onOpenChange={setOpen} onBooked={() => void refetch()} />
     </div>
   );
 }
