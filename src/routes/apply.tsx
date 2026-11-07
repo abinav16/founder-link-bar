@@ -1167,7 +1167,7 @@ function Apply() {
   const finalizing = verifyingPayment || autoSubmitPending || (loading && (hasPrepaid || paidNeedsForm));
 
   return (
-    <div className="min-h-dvh bg-white text-black">
+    <div className={`min-h-dvh bg-white text-black ${step === 2 ? "apply-install-shell" : ""}`}>
       {finalizing && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-white/92 px-6 backdrop-blur-sm">
           <div className="w-full max-w-sm text-center">
@@ -1313,7 +1313,7 @@ function Apply() {
 
         <div className="apply-install-page checkout-rise mx-auto max-w-[1400px] px-4 py-8 sm:px-6 md:py-12">
           <div className="install-layout">
-          <div className="min-w-0">
+          <div className="install-content min-w-0" role="region" aria-label="Installation steps" tabIndex={0}>
           <button onClick={() => setStep(1)} className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
             <ArrowLeft className="h-3.5 w-3.5" /> Back to plan
           </button>
