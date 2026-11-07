@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminBannerReview } from "@/components/AdminBannerReview";
 import { checkIsAdmin } from "@/lib/admin-auth.functions";
 import { toast } from "sonner";
 import { heartbeatProvesInstall } from "@/lib/widget-install-evidence";
@@ -336,6 +337,7 @@ function AdminPage() {
       </SiteHeader>
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+        <AdminBannerReview />
         <DraftApplicationsPanel />
         <BroadcastPanel />
         <UnsubReasonsPanel />
