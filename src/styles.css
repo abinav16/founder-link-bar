@@ -1185,6 +1185,8 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
 
 /* /apply install step */
 .apply-install-shell { height: 100dvh; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+body:has(.apply-install-shell) { overflow: hidden; }
+body[style*="padding-top: 36px"] .apply-install-shell { height: calc(100dvh - 36px); }
 .apply-install-shell > .site-header { flex-shrink: 0; }
 .apply-install-shell > main { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
 .apply-install-shell .apply-install-page { flex: 1; min-height: 0; width: 100%; padding-block: 1.5rem; animation: none; }
