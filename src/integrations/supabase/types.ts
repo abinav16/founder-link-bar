@@ -25,6 +25,7 @@ export type Database = {
           desktop_image_url: string
           destination_url: string
           dodo_payment_id: string | null
+          expires_at: string | null
           headline: string
           id: string
           impressions: number
@@ -32,8 +33,10 @@ export type Database = {
           paid_at: string | null
           rejection_reason: string | null
           spent_cents: number
+          starts_at: string | null
           status: string
           user_id: string
+          weeks: number
         }
         Insert: {
           advertiser_name: string
@@ -45,6 +48,7 @@ export type Database = {
           desktop_image_url: string
           destination_url: string
           dodo_payment_id?: string | null
+          expires_at?: string | null
           headline?: string
           id?: string
           impressions?: number
@@ -52,8 +56,10 @@ export type Database = {
           paid_at?: string | null
           rejection_reason?: string | null
           spent_cents?: number
+          starts_at?: string | null
           status?: string
           user_id: string
+          weeks?: number
         }
         Update: {
           advertiser_name?: string
@@ -65,6 +71,7 @@ export type Database = {
           desktop_image_url?: string
           destination_url?: string
           dodo_payment_id?: string | null
+          expires_at?: string | null
           headline?: string
           id?: string
           impressions?: number
@@ -72,8 +79,10 @@ export type Database = {
           paid_at?: string | null
           rejection_reason?: string | null
           spent_cents?: number
+          starts_at?: string | null
           status?: string
           user_id?: string
+          weeks?: number
         }
         Relationships: []
       }
@@ -1427,6 +1436,7 @@ export type Database = {
           desktop_image_url: string
           destination_url: string
           dodo_payment_id: string | null
+          expires_at: string | null
           headline: string
           id: string
           impressions: number
@@ -1434,8 +1444,10 @@ export type Database = {
           paid_at: string | null
           rejection_reason: string | null
           spent_cents: number
+          starts_at: string | null
           status: string
           user_id: string
+          weeks: number
         }[]
         SetofOptions: {
           from: "*"
@@ -1543,6 +1555,10 @@ export type Database = {
           rank: number
           total_cents: number
         }[]
+      }
+      confirm_weekly_banner_payment: {
+        Args: { _id: string; _payment_id: string }
+        Returns: string
       }
       consume_prepaid_listing: { Args: { _user_id: string }; Returns: string }
       dashboard_host_shown_7d: {
@@ -1842,6 +1858,18 @@ export type Database = {
           advertiser_name: string
           desktop_image_url: string
           destination_url: string
+          headline: string
+          id: string
+          mobile_image_url: string
+        }[]
+      }
+      public_pick_weekly_banners: {
+        Args: { _count?: number }
+        Returns: {
+          advertiser_name: string
+          desktop_image_url: string
+          destination_url: string
+          expires_at: string
           headline: string
           id: string
           mobile_image_url: string
