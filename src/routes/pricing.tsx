@@ -230,6 +230,10 @@ function PricingPage() {
           <Link to="/apply" className="mt-4 inline-flex h-10 items-center rounded-md bg-black px-4 text-sm font-medium text-white hover:bg-black/80 transition-colors">
             Get guaranteed clicks
           </Link>
+          <p className="mt-3 text-xs text-black/50">
+            Already listed?{" "}
+            <Link to="/dashboard" className="text-black underline underline-offset-2">Buy a pack from your dashboard</Link>.
+          </p>
         </div>
 
         {/* Supporter membership */}
