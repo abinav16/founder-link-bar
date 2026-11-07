@@ -169,9 +169,9 @@ export function PlanOptions({ plan, onChange, startupName, onFocusPreview, listi
               })}
             </div>
             <ul className="mt-4 space-y-2">
-              <Bullet>Gold featured slot on the network page and priority in the bar.</Bullet>
+              <Bullet>Priority in the bar across member sites, plus a featured card on the network page.</Bullet>
               <Bullet>Only real, bot-filtered clicks count toward your total.</Bullet>
-              <Bullet><span className="font-medium text-foreground">Our promise:</span> the slot stays live until all {pack.clicks.toLocaleString()} clicks arrive.</Bullet>
+              <Bullet><span className="font-medium text-foreground">Our promise:</span> you stay featured until all {pack.clicks.toLocaleString()} clicks arrive.</Bullet>
             </ul>
           </PlanCard>
 

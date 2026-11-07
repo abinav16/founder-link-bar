@@ -444,6 +444,15 @@ serve(async (req) => {
       });
     }
 
+    // The monthly featured subscription is retired; featured placement now
+    // comes only from Guaranteed Click packs. Existing subscriptions still
+    // renew/cancel through the webhook and cancel action above.
+    if (kind === "featured") {
+      return new Response(JSON.stringify({ error: "Featured subscriptions are no longer sold. Choose a Guaranteed Clicks pack." }), {
+        status: 410, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Never fall back to another product or a test-environment product.
     const featuredId = Deno.env.get("DODO_FEATURED_PRODUCT_ID");
     const listingId = Deno.env.get("DODO_PRODUCT_ID");

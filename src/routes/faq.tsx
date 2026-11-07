@@ -2,7 +2,6 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SUPPORTER_PRICE_USD, SUPPORTER_TRIAL_DAYS } from "@/lib/supporter";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { FEATURED_PRICE_USD, FEATURED_DAYS, FEATURED_SLOT_COUNT } from "@/lib/featured";
 
 type Faq = { id: string; q: string; a: string; cat: string };
 
@@ -148,32 +147,20 @@ const FAQS: Faq[] = [
   {
     id: "what-is-featured-spot",
     cat: "Featured spots",
-    q: "What is a Featured spot?",
-    a: "A Featured spot is a paid monthly placement on StartupBar pages. Your startup appears as a gold highlighted card in one of the sidebar slots on the network, leaderboard, and other StartupBar pages.",
+    q: "How do I get a Featured spot?",
+    a: "Buy a Guaranteed Clicks pack when you apply. Your startup gets a gold featured card beside the network feed and priority in the bar until every click in the pack is delivered.",
   },
   {
     id: "featured-spot-cost",
     cat: "Featured spots",
-    q: "How much does it cost and how long does it run?",
-    a: `It costs $${FEATURED_PRICE_USD} USD and runs for ${FEATURED_DAYS} days. It renews automatically until you cancel.`,
-  },
-  {
-    id: "featured-spot-where",
-    cat: "Featured spots",
-    q: "Where will my startup appear?",
-    a: "Your startup gets a sidebar card on StartupBar pages and is highlighted in gold across the network list and leaderboard. It does not appear inside the widget on member sites.",
+    q: "How much does it cost?",
+    a: "Packs are one-time: 100 clicks for $49, 250 for $99, 500 for $179 and 1,000 for $299. There is no monthly subscription.",
   },
   {
     id: "featured-spot-effect",
     cat: "Featured spots",
-    q: "Does it change my widget traffic or leaderboard position?",
-    a: "No. A Featured spot is presentation only. It does not change how often your startup is shown in the widget, how impressions are counted, or your leaderboard ranking.",
-  },
-  {
-    id: "featured-spot-book-cancel",
-    cat: "Featured spots",
-    q: "How do I book or cancel a Featured spot?",
-    a: "Click the Promote button on your startup card in the dashboard or account page, pick an open slot, and complete checkout through Dodo. You can cancel anytime from the same Promote button; the spot stays live until the end of the period you already paid for.",
+    q: "Which clicks count?",
+    a: "Only real, bot-filtered clicks count toward your pack. Your featured card stays live until the full number arrives.",
   },
 
   // Billing

@@ -3,9 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowUpRight, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StartupFavicon } from "@/components/StartupFavicon";
-import { FeaturedBookingDialog } from "@/components/FeaturedBookingDialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { fetchFeaturedSlots, FEATURED_PRICE_USD, FEATURED_BILLING_LABEL, FEATURED_SLOT_COUNT } from "@/lib/featured";
+import { fetchFeaturedSlots } from "@/lib/featured";
 
 /**
  * Tracks the bottom edge of the sticky site header. When the StartupBar widget
@@ -44,9 +43,8 @@ function useHeaderOffset() {
  * Sticks under the header while scrolling and scrolls horizontally.
  */
 export function FeaturedMobileBanner(_props: { slots?: number[] }) {
-  const [open, setOpen] = useState(false);
   const headerOffset = useHeaderOffset();
-  const { data: booked = [], refetch } = useQuery({
+  const { data: booked = [] } = useQuery({
     queryKey: ["featured-slots"],
     queryFn: fetchFeaturedSlots,
     staleTime: 60_000,
@@ -71,16 +69,11 @@ export function FeaturedMobileBanner(_props: { slots?: number[] }) {
           <PopoverContent align="start" className="w-72 text-sm">
             <p className="font-semibold text-foreground">Featured spots</p>
             <p className="mt-1 text-muted-foreground">
-              A limited set of {FEATURED_SLOT_COUNT} paid spots shown across the network and
-              leaderboard pages. Featured startups get permanent placement, a gold highlight and
-              tracked clicks — ${FEATURED_PRICE_USD} {FEATURED_BILLING_LABEL}.
+              Startups with a Guaranteed Clicks pack are featured here and get priority in the
+              bar until every click is delivered. Packs start at $49, one-time.
             </p>
-            <Button
-              type="button"
-              onClick={() => setOpen(true)}
-              className="mt-3 w-full text-xs"
-            >
-              Book a spot
+            <Button asChild className="mt-3 w-full text-xs">
+              <a href="/pricing#clicks">See click packs</a>
             </Button>
           </PopoverContent>
         </Popover>
@@ -104,7 +97,6 @@ export function FeaturedMobileBanner(_props: { slots?: number[] }) {
         </div>
       </div>
 
-      <FeaturedBookingDialog open={open} onOpenChange={setOpen} onBooked={() => void refetch()} />
     </div>
   );
 }

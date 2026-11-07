@@ -3,15 +3,15 @@ import { SUPPORTER_PRICE_USD, SUPPORTER_TRIAL_DAYS } from "@/lib/supporter";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { FEATURED_PRICE_USD, FEATURED_DAYS, FEATURED_SLOT_COUNT } from "@/lib/featured";
+import { CLICK_PACKS } from "@/lib/checkout-plans";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
       { title: "Pricing — StartupBar" },
-      { name: "description", content: "StartupBar pricing: first startup listing free forever, extra listings $9.99 one-time, and Featured spot promotion at $79 per month. Supporter: seven days free, then $999/year. Payments processed by Dodo Payments." },
+      { name: "description", content: "StartupBar pricing: first startup listing free forever, extra listings $9.99 one-time, and Guaranteed Clicks packs from $49 one-time. Supporter: seven days free, then $999/year. Payments processed by Dodo Payments." },
       { property: "og:title", content: "Pricing — StartupBar" },
-      { property: "og:description", content: "First listing free. Extra listings $9.99 one-time. Featured spot promotion $79 per month. Supporter: seven days free, then $999/year, cancel anytime." },
+      { property: "og:description", content: "First listing free. Extra listings $9.99 one-time. Guaranteed Clicks from $49 one-time. Supporter: seven days free, then $999/year, cancel anytime." },
       { property: "og:url", content: "https://startupbar.co/pricing" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -23,8 +23,8 @@ export const Route = createFileRoute("/pricing")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Product",
-          name: "StartupBar listings and Featured spot promotion",
-          description: "Startup listings in the StartupBar traffic exchange network, plus a paid Featured spot promotion on StartupBar pages.",
+          name: "StartupBar listings and Guaranteed Clicks",
+          description: "Startup listings in the StartupBar traffic exchange network, plus one-time Guaranteed Clicks packs.",
           brand: { "@type": "Brand", name: "StartupBar" },
           offers: [
             {
@@ -52,23 +52,7 @@ export const Route = createFileRoute("/pricing")({
               url: "https://startupbar.co/pricing",
               availability: "https://schema.org/InStock",
             },
-            {
-              "@type": "Offer",
-              name: "Featured spot promotion",
-              price: String(FEATURED_PRICE_USD),
-              priceCurrency: "USD",
-              url: "https://startupbar.co/pricing",
-              availability: "https://schema.org/InStock",
-              priceSpecification: {
-                "@type": "UnitPriceSpecification",
-                price: String(FEATURED_PRICE_USD),
-                priceCurrency: "USD",
-                billingDuration: FEATURED_DAYS,
-                billingIncrement: 1,
-                unitCode: "DAY",
-              },
-            },
-          ],
+                      ],
         }),
       },
     ],
@@ -228,46 +212,24 @@ function PricingPage() {
           </div>
         </div>
 
-        {/* Featured spot promotion */}
-        <div className="mt-4 rounded-xl border border-black/10 p-6">
-          <div className="flex flex-wrap items-baseline justify-between gap-3">
-            <div>
-              <div className="text-xs font-medium uppercase tracking-wide text-black/40">Featured spot promotion</div>
-              <div className="mt-2 flex items-baseline gap-1">
-                <span className="text-4xl font-semibold tracking-tight text-black">${FEATURED_PRICE_USD}</span>
-                <span className="text-sm text-black/40">USD per month, cancel anytime</span>
+        {/* Guaranteed clicks */}
+        <div id="clicks" className="mt-4 scroll-mt-24 rounded-xl border border-black/10 p-6">
+          <div className="text-xs font-medium uppercase tracking-wide text-black/40">Guaranteed clicks</div>
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {CLICK_PACKS.map((p) => (
+              <div key={p.clicks} className="rounded-lg border border-black/10 p-3">
+                <div className="text-lg font-semibold text-black">{p.clicks.toLocaleString()} clicks</div>
+                <div className="text-sm text-black/60">${p.priceUsd} one-time</div>
               </div>
-            </div>
-            {loading ? (
-              <div aria-hidden className="h-10 w-40 rounded-md bg-black/5" />
-            ) : !signedIn ? (
-              <Link
-                to="/auth"
-                className="inline-flex h-10 items-center rounded-md border border-black px-4 text-sm font-medium text-black hover:bg-black hover:text-white transition-colors"
-              >
-                Sign in to promote
-              </Link>
-            ) : (
-              <Link
-                to="/network"
-                className="inline-flex h-10 items-center rounded-md bg-black px-4 text-sm font-medium text-white hover:bg-black/80 transition-colors"
-              >
-                Book a featured spot
-              </Link>
-            )}
+            ))}
           </div>
           <p className="mt-4 text-sm leading-relaxed text-black/60">
-            Featured spots are an optional promotion on StartupBar&rsquo;s own pages. There are{" "}
-            {FEATURED_SLOT_COUNT} spots in total, shown in the sidebar rails beside the network feed. Booking
-            a spot does not change how the widget rotates startups on member sites, and it never buys extra
-            impressions inside the network.
+            Pick a pack when you apply. Your startup gets priority in the bar across member sites and a featured
+            card beside the network feed until every click is delivered. Only real, bot-filtered clicks count.
           </p>
-          <ul className="mt-5 grid gap-2 text-sm text-black/65 sm:grid-cols-2">
-            <li className="flex gap-2"><Check />A dedicated card in the StartupBar sidebar with your logo, name, founder and one liner</li>
-            <li className="flex gap-2"><Check />Gold highlight on your card in the network list, Trending and New this week</li>
-            <li className="flex gap-2"><Check />Gold highlight on the leaderboard, including the top podium if you rank there</li>
-            <li className="flex gap-2"><Check />Renews every {FEATURED_DAYS} days until you cancel</li>
-          </ul>
+          <Link to="/apply" className="mt-4 inline-flex h-10 items-center rounded-md bg-black px-4 text-sm font-medium text-white hover:bg-black/80 transition-colors">
+            Get guaranteed clicks
+          </Link>
         </div>
 
         {/* Supporter membership */}
@@ -323,18 +285,8 @@ function PricingPage() {
           </section>
 
           <section>
-            <h2 className="mb-3 text-base font-semibold text-black">How to book a featured spot</h2>
-            <ol className="space-y-2 list-decimal list-inside">
-              <li>Sign in and open the <Link to="/network" className="text-black underline underline-offset-2">Network</Link> page or your <Link to="/dashboard" className="text-black underline underline-offset-2">Dashboard</Link>.</li>
-              <li>Press Promote on the startup you want to feature. Your startup must already be approved.</li>
-              <li>Pick one of the {FEATURED_SLOT_COUNT} spots that is still open.</li>
-              <li>You are taken to a secure Dodo Payments checkout for the ${FEATURED_PRICE_USD} monthly subscription.</li>
-              <li>After payment you return to StartupBar and the spot goes live within a minute.</li>
-            </ol>
-            <p className="mt-3">
-              Each account can hold one active featured subscription at a time. To move to a different spot,
-              cancel the current one first and book again once it ends.
-            </p>
+            <h2 className="mb-3 text-base font-semibold text-black">How guaranteed clicks work</h2>
+            <p>Choose a click pack on the Apply page and pay once with your listing. Delivery starts when your startup is approved, and your featured card stays up until the full pack is delivered.</p>
           </section>
 
           <section>
@@ -344,7 +296,7 @@ function PricingPage() {
               <li>All prices are in US dollars. Applicable taxes are calculated and shown at checkout.</li>
               <li>Listing payments are one-time and never auto renew.</li>
               <li>Supporter starts with {SUPPORTER_TRIAL_DAYS} days free, then charges ${SUPPORTER_PRICE_USD} USD per year including tax. A card is required; cancel before the trial ends to avoid the first charge.</li>
-              <li>The featured spot is a subscription. It renews automatically every {FEATURED_DAYS} days at ${FEATURED_PRICE_USD} until you cancel.</li>
+              <li>Guaranteed Clicks packs are one-time payments and never renew.</li>
               <li>Your receipt is emailed by Dodo Payments and the charge appears on your statement via Dodo Payments.</li>
             </ul>
           </section>
