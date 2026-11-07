@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Image as ImageIcon, Loader2, Mail, Monitor, Smartphone, Sparkles, Upload } from "lucide-react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { BannerCreative } from "@/components/BannerAd";
 import { BoostClicksButton } from "@/components/BoostClicksDialog";
@@ -10,8 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  BANNER_BUDGET_PRESETS_USD, BANNER_DESKTOP, BANNER_MIN_BUDGET_CENTS, BANNER_MOBILE,
-  estimatedViews, fitsBannerSize, isValidBudget, normalizeDestination,
+  BANNER_WEEK_PRESETS, BANNER_DESKTOP, BANNER_MAX_WEEKS, BANNER_MOBILE,
+  bannerTotalCents, fitsBannerSize, isValidWeeks, normalizeDestination,
 } from "@/lib/banner-ads";
 import { confirmBannerPayment, createBannerCheckout, getMyBannerCampaigns } from "@/lib/banner-ads.functions";
 
@@ -52,6 +53,7 @@ function AdSetup() {
   const search = Route.useSearch();
   const [section, setSection] = useState<Section>(search.type ?? "banner");
   const qc = useQueryClient();
+  const confirmPayment = useServerFn(confirmBannerPayment);
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -60,13 +62,13 @@ function AdSetup() {
     url.searchParams.delete("banner"); url.searchParams.delete("payment_id"); url.searchParams.delete("status");
     window.history.replaceState(null, "", url.toString());
     setSection("campaigns");
-    confirmBannerPayment({ data: { campaignId: id } }).then((r) => {
+    confirmPayment({ data: { campaignId: id } }).then((r) => {
       if (r.status === "in_review") toast.success("Payment received. We'll review your banner, usually within a day.");
       else if (r.status === "pending") toast("Payment is processing. Your banner goes to review once it clears.");
       else toast.error("We couldn't confirm that payment.");
       qc.invalidateQueries({ queryKey: ["my-banners"] });
-    });
-  }, [qc]);
+    }).catch(() => toast.error("Payment confirmation is delayed. Your campaign will update once it clears."));
+  }, [qc, confirmPayment]);
 
   const menu: { id: Section; label: string; icon: typeof ImageIcon }[] = [
     { id: "banner", label: "Banner ad", icon: ImageIcon },
@@ -82,15 +84,15 @@ function AdSetup() {
           <nav className="rounded-2xl border border-border bg-card p-3" aria-label="Campaign sections">
             <h1 className="px-3 pb-3 pt-1 text-lg font-semibold">New campaign</h1>
             {menu.map((m) => (
-              <button key={m.id} type="button" onClick={() => setSection(m.id)} aria-current={section === m.id}
+              <Button variant="ghost" key={m.id} type="button" onClick={() => setSection(m.id)} aria-current={section === m.id ? "page" : undefined}
                 className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors ${section === m.id ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
                 <m.icon className="h-4 w-4" /> {m.label}
-              </button>
+              </Button>
             ))}
           </nav>
           <div className="rounded-2xl border border-border bg-card p-4 text-sm">
             <p className="font-semibold">Need a hand?</p>
-            <p className="mt-1 text-muted-foreground">Ask us about placements, budget or timing.</p>
+            <p className="mt-1 text-muted-foreground">Ask us about placements or timing.</p>
             <a href="mailto:hello@startupbar.co" className="mt-3 inline-flex h-9 w-full items-center justify-center rounded-full border border-foreground text-sm font-semibold">Talk to us</a>
           </div>
         </aside>
@@ -154,7 +156,8 @@ function ImageDrop({ label, spec, value, onChange }: { label: string; spec: { wi
 
 function BannerSection({ onDone }: { onDone: () => void }) {
   void onDone;
-  const [budget, setBudget] = useState(250);
+  const [weeks, setWeeks] = useState(1);
+  const checkout = useServerFn(createBannerCheckout);
   const [name, setName] = useState("");
   const [headline, setHeadline] = useState("");
   const [dest, setDest] = useState("https://");
@@ -162,14 +165,14 @@ function BannerSection({ onDone }: { onDone: () => void }) {
   const [mobile, setMobile] = useState("");
   const [view, setView] = useState<"desktop" | "mobile">("desktop");
   const [busy, setBusy] = useState(false);
-  const cents = Math.round(budget * 100);
-  const ready = name.trim() && normalizeDestination(dest) && desktop && mobile && isValidBudget(cents);
+  const cents = bannerTotalCents(weeks);
+  const ready = name.trim() && normalizeDestination(dest) && desktop && mobile && isValidWeeks(weeks);
 
   const pay = async () => {
     setBusy(true);
     try {
       const ret = new URL(window.location.href); ret.search = "";
-      const r = await createBannerCheckout({ data: { advertiserName: name, headline, destinationUrl: dest, desktopImageUrl: desktop, mobileImageUrl: mobile, budgetCents: cents, returnUrl: ret.toString() } });
+      const r = await checkout({ data: { advertiserName: name, headline, destinationUrl: dest, desktopImageUrl: desktop, mobileImageUrl: mobile, weeks, returnUrl: ret.toString() } });
       if (r.ok) { window.location.href = r.paymentLink; return; }
       toast.error(r.reason);
     } catch { toast.error("Couldn't start checkout."); }
@@ -184,18 +187,18 @@ function BannerSection({ onDone }: { onDone: () => void }) {
       <Card title="Banner ad" desc="Shown between startups on Network and Leaderboard, and on startup profiles. Open to any company.">
         <div className="grid gap-0 overflow-hidden rounded-xl border border-border sm:grid-cols-[260px_1fr]">
           <div className="border-b border-border p-4 sm:border-b-0 sm:border-r">
-            <label className="text-sm font-semibold" htmlFor="budget">Budget</label>
-            <div className="relative mt-2"><span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-              <Input id="budget" type="number" min={BANNER_MIN_BUDGET_CENTS / 100} value={budget} onChange={(e) => setBudget(Number(e.target.value))} className="pl-7 text-lg" /></div>
+            <label className="text-sm font-semibold" htmlFor="weeks">Campaign duration</label>
+            <div className="mt-2 flex items-center gap-3">
+              <Input id="weeks" type="number" min={1} max={BANNER_MAX_WEEKS} step={1} value={weeks || ""} onChange={(e) => setWeeks(Number(e.target.value))} className="text-lg" /><span className="text-sm text-muted-foreground">weeks</span></div>
             <div className="mt-2 flex flex-wrap gap-1.5">
-              {BANNER_BUDGET_PRESETS_USD.map((p) => <button key={p} type="button" onClick={() => setBudget(p)} className={`rounded-full border px-2.5 py-1 text-xs ${budget === p ? "border-foreground font-semibold" : "border-border"}`}>${p}</button>)}
+              {BANNER_WEEK_PRESETS.map((p) => <Button variant="outline" size="sm" key={p} type="button" onClick={() => setWeeks(p)} aria-pressed={weeks === p} className={`h-8 px-2 text-xs ${weeks === p ? "border-foreground font-semibold" : "border-border"}`}>{p}w</Button>)}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4 p-4 sm:grid-cols-3">
-            <div><p className="text-[11px] uppercase tracking-wider text-muted-foreground">Per 1,000 views</p><p className="text-xl font-semibold">$15</p></div>
-            <div><p className="text-[11px] uppercase tracking-wider text-muted-foreground">Est. views</p><p className="text-xl font-semibold tabular-nums">~{estimatedViews(cents).toLocaleString()}</p></div>
-            <div><p className="text-[11px] uppercase tracking-wider text-muted-foreground">Placement</p><p className="text-xl font-semibold">Random</p></div>
-            <p className="col-span-full text-xs text-muted-foreground">Estimate only. Minimum ${BANNER_MIN_BUDGET_CENTS / 100}. Ends when the budget is used.</p>
+            <div><p className="text-[11px] uppercase tracking-wider text-muted-foreground">Per week</p><p className="text-xl font-semibold">$49</p></div>
+            <div><p className="text-[11px] uppercase tracking-wider text-muted-foreground">Duration</p><p className="text-xl font-semibold tabular-nums">{isValidWeeks(weeks) ? weeks * 7 : "—"} days</p></div>
+            <div><p className="text-[11px] uppercase tracking-wider text-muted-foreground">Total</p><p className="text-xl font-semibold">${(cents / 100).toLocaleString()}</p></div>
+            <p className="col-span-full text-xs text-muted-foreground">1–52 weeks. Paid once; no subscription. Starts after approval and runs in shared random rotation. Views and clicks are measured, not guaranteed.</p>
           </div>
         </div>
 
@@ -212,9 +215,9 @@ function BannerSection({ onDone }: { onDone: () => void }) {
       <Card title="Preview" desc="How your banner looks inside the startup list.">
         <div className="mb-4 inline-flex rounded-full border border-border p-1">
           {(["desktop", "mobile"] as const).map((v) => (
-            <button key={v} type="button" onClick={() => setView(v)} aria-pressed={view === v} className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${view === v ? "bg-foreground text-background" : "text-muted-foreground"}`}>
+            <Button variant="ghost" key={v} type="button" onClick={() => setView(v)} aria-pressed={view === v} className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${view === v ? "bg-foreground text-background" : "text-muted-foreground"}`}>
               {v === "desktop" ? <Monitor className="h-3.5 w-3.5" /> : <Smartphone className="h-3.5 w-3.5" />} {v === "desktop" ? "Desktop" : "Mobile"}
-            </button>
+            </Button>
           ))}
         </div>
         <div className={`mx-auto space-y-2 rounded-2xl border border-border bg-background p-3 ${view === "mobile" ? "max-w-[340px]" : ""}`}>
@@ -225,8 +228,8 @@ function BannerSection({ onDone }: { onDone: () => void }) {
       </Card>
 
       <div className="flex flex-col items-start gap-3 rounded-2xl border border-border bg-card p-5 sm:flex-row sm:items-center sm:justify-between">
-        <div><p className="text-sm text-muted-foreground">Due today</p><p className="text-2xl font-semibold">${budget.toLocaleString()}</p>
-          <p className="text-xs text-muted-foreground">We review every banner before it goes live. Rejected banners are refunded.</p></div>
+        <div><p className="text-sm text-muted-foreground">Due today · one-time payment</p><p className="text-2xl font-semibold">${(cents / 100).toLocaleString()}</p>
+          <p className="text-xs text-muted-foreground">{isValidWeeks(weeks) ? `${weeks} ${weeks === 1 ? "week" : "weeks"} at $49/week. ` : "Choose 1–52 whole weeks. "}Review time does not use your purchased days. Taxes, if applicable, appear at checkout.</p></div>
         <Button onClick={pay} disabled={!ready || busy} className="h-11 rounded-full px-6">{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Pay & submit for review"}</Button>
       </div>
     </div>
@@ -274,7 +277,7 @@ function NewsletterSection() {
   );
 }
 
-const STATUS: Record<string, string> = { in_review: "In review", running: "Running", paused: "Paused", rejected: "Rejected", finished: "Finished" };
+const STATUS: Record<string, string> = { pending_payment: "Awaiting payment", in_review: "In review", running: "Running", paused: "Paused", rejected: "Rejected", finished: "Finished" };
 
 function CampaignsSection() {
   const { data = [], isLoading } = useQuery({ queryKey: ["my-banners"], queryFn: () => getMyBannerCampaigns() });
@@ -288,8 +291,9 @@ function CampaignsSection() {
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2"><span className="font-semibold">{c.advertiser_name}</span><span className="rounded-full border border-border px-2 py-0.5 text-[11px] font-medium">{STATUS[c.status] ?? c.status}</span></div>
                 <p className="mt-1 text-sm text-muted-foreground tabular-nums">
-                  {c.impressions.toLocaleString()} views · {c.clicks.toLocaleString()} clicks · ${(c.spent_cents / 100).toFixed(2)} of ${(c.budget_cents / 100).toFixed(0)} used
+                  {c.impressions.toLocaleString()} views · {c.clicks.toLocaleString()} clicks · {c.weeks} {c.weeks === 1 ? "week" : "weeks"} · ${(c.budget_cents / 100).toLocaleString()} prepaid
                 </p>
+                <p className="mt-1 text-xs text-muted-foreground">{c.starts_at && c.expires_at ? `${new Date(c.starts_at).toLocaleDateString()} – ${new Date(c.expires_at).toLocaleDateString()}` : "Your purchased time starts after payment and approval."}</p>
                 {c.status === "rejected" && c.rejection_reason ? <p className="mt-1 text-sm">Reason: {c.rejection_reason}</p> : null}
               </div>
             </li>

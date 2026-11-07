@@ -1,13 +1,27 @@
 import { describe, expect, it } from "vitest";
-import { estimatedViews, fitsBannerSize, isValidBudget, normalizeDestination, BANNER_DESKTOP, BANNER_MOBILE } from "./banner-ads";
+import { bannerTotalCents, fitsBannerSize, isValidWeeks, isVerifiedBannerPayment, normalizeDestination, BANNER_DESKTOP, BANNER_MOBILE } from "./banner-ads";
 
 describe("banner ads", () => {
-  it("$15 CPM: $100 buys about 6,666 views", () => {
-    expect(estimatedViews(10000)).toBe(6666);
+  it("costs $49 per week with one prepaid total", () => {
+    expect(bannerTotalCents(1)).toBe(4900);
+    expect(bannerTotalCents(4)).toBe(19600);
+    expect(bannerTotalCents(52)).toBe(254800);
   });
-  it("minimum budget is $50", () => {
-    expect(isValidBudget(4999)).toBe(false);
-    expect(isValidBudget(5000)).toBe(true);
+  it("allows only whole durations from 1 to 52 weeks", () => {
+    expect(isValidWeeks(1)).toBe(true);
+    expect(isValidWeeks(52)).toBe(true);
+    for (const n of [0, -1, 1.5, 53, NaN]) expect(isValidWeeks(n)).toBe(false);
+  });
+  it("requires a successful payment for the correct owner, campaign, product and duration", () => {
+    const c = { id: "campaign", user_id: "owner", weeks: 4 };
+    const p = { status: "succeeded", currency: "USD", total_amount: 19600, metadata: { kind: "banner", campaign_id: c.id, user_id: c.user_id }, product_cart: [{ product_id: "weekly", quantity: 4 }] };
+    expect(isVerifiedBannerPayment(p, c, "weekly")).toBe(true);
+    expect(isVerifiedBannerPayment({ ...p, total_amount: 19599 }, c, "weekly")).toBe(false);
+    expect(isVerifiedBannerPayment({ ...p, status: "pending" }, c, "weekly")).toBe(false);
+    expect(isVerifiedBannerPayment({ ...p, metadata: { ...p.metadata, user_id: "other" } }, c, "weekly")).toBe(false);
+    expect(isVerifiedBannerPayment(p, c, "other-product")).toBe(false);
+    expect(isVerifiedBannerPayment({ ...p, product_cart: [{ product_id: "weekly", quantity: 1 }] }, c, "weekly")).toBe(false);
+    expect(isVerifiedBannerPayment({ ...p, metadata: { ...p.metadata, weeks: "4" }, product_cart: [{ product_id: "weekly", quantity: 1 }] }, c, "weekly")).toBe(true);
   });
   it("checks banner sizes", () => {
     expect(fitsBannerSize(1200, 200, BANNER_DESKTOP)).toBe(true);

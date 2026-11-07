@@ -1,23 +1,26 @@
-// Banner ad pricing shared by the advertise page, setup page and server.
-// Banners have no fixed slots: running campaigns rotate at random, weighted by
-// remaining budget, and each counted view debits CPM / 1000.
-
-export const BANNER_CPM_CENTS = 1500; // $15 per 1,000 views
-export const BANNER_MIN_BUDGET_CENTS = 5000; // $50
-export const BANNER_MAX_BUDGET_CENTS = 5_000_000; // $50,000
-export const BANNER_BUDGET_PRESETS_USD = [100, 250, 500, 1000] as const;
+// Shared prepaid weekly sponsorship rules. Views are analytics, never charges.
+export const BANNER_WEEKLY_CENTS = 4900;
+export const BANNER_MAX_WEEKS = 52;
+export const BANNER_WEEK_PRESETS = [1, 4, 12, 26, 52] as const;
 export const BANNER_EVERY_N_ROWS = 6;
 
 export const BANNER_DESKTOP = { width: 1200, height: 200, label: "1200 × 200 px (6:1)" } as const;
 export const BANNER_MOBILE = { width: 600, height: 300, label: "600 × 300 px (2:1)" } as const;
 
-export function estimatedViews(budgetCents: number, cpmCents = BANNER_CPM_CENTS): number {
-  if (!Number.isFinite(budgetCents) || budgetCents <= 0) return 0;
-  return Math.floor((budgetCents / cpmCents) * 1000);
+export function isValidWeeks(weeks: number): boolean {
+  return Number.isInteger(weeks) && weeks >= 1 && weeks <= BANNER_MAX_WEEKS;
 }
 
-export function isValidBudget(budgetCents: number): boolean {
-  return Number.isInteger(budgetCents) && budgetCents >= BANNER_MIN_BUDGET_CENTS && budgetCents <= BANNER_MAX_BUDGET_CENTS;
+export function bannerTotalCents(weeks: number): number {
+  if (!isValidWeeks(weeks)) return 0;
+  return weeks * BANNER_WEEKLY_CENTS;
+}
+
+export function isVerifiedBannerPayment(payment: { status?: string; currency?: string; total_amount?: number; metadata?: { kind?: string; campaign_id?: string; user_id?: string; weeks?: string }; product_cart?: { product_id: string; quantity: number }[] }, campaign: { id: string; user_id: string; weeks: number }, productId: string): boolean {
+  return payment.status === "succeeded" && payment.currency === "USD"
+    && Number(payment.total_amount) >= bannerTotalCents(campaign.weeks) && isValidWeeks(campaign.weeks)
+    && payment.metadata?.kind === "banner" && payment.metadata.campaign_id === campaign.id && payment.metadata.user_id === campaign.user_id
+    && Boolean(payment.product_cart?.some((p) => p.product_id === productId && (p.quantity === campaign.weeks || (p.quantity === 1 && payment.metadata?.weeks === String(campaign.weeks)))));
 }
 
 /** Aspect check with 5% tolerance and minimum size. */

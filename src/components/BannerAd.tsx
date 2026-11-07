@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { pickBanners, type PublicBanner } from "@/lib/banner-ads.functions";
 
@@ -35,8 +35,15 @@ export function BannerCreative({ b, onClick, preview }: { b: Pick<PublicBanner, 
 }
 
 export function BannerSlot({ slot = 0, className = "" }: { slot?: number; className?: string }) {
-  const { data = [] } = useQuery({ queryKey: ["banners"], queryFn: () => pickBanners(), staleTime: 5 * 60_000 });
-  const b = data.length ? data[slot % data.length] : null;
+  const { data = [] } = useQuery({ queryKey: ["banners"], queryFn: () => pickBanners(), staleTime: 60_000 });
+  const [now, setNow] = useState(0);
+  useEffect(() => {
+    setNow(Date.now());
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+  const active = data.filter((c) => Date.parse(c.expires_at) > now);
+  const b = active.length ? active[slot % active.length] : null;
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!b || !ref.current) return;
@@ -47,6 +54,6 @@ export function BannerSlot({ slot = 0, className = "" }: { slot?: number; classN
     io.observe(ref.current);
     return () => io.disconnect();
   }, [b, slot]);
-  if (!b || (slot >= data.length && data.length < 2)) return null;
+  if (!b || (slot >= active.length && active.length < 2)) return null;
   return <div ref={ref} className={className}><BannerCreative b={b} onClick={() => send(b.id, "click")} /></div>;
 }

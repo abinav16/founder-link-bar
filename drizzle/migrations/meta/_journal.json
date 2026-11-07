@@ -148,6 +148,13 @@
       "when": 1794046153717,
       "tag": "0020_banner_ad_campaigns",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1794047369279,
+      "tag": "0021_weekly_banner_sponsorship",
+      "breakpoints": true
     }
   ]
 }
