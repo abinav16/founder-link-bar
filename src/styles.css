@@ -1207,37 +1207,41 @@ body[style*="padding-top: 36px"] .apply-install-shell { height: calc(100dvh - 36
   .checkout-summary.is-rail > button { margin-top: .75rem; padding-block: .75rem; }
   .checkout-summary.is-rail > p { margin-top: .5rem; font-size: 11px; line-height: 1.4; }
 }
-.install-chip { display: flex; align-items: center; gap: .75rem; border: 1px solid var(--border); border-radius: 1.25rem; background: var(--card); padding: .9rem 1.1rem; }
+.install-chip { display: flex; align-items: center; gap: .85rem; border-block: 1px solid var(--border); background: var(--background); padding: 1rem 0; }
 .install-card { border: 1px solid var(--border); border-radius: 1.5rem; background: var(--card); padding: 1.25rem; box-shadow: 0 24px 60px -48px color-mix(in oklab, var(--foreground) 45%, transparent); }
 @media (min-width: 640px) { .install-card { padding: 1.75rem; } }
-.install-progress { display: flex; flex-wrap: wrap; gap: .5rem; font-size: 12px; color: var(--muted-foreground); }
-.install-progress li { display: inline-flex; align-items: center; gap: .5rem; border: 1px solid var(--border); border-radius: 999px; padding: .35rem .8rem .35rem .4rem; background: var(--card); transition: border-color .3s, color .3s; }
+.install-progress { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem; font-size: 12px; color: var(--muted-foreground); }
+.install-progress li { display: flex; align-items: center; gap: .5rem; padding: .6rem 0; border-bottom: 2px solid var(--border); transition: border-color .3s, color .3s; }
 .install-progress li span { display: inline-flex; height: 1.25rem; width: 1.25rem; align-items: center; justify-content: center; border-radius: 999px; background: var(--muted); font-size: 10px; font-weight: 600; color: var(--foreground); transition: background .3s, color .3s; }
-.install-progress li.is-done { color: var(--foreground); border-color: color-mix(in oklab, var(--foreground) 35%, transparent); }
+.install-progress li.is-done { color: var(--foreground); border-color: var(--foreground); }
 .install-progress li.is-done span { background: var(--foreground); color: var(--background); }
 
 /* Installation workspace: scoped presentation, independent of verification. */
 :root {
-  --install-code-surface: oklch(.19 .006 260);
-  --install-code-foreground: oklch(.93 .005 260);
-  --install-code-muted: oklch(.7 .008 260);
-  --install-code-border: oklch(.32 .006 260);
+  --install-code-surface: var(--muted);
+  --install-code-foreground: var(--foreground);
+  --install-code-muted: var(--muted-foreground);
+  --install-code-border: var(--border);
 }
 .install-workflow { padding: .25rem 0 1.5rem; color: var(--foreground); }
 .install-step-heading { display: flex; align-items: flex-start; gap: 1rem; min-width: 0; }
 .install-step-heading > div { min-width: 0; }
-.install-step-number { width: 36px; height: 36px; flex: 0 0 36px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: 8px; background: var(--muted); color: var(--foreground); font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.install-step-number { width: 28px; height: 28px; flex: 0 0 28px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: 50%; background: var(--background); color: var(--muted-foreground); font-size: 10px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .install-code { margin-top: 1.25rem; border: 1px solid var(--install-code-border); border-radius: 8px; overflow: hidden; background: var(--install-code-surface); color: var(--install-code-foreground); }
 .install-code-header { display: flex; justify-content: space-between; align-items: center; padding: .6rem 1rem; border-bottom: 1px solid var(--install-code-border); color: var(--install-code-muted); }
 .install-code-copy { height: 30px; color: var(--install-code-foreground); font-size: 11px; }
 .install-code-copy:hover { background: var(--install-code-border); color: var(--install-code-foreground); }
 .install-code-body { overflow-x: auto; padding: 1rem 1.25rem; scrollbar-color: var(--install-code-border) var(--install-code-surface); }
+.install-code-body pre { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.8; }
 .install-code.is-warning { border-color: var(--destructive); }
-.install-agent { display: flex; align-items: center; gap: .85rem; padding: 1rem 0; border-bottom: 1px solid var(--border); }
+.install-agent { display: flex; align-items: center; gap: .85rem; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; }
 .install-agent-icon { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; flex: 0 0 36px; border-radius: 8px; background: var(--muted); color: var(--foreground); }
 .install-verify-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .install-verification { padding: 0 0 1.75rem; border-bottom: 1px solid var(--border); }
-.install-guide-item { border-bottom: 1px solid var(--border); }
+.install-guide-item { border: 1px solid var(--border); border-radius: 8px; padding-inline: 1rem; background: var(--background); }
+.install-guide > div:last-child { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; align-items: start; }
+.install-guide-item[open] { grid-column: 1 / -1; background: var(--muted); }
+.install-guide-item summary { min-height: 66px; font-size: 13px; line-height: 1.5; }
 .install-guide-item summary::-webkit-details-marker { display: none; }
 .install-guide-item summary:hover { color: var(--muted-foreground); }
 .install-guide-item summary:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; border-radius: 4px; }
@@ -1246,6 +1250,22 @@ body[style*="padding-top: 36px"] .apply-install-shell { height: calc(100dvh - 36
   .install-agent { flex-wrap: wrap; align-items: flex-start; }
   .install-agent-copy { margin-left: 48px; }
   .install-verify-row { flex-wrap: wrap; }
-  .install-verify-button { margin-left: 48px; }
+  .install-verify-button { margin-left: 40px; }
   .install-code-body { padding: .85rem; }
+  .install-guide > div:last-child { grid-template-columns: minmax(0, 1fr); }
+  .install-progress { gap: .5rem; font-size: 10px; }
+}
+.install-back { margin: 0 0 1rem -.75rem; color: var(--muted-foreground); }
+.install-eyebrow { font-size: 10px; font-weight: 600; color: var(--muted-foreground); }
+.install-title { margin-top: .65rem; font-size: 36px; font-weight: 600; line-height: 1.15; letter-spacing: 0; }
+.install-handoff > div > div:last-child { padding: 1rem; border: none; border-radius: 8px; background: var(--muted); }
+.install-handoff form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .25rem 1rem; align-items: center; }
+.install-handoff form > p { grid-column: 1; margin: 0; }
+.install-handoff form > div { grid-column: 2; grid-row: 1 / 4; margin: 0; }
+.install-handoff form > p:first-child { font-size: 13px; }
+.install-handoff form > p:nth-child(3) { font-size: 11px; }
+@media (max-width: 639px) {
+  .install-title { font-size: 28px; }
+  .install-handoff form { grid-template-columns: minmax(0, 1fr); gap: .4rem; }
+  .install-handoff form > div { grid-column: 1; grid-row: auto; margin-top: .5rem; }
 }
