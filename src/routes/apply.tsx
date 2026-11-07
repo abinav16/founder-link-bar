@@ -1310,32 +1310,32 @@ function Apply() {
         <div className="apply-install-page checkout-rise mx-auto max-w-[1400px] px-4 py-8 sm:px-6 md:py-12">
           <div className="install-layout">
           <div className="install-content min-w-0" role="region" aria-label="Installation steps" tabIndex={0}>
-          <button onClick={() => setStep(1)} className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
+          <Button variant="ghost" size="sm" onClick={() => setStep(1)} className="install-back">
             <ArrowLeft className="h-3.5 w-3.5" /> Back to plan
-          </button>
+          </Button>
 
-          <section className="checkout-section-head">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-muted-foreground">Step 2 of 2</span>
-            <h1 className="stage-title mt-3">
-              {isSupporter ? <>Analytics. <span className="text-muted-foreground">Optional, invisible.</span></> : <>Install. <span className="text-muted-foreground">Then go live.</span></>}
+          <section className="install-intro">
+            <span className="install-eyebrow">YOUR STARTUP · FINAL STEP</span>
+            <h1 className="install-title">
+              {isSupporter ? "Connect your analytics" : "Let’s get you live."}
             </h1>
-            <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
               {isSupporter
                 ? <>One invisible line. It shows nothing on your site, it only unlocks your visitor map, visits and click stats. Skip it or add it later.</>
                 : <>Paste one line inside the <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">&lt;head&gt;</code> of your site, verify it, then submit.</>}
             </p>
           </section>
 
-          <div className="install-chip mt-6">
+          <div className="install-chip mt-5">
             {url && <StartupFavicon url={url} name={name} size={22} className="rounded-md" />}
             <div className="min-w-0">
               <p className="font-medium text-foreground">{name}</p>
               <p className="truncate text-xs text-muted-foreground">{url}</p>
             </div>
-            <button onClick={() => setStep(1)} className="ml-auto text-xs font-medium text-muted-foreground transition-colors hover:text-foreground">Edit</button>
+            <Button variant="ghost" size="sm" onClick={() => setStep(1)} className="ml-auto text-xs text-muted-foreground">Edit details <ArrowRight className="h-3 w-3" /></Button>
           </div>
 
-          <ol className="install-progress mt-6" aria-label="Install progress">
+          <ol className="install-progress mt-5" aria-label="Install progress">
             {[
               { n: 1, label: "Copy code", done: true },
               { n: 2, label: "Verify live", done: verifyStatus === "live" || verifyStatus === "csp-img" },
@@ -1353,7 +1353,7 @@ function Apply() {
 
           {/* Install checklist card */}
           {!isSupporter && authed !== null && (
-            <div className="mt-6">
+            <div className="install-handoff mt-5">
               <EmailSnippetHandoff
                 startupId={startupId} name={name} url={url} desc={desc} category={category} placement={placement}
                 accountEmail={accountEmail}
