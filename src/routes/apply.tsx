@@ -484,6 +484,7 @@ function Apply() {
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [accountEmail, setAccountEmail] = useState<string | null>(null);
   const [step, setStep] = useState<1 | 2>(initial.step);
+  const [installMethod, setInstallMethod] = useState<"agent" | "manual">("agent");
   const [name, setName] = useState(initial.name);
   const [url, setUrl] = useState(initial.url);
   const [desc, setDesc] = useState(initial.desc);
@@ -1317,12 +1318,12 @@ function Apply() {
           <section className="install-intro">
             <span className="install-eyebrow">YOUR STARTUP · FINAL STEP</span>
             <h1 className="install-title">
-              {isSupporter ? "Connect your analytics" : "Let’s get you live."}
+              {isSupporter ? "Connect your analytics" : "Install StartupBar"}
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
               {isSupporter
                 ? <>One invisible line. It shows nothing on your site, it only unlocks your visitor map, visits and click stats. Skip it or add it later.</>
-                : <>Paste one line inside the <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">&lt;head&gt;</code> of your site, verify it, then submit.</>}
+                : <>Add StartupBar to your website. Check it’s live, then submit your startup.</>}
             </p>
           </section>
 
@@ -1337,7 +1338,7 @@ function Apply() {
 
           <ol className="install-progress mt-5" aria-label="Install progress">
             {[
-              { n: 1, label: "Copy code", done: true },
+              { n: 1, label: "Install", done: false },
               { n: 2, label: "Verify live", done: verifyStatus === "live" || verifyStatus === "csp-img" },
               { n: 3, label: payNow ? "Pay & submit" : "Submit", done: false },
             ].map((st) => (
@@ -1351,6 +1352,20 @@ function Apply() {
             </p>
           )}
 
+          <div className="install-workflow mt-8 grid gap-8">
+          <div className="install-step install-embed">
+            <div className="install-step-heading"><span className="install-step-number">1</span><div>
+              <p className="text-xl font-semibold text-foreground">Add it to your website</p>
+              <p className="mt-1 text-sm text-muted-foreground">Choose how you’d like to install.</p>
+            </div></div>
+            <div className="install-methods" role="group" aria-label="Installation method">
+              <Button variant="outline" aria-pressed={installMethod === "agent"} onClick={() => setInstallMethod("agent")}><Sparkles className="h-4 w-4" /> With an AI builder</Button>
+              <Button variant="outline" aria-pressed={installMethod === "manual"} onClick={() => setInstallMethod("manual")}><span aria-hidden="true" className="font-mono">&lt;/&gt;</span> Paste code yourself</Button>
+            </div>
+            {installMethod === "agent" ? <AgentPromptCard prompt={agentPrompt} /> : <>
+              <p className="mt-5 text-sm text-muted-foreground">Paste this code inside your website’s <code className="font-mono text-foreground">&lt;head&gt;</code>, then publish your changes.</p>
+              <CopyableCode code={snippet} />
+            </>}
           {/* Install checklist card */}
           {!isSupporter && authed !== null && (
             <div className="install-handoff mt-5">
@@ -1364,19 +1379,8 @@ function Apply() {
               />
             </div>
           )}
-          <div className="apply-install-grid install-workflow mt-8 grid gap-8">
+          </div>
             <div className="min-w-0">
-            {/* Embed code */}
-            <div className="install-step install-embed">
-              <div className="install-step-heading"><span className="install-step-number">01</span><div>
-              <p className="text-base font-semibold text-foreground">
-                {isSupporter ? "Your analytics code (optional)" : "Your embed code"}
-              </p>
-              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">Your unique startup ID stays the same after you apply.</p>
-              </div></div>
-              <CopyableCode code={snippet} />
-              <AgentPromptCard prompt={agentPrompt} />
-            </div>
 
             {/* Verify */}
             <div className={`install-step install-verification mt-8 border-l-2 ${
@@ -1390,9 +1394,9 @@ function Apply() {
               "border-l-transparent"
             }`}>
               <div className="install-verify-row">
-                <div className="install-step-heading"><span className="install-step-number">02</span><div className="min-w-0">
-                  <p className="text-base font-semibold text-foreground">
-                    {isSupporter ? "Verify installation (optional)" : "Verify installation"}
+                <div className="install-step-heading"><span className="install-step-number">2</span><div className="min-w-0">
+                  <p className="text-xl font-semibold text-foreground">
+                    {isSupporter ? "Check your website (optional)" : "Check your website"}
                   </p>
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground break-all">Check the live script on <span className="font-medium text-foreground">{url}</span></p>
                 </div></div>
@@ -1501,9 +1505,9 @@ function Apply() {
             </div>
             {/* Install guide */}
             <div className="install-step install-guide min-w-0">
-              <div className="install-step-heading"><span className="install-step-number">03</span><div>
-              <p className="text-base font-semibold text-foreground">Install guide & options</p>
-              <p className="mt-1 text-xs text-muted-foreground">Optional — just what you need.</p>
+              <div className="install-step-heading"><div>
+              <p className="text-base font-semibold text-foreground">Need a hand?</p>
+              <p className="mt-1 text-xs text-muted-foreground">Installation help and common questions.</p>
               </div></div>
               <div className="mt-4">
                 <GuideItem title="Where to paste it">

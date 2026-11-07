@@ -1264,7 +1264,42 @@ body[style*="padding-top: 36px"] .apply-install-shell { height: calc(100dvh - 36
 .install-handoff form > div { grid-column: 2; grid-row: 1 / 4; margin: 0; }
 .install-handoff form > p:first-child { font-size: 13px; }
 .install-handoff form > p:nth-child(3) { font-size: 11px; }
+.apply-install-shell {
+  --background: oklch(1 0 0); --foreground: oklch(0 0 0);
+  --card: oklch(1 0 0); --card-foreground: oklch(0 0 0);
+  --muted: oklch(.975 0 0); --muted-foreground: oklch(.48 0 0);
+  --border: oklch(.88 0 0); --primary: oklch(0 0 0); --primary-foreground: oklch(1 0 0);
+  --accent: oklch(.95 0 0); --accent-foreground: oklch(0 0 0);
+  --header-ink: oklch(0 0 0); --header-surface: oklch(1 0 0);
+}
+.apply-install-shell .install-intro { padding-bottom: .5rem; }
+.apply-install-shell .install-eyebrow { display: none; }
+.apply-install-shell .install-title { font-size: 40px; font-weight: 600; }
+.apply-install-shell .install-step-number { width: 32px; height: 32px; flex-basis: 32px; border: none; background: var(--foreground); color: var(--background); font-size: 13px; }
+.apply-install-shell .install-workflow { gap: 2rem; margin-top: 2rem; }
+.apply-install-shell .install-step { border: none; padding: 0; margin-top: 0; }
+.install-methods { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; margin-top: 1.5rem; }
+.install-methods > button { height: 56px; justify-content: center; border-radius: 8px; font-size: 13px; background: var(--background); }
+.install-methods > button[aria-pressed="true"] { border: 2px solid var(--foreground); color: var(--foreground); }
+.apply-install-shell .install-agent { border: none; border-radius: 0; border-left: 2px solid var(--border); padding: .25rem 0 .25rem 1rem; flex-wrap: wrap; }
+.apply-install-shell .install-agent-icon { display: none; }
+.apply-install-shell .install-agent > div { flex: 1 0 100%; }
+.apply-install-shell .install-agent-copy { margin: .65rem 0 0; height: 40px; padding-inline: 1.25rem; background: var(--foreground); color: var(--background); border-color: var(--foreground); }
+.apply-install-shell .install-handoff > div > div:last-child { background: var(--background); padding: 1rem 0; border-bottom: 1px solid var(--border); border-radius: 0; }
+.apply-install-shell .install-handoff form > p:first-child { font-weight: 500; }
+.apply-install-shell .install-verification { padding-block: 1.5rem; border-block: 1px solid var(--border); }
+.apply-install-shell .install-verification > div:not(:first-child) { background: var(--muted); color: var(--foreground); }
+.apply-install-shell .install-verification > div:not(:first-child) :is(p,code,span,ul,svg) { color: var(--foreground); background: transparent; }
+.apply-install-shell .install-guide-item { border: none; border-bottom: 1px solid var(--border); border-radius: 0; padding-inline: 0; }
+.apply-install-shell .install-guide > div:last-child { display: block; }
+.apply-install-shell .install-guide-item[open] { background: var(--background); }
+.apply-install-shell .install-guide-item summary { min-height: 50px; }
+.apply-install-shell .install-card { border: none; border-top: 1px solid var(--border); border-radius: 0; padding: 1.5rem 0 0; box-shadow: none; }
+.apply-install-shell .checkout-summary.is-rail { border-radius: 8px; box-shadow: none; border-top: 3px solid var(--foreground); }
 @media (max-width: 639px) {
+  .apply-install-shell .install-title { font-size: 28px; }
+  .install-methods { gap: .5rem; }
+  .install-methods > button { white-space: normal; font-size: 11px; padding-inline: .5rem; }
   .install-title { font-size: 28px; }
   .install-handoff form { grid-template-columns: minmax(0, 1fr); gap: .4rem; }
   .install-handoff form > div { grid-column: 1; grid-row: auto; margin-top: .5rem; }
