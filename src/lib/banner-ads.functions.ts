@@ -94,7 +94,8 @@ export const createBannerCheckout = createServerFn({ method: "POST" })
     let j: { payment_link?: string; payment_id?: string } | null = null;
     try { j = JSON.parse(raw); } catch { j = null; }
     if (!res.ok || !j?.payment_link) {
-      console.error("[banner] dodo request failed", res.status);
+      const failure = j as { code?: string } | null;
+      console.error("[banner] dodo request failed", res.status, failure?.code ?? "unknown");
       return { ok: false, reason: "Couldn't reach the payment provider." };
     }
     if (j.payment_id) await supabaseAdmin.from("ad_campaigns").update({ dodo_payment_id: j.payment_id }).eq("id", row.id);
