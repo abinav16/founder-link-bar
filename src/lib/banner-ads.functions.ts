@@ -78,24 +78,28 @@ export const createBannerCheckout = createServerFn({ method: "POST" })
     const email = (context.claims as { email?: string }).email ?? "";
     const ret = new URL(data.returnUrl);
     ret.searchParams.set("banner", row.id);
-    const res = await fetch("https://live.dodopayments.com/payments", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
+    const checkoutBody = {
         billing: { city: "", country: "US", state: "", street: "", zipcode: "" },
         customer: { email, name },
         payment_link: true,
-        product_cart: [{ product_id: productId, quantity: data.weeks }],
         return_url: ret.toString(),
-        metadata: { kind: "banner", campaign_id: row.id, user_id: context.userId },
-      }),
-    });
-    const raw = await res.text();
-    let j: { payment_link?: string; payment_id?: string } | null = null;
-    try { j = JSON.parse(raw); } catch { j = null; }
+        metadata: { kind: "banner", campaign_id: row.id, user_id: context.userId, weeks: String(data.weeks) },
+    };
+    const requestCheckout = async (flexible: boolean) => {
+      const res = await fetch("https://live.dodopayments.com/payments", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ ...checkoutBody, product_cart: flexible
+          ? [{ product_id: productId, quantity: 1, amount: bannerTotalCents(data.weeks) }]
+          : [{ product_id: productId, quantity: data.weeks }] }),
+      });
+      const j = await res.json().catch(() => null) as { payment_link?: string; payment_id?: string; code?: string } | null;
+      return { res, j };
+    };
+    let { res, j } = await requestCheckout(false);
+    if (j?.code === "PAY_AS_YOU_WANT_AMOUNT_REQUIRED") ({ res, j } = await requestCheckout(true));
     if (!res.ok || !j?.payment_link) {
-      const failure = j as { code?: string } | null;
-      console.error("[banner] dodo request failed", res.status, failure?.code ?? "unknown");
+      console.error("[banner] dodo request failed", res.status, j?.code ?? "unknown");
       return { ok: false, reason: "Couldn't reach the payment provider." };
     }
     if (j.payment_id) await supabaseAdmin.from("ad_campaigns").update({ dodo_payment_id: j.payment_id }).eq("id", row.id);

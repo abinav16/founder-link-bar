@@ -16,11 +16,11 @@ export function bannerTotalCents(weeks: number): number {
   return weeks * BANNER_WEEKLY_CENTS;
 }
 
-export function isVerifiedBannerPayment(payment: { status?: string; currency?: string; total_amount?: number; metadata?: { kind?: string; campaign_id?: string; user_id?: string }; product_cart?: { product_id: string; quantity: number }[] }, campaign: { id: string; user_id: string; weeks: number }, productId: string): boolean {
+export function isVerifiedBannerPayment(payment: { status?: string; currency?: string; total_amount?: number; metadata?: { kind?: string; campaign_id?: string; user_id?: string; weeks?: string }; product_cart?: { product_id: string; quantity: number }[] }, campaign: { id: string; user_id: string; weeks: number }, productId: string): boolean {
   return payment.status === "succeeded" && payment.currency === "USD"
     && Number(payment.total_amount) >= bannerTotalCents(campaign.weeks) && isValidWeeks(campaign.weeks)
     && payment.metadata?.kind === "banner" && payment.metadata.campaign_id === campaign.id && payment.metadata.user_id === campaign.user_id
-    && Boolean(payment.product_cart?.some((p) => p.product_id === productId && p.quantity === campaign.weeks));
+    && Boolean(payment.product_cart?.some((p) => p.product_id === productId && (p.quantity === campaign.weeks || (p.quantity === 1 && payment.metadata?.weeks === String(campaign.weeks)))));
 }
 
 /** Aspect check with 5% tolerance and minimum size. */

@@ -21,6 +21,7 @@ describe("banner ads", () => {
     expect(isVerifiedBannerPayment({ ...p, metadata: { ...p.metadata, user_id: "other" } }, c, "weekly")).toBe(false);
     expect(isVerifiedBannerPayment(p, c, "other-product")).toBe(false);
     expect(isVerifiedBannerPayment({ ...p, product_cart: [{ product_id: "weekly", quantity: 1 }] }, c, "weekly")).toBe(false);
+    expect(isVerifiedBannerPayment({ ...p, metadata: { ...p.metadata, weeks: "4" }, product_cart: [{ product_id: "weekly", quantity: 1 }] }, c, "weekly")).toBe(true);
   });
   it("checks banner sizes", () => {
     expect(fitsBannerSize(1200, 200, BANNER_DESKTOP)).toBe(true);
