@@ -1,4 +1,5 @@
 # Application snippet email
+- [ ] Convert banner advertising to $49/week for 1–52 weeks, connect the new Dodo product, update public/setup/admin campaign views and verify checkout and timed rotation.
 - [x] Approve Phoenix Command without sending approval emails and pin the Step 2 order while installation content scrolls; verified approved status and signed-in stationary order at desktop and 360/390px phone widths.
 - [x] Check live booked newsletter Sundays, default to the next available Sunday, and enforce one active booking per issue; verified live availability, calendar, database index and 20 tests. Paid checkout remains blocked by the missing Dodo products below.
 - [x] Match newsletter device previews to the weekly email, focus on the clicked option and save a preferred Sunday date in the application draft; verified selection, nine-second focus, reload, click switching, phone fit and 16 tests. Date is a preference, not a reservation; paid booking remains pending below.
