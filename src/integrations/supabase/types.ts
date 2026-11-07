@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_campaigns: {
+        Row: {
+          advertiser_name: string
+          approved_at: string | null
+          budget_cents: number
+          clicks: number
+          cpm_cents: number
+          created_at: string
+          desktop_image_url: string
+          destination_url: string
+          dodo_payment_id: string | null
+          headline: string
+          id: string
+          impressions: number
+          mobile_image_url: string
+          paid_at: string | null
+          rejection_reason: string | null
+          spent_cents: number
+          status: string
+          user_id: string
+        }
+        Insert: {
+          advertiser_name: string
+          approved_at?: string | null
+          budget_cents: number
+          clicks?: number
+          cpm_cents?: number
+          created_at?: string
+          desktop_image_url: string
+          destination_url: string
+          dodo_payment_id?: string | null
+          headline?: string
+          id?: string
+          impressions?: number
+          mobile_image_url: string
+          paid_at?: string | null
+          rejection_reason?: string | null
+          spent_cents?: number
+          status?: string
+          user_id: string
+        }
+        Update: {
+          advertiser_name?: string
+          approved_at?: string | null
+          budget_cents?: number
+          clicks?: number
+          cpm_cents?: number
+          created_at?: string
+          desktop_image_url?: string
+          destination_url?: string
+          dodo_payment_id?: string | null
+          headline?: string
+          id?: string
+          impressions?: number
+          mobile_image_url?: string
+          paid_at?: string | null
+          rejection_reason?: string | null
+          spent_cents?: number
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       application_drafts: {
         Row: {
           category: string | null
@@ -1352,6 +1415,35 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_ad_campaigns: {
+        Args: never
+        Returns: {
+          advertiser_name: string
+          approved_at: string | null
+          budget_cents: number
+          clicks: number
+          cpm_cents: number
+          created_at: string
+          desktop_image_url: string
+          destination_url: string
+          dodo_payment_id: string | null
+          headline: string
+          id: string
+          impressions: number
+          mobile_image_url: string
+          paid_at: string | null
+          rejection_reason: string | null
+          spent_cents: number
+          status: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "ad_campaigns"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       admin_all_startups: {
         Args: never
         Returns: {
@@ -1430,6 +1522,10 @@ export type Database = {
           id: string
           user_id: string
         }[]
+      }
+      admin_review_ad: {
+        Args: { _approve: boolean; _id: string; _reason?: string }
+        Returns: undefined
       }
       claim_supporter_newsletter: {
         Args: { _send_date: string; _startup_id: string }
@@ -1740,6 +1836,17 @@ export type Database = {
           send_date: string
         }[]
       }
+      public_pick_banners: {
+        Args: { _count?: number }
+        Returns: {
+          advertiser_name: string
+          desktop_image_url: string
+          destination_url: string
+          headline: string
+          id: string
+          mobile_image_url: string
+        }[]
+      }
       public_startup_24h: {
         Args: { _ids: string[] }
         Returns: {
@@ -1863,6 +1970,10 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      record_ad_event: {
+        Args: { _campaign: string; _kind: string }
+        Returns: undefined
       }
       record_signup_conversion: {
         Args: {
