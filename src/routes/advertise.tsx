@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Image as ImageIcon, Mail, Sparkles } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
-import { BANNER_CPM_CENTS, BANNER_MIN_BUDGET_CENTS } from "@/lib/banner-ads";
+import { BANNER_WEEKLY_CENTS } from "@/lib/banner-ads";
 import { CLICK_PACKS, NEWSLETTER_PRICE_PER_FOUNDER_USD } from "@/lib/checkout-plans";
 
 export const Route = createFileRoute("/advertise")({
@@ -42,7 +42,7 @@ function AdvertisePage() {
     {
       icon: ImageIcon, title: "Banner ads", tag: "Open to everyone",
       body: "A wide image banner shown between startups on the Network and Leaderboard pages and on startup profiles. Separate desktop and mobile images.",
-      price: `From $${BANNER_MIN_BUDGET_CENTS / 100} · $${BANNER_CPM_CENTS / 100} per 1,000 views`,
+      price: `$${BANNER_WEEKLY_CENTS / 100} per week · paid once upfront`,
       to: "banner",
     },
     {
@@ -96,9 +96,9 @@ function AdvertisePage() {
           <h2 className="text-2xl font-semibold">How banners work</h2>
           <ul className="mt-5 space-y-3 text-sm text-muted-foreground">
             <li><b className="text-foreground">No fixed slots.</b> All approved banners rotate at random, so many companies can run at once.</li>
-            <li><b className="text-foreground">Pay for views.</b> Set a budget; each real view costs ${(BANNER_CPM_CENTS / 100000).toFixed(3)}. Bots don't count.</li>
-            <li><b className="text-foreground">Reviewed first.</b> We check every banner before it goes live, usually within a day.</li>
-            <li><b className="text-foreground">Ends on its own.</b> Your banner stops when the budget is used.</li>
+            <li><b className="text-foreground">$49 per week.</b> Choose 1–52 weeks and pay once upfront. No subscription or per-view charges.</li>
+            <li><b className="text-foreground">Reviewed first.</b> Your purchased time starts only when your paid banner is approved.</li>
+            <li><b className="text-foreground">Clear dates, real results.</b> See your start and end dates, actual views and clicks. Reach varies; no impression total is guaranteed.</li>
           </ul>
         </div>
         <div className="space-y-2 rounded-xl border border-border bg-background p-4" aria-hidden>
@@ -113,7 +113,9 @@ function AdvertisePage() {
         {[
           ["Do I need a listed startup?", "Not for banners — any company can advertise. Gold highlights and the newsletter are for startups listed on StartupBar."],
           ["What sizes do banners need?", "A desktop image of at least 1200 × 200 px (6:1) and a mobile image of at least 600 × 300 px (2:1), PNG, JPG or WebP up to 5 MB."],
-          ["What if my banner is rejected?", "We tell you why and refund the unused budget."],
+          ["How long will my banner run?", "Choose any whole number from 1 to 52 weeks. Each week is seven days; four weeks costs $196 and 52 weeks costs $2,548, paid once. Review time does not use your purchased duration."],
+          ["Are views or clicks guaranteed?", "No. This is a time-based sponsorship, shared in random rotation with other approved advertisers. Your campaign shows actual measured views and clicks; member-site widget impressions are not banner impressions."],
+          ["What if my banner is rejected?", "We tell you why and arrange a refund of the sponsorship payment through Dodo."],
         ].map(([q, a]) => (
           <details key={q} className="border-b border-border py-4">
             <summary className="cursor-pointer text-sm font-semibold">{q}</summary>

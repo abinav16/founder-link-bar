@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 
-type Row = { id: string; advertiser_name: string; destination_url: string; desktop_image_url: string; mobile_image_url: string; status: string; budget_cents: number; spent_cents: number; impressions: number; clicks: number };
+type Row = { id: string; advertiser_name: string; destination_url: string; desktop_image_url: string; mobile_image_url: string; status: string; budget_cents: number; weeks: number; starts_at: string | null; expires_at: string | null; impressions: number; clicks: number };
 
 export function AdminBannerReview() {
   const qc = useQueryClient();
@@ -30,7 +30,8 @@ export function AdminBannerReview() {
             <div className="min-w-0 text-sm">
               <p className="font-semibold">{c.advertiser_name} · {c.status}</p>
               <a href={c.destination_url} target="_blank" rel="noreferrer" className="block truncate text-muted-foreground underline">{c.destination_url}</a>
-              <p className="text-muted-foreground">${(Number(c.spent_cents) / 100).toFixed(2)} / ${c.budget_cents / 100} · {c.impressions} views · {c.clicks} clicks</p>
+              <p className="text-muted-foreground">${c.budget_cents / 100} prepaid · {c.weeks} {c.weeks === 1 ? "week" : "weeks"} · {c.impressions} views · {c.clicks} clicks</p>
+              {c.starts_at && c.expires_at && <p className="text-muted-foreground">{new Date(c.starts_at).toLocaleDateString()} – {new Date(c.expires_at).toLocaleDateString()}{Date.parse(c.expires_at) <= Date.now() ? " · Finished" : ""}</p>}
             </div>
             <div className="flex gap-2">
               {c.status !== "running" && c.status !== "finished" && <Button size="sm" onClick={() => review(c.id, true)}>Approve</Button>}
