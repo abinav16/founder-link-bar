@@ -1184,12 +1184,29 @@ html:has(.sb-widget-dark) { color-scheme: dark; }
 }
 
 /* /apply install step */
+.apply-install-shell { height: 100dvh; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+body:has(.apply-install-shell) { overflow: hidden; }
+body[style*="padding-top: 36px"] .apply-install-shell { height: calc(100dvh - 36px); }
+.apply-install-shell > .site-header { flex-shrink: 0; }
+.apply-install-shell > main { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+.apply-install-shell .apply-install-page { flex: 1; min-height: 0; width: 100%; padding-block: 1.5rem; animation: none; }
 .install-layout { display: grid; gap: 2rem; }
-@media (min-width: 1024px) { .install-layout { grid-template-columns: minmax(0, 1fr) 380px; gap: 3rem; align-items: start; } }
-.install-rail { min-width: 0; }
-@media (min-width: 1024px) { .install-rail { position: sticky; top: 7.5rem; } }
-.checkout-summary.is-rail { position: static; animation-delay: 200ms; }
-@media (max-width: 1023px) { .install-rail { position: sticky; bottom: .5rem; z-index: 10; } .checkout-summary.is-rail { padding: 1rem 1.1rem; background: var(--card); backdrop-filter: none; box-shadow: 0 -12px 40px -20px color-mix(in oklab, var(--foreground) 35%, transparent); } }
+.apply-install-shell .install-layout { height: 100%; min-height: 0; grid-template-rows: minmax(0, 1fr) auto; gap: 1rem; }
+.install-content { min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; scrollbar-gutter: stable; padding: 0 .75rem 1.5rem 0; scroll-padding-block: 1rem; }
+@media (min-width: 1024px) { .apply-install-shell .install-layout { grid-template-columns: minmax(0, 1fr) 380px; grid-template-rows: minmax(0, 1fr); gap: 3rem; } }
+.install-rail { min-width: 0; align-self: start; }
+.checkout-summary.is-rail { position: static; animation: none; background: var(--card); backdrop-filter: none; }
+@media (max-width: 1023px) {
+  .apply-install-shell .apply-install-page { padding-block: .75rem; padding-bottom: max(.75rem, env(safe-area-inset-bottom)); }
+  .install-rail { width: 100%; }
+  .checkout-summary.is-rail { padding: .85rem 1rem; border-radius: 1rem; box-shadow: 0 -12px 40px -20px color-mix(in oklab, var(--foreground) 35%, transparent); }
+  .checkout-summary.is-rail > ul { margin-top: .5rem; font-size: 12px; }
+  .checkout-summary.is-rail > ul > li + li { margin-top: .35rem; }
+  .checkout-summary.is-rail > div { margin-top: .65rem; padding-top: .65rem; }
+  .checkout-summary.is-rail > div > span:last-child { font-size: 1.5rem; }
+  .checkout-summary.is-rail > button { margin-top: .75rem; padding-block: .75rem; }
+  .checkout-summary.is-rail > p { margin-top: .5rem; font-size: 11px; line-height: 1.4; }
+}
 .install-chip { display: flex; align-items: center; gap: .75rem; border: 1px solid var(--border); border-radius: 1.25rem; background: var(--card); padding: .9rem 1.1rem; }
 .install-card { border: 1px solid var(--border); border-radius: 1.5rem; background: var(--card); padding: 1.25rem; box-shadow: 0 24px 60px -48px color-mix(in oklab, var(--foreground) 45%, transparent); }
 @media (min-width: 640px) { .install-card { padding: 1.75rem; } }

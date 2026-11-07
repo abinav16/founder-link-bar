@@ -1,4 +1,5 @@
 # Application snippet email
+- [x] Approve Phoenix Command without sending approval emails and pin the Step 2 order while installation content scrolls; verified approved status and signed-in stationary order at desktop and 360/390px phone widths.
 - [x] Check live booked newsletter Sundays, default to the next available Sunday, and enforce one active booking per issue; verified live availability, calendar, database index and 20 tests. Paid checkout remains blocked by the missing Dodo products below.
 - [x] Match newsletter device previews to the weekly email, focus on the clicked option and save a preferred Sunday date in the application draft; verified selection, nine-second focus, reload, click switching, phone fit and 16 tests. Date is a preference, not a reservation; paid booking remains pending below.
 - [x] Add one-tap email on free application Step 2 for signed-in founders; preserve guest Step 1 handoff and sign-in gate. Verified signed-in desktop resume, real email send to the owner's inbox (HTTP 200 + visible confirmation), guest restoration, phone fit, full script/backlink email template and six passing recipient/delivery tests.
