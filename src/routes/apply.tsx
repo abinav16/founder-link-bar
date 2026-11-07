@@ -277,25 +277,21 @@ const inputCls = "w-full rounded-lg border border-black/12 bg-white px-4 py-3 te
 
 function CopyableCode({ code, label = "HTML", tone = "neutral" }: { code: string; label?: string; tone?: "neutral" | "red" }) {
   const [copied, setCopied] = useState(false);
-  const toneCls = tone === "red"
-    ? "border-red-200 bg-red-50/60"
-    : "border-black/10 bg-black/[0.025]";
-  const headerCls = tone === "red" ? "border-red-200 text-red-700/60" : "border-black/8 text-black/30";
-  const preCls = tone === "red" ? "text-red-900/80" : "text-black/60";
   return (
-    <div className={`overflow-hidden rounded-lg border ${toneCls}`}>
-      <div className={`flex items-center justify-between border-b px-3 py-1.5 ${headerCls}`}>
-        <span className="text-[10px] font-medium uppercase tracking-wider">{label}</span>
-        <button
+    <div className={`install-code ${tone === "red" ? "is-warning" : ""}`}>
+      <div className="install-code-header">
+        <span className="flex items-center gap-2 text-[11px] font-medium"><span aria-hidden="true" className="font-mono">&lt;/&gt;</span>{label}</span>
+        <Button
+          variant="ghost" size="sm"
           type="button"
           onClick={() => { navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
-          className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium hover:bg-black/5 transition-colors"
+          className="install-code-copy"
         >
-          {copied ? <><Check className="h-3 w-3 text-emerald-500" /> Copied!</> : <><Copy className="h-3 w-3" /> Copy</>}
-        </button>
+          {copied ? <><Check className="h-3 w-3" /> Copied!</> : <><Copy className="h-3 w-3" /> Copy code</>}
+        </Button>
       </div>
-      <div className="overflow-x-auto px-3 py-2.5">
-        <pre className={`whitespace-pre font-mono text-[11.5px] leading-relaxed ${preCls}`}>{code}</pre>
+      <div className="install-code-body" tabIndex={0} aria-label={`${label} code`}>
+        <pre className="whitespace-pre font-mono text-xs leading-7">{code}</pre>
       </div>
     </div>
   );
@@ -305,33 +301,33 @@ function CopyableCode({ code, label = "HTML", tone = "neutral" }: { code: string
 function AgentPromptCard({ prompt }: { prompt: string }) {
   const [copied, setCopied] = useState(false);
   return (
-    <div className="mt-3 flex items-start gap-3 rounded-lg border border-black/8 bg-black/[0.015] px-4 py-3.5">
-      <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-black/35" />
+    <div className="install-agent mt-4">
+      <span className="install-agent-icon"><Sparkles className="h-4 w-4" /></span>
       <div className="min-w-0 flex-1">
-        <p className="text-[13px] font-medium text-black">Let your AI agent install it</p>
-        <p className="mt-0.5 text-xs text-black/45">
-          Using Lovable, Cursor, Claude Code or another AI builder? Copy the prompt your agent installs the code for you. Just publish your site afterwards so we can verify the install.
+        <p className="text-sm font-semibold text-foreground">Let your AI agent install it</p>
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+          Using Lovable, Cursor or Claude Code? Copy the prompt, then publish your site to verify the install.
         </p>
       </div>
-      <button
+      <Button variant="outline" size="sm"
         type="button"
         onClick={() => { navigator.clipboard.writeText(prompt); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
-        className="shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-black/15 px-3 py-1.5 text-xs font-medium text-black transition-colors hover:bg-black/[0.04]"
+        className="install-agent-copy shrink-0 text-xs"
       >
-        {copied ? <><Check className="h-3 w-3 text-emerald-500" /> Copied!</> : <><Copy className="h-3 w-3" /> Copy prompt</>}
-      </button>
+        {copied ? <><Check className="h-3 w-3" /> Copied!</> : <><Copy className="h-3 w-3" /> Copy prompt</>}
+      </Button>
     </div>
   );
 }
 
 function GuideItem({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <details className="group rounded-lg border border-black/8 bg-black/[0.015] open:bg-white transition-colors">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-medium text-black">
+    <details className="install-guide-item group">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 py-4 text-sm font-medium text-foreground">
         <span>{title}</span>
-        <ChevronDown className="h-4 w-4 shrink-0 text-black/40 transition-transform group-open:rotate-180" />
+        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
       </summary>
-      <div className="border-t border-black/8 px-4 py-3.5 text-[13px] leading-relaxed text-black/65 space-y-1.5">
+      <div className="pb-5 text-[13px] leading-relaxed text-muted-foreground space-y-1.5">
         {children}
       </div>
     </details>
@@ -1368,20 +1364,22 @@ function Apply() {
               />
             </div>
           )}
-          <div className="apply-install-grid install-card mt-6 grid gap-8">
+          <div className="apply-install-grid install-workflow mt-8 grid gap-8">
             <div className="min-w-0">
             {/* Embed code */}
-            <div className="border-b border-border pb-6">
-              <p className="text-sm font-semibold text-black">
-                {isSupporter ? "1 · Your analytics code (optional)" : "1 · Your embed code"}
+            <div className="install-step install-embed">
+              <div className="install-step-heading"><span className="install-step-number">01</span><div>
+              <p className="text-base font-semibold text-foreground">
+                {isSupporter ? "Your analytics code (optional)" : "Your embed code"}
               </p>
-              <p className="mt-1 text-xs text-black/45">This is your unique startup ID — it won't change after you apply.</p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">Your unique startup ID stays the same after you apply.</p>
+              </div></div>
               <CopyableCode code={snippet} />
               <AgentPromptCard prompt={agentPrompt} />
             </div>
 
             {/* Verify */}
-            <div className={`mt-6 py-2 pl-4 border-l-2 ${
+            <div className={`install-step install-verification mt-8 border-l-2 ${
               verifyStatus === "live" ? "border-l-emerald-500" :
               verifyStatus === "csp" ? "border-l-red-500" :
               verifyStatus === "csp-frame" ? "border-l-red-500" :
@@ -1391,20 +1389,20 @@ function Apply() {
               verifyStatus === "error" ? "border-l-black/20" :
               "border-l-transparent"
             }`}>
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-black">
-                    {isSupporter ? "2 · Verify installation (optional)" : "2 · Verify installation"}
+              <div className="install-verify-row">
+                <div className="install-step-heading"><span className="install-step-number">02</span><div className="min-w-0">
+                  <p className="text-base font-semibold text-foreground">
+                    {isSupporter ? "Verify installation (optional)" : "Verify installation"}
                   </p>
-                  <p className="mt-0.5 text-xs text-black/40 truncate">We'll check if the script is live on <span className="font-medium text-black/60">{url}</span></p>
-                </div>
-                <button
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground break-all">Check the live script on <span className="font-medium text-foreground">{url}</span></p>
+                </div></div>
+                <Button variant="default"
                   onClick={() => checkInstallation()}
                   disabled={verifyStatus === "checking"}
-                  className="shrink-0 inline-flex items-center gap-2 rounded-lg border border-black/15 px-4 py-2 text-sm font-medium text-black hover:bg-black/[0.04] transition-all disabled:opacity-40"
+                  className="install-verify-button shrink-0"
                 >
-                  {verifyStatus === "checking" ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Checking…</> : "Check now"}
-                </button>
+                  {verifyStatus === "checking" ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Checking…</> : <><RefreshCw className="h-3.5 w-3.5" /> Check now</>}
+                </Button>
               </div>
 
               {verifyStatus === "live" && (
@@ -1502,10 +1500,12 @@ function Apply() {
 
             </div>
             {/* Install guide */}
-            <div className="min-w-0 lg:border-l lg:border-border lg:pl-10">
-              <p className="text-sm font-semibold text-black">3 · Install guide & options</p>
-              <p className="mt-1 text-xs text-black/45">Optional reading — expand what you need.</p>
-              <div className="mt-4 space-y-2">
+            <div className="install-step install-guide min-w-0">
+              <div className="install-step-heading"><span className="install-step-number">03</span><div>
+              <p className="text-base font-semibold text-foreground">Install guide & options</p>
+              <p className="mt-1 text-xs text-muted-foreground">Optional — just what you need.</p>
+              </div></div>
+              <div className="mt-4">
                 <GuideItem title="Where to paste it">
                   <p><strong>Recommended:</strong> inside <code className="font-mono">&lt;head&gt;</code>. Works in <code className="font-mono">&lt;body&gt;</code> too.</p>
                   <ul className="mt-2 list-disc space-y-1 pl-4">
