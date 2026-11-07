@@ -5,6 +5,7 @@ import { getStartupPage, getStartupPulse } from "@/lib/startup-page.functions";
 import { StartupEmbed } from "@/components/StartupEmbed";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { SponsoredRail } from "@/components/SponsoredRail";
+import { BannerSlot } from "@/components/BannerAd";
 import { ProfileMomentum, FounderVouches, RelatedStartups, OwnerStatsShare } from '@/components/StartupProfileInsights';
 
 import { StartupFavicon } from "@/components/StartupFavicon";
@@ -257,6 +258,8 @@ function StartupPage() {
         {/* FOUNDER — always rendered */}
         <FounderSection s={s} />
         <FounderVouches id={s.id} insights={s.insights} userId={authState.userId} isOwner={isOwner} />
+
+        <BannerSlot className="mt-12" />
 
         {/* REFERRERS */}
         {s.referrers.length > 0 && (

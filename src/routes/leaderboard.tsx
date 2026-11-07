@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
+import { BannerSlot } from "@/components/BannerAd";
+import { BANNER_EVERY_N_ROWS } from "@/lib/banner-ads";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { SponsoredRail } from "@/components/SponsoredRail";
 import { StartupFavicon } from "@/components/StartupFavicon";
@@ -582,8 +584,9 @@ function LeaderboardPage() {
 
             <div className="space-y-2">
             {activeRows.map((row: LeaderboardRow, i: number) => (
+              <Fragment key={row.id}>
+              {i > 0 && i % BANNER_EVERY_N_ROWS === 0 ? <BannerSlot slot={i / BANNER_EVERY_N_ROWS - 1} /> : null}
               <div
-                key={row.id}
                 className={`group flex items-center gap-4 rounded-2xl border px-5 py-4 transition-all overflow-hidden ${
                   row.sponsored
                     ? "sb-featured-row relative hover:shadow-[0_8px_24px_-12px_oklch(0.65_0.15_68_/_0.3)]"
@@ -716,6 +719,7 @@ function LeaderboardPage() {
                   <ExternalLink className="h-3.5 w-3.5 text-black/30 hover:text-black transition-colors" />
                 </a>
               </div>
+              </Fragment>
             ))}
             </div>
           </div>

@@ -4,6 +4,9 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { SponsoredRail } from "@/components/SponsoredRail";
+import { BannerSlot } from "@/components/BannerAd";
+import { BANNER_EVERY_N_ROWS } from "@/lib/banner-ads";
+import { Fragment } from "react";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { getNetworkDashboard, type NetworkDashboardResult } from "@/lib/network-dashboard.functions";
 import { ArrowUpRight, ArrowRight, Eye, Globe, Search, Star, X } from "lucide-react";
@@ -1091,7 +1094,12 @@ function NetworkDashboardPage() {
                   <span className="h-7 w-7 shrink-0" aria-hidden="true" />
                 </div>
               </div>
-              {filtered.map((s) => <StartupRow key={s.id} s={s} />)}
+              {filtered.map((s, i) => (
+                <Fragment key={s.id}>
+                  {i > 0 && i % BANNER_EVERY_N_ROWS === 0 ? <BannerSlot slot={i / BANNER_EVERY_N_ROWS - 1} className="px-3 py-3" /> : null}
+                  <StartupRow s={s} />
+                </Fragment>
+              ))}
             </div>
           ) : (
             <div className="rounded-2xl bg-white border border-black/[0.06] px-6 py-16 text-center">
