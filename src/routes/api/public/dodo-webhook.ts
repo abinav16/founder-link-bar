@@ -164,6 +164,13 @@ export const Route = createFileRoute("/api/public/dodo-webhook")({
           else if (["failed", "cancelled", "canceled", "expired"].includes(status) || type === "payment.failed" || type === "payment.cancelled") await markOrderFailed(data.metadata.order_id);
           return new Response("ok", { status: 200 });
         }
+        if (data.metadata?.kind === "banner" && data.metadata?.campaign_id) {
+          if (isSucceeded) {
+            const { markBannerPaid } = await import("@/lib/banner-ads.server");
+            await markBannerPaid(String(data.metadata.campaign_id), undefined, paymentId ?? undefined);
+          }
+          return new Response("ok", { status: 200 });
+        }
         if (!isSucceeded) {
           return new Response("ok", { status: 200 });
         }

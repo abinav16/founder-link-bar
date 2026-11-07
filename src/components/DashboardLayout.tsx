@@ -1,7 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 
-import { SponsoredRail } from "@/components/SponsoredRail";
-import { FeaturedMobileBanner } from "@/components/FeaturedMobileBanner";
 import { FeaturedReturnWatcher } from "@/components/FeaturedBookingDialog";
 import { SiteHeader } from "@/components/SiteHeader";
 
@@ -64,23 +62,14 @@ export function DashboardLayout({
 
       <SiteHeader />
 
-      <main
-        className={`mx-auto w-full flex-1 px-4 py-6 sm:px-6 sm:py-8 ${
-          rail
-            ? "max-w-6xl xl:max-w-[1800px] xl:grid xl:grid-cols-[190px_minmax(0,1fr)_190px] xl:gap-5 2xl:grid-cols-[220px_minmax(0,1fr)_220px] 2xl:gap-6"
-            : "max-w-6xl"
-        }`}
-      >
-        {rail ? <SponsoredRail side="left" /> : null}
+      {/* Side featured rails were retired in favour of in-list banner ads; `rail` is kept for callers. */}
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8" data-rail={rail ? "" : undefined}>
         <div className="min-w-0">
-          {rail ? <FeaturedMobileBanner /> : null}
           <div className="page-enter">{children}</div>
         </div>
-        {rail ? <SponsoredRail side="right" /> : null}
-
       </main>
 
-      <FooterBar wide={!!rail} />
+      <FooterBar />
       <FeaturedReturnWatcher />
     </div>
   );

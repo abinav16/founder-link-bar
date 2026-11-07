@@ -141,6 +141,13 @@
       "when": 1794043392044,
       "tag": "0019_featured_from_click_boosts",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1794046153717,
+      "tag": "0020_banner_ad_campaigns",
+      "breakpoints": true
     }
   ]
 }

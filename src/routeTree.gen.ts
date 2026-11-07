@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AdvertiseRouteImport } from './routes/advertise'
 import { Route as ApplyRouteImport } from './routes/apply'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as FaqRouteImport } from './routes/faq'
@@ -28,6 +29,7 @@ import { Route as AuthCallbackRouteImport } from './routes/auth_.callback'
 import { Route as StartupSlugRouteImport } from './routes/startup.$slug'
 import { Route as UTokenRouteImport } from './routes/u.$token'
 import { Route as WidgetBarRouteImport } from './routes/widget.bar'
+import { Route as AuthenticatedAdvertiseNewRouteImport } from './routes/_authenticated/advertise.new'
 import { Route as ApiPublicBidCheckoutRouteImport } from './routes/api/public/bid-checkout'
 import { Route as ApiPublicBidEnrichRouteImport } from './routes/api/public/bid-enrich'
 import { Route as ApiPublicBidStatusRouteImport } from './routes/api/public/bid-status'
@@ -35,6 +37,7 @@ import { Route as ApiPublicDodoWebhookRouteImport } from './routes/api/public/do
 import { Route as ApiPublicEmailEventsRouteImport } from './routes/api/public/email-events'
 import { Route as ApiPublicUnsubscribeRouteImport } from './routes/api/public/unsubscribe'
 import { Route as ApiPublicVerifyInstallRouteImport } from './routes/api/public/verify-install'
+import { Route as ApiPublicAdEventRouteImport } from './routes/api/public/ad.event'
 import { Route as ApiPublicSignupConfigRouteImport } from './routes/api/public/signup.config'
 import { Route as ApiPublicSignupConfirmRouteImport } from './routes/api/public/signup.confirm'
 import { Route as ApiPublicTrackFunnelRouteImport } from './routes/api/public/track.funnel'
@@ -59,6 +62,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdvertiseRoute = AdvertiseRouteImport.update({
+  id: '/advertise',
+  path: '/advertise',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApplyRoute = ApplyRouteImport.update({
@@ -141,6 +149,12 @@ const WidgetBarRoute = WidgetBarRouteImport.update({
   path: '/widget/bar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdvertiseNewRoute =
+  AuthenticatedAdvertiseNewRouteImport.update({
+    id: '/advertise/new',
+    path: '/advertise/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicBidCheckoutRoute = ApiPublicBidCheckoutRouteImport.update({
   id: '/api/public/bid-checkout',
   path: '/api/public/bid-checkout',
@@ -174,6 +188,11 @@ const ApiPublicUnsubscribeRoute = ApiPublicUnsubscribeRouteImport.update({
 const ApiPublicVerifyInstallRoute = ApiPublicVerifyInstallRouteImport.update({
   id: '/api/public/verify-install',
   path: '/api/public/verify-install',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicAdEventRoute = ApiPublicAdEventRouteImport.update({
+  id: '/api/public/ad/event',
+  path: '/api/public/ad/event',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicSignupConfigRoute = ApiPublicSignupConfigRouteImport.update({
@@ -237,6 +256,7 @@ const LovableEmailQueueProcessRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/advertise': typeof AdvertiseRoute
   '/apply': typeof ApplyRoute
   '/auth': typeof AuthRoute
   '/faq': typeof FaqRoute
@@ -253,6 +273,7 @@ export interface FileRoutesByFullPath {
   '/startup/$slug': typeof StartupSlugRoute
   '/u/$token': typeof UTokenRoute
   '/widget/bar': typeof WidgetBarRoute
+  '/advertise/new': typeof AuthenticatedAdvertiseNewRoute
   '/api/public/bid-checkout': typeof ApiPublicBidCheckoutRoute
   '/api/public/bid-enrich': typeof ApiPublicBidEnrichRoute
   '/api/public/bid-status': typeof ApiPublicBidStatusRoute
@@ -260,6 +281,7 @@ export interface FileRoutesByFullPath {
   '/api/public/email-events': typeof ApiPublicEmailEventsRoute
   '/api/public/unsubscribe': typeof ApiPublicUnsubscribeRoute
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
+  '/api/public/ad/event': typeof ApiPublicAdEventRoute
   '/api/public/signup/config': typeof ApiPublicSignupConfigRoute
   '/api/public/signup/confirm': typeof ApiPublicSignupConfirmRoute
   '/api/public/track/funnel': typeof ApiPublicTrackFunnelRoute
@@ -275,6 +297,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/advertise': typeof AdvertiseRoute
   '/apply': typeof ApplyRoute
   '/auth': typeof AuthRoute
   '/faq': typeof FaqRoute
@@ -291,6 +314,7 @@ export interface FileRoutesByTo {
   '/startup/$slug': typeof StartupSlugRoute
   '/u/$token': typeof UTokenRoute
   '/widget/bar': typeof WidgetBarRoute
+  '/advertise/new': typeof AuthenticatedAdvertiseNewRoute
   '/api/public/bid-checkout': typeof ApiPublicBidCheckoutRoute
   '/api/public/bid-enrich': typeof ApiPublicBidEnrichRoute
   '/api/public/bid-status': typeof ApiPublicBidStatusRoute
@@ -298,6 +322,7 @@ export interface FileRoutesByTo {
   '/api/public/email-events': typeof ApiPublicEmailEventsRoute
   '/api/public/unsubscribe': typeof ApiPublicUnsubscribeRoute
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
+  '/api/public/ad/event': typeof ApiPublicAdEventRoute
   '/api/public/signup/config': typeof ApiPublicSignupConfigRoute
   '/api/public/signup/confirm': typeof ApiPublicSignupConfirmRoute
   '/api/public/track/funnel': typeof ApiPublicTrackFunnelRoute
@@ -315,6 +340,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/admin': typeof AdminRoute
+  '/advertise': typeof AdvertiseRoute
   '/apply': typeof ApplyRoute
   '/auth': typeof AuthRoute
   '/faq': typeof FaqRoute
@@ -331,6 +357,7 @@ export interface FileRoutesById {
   '/startup/$slug': typeof StartupSlugRoute
   '/u/$token': typeof UTokenRoute
   '/widget/bar': typeof WidgetBarRoute
+  '/_authenticated/advertise/new': typeof AuthenticatedAdvertiseNewRoute
   '/api/public/bid-checkout': typeof ApiPublicBidCheckoutRoute
   '/api/public/bid-enrich': typeof ApiPublicBidEnrichRoute
   '/api/public/bid-status': typeof ApiPublicBidStatusRoute
@@ -338,6 +365,7 @@ export interface FileRoutesById {
   '/api/public/email-events': typeof ApiPublicEmailEventsRoute
   '/api/public/unsubscribe': typeof ApiPublicUnsubscribeRoute
   '/api/public/verify-install': typeof ApiPublicVerifyInstallRoute
+  '/api/public/ad/event': typeof ApiPublicAdEventRoute
   '/api/public/signup/config': typeof ApiPublicSignupConfigRoute
   '/api/public/signup/confirm': typeof ApiPublicSignupConfirmRoute
   '/api/public/track/funnel': typeof ApiPublicTrackFunnelRoute
@@ -355,6 +383,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/advertise'
     | '/apply'
     | '/auth'
     | '/faq'
@@ -371,6 +400,7 @@ export interface FileRouteTypes {
     | '/startup/$slug'
     | '/u/$token'
     | '/widget/bar'
+    | '/advertise/new'
     | '/api/public/bid-checkout'
     | '/api/public/bid-enrich'
     | '/api/public/bid-status'
@@ -378,6 +408,7 @@ export interface FileRouteTypes {
     | '/api/public/email-events'
     | '/api/public/unsubscribe'
     | '/api/public/verify-install'
+    | '/api/public/ad/event'
     | '/api/public/signup/config'
     | '/api/public/signup/confirm'
     | '/api/public/track/funnel'
@@ -393,6 +424,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/advertise'
     | '/apply'
     | '/auth'
     | '/faq'
@@ -409,6 +441,7 @@ export interface FileRouteTypes {
     | '/startup/$slug'
     | '/u/$token'
     | '/widget/bar'
+    | '/advertise/new'
     | '/api/public/bid-checkout'
     | '/api/public/bid-enrich'
     | '/api/public/bid-status'
@@ -416,6 +449,7 @@ export interface FileRouteTypes {
     | '/api/public/email-events'
     | '/api/public/unsubscribe'
     | '/api/public/verify-install'
+    | '/api/public/ad/event'
     | '/api/public/signup/config'
     | '/api/public/signup/confirm'
     | '/api/public/track/funnel'
@@ -432,6 +466,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/admin'
+    | '/advertise'
     | '/apply'
     | '/auth'
     | '/faq'
@@ -448,6 +483,7 @@ export interface FileRouteTypes {
     | '/startup/$slug'
     | '/u/$token'
     | '/widget/bar'
+    | '/_authenticated/advertise/new'
     | '/api/public/bid-checkout'
     | '/api/public/bid-enrich'
     | '/api/public/bid-status'
@@ -455,6 +491,7 @@ export interface FileRouteTypes {
     | '/api/public/email-events'
     | '/api/public/unsubscribe'
     | '/api/public/verify-install'
+    | '/api/public/ad/event'
     | '/api/public/signup/config'
     | '/api/public/signup/confirm'
     | '/api/public/track/funnel'
@@ -472,6 +509,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AdminRoute: typeof AdminRoute
+  AdvertiseRoute: typeof AdvertiseRoute
   ApplyRoute: typeof ApplyRoute
   AuthRoute: typeof AuthRoute
   FaqRoute: typeof FaqRoute
@@ -493,6 +531,7 @@ export interface RootRouteChildren {
   ApiPublicEmailEventsRoute: typeof ApiPublicEmailEventsRoute
   ApiPublicUnsubscribeRoute: typeof ApiPublicUnsubscribeRoute
   ApiPublicVerifyInstallRoute: typeof ApiPublicVerifyInstallRoute
+  ApiPublicAdEventRoute: typeof ApiPublicAdEventRoute
   ApiPublicSignupConfigRoute: typeof ApiPublicSignupConfigRoute
   ApiPublicSignupConfirmRoute: typeof ApiPublicSignupConfirmRoute
   ApiPublicTrackFunnelRoute: typeof ApiPublicTrackFunnelRoute
@@ -527,6 +566,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/advertise': {
+      id: '/advertise'
+      path: '/advertise'
+      fullPath: '/advertise'
+      preLoaderRoute: typeof AdvertiseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/apply': {
@@ -641,6 +687,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WidgetBarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/advertise/new': {
+      id: '/_authenticated/advertise/new'
+      path: '/advertise/new'
+      fullPath: '/advertise/new'
+      preLoaderRoute: typeof AuthenticatedAdvertiseNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/bid-checkout': {
       id: '/api/public/bid-checkout'
       path: '/api/public/bid-checkout'
@@ -688,6 +741,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/verify-install'
       fullPath: '/api/public/verify-install'
       preLoaderRoute: typeof ApiPublicVerifyInstallRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/ad/event': {
+      id: '/api/public/ad/event'
+      path: '/api/public/ad/event'
+      fullPath: '/api/public/ad/event'
+      preLoaderRoute: typeof ApiPublicAdEventRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/signup/config': {
@@ -773,11 +833,13 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedAdvertiseNewRoute: typeof AuthenticatedAdvertiseNewRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedAdvertiseNewRoute: AuthenticatedAdvertiseNewRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -787,6 +849,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AdminRoute: AdminRoute,
+  AdvertiseRoute: AdvertiseRoute,
   ApplyRoute: ApplyRoute,
   AuthRoute: AuthRoute,
   FaqRoute: FaqRoute,
@@ -808,6 +871,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicEmailEventsRoute: ApiPublicEmailEventsRoute,
   ApiPublicUnsubscribeRoute: ApiPublicUnsubscribeRoute,
   ApiPublicVerifyInstallRoute: ApiPublicVerifyInstallRoute,
+  ApiPublicAdEventRoute: ApiPublicAdEventRoute,
   ApiPublicSignupConfigRoute: ApiPublicSignupConfigRoute,
   ApiPublicSignupConfirmRoute: ApiPublicSignupConfirmRoute,
   ApiPublicTrackFunnelRoute: ApiPublicTrackFunnelRoute,

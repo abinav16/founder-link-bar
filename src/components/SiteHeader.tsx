@@ -22,6 +22,7 @@ const links = [
   { to: '/network', label: 'Network' },
   { to: '/leaderboard', label: 'Leaderboard' },
   { to: '/startupbid', label: 'StartupBid' },
+  { to: '/advertise', label: 'Advertise' },
   { to: '/pricing', label: 'Pricing' },
   { to: '/apply', label: 'Apply' },
 ] as const;
