@@ -23,8 +23,8 @@ export const Route = createFileRoute("/pricing")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Product",
-          name: "StartupBar listings and Featured spot promotion",
-          description: "Startup listings in the StartupBar traffic exchange network, plus a paid Featured spot promotion on StartupBar pages.",
+          name: "StartupBar listings and Guaranteed Clicks",
+          description: "Startup listings in the StartupBar traffic exchange network, plus one-time Guaranteed Clicks packs.",
           brand: { "@type": "Brand", name: "StartupBar" },
           offers: [
             {
