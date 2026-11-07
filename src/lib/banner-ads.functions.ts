@@ -35,6 +35,7 @@ const ALLOWED_HOSTS = ["startupbar.co", "www.startupbar.co", "founder-link-bar.l
 function okReturn(raw: string) {
   try {
     const u = new URL(raw);
+    if (import.meta.env.DEV && u.origin === "http://localhost:8080") return true;
     if (u.protocol !== "https:") return false;
     return ALLOWED_HOSTS.includes(u.hostname) || u.hostname.endsWith(".lovable.app") || u.hostname.endsWith(".lovableproject.com");
   } catch { return false; }
