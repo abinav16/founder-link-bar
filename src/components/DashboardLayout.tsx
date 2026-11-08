@@ -40,9 +40,11 @@ function FooterBar({ wide }: { wide?: boolean }) {
 export function DashboardLayout({
   children,
   rail,
+  fullWidth = false,
 }: {
   children: React.ReactNode;
   rail?: React.ReactNode;
+  fullWidth?: boolean;
 }) {
   const { status } = useRouterState();
   const isNavigating = status === "pending";
@@ -63,13 +65,13 @@ export function DashboardLayout({
       <SiteHeader />
 
       {/* Side featured rails were retired in favour of in-list banner ads; `rail` is kept for callers. */}
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8" data-rail={rail ? "" : undefined}>
+      <main className={fullWidth ? "w-full flex-1" : "mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8"} data-rail={rail ? "" : undefined}>
         <div className="min-w-0">
           <div className="page-enter">{children}</div>
         </div>
       </main>
 
-      <FooterBar />
+      <FooterBar wide={fullWidth} />
       <FeaturedReturnWatcher />
     </div>
   );
