@@ -35,3 +35,4 @@
 - Keep application Step 2 in a viewport-height flex shell with installation-only scrolling and a non-scrolling order grid track; this pins payment controls without overlaying instructions on desktop or phones.
 - Share the startup category vocabulary and selector across application, owner editing and directory filters; validate stored values in the database and leave legacy listings uncategorized rather than guessing their category.
 - Banner sponsorships use server-priced weekly quantities, payment-verified review and atomic approval timestamps in ad_campaigns; equal random rotation and expiry checks govern serving, while service-only events count analytics without debiting money. Side featured rails stay retired.
+- Advertise uses DashboardLayout's opt-in full-width canvas and route-local product previews with global presentation tokens, so other pages and campaign/payment logic remain unchanged.
