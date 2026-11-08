@@ -1,5 +1,5 @@
 # Advertise presentation
-- [ ] Replace the narrow centered Advertise page with full-width monochrome sections, product previews and clear campaign links; verify desktop and phone layouts.
+- [x] Replace the narrow centered Advertise page with full-width monochrome sections, product previews and clear campaign links; verified 1280/1631px desktop and 360/390px phone fit, expanded FAQ and signed-out campaign sign-in redirect without runtime errors.
 
 # Application snippet email
 - [x] Convert banners to $49/week for 1–52 weeks; connect Dodo, update public/setup/admin views, enforce approval-based dates and expiry, and stop CPM debits. Five rule tests pass; signed-out sign-in gate, signed-in uploads, mobile fit and live four-week $196 checkout verified without paying. Actual paid webhook/approval cycle remains untested; unpaid verification campaigns removed.

@@ -17,7 +17,7 @@
 .advertise-container { width: 100%; max-width: 1800px; margin: 0 auto; padding-left: 48px; padding-right: 48px; }
 .advertise-eyebrow { font-size: 11px; font-weight: 600; color: var(--muted-foreground); }
 .advertise-hero { position: relative; isolation: isolate; min-height: 530px; overflow: hidden; }
-.advertise-hero-image { position: absolute; z-index: -1; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.advertise-hero-image { position: absolute; z-index: -1; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: right center; }
 .advertise-hero-inner { min-height: 530px; display: flex; align-items: center; padding-top: 58px; padding-bottom: 58px; }
 .advertise-hero-copy { width: 48%; max-width: 670px; }
 .advertise-hero h1 { margin-top: 18px; font-size: 64px; font-weight: 650; line-height: 1.06; }
@@ -97,12 +97,12 @@
 }
 @media (max-width: 767px) {
   .advertise-container { padding-left: 20px; padding-right: 20px; }
-  .advertise-hero, .advertise-hero-inner { min-height: 640px; }
+  .advertise-hero, .advertise-hero-inner { min-height: 680px; }
   .advertise-hero-inner { align-items: start; padding-top: 36px; padding-bottom: 280px; }
   .advertise-hero-copy { width: 100%; max-width: none; }
   .advertise-hero h1 { font-size: 44px; }
   .advertise-hero-description { font-size: 15px; margin-top: 18px; }
-  .advertise-hero-image { inset: auto 0 0 auto; width: 200%; max-width: none; height: 310px; object-fit: cover; object-position: right center; }
+  .advertise-hero-image { inset: auto 0 0 auto; width: 200%; max-width: none; height: 270px; object-fit: cover; object-position: right center; }
   .advertise-hero-copy .h-12 { padding-left: 18px; padding-right: 18px; }
   .advertise-audience-inner { grid-template-columns: minmax(0,1fr); gap: 24px; }
   .advertise-stats > div { padding: 0 12px; }
