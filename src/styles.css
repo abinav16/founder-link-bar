@@ -160,6 +160,8 @@
 .placement-site { padding: 0 24px 18px; min-height: 548px; }
 .placement-site-nav { display: flex; align-items: center; gap: 24px; padding: 20px 0; border-bottom: 1px solid var(--border); font-size: 10px; color: var(--muted-foreground); }
 .placement-site-nav strong { display: flex; align-items: center; gap: 6px; color: var(--foreground); font-size: 13px; margin-right: auto; }
+.placement-brand-capsule { display: inline-block; width: 17px; height: 6px; border-radius: 8px; background: var(--foreground); }
+.placement-bar-brand { flex: 0 0 auto !important; font-size: 7px !important; opacity: 1 !important; }
 .placement-page-title { display: flex; justify-content: space-between; align-items: center; padding: 24px 0 18px; }
 .placement-page-title span { font-size: 8px; color: var(--muted-foreground); }
 .placement-page-title h4 { font-size: 24px; font-weight: 600; margin-top: 5px; }
