@@ -1,4 +1,5 @@
 # Advertise presentation
+- [x] Replace generic format cards with detailed website-style placement diagrams; verified all banner/gold switches, signed-out campaign handoff and 360/390/768/1630px fit, with no page runtime errors. Payment rules remain unchanged.
 - [x] Replace the narrow centered Advertise page with full-width monochrome sections, product previews and clear campaign links; verified 1280/1631px desktop and 360/390px phone fit, expanded FAQ and signed-out campaign sign-in redirect without runtime errors.
 
 # Application snippet email
