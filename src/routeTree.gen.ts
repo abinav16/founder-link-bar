@@ -31,6 +31,7 @@ import { Route as AuthCallbackRouteImport } from './routes/auth_.callback'
 import { Route as StartupSlugRouteImport } from './routes/startup.$slug'
 import { Route as UTokenRouteImport } from './routes/u.$token'
 import { Route as WidgetBarRouteImport } from './routes/widget.bar'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as AuthenticatedAdvertiseNewRouteImport } from './routes/_authenticated/advertise.new'
 import { Route as ApiPublicBidCheckoutRouteImport } from './routes/api/public/bid-checkout'
 import { Route as ApiPublicBidEnrichRouteImport } from './routes/api/public/bid-enrich'
@@ -162,6 +163,11 @@ const WidgetBarRoute = WidgetBarRouteImport.update({
   path: '/widget/bar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdvertiseNewRoute =
   AuthenticatedAdvertiseNewRouteImport.update({
     id: '/advertise/new',
@@ -288,6 +294,7 @@ export interface FileRoutesByFullPath {
   '/startup/$slug': typeof StartupSlugRoute
   '/u/$token': typeof UTokenRoute
   '/widget/bar': typeof WidgetBarRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/advertise/new': typeof AuthenticatedAdvertiseNewRoute
   '/api/public/bid-checkout': typeof ApiPublicBidCheckoutRoute
   '/api/public/bid-enrich': typeof ApiPublicBidEnrichRoute
@@ -331,6 +338,7 @@ export interface FileRoutesByTo {
   '/startup/$slug': typeof StartupSlugRoute
   '/u/$token': typeof UTokenRoute
   '/widget/bar': typeof WidgetBarRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/advertise/new': typeof AuthenticatedAdvertiseNewRoute
   '/api/public/bid-checkout': typeof ApiPublicBidCheckoutRoute
   '/api/public/bid-enrich': typeof ApiPublicBidEnrichRoute
@@ -376,6 +384,7 @@ export interface FileRoutesById {
   '/startup/$slug': typeof StartupSlugRoute
   '/u/$token': typeof UTokenRoute
   '/widget/bar': typeof WidgetBarRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/_authenticated/advertise/new': typeof AuthenticatedAdvertiseNewRoute
   '/api/public/bid-checkout': typeof ApiPublicBidCheckoutRoute
   '/api/public/bid-enrich': typeof ApiPublicBidEnrichRoute
@@ -421,6 +430,7 @@ export interface FileRouteTypes {
     | '/startup/$slug'
     | '/u/$token'
     | '/widget/bar'
+    | '/.lovable/oauth/consent'
     | '/advertise/new'
     | '/api/public/bid-checkout'
     | '/api/public/bid-enrich'
@@ -464,6 +474,7 @@ export interface FileRouteTypes {
     | '/startup/$slug'
     | '/u/$token'
     | '/widget/bar'
+    | '/.lovable/oauth/consent'
     | '/advertise/new'
     | '/api/public/bid-checkout'
     | '/api/public/bid-enrich'
@@ -508,6 +519,7 @@ export interface FileRouteTypes {
     | '/startup/$slug'
     | '/u/$token'
     | '/widget/bar'
+    | '/.lovable/oauth/consent'
     | '/_authenticated/advertise/new'
     | '/api/public/bid-checkout'
     | '/api/public/bid-enrich'
@@ -551,6 +563,7 @@ export interface RootRouteChildren {
   StartupSlugRoute: typeof StartupSlugRoute
   UTokenRoute: typeof UTokenRoute
   WidgetBarRoute: typeof WidgetBarRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   ApiPublicBidCheckoutRoute: typeof ApiPublicBidCheckoutRoute
   ApiPublicBidEnrichRoute: typeof ApiPublicBidEnrichRoute
   ApiPublicBidStatusRoute: typeof ApiPublicBidStatusRoute
@@ -726,6 +739,13 @@ declare module '@tanstack/react-router' {
       path: '/widget/bar'
       fullPath: '/widget/bar'
       preLoaderRoute: typeof WidgetBarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/advertise/new': {
@@ -908,6 +928,7 @@ const rootRouteChildren: RootRouteChildren = {
   StartupSlugRoute: StartupSlugRoute,
   UTokenRoute: UTokenRoute,
   WidgetBarRoute: WidgetBarRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   ApiPublicBidCheckoutRoute: ApiPublicBidCheckoutRoute,
   ApiPublicBidEnrichRoute: ApiPublicBidEnrichRoute,
   ApiPublicBidStatusRoute: ApiPublicBidStatusRoute,
