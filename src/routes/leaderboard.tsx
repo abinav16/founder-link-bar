@@ -1,4 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useWebMCP } from "use-webmcp-tool";
+import { runWebMCPTool } from "@/lib/webmcp-telemetry";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { BannerSlot } from "@/components/BannerAd";
 import { BANNER_EVERY_N_ROWS } from "@/lib/banner-ads";
@@ -260,6 +262,13 @@ function LeaderboardPage() {
   const podium = windowEmpty ? [] : activeRows.slice(0, 3);
 
   const podiumDisplay = [podium[1], podium[0], podium[2]].filter(Boolean) as LeaderboardRow[];
+
+  useWebMCP({
+    name: "read_leaderboard",
+    description: "Read the current leaderboard ranking and its selected time period and metric.",
+    annotations: { readOnlyHint: true, untrustedContentHint: true },
+    execute: () => runWebMCPTool("read_leaderboard", () => `${tab}; ${rangeSuffix}\n${activeRows.map((row, i) => `${i + 1}. ${row.id}: ${row.name}; impressions: ${primaryMetric(row)}; clicks: ${clicksMetric(row)}`).join("\n") || "No startups shown."}`),
+  });
 
 
   const body = (

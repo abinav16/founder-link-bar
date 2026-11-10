@@ -17,18 +17,21 @@ import { Route as ApplyRouteImport } from './routes/apply'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as NetworkRouteImport } from './routes/network'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as StartupbidRouteImport } from './routes/startupbid'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthCallbackRouteImport } from './routes/auth_.callback'
 import { Route as StartupSlugRouteImport } from './routes/startup.$slug'
 import { Route as UTokenRouteImport } from './routes/u.$token'
 import { Route as WidgetBarRouteImport } from './routes/widget.bar'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as AuthenticatedAdvertiseNewRouteImport } from './routes/_authenticated/advertise.new'
 import { Route as ApiPublicBidCheckoutRouteImport } from './routes/api/public/bid-checkout'
 import { Route as ApiPublicBidEnrichRouteImport } from './routes/api/public/bid-enrich'
@@ -89,6 +92,11 @@ const LeaderboardRoute = LeaderboardRouteImport.update({
   path: '/leaderboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const NetworkRoute = NetworkRouteImport.update({
   id: '/network',
   path: '/network',
@@ -119,6 +127,12 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   id: '/account',
   path: '/account',
@@ -147,6 +161,11 @@ const UTokenRoute = UTokenRouteImport.update({
 const WidgetBarRoute = WidgetBarRouteImport.update({
   id: '/widget/bar',
   path: '/widget/bar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdvertiseNewRoute =
@@ -261,18 +280,21 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/faq': typeof FaqRoute
   '/leaderboard': typeof LeaderboardRoute
+  '/mcp': typeof McpRoute
   '/network': typeof NetworkRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/startupbid': typeof StartupbidRoute
   '/terms': typeof TermsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account': typeof AuthenticatedAccountRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/startup/$slug': typeof StartupSlugRoute
   '/u/$token': typeof UTokenRoute
   '/widget/bar': typeof WidgetBarRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/advertise/new': typeof AuthenticatedAdvertiseNewRoute
   '/api/public/bid-checkout': typeof ApiPublicBidCheckoutRoute
   '/api/public/bid-enrich': typeof ApiPublicBidEnrichRoute
@@ -302,18 +324,21 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/faq': typeof FaqRoute
   '/leaderboard': typeof LeaderboardRoute
+  '/mcp': typeof McpRoute
   '/network': typeof NetworkRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/startupbid': typeof StartupbidRoute
   '/terms': typeof TermsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account': typeof AuthenticatedAccountRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/startup/$slug': typeof StartupSlugRoute
   '/u/$token': typeof UTokenRoute
   '/widget/bar': typeof WidgetBarRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/advertise/new': typeof AuthenticatedAdvertiseNewRoute
   '/api/public/bid-checkout': typeof ApiPublicBidCheckoutRoute
   '/api/public/bid-enrich': typeof ApiPublicBidEnrichRoute
@@ -345,18 +370,21 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/faq': typeof FaqRoute
   '/leaderboard': typeof LeaderboardRoute
+  '/mcp': typeof McpRoute
   '/network': typeof NetworkRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/startupbid': typeof StartupbidRoute
   '/terms': typeof TermsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/auth_/callback': typeof AuthCallbackRoute
   '/startup/$slug': typeof StartupSlugRoute
   '/u/$token': typeof UTokenRoute
   '/widget/bar': typeof WidgetBarRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/_authenticated/advertise/new': typeof AuthenticatedAdvertiseNewRoute
   '/api/public/bid-checkout': typeof ApiPublicBidCheckoutRoute
   '/api/public/bid-enrich': typeof ApiPublicBidEnrichRoute
@@ -388,18 +416,21 @@ export interface FileRouteTypes {
     | '/auth'
     | '/faq'
     | '/leaderboard'
+    | '/mcp'
     | '/network'
     | '/pricing'
     | '/privacy'
     | '/sitemap.xml'
     | '/startupbid'
     | '/terms'
+    | '/.well-known/oauth-protected-resource'
     | '/account'
     | '/dashboard'
     | '/auth/callback'
     | '/startup/$slug'
     | '/u/$token'
     | '/widget/bar'
+    | '/.lovable/oauth/consent'
     | '/advertise/new'
     | '/api/public/bid-checkout'
     | '/api/public/bid-enrich'
@@ -429,18 +460,21 @@ export interface FileRouteTypes {
     | '/auth'
     | '/faq'
     | '/leaderboard'
+    | '/mcp'
     | '/network'
     | '/pricing'
     | '/privacy'
     | '/sitemap.xml'
     | '/startupbid'
     | '/terms'
+    | '/.well-known/oauth-protected-resource'
     | '/account'
     | '/dashboard'
     | '/auth/callback'
     | '/startup/$slug'
     | '/u/$token'
     | '/widget/bar'
+    | '/.lovable/oauth/consent'
     | '/advertise/new'
     | '/api/public/bid-checkout'
     | '/api/public/bid-enrich'
@@ -471,18 +505,21 @@ export interface FileRouteTypes {
     | '/auth'
     | '/faq'
     | '/leaderboard'
+    | '/mcp'
     | '/network'
     | '/pricing'
     | '/privacy'
     | '/sitemap.xml'
     | '/startupbid'
     | '/terms'
+    | '/.well-known/oauth-protected-resource'
     | '/_authenticated/account'
     | '/_authenticated/dashboard'
     | '/auth_/callback'
     | '/startup/$slug'
     | '/u/$token'
     | '/widget/bar'
+    | '/.lovable/oauth/consent'
     | '/_authenticated/advertise/new'
     | '/api/public/bid-checkout'
     | '/api/public/bid-enrich'
@@ -514,16 +551,19 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   FaqRoute: typeof FaqRoute
   LeaderboardRoute: typeof LeaderboardRoute
+  McpRoute: typeof McpRoute
   NetworkRoute: typeof NetworkRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StartupbidRoute: typeof StartupbidRoute
   TermsRoute: typeof TermsRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   StartupSlugRoute: typeof StartupSlugRoute
   UTokenRoute: typeof UTokenRoute
   WidgetBarRoute: typeof WidgetBarRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   ApiPublicBidCheckoutRoute: typeof ApiPublicBidCheckoutRoute
   ApiPublicBidEnrichRoute: typeof ApiPublicBidEnrichRoute
   ApiPublicBidStatusRoute: typeof ApiPublicBidStatusRoute
@@ -603,6 +643,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LeaderboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/network': {
       id: '/network'
       path: '/network'
@@ -645,6 +692,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/account': {
       id: '/_authenticated/account'
       path: '/account'
@@ -685,6 +739,13 @@ declare module '@tanstack/react-router' {
       path: '/widget/bar'
       fullPath: '/widget/bar'
       preLoaderRoute: typeof WidgetBarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/advertise/new': {
@@ -854,16 +915,20 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   FaqRoute: FaqRoute,
   LeaderboardRoute: LeaderboardRoute,
+  McpRoute: McpRoute,
   NetworkRoute: NetworkRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StartupbidRoute: StartupbidRoute,
   TermsRoute: TermsRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   StartupSlugRoute: StartupSlugRoute,
   UTokenRoute: UTokenRoute,
   WidgetBarRoute: WidgetBarRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   ApiPublicBidCheckoutRoute: ApiPublicBidCheckoutRoute,
   ApiPublicBidEnrichRoute: ApiPublicBidEnrichRoute,
   ApiPublicBidStatusRoute: ApiPublicBidStatusRoute,

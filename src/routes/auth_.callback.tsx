@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { oauthReturnPath } from "@/lib/oauth-return-path";
 
 export const Route = createFileRoute("/auth_/callback")({
   ssr: false,
@@ -20,10 +21,7 @@ export const Route = createFileRoute("/auth_/callback")({
 });
 
 // Only ever navigate to a known same-origin app path.
-function safeNext(raw: string | null): "/apply" | "/dashboard" {
-  if (raw === "/apply") return "/apply";
-  return "/dashboard";
-}
+function safeNext(raw: string | null): string { return oauthReturnPath(raw ?? "/dashboard"); }
 
 function AuthCallback() {
   const navigate = useNavigate();
@@ -63,7 +61,7 @@ function AuthCallback() {
         done = true;
         window.clearInterval(poll);
         toast.error("Sign-in didn't complete. Please try again.");
-        navigate({ to: "/auth", replace: true });
+        navigate({ href: `/auth?next=${encodeURIComponent(next)}`, replace: true });
       }
     }, 250);
 
