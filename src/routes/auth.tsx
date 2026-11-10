@@ -1,4 +1,5 @@
 import { SiteHeader } from "@/components/SiteHeader";
+import { oauthReturnPath } from "@/lib/oauth-return-path";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -172,14 +173,14 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  function consumeNext(): "/apply" | "/dashboard" {
+  function returnPath(): string {
     if (typeof window === "undefined") return "/dashboard";
-    const next = sessionStorage.getItem("startupbar:auth-next");
-    if (next === "/apply") {
-      sessionStorage.removeItem("startupbar:auth-next");
-      return "/apply";
-    }
-    return "/dashboard";
+    return oauthReturnPath(new URLSearchParams(window.location.search).get("next") ?? sessionStorage.getItem("startupbar:auth-next") ?? "/dashboard");
+  }
+  function consumeNext(): string {
+    const next = returnPath();
+    sessionStorage.removeItem("startupbar:auth-next");
+    return next;
   }
 
   useEffect(() => { supabase.auth.getUser().then(({ data }) => { if (data.user) navigate({ to: consumeNext() }); }); }, [navigate]);
@@ -188,8 +189,7 @@ function AuthPage() {
     e.preventDefault(); setLoading(true);
     try {
       if (mode === "signup") {
-        const next = typeof window !== "undefined" ? sessionStorage.getItem("startupbar:auth-next") : null;
-        const redirectPath = next === "/apply" ? "/apply" : "/dashboard";
+        const redirectPath = returnPath();
         const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectPath)}`, data: { full_name: name } } });
         if (error) throw error;
         // Welcome email fires from the root onAuthStateChange on first
@@ -222,8 +222,8 @@ function AuthPage() {
             type="button"
             onClick={async () => {
               setLoading(true);
-              const next = typeof window !== "undefined" ? sessionStorage.getItem("startupbar:auth-next") : null;
-              const redirectPath = next === "/apply" ? "/apply" : "/dashboard";
+              const redirectPath = returnPath();
+              sessionStorage.setItem("startupbar:auth-next", redirectPath);
               const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectPath)}` });
               if (result.error) { toast.error(result.error.message); setLoading(false); return; }
               if (result.redirected) return;
