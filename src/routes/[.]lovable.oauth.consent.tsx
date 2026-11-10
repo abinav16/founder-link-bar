@@ -31,7 +31,7 @@ export const Route = createFileRoute("/.lovable/oauth/consent")({
     return { details: data, email: session.session?.user.email };
   },
   pendingComponent: () => <ConsentShell><p className="text-muted-foreground">Loading connection request…</p></ConsentShell>,
-  errorComponent: ({ error }) => <ConsentShell><h1 className="text-2xl font-semibold">Connection unavailable</h1><p role="alert" className="mt-4 text-muted-foreground">{error.message}</p></ConsentShell>,
+  errorComponent: ({ error }) => <ConsentShell><h1 className="text-2xl font-semibold">Connection unavailable</h1><p role="alert" className="mt-4 text-muted-foreground">{error instanceof Error ? error.message : "Please start the connection again from your assistant."}</p></ConsentShell>,
   component: ConsentPage,
 });
 
