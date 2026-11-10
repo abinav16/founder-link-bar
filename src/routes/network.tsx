@@ -1,4 +1,6 @@
 import { STARTUP_CATEGORIES, matchesStartupCategory } from "@/lib/startup-categories";
+import { useWebMCP } from "use-webmcp-tool";
+import { runWebMCPTool } from "@/lib/webmcp-telemetry";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -940,6 +942,13 @@ function NetworkDashboardPage() {
     });
     return sorted;
   }, [allStartups, q, sortKey, sortDir, featuredFilter, categoryFilter]);
+
+  useWebMCP({
+    name: "read_network_listings",
+    description: "Read startups currently shown in the directory, respecting search, category and featured filters.",
+    annotations: { readOnlyHint: true, untrustedContentHint: true },
+    execute: () => runWebMCPTool("read_network_listings", () => filtered.length ? filtered.map(s => `${s.id}: ${s.name} — ${s.description}; ${s.website_url}`).join("\n") : "No startups shown."),
+  });
 
 
   const trending = (() => {
