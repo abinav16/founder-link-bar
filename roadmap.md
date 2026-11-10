@@ -1,5 +1,6 @@
 # Agent integrations
-- [ ] Enable protected MCP, add account-scoped read tools and browser-local directory tools, and verify consent and catalog; republishing required for external access.
+- [x] Enable OAuth and protected MCP with own-startup and network-search read tools; add WebMCP directory/leaderboard reads. Catalog extraction, two redirect tests, clean build, signed-in return, readable consent errors and rejection of anonymous/copied-session MCP access verified. Cloud/auth and asymmetric signing were already present; OAuth server newly activated.
+- [ ] Republish and verify actual approve/deny plus OAuth tool reads on the canonical site; provider rejects localhost consent with unauthorized request origin. No auth policies were weakened. Native WebMCP registration cannot be inspected in the installed browser, which lacks the API.
 
 # Advertise presentation
 - [x] Replace generic format cards with detailed website-style placement diagrams; verified all banner/gold switches, signed-out campaign handoff and 360/390/768/1630px fit, with no page runtime errors. Payment rules remain unchanged.
