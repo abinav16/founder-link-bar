@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Check } from "lucide-react";
 import { AdvertisePlacements } from "@/components/AdvertisePlacements";
-import studioImage from "@/assets/advertise-studio.jpg";
+import studioImage from "@/assets/startupbar-studio.jpg";
 import { Button } from "@/components/ui/button";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
@@ -43,7 +43,7 @@ function AdvertisePage() {
     <DashboardLayout fullWidth>
       <div className="advertise-page">
         <section className="advertise-hero">
-          <img src={studioImage} width={1920} height={960} alt="Laptop and phone displaying advertising placements" className="advertise-hero-image" />
+          <img src={studioImage} width={1536} height={768} alt="StartupBar-branded laptop and phone showing directory banner placements" className="advertise-hero-image" />
           <div className="advertise-container advertise-hero-inner">
             <div className="advertise-hero-copy">
               <p className="advertise-eyebrow">STARTUPBAR / ADVERTISE</p>

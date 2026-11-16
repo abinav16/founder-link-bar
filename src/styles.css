@@ -183,7 +183,8 @@
 .placement-inline-banner span { font-size: 7px; opacity: .65; }
 .placement-inline-banner strong { display: block; font-size: 22px; font-weight: 600; margin-top: 5px; }
 .placement-inline-banner p { font-size: 9px; opacity: .7; margin-top: 5px; }
-.placement-banner-symbol { margin-left: auto; padding: 10px; border: 1px solid var(--muted-foreground); border-radius: 6px; transform: rotate(-10deg); }
+.placement-banner-symbol { margin-left: auto; padding: 10px; }
+.placement-banner-symbol .placement-brand-capsule { width: 52px; height: 18px; background: currentColor; opacity: 1; }
 .placement-banner-symbol svg { width: 36px; height: 36px; }
 .placement-caption { display: flex; gap: 10px; align-items: start; margin-top: 18px; }
 .placement-caption p { font-size: 12px; line-height: 1.7; }
@@ -197,7 +198,7 @@
 .placement-partners { padding: 24px 0; }
 .placement-partners h5 { font-size: 14px; font-weight: 600; }
 .placement-partners > div { display: flex; gap: 10px; font-size: 10px; color: var(--muted-foreground); margin-top: 14px; }
-.placement-gold-row { display: flex; align-items: center; gap: 14px; border-radius: 8px; padding: 22px 16px; }
+.placement-gold-row { display: flex; align-items: center; gap: 14px; border-radius: 8px; padding: 22px 16px; background: var(--ad-gold-surface); color: var(--ad-gold-ink); border: 1px solid var(--ad-gold-edge); }
 .placement-gold-row .placement-logo > span { position: absolute; top: -4px; right: -4px; padding: 3px; border-radius: 50%; color: var(--featured-gold); background: var(--featured-surface); }
 .placement-gold-row > div:nth-child(2) { flex: 1; }
 .placement-gold-row strong { font-size: 15px; }
