@@ -3,7 +3,7 @@
 - [ ] Republish and verify actual approve/deny plus OAuth tool reads on the canonical site; provider rejects localhost consent with unauthorized request origin. No auth policies were weakened. Native WebMCP registration cannot be inspected in the installed browser, which lacks the API.
 
 # Advertise presentation
-- [ ] Match placement diagrams to current Network, Leaderboard and profile layouts, with skeleton content and detailed branded ad examples.
+- [x] Match placement diagrams to current Network, Leaderboard and profile layouts, with skeleton content and detailed branded ad examples; verified all selectors and 360/390/768px fit without runtime errors.
 - [x] Remove the Advertise-only gold shimmer and customize top artwork and placement diagrams with StartupBar branding; verified static highlight, working placement switches and 360/390/768px fit without runtime errors.
 - [x] Replace generic format cards with detailed website-style placement diagrams; verified all banner/gold switches, signed-out campaign handoff and 360/390/768/1630px fit, with no page runtime errors. Payment rules remain unchanged.
 - [x] Replace the narrow centered Advertise page with full-width monochrome sections, product previews and clear campaign links; verified 1280/1631px desktop and 360/390px phone fit, expanded FAQ and signed-out campaign sign-in redirect without runtime errors.
