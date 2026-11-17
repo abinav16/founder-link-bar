@@ -2,7 +2,7 @@ import { STARTUP_CATEGORIES, matchesStartupCategory } from "@/lib/startup-catego
 import { useWebMCP } from "use-webmcp-tool";
 import { runWebMCPTool } from "@/lib/webmcp-telemetry";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { SponsoredRail } from "@/components/SponsoredRail";
@@ -1154,14 +1154,15 @@ const CLICK_MILESTONES = [1000, 500, 250, 100, 50];
 const NETWORK_GOALS = [1000, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000, 5000000];
 
 function ProofPanel({ startups, totalClicks, totalImpressions }: { startups: ProofStartup[]; totalClicks: number; totalImpressions: number }) {
+  const router = useRouter();
+  useEffect(() => {
+    const id = window.setInterval(() => { if (document.visibilityState === "visible") router.invalidate(); }, 60000);
+    return () => window.clearInterval(id);
+  }, [router]);
   const clicks24 = startups.reduce((n, s) => n + (s.clicks_24h ?? 0), 0);
   const impr24 = startups.reduce((n, s) => n + (s.impressions_24h ?? 0), 0);
   const active24 = startups.filter((s) => (s.impressions_24h ?? 0) > 0).length;
-  const milestones = startups
-    .map((s) => ({ s, m: CLICK_MILESTONES.find((m) => (s.clicks ?? 0) >= m) }))
-    .filter((x): x is { s: ProofStartup; m: number } => !!x.m)
-    .sort((a, b) => (b.s.clicks ?? 0) - (a.s.clicks ?? 0))
-    .slice(0, 5);
+  const feed = buildMilestoneFeed(startups);
   const joined = [...startups].sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at)).slice(0, 4);
   const goal = NETWORK_GOALS.find((g) => g > totalClicks) ?? totalClicks;
   const pct = goal ? Math.min(100, (totalClicks / goal) * 100) : 100;
@@ -1189,18 +1190,23 @@ function ProofPanel({ startups, totalClicks, totalImpressions }: { startups: Pro
         <p className="mt-3 text-[11px] text-muted-foreground">{fmt(totalImpressions)} total views across member sites</p>
       </div>
 
-      {milestones.length > 0 && (
+      {feed.length > 0 && (
         <div className="nw-card">
-          <span className="nw-eyebrow">Founder milestones</span>
-          <ul className="mt-3 space-y-1">
-            {milestones.map(({ s, m }, i) => (
-              <li key={s.id} className="nw-row" style={{ animationDelay: `${i * 80}ms` }}>
-                <StartupFavicon url={s.website_url} name={s.name} logoUrl={s.logo_url} size={28} />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-[13px] font-medium">{s.name}</p>
-                  <p className="text-[11px] text-muted-foreground">{fmt(s.clicks ?? 0)} visitors received</p>
-                </div>
-                <span className="nw-badge">{fmt(m)}+</span>
+          <div className="flex items-center justify-between">
+            <span className="nw-eyebrow">Founder milestones</span>
+            <span className="nw-live-dark"><i />Live</span>
+          </div>
+          <ul className="mt-3 space-y-0.5">
+            {feed.map((f, i) => (
+              <li key={f.key} style={{ animationDelay: `${i * 50}ms` }} className="nw-row-wrap">
+                <ProofLink slug={f.s.slug}>
+                  <span className="nw-ms-icon">{f.icon}</span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[13px] font-medium">{f.s.name}</p>
+                    <p className="truncate text-[11px] text-muted-foreground">{f.text}</p>
+                  </div>
+                  <span className={f.fresh ? "nw-badge" : "text-[11px] text-muted-foreground tabular-nums"}>{f.when}</span>
+                </ProofLink>
               </li>
             ))}
           </ul>
@@ -1211,10 +1217,12 @@ function ProofPanel({ startups, totalClicks, totalImpressions }: { startups: Pro
         <span className="nw-eyebrow">Recently joined</span>
         <ul className="mt-3 space-y-1">
           {joined.map((s, i) => (
-            <li key={s.id} className="nw-row" style={{ animationDelay: `${i * 80}ms` }}>
-              <StartupFavicon url={s.website_url} name={s.name} logoUrl={s.logo_url} size={28} />
-              <p className="min-w-0 flex-1 truncate text-[13px] font-medium">{s.name}</p>
-              <span className="text-[11px] text-muted-foreground tabular-nums">{joinedLabel(s.created_at)}</span>
+            <li key={s.id} className="nw-row-wrap" style={{ animationDelay: `${i * 80}ms` }}>
+              <ProofLink slug={s.slug}>
+                <StartupFavicon url={s.website_url} name={s.name} logoUrl={s.logo_url} size={28} />
+                <p className="min-w-0 flex-1 truncate text-[13px] font-medium">{s.name}</p>
+                <span className="text-[11px] text-muted-foreground tabular-nums">{joinedLabel(s.created_at)}</span>
+              </ProofLink>
             </li>
           ))}
         </ul>
@@ -1222,4 +1230,50 @@ function ProofPanel({ startups, totalClicks, totalImpressions }: { startups: Pro
       </div>
     </aside>
   );
+}
+
+function ProofLink({ slug, children }: { slug: string | null; children: ReactNode }) {
+  if (!slug) return <div className="nw-row">{children}</div>;
+  return <Link to="/startup/$slug" params={{ slug }} className="nw-row nw-row-link">{children}</Link>;
+}
+
+const CLICK_STEPS = [1, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000];
+const VIEW_STEPS = [100, 1000, 5000, 10000, 25000, 50000, 100000];
+const DAY_STEPS = [7, 30, 60, 90, 100, 180, 365, 730];
+
+type FeedItem = { key: string; s: ProofStartup; icon: string; text: string; when: string; fresh: boolean; t: number };
+
+function buildMilestoneFeed(startups: ProofStartup[]): FeedItem[] {
+  const now = Date.now();
+  const day = 86400000;
+  const items: FeedItem[] = [];
+  for (const s of startups) {
+    const clicks = s.clicks ?? 0;
+    const c24 = s.clicks_24h ?? 0;
+    const views = s.impressions ?? 0;
+    const v24 = s.impressions_24h ?? 0;
+    const top = [...CLICK_STEPS].reverse().find((m) => clicks >= m);
+    if (top) {
+      const fresh = clicks - c24 < top;
+      items.push({ key: `c${s.id}`, s, icon: top === 1 ? "🎉" : "🚀", fresh,
+        text: top === 1 ? "Got its first click from the network" : `Reached ${fmt(top)} clicks`,
+        when: fresh ? "Today" : `${fmt(clicks)} total`, t: fresh ? now - 1000 : now - 30 * day + clicks });
+    }
+    const vTop = [...VIEW_STEPS].reverse().find((m) => views >= m);
+    if (vTop && views - v24 < vTop) {
+      items.push({ key: `v${s.id}`, s, icon: "👀", fresh: true, text: `Passed ${fmt(vTop)} views`, when: "Today", t: now - 2000 });
+    }
+    const created = new Date(s.created_at).getTime();
+    const age = Math.floor((now - created) / day);
+    const dTop = [...DAY_STEPS].reverse().find((d) => age >= d);
+    if (dTop) {
+      const hitAt = created + dTop * day;
+      const ago = Math.floor((now - hitAt) / day);
+      items.push({ key: `d${s.id}`, s, icon: "📅", fresh: ago === 0,
+        text: dTop >= 365 ? `${dTop / 365} year${dTop > 365 ? "s" : ""} in the network` : `${dTop} days in the network`,
+        when: ago === 0 ? "Today" : `${ago}d ago`, t: hitAt });
+    }
+    if (age < 1) items.push({ key: `j${s.id}`, s, icon: "👋", fresh: true, text: "Just joined the network", when: "Today", t: created });
+  }
+  return items.sort((a, b) => b.t - a.t).slice(0, 10);
 }

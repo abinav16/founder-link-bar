@@ -2020,3 +2020,9 @@ body[style*="padding-top: 36px"] .apply-install-shell { height: calc(100dvh - 36
 .nw-cta { display: flex; align-items: center; justify-content: center; gap: 6px; height: 38px; border-radius: 99px; background: var(--foreground); color: var(--background); font-size: 13px; font-weight: 600; transition: opacity .2s; }
 .nw-cta:hover { opacity: .85; }
 .nw-scroll { scrollbar-width: thin; overscroll-behavior: contain; padding-bottom: 8px; }
+.nw-row-wrap { animation: adx-up .5s both; list-style: none; }
+.nw-row-link { cursor: pointer; }
+.nw-row-link:hover p:first-child { text-decoration: underline; text-underline-offset: 3px; }
+.nw-ms-icon { display: grid; place-items: center; width: 28px; height: 28px; flex: none; border-radius: 9px; background: var(--muted); font-size: 14px; }
+.nw-live-dark { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; }
+.nw-live-dark i { width: 7px; height: 7px; border-radius: 99px; background: var(--foreground); animation: nw-pulse 1.6s infinite; }
