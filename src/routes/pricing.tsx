@@ -1,16 +1,17 @@
-import { SiteHeader } from "@/components/SiteHeader";
+import { DashboardLayout } from "@/components/DashboardLayout";
+import { ArrowRight, Check, Clock, Crown, DollarSign, Globe, Layers, MousePointerClick, Receipt, Rocket, ShieldCheck, Sparkles } from "lucide-react";
 import { SUPPORTER_PRICE_USD, SUPPORTER_TRIAL_DAYS } from "@/lib/supporter";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { CLICK_PACKS } from "@/lib/checkout-plans";
+import { CLICK_PACKS, packSavingsPct, perClick } from "@/lib/checkout-plans";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
-      { title: "Pricing — StartupBar" },
+      { title: "Pricing | StartupBar" },
       { name: "description", content: "StartupBar pricing: first startup listing free forever, extra listings $9.99 one-time, and Guaranteed Clicks packs from $49 one-time. Supporter: seven days free, then $999/year. Payments processed by Dodo Payments." },
-      { property: "og:title", content: "Pricing — StartupBar" },
+      { property: "og:title", content: "Pricing | StartupBar" },
       { property: "og:description", content: "First listing free. Extra listings $9.99 one-time. Guaranteed Clicks from $49 one-time. Supporter: seven days free, then $999/year, cancel anytime." },
       { property: "og:url", content: "https://startupbar.co/pricing" },
       { property: "og:type", content: "website" },
@@ -61,15 +62,6 @@ export const Route = createFileRoute("/pricing")({
 });
 
 
-function Logo() {
-  return (
-    <Link to="/" className="flex items-center gap-2">
-      <div className="h-2 w-6 rounded-sm bg-black" />
-      <span className="text-base font-semibold tracking-tight text-black">StartupBar</span>
-    </Link>
-  );
-}
-
 type Membership = { loading: boolean; signedIn: boolean; listings: number };
 
 function useMembership(): Membership {
@@ -101,272 +93,102 @@ function useMembership(): Membership {
   return state;
 }
 
-function Check() {
-  return <span aria-hidden className="mt-[2px] text-black">✓</span>;
-}
-
 function PricingPage() {
   const { loading, signedIn, listings } = useMembership();
+  const [pack, setPack] = useState(2);
+  const sel = CLICK_PACKS[pack];
+
+  const freeCta = loading ? null : !signedIn ? <Link to="/apply" className="pr-btn">Join free <ArrowRight className="size-4" /></Link>
+    : listings > 0 ? <Link to="/dashboard" className="pr-btn pr-btn-ghost">Free listing active · Dashboard</Link>
+    : <Link to="/apply" className="pr-btn">List your startup free <ArrowRight className="size-4" /></Link>;
+  const extraCta = loading ? null : !signedIn ? <Link to="/auth" className="pr-btn pr-btn-ghost">Sign in to add another</Link>
+    : listings === 0 ? <span className="pr-btn pr-btn-ghost is-disabled">List your first startup first</span>
+    : <Link to="/apply" className="pr-btn">Add another startup <ArrowRight className="size-4" /></Link>;
+
+  const plans = [
+    { tag: "Start here", name: "First listing", price: "$0", unit: "forever", icon: Rocket, cta: freeCta, items: ["One startup in the network", "Your bar shown on every member site", "Public startup profile", "Impressions and clicks dashboard", "Leaderboard and network listing"] },
+    { tag: "More startups", name: "Extra listing", price: "$9.99", unit: "one time, per listing", icon: Layers, cta: extraCta, items: ["Everything in the first listing", "Another startup on the same account", "Paid once, no subscription", "Reviewed before it goes live"] },
+    { tag: "No bar needed", name: "Supporter", price: `$${SUPPORTER_PRICE_USD}`, unit: `per year after ${SUPPORTER_TRIAL_DAYS} days free`, icon: Crown, gold: true, cta: <Link to="/apply" className="pr-btn">Start free trial <ArrowRight className="size-4" /></Link>, items: ["Nothing shown on your site", "Full listing, profile and dashboard", "Gold highlight with a Supporter tag", "Average member's share of the network", "Cancel during the trial for free"] },
+  ];
 
   return (
-    <div className="min-h-screen bg-white">
-      <SiteHeader />
+    <DashboardLayout fullWidth>
+      <div className="adx pr">
+        <section className="adx-wrap pr-hero">
+          <p className="adx-eyebrow"><Sparkles className="size-3.5" /> Pricing</p>
+          <h1>Free to join. <span>Pay only to grow faster.</span></h1>
+          <p className="adx-lead">Your first startup is free forever. Everything else is a clear one time payment, except Supporter.</p>
+          <div className="pr-loop" aria-hidden="true">
+            <div className="pr-node"><Globe className="size-5" /><strong>Your site</strong><small>shows the bar</small></div>
+            <div className="pr-path"><i /><i /><i /></div>
+            <div className="pr-node pr-node-center"><b className="adx-capsule" /><strong>StartupBar network</strong><small>{"shares visitors fairly"}</small></div>
+            <div className="pr-path"><i /><i /><i /></div>
+            <div className="pr-node"><MousePointerClick className="size-5" /><strong>Your startup</strong><small>gets clicks back</small></div>
+          </div>
+        </section>
 
-      <main className="mx-auto max-w-3xl px-6 py-16">
-        <h1 className="text-3xl font-semibold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Pricing</h1>
-        <p className="mt-3 text-[15px] leading-relaxed text-black/60">
-          StartupBar is a mutual traffic exchange for software founders. Your first startup listing is free
-          forever. If you want to list more than one startup, each extra listing is a one-time payment.
-        </p>
+        <section className="adx-wrap">
+          <div className="pr-plans">{plans.map((p, i) => (
+            <article key={p.name} className={`pr-plan ${p.gold ? "is-gold" : ""}`} style={{ animationDelay: `${i * 120}ms` }}>
+              <span className="adx-plan-badge">{p.tag}</span>
+              <div className="adx-plan-icon"><p.icon className="size-5" /></div>
+              <h3>{p.name}</h3>
+              <p className="adx-plan-price">{p.price}</p><p className="adx-plan-unit">{p.unit}</p>
+              <ul>{p.items.map((t) => <li key={t}><Check className="size-4" />{t}</li>)}</ul>
+              <div className="mt-auto">{p.cta ?? <span className="pr-btn pr-btn-ghost is-disabled">Loading…</span>}</div>
+            </article>
+          ))}</div>
+        </section>
 
-        <div className="mt-10 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-xl border border-black/10 p-6">
-            <div className="text-xs font-medium uppercase tracking-wide text-black/40">First listing</div>
-            <div className="mt-2 flex items-baseline gap-1">
-              <span className="text-4xl font-semibold tracking-tight text-black">$0</span>
-              <span className="text-sm text-black/40">/ forever</span>
+        <section id="clicks" className="adx-wrap pr-clicks scroll-mt-24">
+          <div className="pr-clicks-copy">
+            <p className="adx-eyebrow">Guaranteed clicks</p>
+            <h2>Want more visitors? Buy clicks, once.</h2>
+            <p className="adx-lead">Your startup gets a gold highlight on the Network and Leaderboard pages and priority in the bar until every real, bot filtered click is delivered.</p>
+            <div className="pr-packs" role="radiogroup">{CLICK_PACKS.map((c, i) => (
+              <button key={c.clicks} role="radio" aria-checked={pack === i} onClick={() => setPack(i)} className="pr-pack">
+                <strong>{c.clicks.toLocaleString()}</strong><small>clicks</small><em>${c.priceUsd}</em>
+                {packSavingsPct(c) > 0 && <span>Save {packSavingsPct(c)}%</span>}
+              </button>
+            ))}</div>
+            <div className="flex flex-wrap items-center gap-4 mt-6">
+              <Link to="/apply" className="pr-btn">Get {sel.clicks.toLocaleString()} clicks for ${sel.priceUsd} <ArrowRight className="size-4" /></Link>
+              <Link to="/dashboard" className="text-sm underline underline-offset-4">Already listed? Buy from your dashboard</Link>
             </div>
-            <ul className="mt-5 space-y-2 text-sm text-black/65">
-              <li className="flex gap-2"><Check />One startup listed in the network</li>
-              <li className="flex gap-2"><Check />Your bar shown on every member site</li>
-              <li className="flex gap-2"><Check />Public startup profile page</li>
-              <li className="flex gap-2"><Check />Impression &amp; click dashboard</li>
-              <li className="flex gap-2"><Check />Leaderboard and network listing</li>
-            </ul>
-            {loading ? (
-              <div aria-hidden className="mt-6 h-10 w-36 rounded-md bg-black/5" />
-            ) : !signedIn ? (
-              <div className="mt-6 flex flex-wrap items-center gap-3">
-                <Link
-                  to="/apply"
-                  className="inline-flex h-10 items-center rounded-md bg-black px-4 text-sm font-medium text-white hover:bg-black/80 transition-colors"
-                >
-                  Join free
-                </Link>
-                <Link to="/auth" className="text-sm text-black/45 hover:text-black transition-colors">
-                  Already a member? Sign in
-                </Link>
-              </div>
-            ) : listings > 0 ? (
-              <div className="mt-6 flex flex-wrap items-center gap-3">
-                <span className="inline-flex h-10 items-center rounded-md bg-black/5 px-4 text-sm font-medium text-black/50">
-                  Free listing active
-                </span>
-                <Link to="/dashboard" className="text-sm text-black/45 hover:text-black transition-colors">
-                  View dashboard
-                </Link>
-              </div>
-            ) : (
-              <Link
-                to="/apply"
-                className="mt-6 inline-flex h-10 items-center rounded-md bg-black px-4 text-sm font-medium text-white hover:bg-black/80 transition-colors"
-              >
-                List your startup free
-              </Link>
-            )}
           </div>
-
-          <div className="rounded-xl border-2 border-black p-6">
-            <div className="text-xs font-medium uppercase tracking-wide text-black/40">Additional listing</div>
-            <div className="mt-2 flex items-baseline gap-1">
-              <span className="text-4xl font-semibold tracking-tight text-black">$9.99</span>
-              <span className="text-sm text-black/40">USD, one-time</span>
-            </div>
-            <ul className="mt-5 space-y-2 text-sm text-black/65">
-              <li className="flex gap-2"><Check />Everything in the free listing</li>
-              <li className="flex gap-2"><Check />One extra startup on the same account</li>
-              <li className="flex gap-2"><Check />Charged once per extra listing — no subscription</li>
-              <li className="flex gap-2"><Check />Reviewed before it goes live</li>
-            </ul>
-            {loading ? (
-              <div aria-hidden className="mt-6 h-10 w-44 rounded-md bg-black/5" />
-            ) : !signedIn ? (
-              <div className="mt-6">
-                <Link
-                  to="/auth"
-                  className="inline-flex h-10 items-center rounded-md border border-black px-4 text-sm font-medium text-black hover:bg-black hover:text-white transition-colors"
-                >
-                  Sign in to add another
-                </Link>
-                <p className="mt-2 text-xs text-black/40">
-                  Extra listings are added from your account, after your first startup is listed.
-                </p>
-              </div>
-            ) : listings === 0 ? (
-              <div className="mt-6">
-                <span className="inline-flex h-10 items-center rounded-md bg-black/5 px-4 text-sm font-medium text-black/50">
-                  List your first startup first
-                </span>
-                <p className="mt-2 text-xs text-black/40">
-                  Your first listing is free — paid listings unlock once it&rsquo;s submitted.
-                </p>
-              </div>
-            ) : (
-              <Link
-                to="/apply"
-                className="mt-6 inline-flex h-10 items-center rounded-md border border-black px-4 text-sm font-medium text-black hover:bg-black hover:text-white transition-colors"
-              >
-                Add another startup — $9.99
-              </Link>
-            )}
+          <div className="pr-chart" aria-label="Price per click by pack">
+            <p className="pr-chart-title">Price per click</p>
+            <div className="pr-bars">{CLICK_PACKS.map((c, i) => {
+              const max = perClick(CLICK_PACKS[0]);
+              return <button key={c.clicks} onClick={() => setPack(i)} className={`pr-bar ${pack === i ? "is-on" : ""}`}>
+                <span className="pr-bar-val">${perClick(c).toFixed(2)}</span>
+                <i style={{ height: `${(perClick(c) / max) * 100}%`, animationDelay: `${i * 120}ms` }} />
+                <small>{c.clicks.toLocaleString()}</small>
+              </button>;
+            })}</div>
+            <div className="pr-chart-foot"><span>Delivered</span><div className="adx-meter-track"><i style={{ width: "100%" }} className="pr-fill" /></div><strong>{sel.clicks.toLocaleString()} / {sel.clicks.toLocaleString()}</strong></div>
           </div>
-        </div>
+        </section>
 
-        {/* Guaranteed clicks */}
-        <div id="clicks" className="mt-4 scroll-mt-24 rounded-xl border border-black/10 p-6">
-          <div className="text-xs font-medium uppercase tracking-wide text-black/40">Guaranteed clicks</div>
-          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {CLICK_PACKS.map((p) => (
-              <div key={p.clicks} className="rounded-lg border border-black/10 p-3">
-                <div className="text-lg font-semibold text-black">{p.clicks.toLocaleString()} clicks</div>
-                <div className="text-sm text-black/60">${p.priceUsd} one-time</div>
-              </div>
-            ))}
-          </div>
-          <p className="mt-4 text-sm leading-relaxed text-black/60">
-            Pick a pack when you apply. Your startup gets priority in the bar across member sites and a featured
-            card beside the network feed until every click is delivered. Only real, bot-filtered clicks count.
-          </p>
-          <Link to="/apply" className="mt-4 inline-flex h-10 items-center rounded-md bg-black px-4 text-sm font-medium text-white hover:bg-black/80 transition-colors">
-            Get guaranteed clicks
-          </Link>
-          <p className="mt-3 text-xs text-black/50">
-            Already listed?{" "}
-            <Link to="/dashboard" className="text-black underline underline-offset-2">Buy a pack from your dashboard</Link>.
-          </p>
-        </div>
+        <section className="adx-wrap adx-steps-wrap">
+          <p className="adx-eyebrow">How paying works</p><h2>Simple and safe.</h2>
+          <div className="pr-facts">{[
+            [ShieldCheck, "Secure checkout", "Payments run through Dodo Payments. We never see your card."],
+            [Receipt, "One time payments", "Listings and click packs never renew."],
+            [Clock, `${SUPPORTER_TRIAL_DAYS} day free trial`, `Supporter is free for ${SUPPORTER_TRIAL_DAYS} days, then $${SUPPORTER_PRICE_USD} a year. Cancel anytime.`],
+            [DollarSign, "Prices in USD", "Taxes are calculated and shown at checkout."],
+          ].map(([I, t, b]) => { const Icon = I as typeof ShieldCheck; return <div key={t as string} className="pr-fact"><Icon className="size-5" /><strong>{t as string}</strong><p>{b as string}</p></div>; })}</div>
+        </section>
 
-        {/* Supporter membership */}
-        <div id="supporter" className="mt-4 scroll-mt-24 rounded-xl border border-black/10 p-6">
-          <div className="flex flex-wrap items-baseline justify-between gap-3">
-            <div>
-              <div className="text-xs font-medium uppercase tracking-wide text-black/40">Supporter membership — no bar on your site</div>
-              <div className="mt-2 flex items-baseline gap-1">
-                <span className="text-4xl font-semibold tracking-tight text-black">${SUPPORTER_PRICE_USD}</span>
-                <span className="text-sm text-black/40">USD per year after {SUPPORTER_TRIAL_DAYS} days free</span>
-              </div>
-            </div>
-            <Link
-              to="/apply"
-              className="inline-flex h-10 items-center rounded-md border border-black px-4 text-sm font-medium text-black hover:bg-black hover:text-white transition-colors"
-            >
-              Start free trial
-            </Link>
-          </div>
-          <p className="mt-3 text-sm text-black/60">{SUPPORTER_TRIAL_DAYS} days free. Card required. Cancel before the trial ends to avoid the first charge. Taxes included.</p>
-          <p className="mt-4 text-sm leading-relaxed text-black/60">
-            For founders who want to be listed without showing the bar on their own site. You pay instead of
-            contributing impressions, and you are shown across the network at an average member&rsquo;s share —
-            never more, never starved. Your listing is highlighted in gold across the network page and the
-            leaderboard, the same visual treatment featured startups get. It does not buy extra reach, featured
-            spots or leaderboard position.
-          </p>
-          <ul className="mt-5 grid gap-2 text-sm text-black/65 sm:grid-cols-2">
-            <li className="flex gap-2"><Check />Nothing is shown to your visitors — no bar, no layout change</li>
-            <li className="flex gap-2"><Check />Full listing, profile page, leaderboard presence and dashboard</li>
-            <li className="flex gap-2"><Check />Gold highlight on the network page and the leaderboard, with a Supporter tag</li>
-            <li className="flex gap-2"><Check />Optional one-line analytics code unlocks your own visitor map and on-site stats</li>
-            <li className="flex gap-2"><Check />Switch back to the free bar at any time</li>
-            <li className="flex gap-2"><Check />Cancel during your trial without charge. After that, renews yearly until cancelled; no refunds except where required by law</li>
-          </ul>
-        </div>
+        <section className="adx-wrap adx-faq"><h2>Questions</h2><div>{[
+          ["How do I pay for an extra listing?", "Sign in, open Apply and add your startup. If you already have a listing, you pay $9.99 at a secure Dodo checkout and it is submitted for review automatically."],
+          ["When do guaranteed clicks start?", "Delivery starts when your startup is approved. Your gold highlight stays on until the full pack is delivered."],
+          ["What does Supporter include?", "You are listed without showing the bar on your site. You get an average member's share of the network and a gold highlight, not extra reach or leaderboard position."],
+          ["Can I get a refund?", "Payments are final. If something you paid for did not appear, email hello@startupbar.co with your receipt and we will fix it at no extra cost."],
+        ].map(([q, a]) => <details key={q}><summary>{q}<span>+</span></summary><p>{a}</p></details>)}</div></section>
 
-        <div className="mt-14 space-y-8 text-[15px] leading-relaxed text-black/65">
-
-          <section>
-            <h2 className="mb-3 text-base font-semibold text-black">How to purchase</h2>
-            <ol className="space-y-2 list-decimal list-inside">
-              <li>Create a StartupBar account (or sign in) and open the <Link to="/apply" className="text-black underline underline-offset-2">Apply</Link> page.</li>
-              <li>Enter your startup name, website, one-line description and founder note, and install the widget snippet on your site.</li>
-              <li>Your first listing submits for free. If you already have a listing, the button becomes “Pay $9.99 &amp; submit”.</li>
-              <li>You are taken to a secure Dodo Payments checkout to pay by card.</li>
-              <li>After payment you return to StartupBar and the listing is submitted automatically for review.</li>
-            </ol>
-            <p className="mt-3">
-              The paid checkout only appears for an account's second and later listings, so it is reachable after
-              sign-in on the Apply page. Everything on this page describes the same prices and terms.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="mb-3 text-base font-semibold text-black">How guaranteed clicks work</h2>
-            <p>Choose a click pack on the Apply page and pay once with your listing. Delivery starts when your startup is approved, and your featured card stays up until the full pack is delivered.</p>
-          </section>
-
-          <section>
-            <h2 className="mb-3 text-base font-semibold text-black">Payments &amp; billing</h2>
-            <ul className="space-y-2 list-disc list-inside">
-              <li>Payments are processed by <strong className="font-medium text-black">Dodo Payments</strong>, our merchant of record. StartupBar never sees or stores your card details.</li>
-              <li>All prices are in US dollars. Applicable taxes are calculated and shown at checkout.</li>
-              <li>Listing payments are one-time and never auto renew.</li>
-              <li>Supporter starts with {SUPPORTER_TRIAL_DAYS} days free, then charges ${SUPPORTER_PRICE_USD} USD per year including tax. A card is required; cancel before the trial ends to avoid the first charge.</li>
-              <li>Guaranteed Clicks packs are one-time payments and never renew.</li>
-              <li>Your receipt is emailed by Dodo Payments and the charge appears on your statement via Dodo Payments.</li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 className="mb-3 text-base font-semibold text-black">Cancelling a featured spot</h2>
-            <p>
-              You can cancel from the Promote panel on your dashboard, or from the startup card on your{" "}
-              <Link to="/account" className="text-black underline underline-offset-2">Account</Link> page.
-              Cancelling turns off auto renewal immediately. Your spot stays live and highlighted until the end
-              of the period you already paid for, then it is released back to the pool. There are no partial
-              period refunds.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="mb-3 text-base font-semibold text-black">Refunds</h2>
-            <p>
-              All payments are final. Because a paid listing is delivered as soon as it is submitted for review,
-              and a featured spot goes live immediately after checkout, we do not offer refunds. If a payment
-              went through but your listing or featured spot did not appear, email
-              {" "}<a href="mailto:hello@startupbar.co" className="text-black underline underline-offset-2">hello@startupbar.co</a>{" "}
-              with your payment receipt and we will fix it for you at no extra cost.
-            </p>
-          </section>
-
-
-          <section>
-            <h2 className="mb-3 text-base font-semibold text-black">What you get for the money</h2>
-            <p>
-              A listing places your startup in the rotation shown by the StartupBar widget across every member
-              site. Delivery is reciprocity-weighted: the more impressions your site delivers to the network,
-              the more your startup receives back. Listings must keep the widget visible on their site to stay
-              in the network. See the <Link to="/faq" className="text-black underline underline-offset-2">FAQ</Link>
-              {" "}for eligibility rules and delivery details.
-            </p>
-            <p className="mt-3">
-              A featured spot is separate. It buys visibility on StartupBar pages only: a sidebar card plus a
-              gold highlight on the network list and leaderboard. It does not affect widget delivery,
-              reciprocity weighting, leaderboard ranking, or the impression and click numbers you earn.
-            </p>
-          </section>
-
-
-          <section>
-            <h2 className="mb-3 text-base font-semibold text-black">Questions</h2>
-            <p>
-              Email <a href="mailto:hello@startupbar.co" className="text-black underline underline-offset-2">hello@startupbar.co</a>.
-              See also our <Link to="/terms" className="text-black underline underline-offset-2">Terms</Link> and{" "}
-              <Link to="/privacy" className="text-black underline underline-offset-2">Privacy Policy</Link>.
-            </p>
-          </section>
-        </div>
-      </main>
-
-      <footer className="border-t border-black/8 px-6 py-8">
-        <div className="mx-auto flex max-w-3xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-[13px] text-black/30">
-          <span>© {new Date().getFullYear()} StartupBar</span>
-          <div className="flex flex-wrap items-center gap-4">
-            <a href="mailto:hello@startupbar.co" className="hover:text-black transition-colors">Support</a>
-            <Link to="/faq" className="hover:text-black transition-colors">FAQ</Link>
-            <Link to="/terms" className="hover:text-black transition-colors">Terms</Link>
-            <Link to="/privacy" className="hover:text-black transition-colors">Privacy Policy</Link>
-          </div>
-        </div>
-      </footer>
-    </div>
+        <section className="adx-end"><div className="adx-wrap"><h2>Start free today.</h2><Link to="/apply" className="pr-btn pr-btn-invert">List your startup <ArrowRight className="size-4" /></Link></div></section>
+      </div>
+    </DashboardLayout>
   );
 }

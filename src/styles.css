@@ -1893,3 +1893,64 @@ body[style*="padding-top: 36px"] .apply-install-shell { height: calc(100dvh - 36
 .adx-plan li.is-off { color: var(--muted-foreground); } .adx-plan li.is-off > svg { background: var(--muted); color: var(--muted-foreground); }
 .adx-plan li:first-child { flex-direction: column; align-items: flex-start; gap: 2px; } .adx-plan li:first-child span { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted-foreground); }
 @media (max-width: 900px) { .adx-plans { grid-template-columns: 1fr; gap: 24px; } }
+
+/* Pricing page (pr) */
+.pr-hero { padding-top: clamp(40px, 6vw, 88px); padding-bottom: clamp(32px, 4vw, 56px); text-align: center; display: flex; flex-direction: column; align-items: center; }
+.pr-hero h1 { font-size: clamp(38px, 5.6vw, 76px); font-weight: 680; letter-spacing: -0.045em; line-height: 1; margin: 16px 0 18px; max-width: 16ch; animation: adx-up .8s both; }
+.pr-hero h1 span { color: var(--muted-foreground); }
+.pr-hero .adx-lead { max-width: 52ch; }
+.pr-loop { display: flex; align-items: center; gap: 10px; margin-top: 44px; width: 100%; max-width: 900px; animation: adx-up .8s .2s both; }
+.pr-node { flex: none; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 16px 18px; min-width: 150px; border-radius: 18px; border: 1px solid var(--border); background: var(--background); }
+.pr-node strong { font-size: 14px; } .pr-node small { font-size: 12px; color: var(--muted-foreground); }
+.pr-node-center { background: var(--foreground); color: var(--background); border-color: var(--foreground); animation: adx-glow 3s ease-in-out infinite; }
+.pr-node-center small { color: color-mix(in oklab, var(--background) 65%, transparent); } .pr-node-center .adx-capsule { width: 30px; height: 11px; margin-bottom: 4px; }
+.pr-path { position: relative; flex: 1; height: 2px; background: repeating-linear-gradient(90deg, var(--border) 0 6px, transparent 6px 12px); }
+.pr-path i { position: absolute; top: -3px; width: 8px; height: 8px; border-radius: 50%; background: var(--foreground); animation: pr-travel 2.4s linear infinite; }
+.pr-path i:nth-child(2) { animation-delay: .8s; } .pr-path i:nth-child(3) { animation-delay: 1.6s; }
+@keyframes pr-travel { 0% { left: 0; opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { left: calc(100% - 8px); opacity: 0; } }
+.pr-plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding-top: 12px; }
+.pr-plan { position: relative; display: flex; flex-direction: column; padding: 30px 28px 28px; border-radius: 24px; border: 1px solid var(--border); background: var(--background); transition: transform .3s, box-shadow .3s; animation: adx-up .6s both; }
+.pr-plan:hover { transform: translateY(-4px); box-shadow: 0 24px 50px -28px color-mix(in oklab, var(--foreground) 45%, transparent); }
+.pr-plan.is-gold { border: 2px solid var(--featured-edge); background: linear-gradient(180deg, color-mix(in oklab, var(--featured-gold) 14%, var(--background)), var(--background) 45%); }
+.pr-plan h3 { margin-top: 18px; font-size: 22px; font-weight: 650; }
+.pr-plan ul { display: grid; gap: 12px; margin: 22px 0 26px; padding-top: 22px; border-top: 1px solid var(--border); font-size: 14px; }
+.pr-plan li { display: flex; align-items: center; gap: 10px; }
+.pr-plan li svg { flex: none; padding: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--foreground); color: var(--background); }
+.pr-btn { display: inline-flex; width: 100%; align-items: center; justify-content: center; gap: 8px; height: 46px; padding: 0 20px; border-radius: 999px; background: var(--foreground); color: var(--background); font-size: 14px; font-weight: 600; transition: transform .2s, opacity .2s; }
+.pr-clicks .pr-btn, .adx-end .pr-btn { width: auto; }
+.pr-btn:hover { transform: translateY(-1px); opacity: .9; }
+.pr-btn-ghost { background: transparent; color: var(--foreground); border: 1px solid var(--border); }
+.pr-btn-invert { background: var(--background); color: var(--foreground); }
+.pr-btn.is-disabled { color: var(--muted-foreground); pointer-events: none; }
+.pr-clicks { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(28px, 4vw, 64px); align-items: center; margin-top: clamp(56px, 7vw, 100px); padding: clamp(24px, 4vw, 56px); border-radius: 32px; background: var(--muted); border: 1px solid var(--border); max-width: calc(1440px - 2 * clamp(20px, 4vw, 64px)); }
+.pr-packs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 24px; }
+.pr-pack { position: relative; display: flex; flex-direction: column; align-items: center; padding: 14px 6px; border-radius: 16px; border: 1px solid var(--border); background: var(--background); transition: all .25s; }
+.pr-pack strong { font-size: 20px; } .pr-pack small { font-size: 11px; color: var(--muted-foreground); } .pr-pack em { margin-top: 6px; font-style: normal; font-weight: 700; }
+.pr-pack span { position: absolute; top: -9px; font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: var(--featured-gold); color: var(--foreground); }
+.pr-pack[aria-checked="true"] { background: var(--foreground); color: var(--background); border-color: var(--foreground); transform: translateY(-3px); }
+.pr-pack[aria-checked="true"] small { color: color-mix(in oklab, var(--background) 65%, transparent); }
+.pr-chart { padding: 24px; border-radius: 24px; background: var(--background); border: 1px solid var(--border); box-shadow: 0 30px 60px -36px color-mix(in oklab, var(--foreground) 40%, transparent); }
+.pr-chart-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: var(--muted-foreground); }
+.pr-bars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; height: 230px; margin-top: 18px; align-items: end; }
+.pr-bar { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; gap: 6px; }
+.pr-bar i { width: 100%; border-radius: 12px 12px 4px 4px; background: var(--muted); border: 1px solid var(--border); transform-origin: bottom; animation: pr-grow .9s cubic-bezier(.2,.9,.2,1) both; transition: background .3s; }
+.pr-bar.is-on i { background: linear-gradient(180deg, var(--featured-gold), var(--featured-edge)); border-color: var(--featured-edge); }
+.pr-bar-val { font-size: 13px; font-weight: 700; } .pr-bar small { font-size: 11px; color: var(--muted-foreground); }
+@keyframes pr-grow { from { transform: scaleY(0); } }
+.pr-chart-foot { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; margin-top: 20px; font-size: 12px; color: var(--muted-foreground); }
+.pr-chart-foot .adx-meter-track { margin: 0; } .pr-chart-foot strong { color: var(--foreground); font-variant-numeric: tabular-nums; }
+.pr-fill { animation: adx-fill 3s ease-in-out infinite; }
+.pr-facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.pr-fact { padding: 22px; border-radius: 20px; border: 1px solid var(--border); transition: transform .3s, background .3s; }
+.pr-fact:hover { transform: translateY(-3px); background: var(--muted); }
+.pr-fact svg { padding: 8px; width: 38px; height: 38px; border-radius: 12px; background: var(--foreground); color: var(--background); }
+.pr-fact strong { display: block; margin-top: 14px; font-size: 16px; } .pr-fact p { margin-top: 4px; font-size: 14px; color: var(--muted-foreground); }
+@media (max-width: 900px) {
+  .pr-plans, .pr-clicks { grid-template-columns: 1fr; } .pr-plans { gap: 28px; }
+  .pr-facts { grid-template-columns: 1fr 1fr; }
+  .pr-loop { flex-direction: column; } .pr-path { width: 2px; height: 36px; flex: none; background: repeating-linear-gradient(180deg, var(--border) 0 6px, transparent 6px 12px); }
+  .pr-path i { left: -3px !important; animation-name: pr-travel-v; }
+  .pr-clicks { margin-inline: 16px; width: auto; padding: 22px 18px; }
+}
+@keyframes pr-travel-v { 0% { top: 0; opacity: 0; } 15%, 85% { opacity: 1; } 100% { top: calc(100% - 8px); opacity: 0; } }
+@media (max-width: 560px) { .pr-packs { grid-template-columns: 1fr 1fr; } .pr-facts { grid-template-columns: 1fr; } .pr-bars { height: 180px; gap: 10px; } .pr-clicks .pr-btn { width: 100%; } }
