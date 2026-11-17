@@ -1813,3 +1813,32 @@ body[style*="padding-top: 36px"] .apply-install-shell { height: calc(100dvh - 36
   .adx-hero-art { padding: 16px; }
 }
 @media (prefers-reduced-motion: reduce) { .adx *, .adx *::before, .adx *::after { animation: none !important; transition: none !important; } .adx-reveal, .adx-steps li { opacity: 1; transform: none; } }
+
+/* Advertise hero stage */
+.adx-stage { position: relative; display: grid; place-items: center; min-height: 520px; }
+.adx-ring { position: absolute; width: 440px; height: 440px; border-radius: 50%; border: 1px dashed var(--border); animation: adx-spin 40s linear infinite; }
+.adx-ring-2 { width: 300px; height: 300px; border-style: solid; background: radial-gradient(circle, var(--muted), transparent 70%); animation-direction: reverse; }
+.adx-phone { position: relative; width: 300px; display: flex; flex-direction: column; gap: 8px; padding: 16px 12px 14px; border-radius: 34px; border: 6px solid var(--foreground); background: var(--background); box-shadow: 0 40px 70px -30px color-mix(in oklab, var(--foreground) 45%, transparent); animation: adx-pop .8s both, adx-float 6s 1s ease-in-out infinite; }
+.adx-phone .adx-row { padding: 8px 10px; }
+.adx-phone .adx-sk-logo { width: 24px !important; height: 24px; }
+.adx-phone-top { display: flex; align-items: center; gap: 8px; padding: 0 4px 6px; }
+.adx-slot { position: relative; height: 64px; }
+.adx-slide { position: absolute; inset: 0; opacity: 0; transform: translateY(14px) scale(.96); transition: opacity .5s, transform .6s cubic-bezier(.2,.9,.2,1.2); }
+.adx-slide.is-on { opacity: 1; transform: none; }
+.adx-slide > * { height: 100%; margin: 0 !important; }
+.adx-mini-banner { position: relative; display: flex; align-items: center; gap: 10px; padding: 0 12px; border-radius: 12px; color: var(--background); background: linear-gradient(110deg, var(--foreground) 40%, color-mix(in oklab, var(--foreground) 70%, var(--background)) 50%, var(--foreground) 60%); background-size: 250% 100%; animation: adx-sweep 2.4s linear infinite; }
+.adx-mini-banner div { flex: 1; display: flex; flex-direction: column; }
+.adx-mini-banner strong { font-size: 12px; } .adx-mini-banner small { font-size: 10px; opacity: .7; }
+.adx-mini-banner em { font-style: normal; font-size: 10px; font-weight: 700; padding: 4px 9px; border-radius: 999px; background: var(--background); color: var(--foreground); }
+.adx-slot .adx-sponsor { padding: 0 12px; }
+.adx-dots { display: flex; justify-content: center; gap: 6px; margin-top: 4px; }
+.adx-dots i { width: 6px; height: 6px; border-radius: 999px; background: var(--border); transition: width .3s, background .3s; }
+.adx-dots i.is-on { width: 18px; background: var(--foreground); }
+.adx-float { position: absolute; padding: 12px 14px; border-radius: 16px; background: var(--background); border: 1px solid var(--border); box-shadow: 0 18px 40px -20px color-mix(in oklab, var(--foreground) 40%, transparent); font-size: 12px; }
+.adx-float-1 { top: 12%; right: 2%; display: grid; gap: 2px; animation: adx-float 5s ease-in-out infinite; }
+.adx-float-1 span { color: var(--muted-foreground); } .adx-float-1 strong { font-size: 22px; }
+.adx-float-1 svg { width: 90px; height: 26px; fill: none; stroke: var(--foreground); stroke-width: 2; stroke-dasharray: 120; animation: adx-draw 3s ease-in-out infinite; }
+.adx-float-2 { bottom: 12%; left: 0; display: flex; align-items: center; gap: 6px; background: var(--foreground); color: var(--background); border: 0; animation: adx-float 5s 2.5s ease-in-out infinite; }
+@keyframes adx-sweep { to { background-position: -250% 0; } }
+@keyframes adx-draw { 0% { stroke-dashoffset: 120; } 60%, 100% { stroke-dashoffset: 0; } }
+@media (max-width: 900px) { .adx-phone { width: 240px; } .adx-float { transform: scale(.85); } .adx-stage { min-height: 440px; } .adx-ring { width: 340px; height: 340px; } .adx-float-1 { right: 0; } }

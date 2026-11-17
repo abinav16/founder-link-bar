@@ -49,6 +49,30 @@ const PRODUCTS = [
 ] as const;
 type PId = (typeof PRODUCTS)[number]["id"];
 
+function HeroArt() {
+  const [f, setF] = useState(0);
+  useEffect(() => { const t = setInterval(() => setF((v) => (v + 1) % 3), 3200); return () => clearInterval(t); }, []);
+  const labels = ["Banner", "Gold highlight", "Newsletter"];
+  return (
+    <div className="adx-stage">
+      <div className="adx-ring" /><div className="adx-ring adx-ring-2" />
+      <div className="adx-phone">
+        <div className="adx-phone-top"><b className="adx-capsule" /><Sk w="40%" /></div>
+        <Row i={0} />
+        <div className="adx-slot">
+          <div className={`adx-slide ${f === 0 ? "is-on" : ""}`}><div className="adx-mini-banner"><span className="adx-adtag">Ad</span><Rocket className="size-5" /><div><strong>Launch week is live</strong><small>50% off for founders</small></div><em>Get it</em></div></div>
+          <div className={`adx-slide ${f === 1 ? "is-on" : ""}`}><div className="adx-row adx-gold"><b className="adx-capsule" /><span><strong>Your startup</strong><small>Gold highlight · shown first</small></span><em className="adx-count">+1</em></div></div>
+          <div className={`adx-slide ${f === 2 ? "is-on" : ""}`}><div className="adx-sponsor"><span className="adx-adtag">Sponsor</span><Mail className="size-5" /><div><strong>Sunday newsletter</strong><small>Sent to every founder</small></div></div></div>
+        </div>
+        {[1, 2, 3].map((i) => <Row key={i} i={i} />)}
+        <div className="adx-dots">{labels.map((l, i) => <i key={l} className={f === i ? "is-on" : ""} />)}</div>
+      </div>
+      <div className="adx-float adx-float-1"><span>Clicks today</span><strong>+128</strong><svg viewBox="0 0 80 24"><path d="M0 20 L12 16 L24 18 L36 10 L48 12 L60 5 L80 2" /></svg></div>
+      <div className="adx-float adx-float-2"><Check className="size-4" /> Now showing: <b>{labels[f]}</b></div>
+    </div>
+  );
+}
+
 function ClickMeter() {
   const total = 500;
   const [n, setN] = useState(0);
@@ -113,7 +137,7 @@ function AdvertisePage() {
             <dl className="adx-stats">{[["Member sites", stats ? fmt(stats.sites) : "—"], ["Founders on email", stats ? fmt(stats.founders) : "—"], ["Network widget views*", stats ? fmt(stats.views) : "—"]].map(([l, v]) => <div key={l}><dd>{v}</dd><dt>{l}</dt></div>)}</dl>
             <p className="adx-note">*Across member sites — not banner reach. Every campaign reports its own real views and clicks.</p>
           </div>
-          <div className="adx-hero-art" aria-hidden="true"><div className="adx-orbit" /><Diagram id="banner" /><div className="adx-chip adx-chip-1"><MousePointerClick className="size-4" /> New click</div><div className="adx-chip adx-chip-2"><Check className="size-4" /> Approved & live</div></div>
+          <div className="adx-hero-art" aria-hidden="true"><HeroArt /></div>
         </section>
 
         <section id="choose" className="adx-choose"><div ref={pick.ref} className={`adx-wrap ${pick.className}`}>
