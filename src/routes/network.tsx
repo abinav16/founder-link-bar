@@ -972,13 +972,15 @@ function NetworkDashboardPage() {
   );
 
   return (
-    <DashboardLayout rail={<SponsoredRail />}>
-      <div className="space-y-10">
+    <DashboardLayout fullWidth rail={<SponsoredRail />}>
+      <div className="space-y-10 px-4 py-6 sm:px-6 sm:py-8 xl:px-10">
         {data.recentStartups.length > 0 && (
-          <MagneticField startups={data.recentStartups} stats={stats} />
+          <div className="mx-auto max-w-6xl">
+            <MagneticField startups={data.recentStartups} stats={stats} />
+          </div>
         )}
 
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-8">
+        <div className="mx-auto grid max-w-[1720px] gap-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8 2xl:grid-cols-[minmax(0,1fr)_380px]">
         <div className="min-w-0 space-y-10">
 
         {trending.length > 1 && (
@@ -987,7 +989,7 @@ function NetworkDashboardPage() {
             <div className="sm:hidden">
               <HorizontalCardRail items={trending} />
             </div>
-            <div className="hidden sm:grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="hidden sm:grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3">
               {trending.map((s) => <StartupCard key={s.id} s={s} />)}
             </div>
           </div>
