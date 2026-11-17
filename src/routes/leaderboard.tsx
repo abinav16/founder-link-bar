@@ -191,9 +191,12 @@ function LeaderboardPage() {
         .from("startups")
         .select("id")
         .eq("user_id", sess.session.user.id)
-        .maybeSingle();
+        .eq("status", "approved")
+        .order("created_at", { ascending: true });
       if (cancelled) return;
-      const id = mine?.id ?? null;
+      const ids = (mine ?? []).map((m) => m.id);
+      const ranked = rowsByReceived.find((r) => ids.includes(r.id));
+      const id = ranked?.id ?? ids[0] ?? null;
       setMyId(id);
       if (id) window.sessionStorage.setItem("sb_my_startup_id", id);
       else window.sessionStorage.removeItem("sb_my_startup_id");
