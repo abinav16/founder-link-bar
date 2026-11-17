@@ -2006,9 +2006,9 @@ body[style*="padding-top: 36px"] .apply-install-shell { height: calc(100dvh - 36
 /* Network proof panel */
 .nw-card { border: 1px solid var(--border); background: var(--card); border-radius: 20px; padding: 18px; animation: adx-up .6s both; }
 .nw-dark { background: var(--foreground); color: var(--background); border-color: var(--foreground); }
-.nw-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; opacity: .55; }
+.nw-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; opacity: .75; }
 .nw-big { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
-.nw-sub { margin-top: 4px; font-size: 10px; opacity: .55; }
+.nw-sub { margin-top: 4px; font-size: 11px; opacity: .8; }
 .nw-live { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; }
 .nw-live i { width: 7px; height: 7px; border-radius: 99px; background: var(--background); animation: nw-pulse 1.6s infinite; }
 @keyframes nw-pulse { 0%,100% { opacity: 1; box-shadow: 0 0 0 0 color-mix(in oklab, var(--background) 60%, transparent); } 50% { opacity: .6; box-shadow: 0 0 0 6px transparent; } }

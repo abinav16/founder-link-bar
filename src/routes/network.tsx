@@ -188,7 +188,7 @@ function StartupCard({ s }: { s: Card }) {
                 "pointer-events-auto inline-flex h-6 w-6 items-center justify-center rounded-full border transition-colors",
                 sponsored
                   ? "border-white/20 bg-white/10 text-white/70 hover:border-white/40 hover:bg-white/20 hover:text-white"
-                  : "border-black/10 bg-white text-black/50 hover:border-black/30 hover:text-black",
+                  : "border-black/10 bg-white text-black/65 hover:border-black/30 hover:text-black",
               ].join(" ")}
             >
               <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2} />
@@ -209,7 +209,7 @@ function StartupCard({ s }: { s: Card }) {
         {s.category && <span className={["mt-2 inline-flex max-w-full rounded-md border px-2 py-0.5 text-[10px] font-medium", sponsored ? "border-white/25 bg-white/10 text-white/85" : "border-border bg-muted text-muted-foreground"].join(" ")}>{s.category}</span>}
         <p className={[
           "mt-3 text-[13px] leading-relaxed line-clamp-2 sm:min-h-[2.9em]",
-          sponsored ? "text-white/65" : "text-black/45",
+          sponsored ? "text-white/65" : "text-black/65",
         ].join(" ")}>{s.description}</p>
       </div>
 
@@ -221,15 +221,15 @@ function StartupCard({ s }: { s: Card }) {
             : "border border-black/[0.07] bg-black/[0.015] divide-black/[0.07]",
         ].join(" ")}>
           <div className="flex flex-col items-center gap-0.5 py-2">
-            <span className={["text-[9px] uppercase tracking-[0.1em] font-semibold", sponsored ? "text-white/35" : "text-black/30"].join(" ")}>Joined</span>
+            <span className={["text-[9px] uppercase tracking-[0.1em] font-semibold", sponsored ? "text-white/70" : "text-black/55"].join(" ")}>Joined</span>
             <span className={["text-[13px] font-semibold tabular-nums", sponsored ? "text-white/85" : "text-black/70"].join(" ")}>{joinedLabel(s.created_at)}</span>
           </div>
           <div className="flex flex-col items-center gap-0.5 py-2">
-            <span className={["text-[9px] uppercase tracking-[0.1em] font-semibold", sponsored ? "text-white/35" : "text-black/30"].join(" ")}>Impressions</span>
+            <span className={["text-[9px] uppercase tracking-[0.1em] font-semibold", sponsored ? "text-white/70" : "text-black/55"].join(" ")}>Impressions</span>
             <span className={["text-[13px] font-semibold tabular-nums", sponsored ? "text-white/85" : "text-black/70"].join(" ")}>{fmt(s.impressions)}</span>
           </div>
           <div className="flex flex-col items-center gap-0.5 py-2">
-            <span className={["text-[9px] uppercase tracking-[0.1em] font-semibold", sponsored ? "text-white/35" : "text-black/30"].join(" ")}>Clicks</span>
+            <span className={["text-[9px] uppercase tracking-[0.1em] font-semibold", sponsored ? "text-white/70" : "text-black/55"].join(" ")}>Clicks</span>
             <span className={["text-[13px] font-semibold tabular-nums", sponsored ? "text-white/85" : "text-black/70"].join(" ")}>{fmt(s.clicks)}</span>
           </div>
         </div>
@@ -274,12 +274,12 @@ function FounderChip({ s, sponsored }: { s: Card; sponsored?: boolean }) {
       ) : (
         <span className={[
           "h-[18px] w-[18px] rounded-full text-[9px] font-semibold inline-flex items-center justify-center shrink-0",
-          sponsored ? "bg-white/10 text-white/65" : "bg-black/[0.06] text-black/45",
+          sponsored ? "bg-white/10 text-white/65" : "bg-black/[0.06] text-black/65",
         ].join(" ")}>
           {s.founder_name.trim().charAt(0).toUpperCase()}
         </span>
       )}
-      <span className={["text-[11px] font-medium truncate", sponsored ? "text-white/60" : "text-black/45"].join(" ")}>{s.founder_name}</span>
+      <span className={["text-[11px] font-medium truncate", sponsored ? "text-white/60" : "text-black/65"].join(" ")}>{s.founder_name}</span>
     </span>
   );
 }
@@ -288,7 +288,7 @@ function Metric({ value, label }: { value: string; label: string }) {
   return (
     <div className="flex flex-col items-end leading-tight">
       <span className="text-[13px] font-semibold text-black tabular-nums">{value}</span>
-      <span className="text-[9px] text-black/30 uppercase tracking-[0.1em] font-semibold sm:hidden">{label}</span>
+      <span className="text-[9px] text-black/55 uppercase tracking-[0.1em] font-semibold sm:hidden">{label}</span>
     </div>
   );
 }
@@ -357,21 +357,21 @@ function StartupRow({ s }: { s: Card }) {
         </div>
       </div>
 
-      <p className="relative z-10 mt-2.5 text-xs text-black/45 leading-relaxed pointer-events-none">
+      <p className="relative z-10 mt-2.5 text-xs text-black/65 leading-relaxed pointer-events-none">
         {s.description}
       </p>
 
       <div className="relative z-10 sm:hidden mt-3 grid grid-cols-3 rounded-xl border border-black/[0.06] bg-black/[0.015] divide-x divide-black/[0.06] pointer-events-none">
         <div className="flex flex-col items-center gap-0.5 py-1.5">
-          <span className="text-[9px] uppercase tracking-[0.1em] font-semibold text-black/30">Joined</span>
+          <span className="text-[9px] uppercase tracking-[0.1em] font-semibold text-black/55">Joined</span>
           <span className="text-[12px] font-semibold text-black/70 tabular-nums">{joinedLabel(s.created_at)}</span>
         </div>
         <div className="flex flex-col items-center gap-0.5 py-1.5">
-          <span className="text-[9px] uppercase tracking-[0.1em] font-semibold text-black/30">Impressions</span>
+          <span className="text-[9px] uppercase tracking-[0.1em] font-semibold text-black/55">Impressions</span>
           <span className="text-[12px] font-semibold text-black/70 tabular-nums">{fmt(s.impressions)}</span>
         </div>
         <div className="flex flex-col items-center gap-0.5 py-1.5">
-          <span className="text-[9px] uppercase tracking-[0.1em] font-semibold text-black/30">Clicks</span>
+          <span className="text-[9px] uppercase tracking-[0.1em] font-semibold text-black/55">Clicks</span>
           <span className="text-[12px] font-semibold text-black/70 tabular-nums">{fmt(s.clicks)}</span>
         </div>
       </div>
@@ -384,9 +384,9 @@ function StartupRow({ s }: { s: Card }) {
 function SectionLabel({ title, count }: { title: string; count?: number }) {
   return (
     <div className="flex items-center gap-3 mb-6">
-      <h2 className="text-[11px] font-semibold text-black/30 uppercase tracking-[0.12em] shrink-0">{title}</h2>
+      <h2 className="text-[11px] font-semibold text-black/55 uppercase tracking-[0.12em] shrink-0">{title}</h2>
       {count !== undefined && (
-        <span className="text-[11px] text-black/20 font-medium">{count}</span>
+        <span className="text-[11px] text-black/55 font-medium">{count}</span>
       )}
       <div className="flex-1 h-px bg-black/[0.05]" />
     </div>
@@ -873,7 +873,7 @@ function SortHeader({
       onClick={onClick}
       title={col.hint}
       className={`${col.width} flex items-center justify-end gap-1 text-[10px] uppercase tracking-[0.1em] font-semibold transition-colors ${
-        active ? "text-black" : "text-black/30 hover:text-black/60"
+        active ? "text-black" : "text-black/55 hover:text-black/60"
       }`}
     >
       <span className="truncate">{col.label}</span>
@@ -1006,25 +1006,25 @@ function NetworkDashboardPage() {
         <div>
           <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="flex items-center gap-3 min-w-0">
-              <h2 className="text-[11px] font-semibold text-black/30 uppercase tracking-[0.12em] shrink-0">Startups in Network</h2>
-              <span className="text-[11px] text-black/20 font-medium">{allStartups.length}</span>
+              <h2 className="text-[11px] font-semibold text-black/55 uppercase tracking-[0.12em] shrink-0">Startups in Network</h2>
+              <span className="text-[11px] text-black/55 font-medium">{allStartups.length}</span>
               <div className="hidden sm:block flex-1 h-px bg-black/[0.05]" />
             </div>
             <div className="relative shrink-0 w-full sm:w-[280px] sm:ml-auto">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-black/30" strokeWidth={2} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-black/55" strokeWidth={2} />
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search startups…"
-                className="w-full h-9 pl-9 pr-8 rounded-full border border-black/10 bg-white text-[13px] text-black placeholder:text-black/30 focus:outline-none focus:border-black/30 transition-colors"
+                className="w-full h-9 pl-9 pr-8 rounded-full border border-black/10 bg-white text-[13px] text-black placeholder:text-black/55 focus:outline-none focus:border-black/30 transition-colors"
               />
               {query && (
                 <button
                   type="button"
                   onClick={() => setQuery("")}
                   aria-label="Clear search"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-5 w-5 rounded-full text-black/40 hover:text-black hover:bg-black/[0.06] transition-colors"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-5 w-5 rounded-full text-black/65 hover:text-black hover:bg-black/[0.06] transition-colors"
                 >
                   <X className="h-3 w-3" strokeWidth={2.5} />
                 </button>
@@ -1047,7 +1047,7 @@ function NetworkDashboardPage() {
           {/* Sort & filter controls (all viewports) */}
           <div className="mb-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
             <div className="min-w-0 flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
-              <span className="text-[10px] uppercase tracking-[0.1em] font-semibold text-black/30">Sort</span>
+              <span className="text-[10px] uppercase tracking-[0.1em] font-semibold text-black/55">Sort</span>
               <select
                 value={`${sortKey}:${sortDir}`}
                 onChange={(e) => {
@@ -1067,7 +1067,7 @@ function NetworkDashboardPage() {
             </div>
 
             <div className="min-w-0 flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
-              <span className="text-[10px] uppercase tracking-[0.1em] font-semibold text-black/30">Filter</span>
+              <span className="text-[10px] uppercase tracking-[0.1em] font-semibold text-black/55">Filter</span>
               <select
                 value={featuredFilter}
                 onChange={(e) => setFeaturedFilter(e.target.value as FeaturedFilter)}
@@ -1085,8 +1085,8 @@ function NetworkDashboardPage() {
               {/* Column headers (desktop) */}
               <div className="hidden sm:flex items-center gap-4 pt-3 pb-2.5 border-b border-black/[0.06]">
                 <div className="flex-1 min-w-0 flex items-baseline gap-2">
-                  <span className="text-[10px] uppercase tracking-[0.1em] font-semibold text-black/30">Startup</span>
-                  <span className="text-[11px] text-black/25 truncate">
+                  <span className="text-[10px] uppercase tracking-[0.1em] font-semibold text-black/55">Startup</span>
+                  <span className="text-[11px] text-black/55 truncate">
                     Showing {filtered.length} of {allStartups.length} · sorted by{" "}
                     {SORT_COLUMNS.find((c) => c.key === sortKey)?.label.toLowerCase()}{" "}
                     {sortKey === "joined"
@@ -1122,7 +1122,7 @@ function NetworkDashboardPage() {
                   ? "No featured startups right now"
                   : `No startups match "${query}"`}
               </p>
-              <p className="mt-1.5 text-[13px] text-black/35">
+              <p className="mt-1.5 text-[13px] text-black/55">
                 {featuredFilter === "featured" && !query
                   ? "Check back soon or browse the full network."
                   : "Try a shorter word, or browse the full network."}
