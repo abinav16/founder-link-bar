@@ -401,6 +401,11 @@ function LeaderboardPage() {
     </aside>
   );
 
+  const myIndex = myId ? activeRows.findIndex((r) => r.id === myId) : -1;
+  const myRow = myIndex >= 0 ? activeRows[myIndex] : null;
+  const myRank = myIndex + 1;
+  const aboveRow = myIndex > 0 ? activeRows[myIndex - 1] : null;
+
   const rightRail = (
     <aside className="lb-rail space-y-4">
       {movers.length > 0 && (
@@ -424,12 +429,32 @@ function LeaderboardPage() {
           </div>
         </div>
       )}
-      <div className="lb-card lb-dark">
-        <Trophy className="h-5 w-5" />
-        <p className="mt-3 text-lg font-semibold leading-snug">Climb the board</p>
-        <p className="mt-1 text-[13px] opacity-75">Every visitor your bar sends out earns your startup views back across the network.</p>
-        <Link to="/apply" className="lb-cta mt-4">Join free</Link>
-      </div>
+      {myRow ? (
+        <div className="lb-card lb-dark">
+          <p className="lb-eyebrow" style={{ color: "inherit", opacity: .6 }}>Your position</p>
+          <div className="mt-3 flex items-end gap-3">
+            <p className="text-5xl font-bold tabular-nums leading-none">#{myRank}</p>
+            <p className="pb-1 text-[13px] opacity-75">of {activeRows.length}</p>
+          </div>
+          <p className="mt-3 text-[13px] opacity-80">{myRow.name} · {primaryMetric(myRow).toLocaleString()} {tab === "received" ? "views" : "given"} ({rangeSuffix})</p>
+          {aboveRow ? (
+            <>
+              <div className="mt-4 h-1.5 overflow-hidden rounded-full" style={{ background: "color-mix(in oklab, var(--background) 20%, transparent)" }}>
+                <span className="block h-full rounded-full" style={{ width: `${Math.min(100, (primaryMetric(myRow) / Math.max(1, primaryMetric(aboveRow))) * 100)}%`, background: "var(--background)" }} />
+              </div>
+              <p className="mt-2 text-[12px] opacity-75">{(primaryMetric(aboveRow) - primaryMetric(myRow) + 1).toLocaleString()} more to pass {aboveRow.name}</p>
+            </>
+          ) : <p className="mt-3 text-[12px] opacity-75">You're leading the board 🏆</p>}
+          <Link to="/dashboard" className="lb-cta mt-4">View my stats</Link>
+        </div>
+      ) : (
+        <div className="lb-card lb-dark">
+          <Trophy className="h-5 w-5" />
+          <p className="mt-3 text-lg font-semibold leading-snug">Climb the board</p>
+          <p className="mt-1 text-[13px] opacity-75">Every visitor your bar sends out earns your startup views back across the network.</p>
+          <Link to="/apply" className="lb-cta mt-4">Join free</Link>
+        </div>
+      )}
     </aside>
   );
 
