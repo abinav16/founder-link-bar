@@ -995,7 +995,7 @@ function DashboardPage() {
                 </div>
 
               <div className="grid gap-4 min-w-0">
-                <div className="rounded-xl border border-black/8 bg-white p-6 min-w-0">
+                <div className="dash-panel rounded-xl border border-black/8 bg-white p-6 min-w-0">
                   <div className="flex items-center gap-2">
                     <Layers className="h-4 w-4 text-black/30" />
                     <p className="text-sm font-semibold text-black">Top referring sites</p>
@@ -1003,8 +1003,9 @@ function DashboardPage() {
                   <div className="mt-4 space-y-2.5">
                     {breakdown.topReferrers.length === 0 ? (
                       <p className="text-xs text-black/30">Not enough data yet.</p>
-                    ) : breakdown.topReferrers.map((r) => (
-                      <div key={r.id} className="flex items-center gap-2 text-sm min-w-0">
+                    ) : breakdown.topReferrers.map((r, ri) => (
+                      <div key={r.id} className="dash-ref flex items-center gap-2 text-sm min-w-0" style={{ ["--w" as string]: `${(r.impressions / Math.max(1, ...breakdown.topReferrers.map((x) => x.impressions))) * 100}%`, animationDelay: `${ri * 60}ms` }}>
+                        <span className="dash-rank">{ri + 1}</span>
                         <StartupFavicon url={r.website_url} name={r.name} size={16} className="rounded-sm shrink-0" />
                         <span className="truncate text-black/60">{r.name}</span>
                         <span className="ml-auto shrink-0 flex items-center gap-2 text-xs">
@@ -1051,7 +1052,7 @@ function DashboardPage() {
             )}
 
             <section className="grid min-w-0 grid-cols-12 gap-4" aria-label="Widget setup and recent activity">
-              <div className="col-span-12 rounded-xl border border-black/8 bg-white p-5 shadow-sm sm:p-6">
+              <div className="dash-panel dash-embed col-span-12 rounded-xl border border-black/8 bg-white p-5 shadow-sm sm:p-6">
                 <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
                   <div className="flex min-w-0 items-start gap-3">
                     <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-black/[0.04]">
@@ -1100,8 +1101,8 @@ function DashboardPage() {
                   </div>
                 </div>
                 <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-                  <div className="min-w-0 overflow-x-auto rounded-lg border border-black/8 bg-black/[0.025] px-3 py-2.5">
-                    <code className="whitespace-pre font-mono text-[11px] leading-relaxed text-black/55">{snippet}</code>
+                  <div className="dash-code min-w-0 overflow-x-auto rounded-lg px-3 py-2.5">
+                    <code className="whitespace-pre font-mono text-[11px] leading-relaxed">{snippet}</code>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                   <button
@@ -1124,20 +1125,21 @@ function DashboardPage() {
                 </div>
               </div>
 
-              <div className="col-span-12 min-w-0 overflow-hidden rounded-xl border border-black/8 bg-white shadow-sm lg:col-span-6">
+              <div className="dash-panel col-span-12 min-w-0 overflow-hidden rounded-xl border border-black/8 bg-white shadow-sm lg:col-span-6">
                 <div className="border-b border-black/8 px-5 py-4 sm:px-6">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-semibold text-black">Recently shown on your site</p>
-                    <span className="shrink-0 rounded-md bg-black/[0.04] px-2 py-1 text-[10px] font-medium uppercase text-black/40">All · Last 7 days</span>
+                    <span className="dash-chip shrink-0">Last 7 days</span>
                   </div>
                   <p className="mt-1 text-xs text-black/40">Your bar rotates every 30 seconds, so each visitor can see a different member.</p>
                 </div>
                 {recentShown.length > 0 ? (
                   <ul className="max-h-[420px] divide-y divide-black/[0.06] overflow-y-auto">
-                    {recentShown.map((s) => (
+                    {recentShown.map((s, si) => (
                       <li
                         key={s.startup_id}
-                        className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-5 py-3 transition-colors hover:bg-black/[0.02] sm:px-6"
+                        style={{ ["--w" as string]: `${(s.appearance_count / Math.max(1, ...recentShown.map((x) => x.appearance_count))) * 100}%`, animationDelay: `${si * 40}ms` }}
+                        className="dash-li grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-5 py-3 transition-colors hover:bg-black/[0.02] sm:px-6"
                       >
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium">{s.name}</p>
@@ -1168,20 +1170,21 @@ function DashboardPage() {
 
               </div>
 
-              <div className="col-span-12 min-w-0 overflow-hidden rounded-xl border border-black/8 bg-white shadow-sm lg:col-span-6">
+              <div className="dash-panel col-span-12 min-w-0 overflow-hidden rounded-xl border border-black/8 bg-white shadow-sm lg:col-span-6">
                 <div className="border-b border-black/8 px-5 py-4 sm:px-6">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-semibold text-black">Where your bar appears</p>
-                    <span className="shrink-0 rounded-md bg-black/[0.04] px-2 py-1 text-[10px] font-medium uppercase text-black/40">All · Last 7 days</span>
+                    <span className="dash-chip shrink-0">Last 7 days</span>
                   </div>
                   <p className="mt-1 text-xs text-black/40">Sites that showed your listing. Your own site never shows you.</p>
                 </div>
                   {recentHosts.length > 0 ? (
                     <ul className="max-h-[420px] divide-y divide-black/[0.06] overflow-y-auto">
-                      {recentHosts.map((h) => (
+                      {recentHosts.map((h, hi) => (
                         <li
                           key={h.host_id}
-                          className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-5 py-3 transition-colors hover:bg-black/[0.02] sm:px-6"
+                          style={{ ["--w" as string]: `${(h.appearance_count / Math.max(1, ...recentHosts.map((x) => x.appearance_count))) * 100}%`, animationDelay: `${hi * 40}ms` }}
+                          className="dash-li grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-5 py-3 transition-colors hover:bg-black/[0.02] sm:px-6"
                         >
                           <p className="min-w-0 truncate text-sm font-medium">{h.name}</p>
                           <div className="flex shrink-0 items-center gap-2.5">

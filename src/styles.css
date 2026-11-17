@@ -1990,3 +1990,16 @@ body[style*="padding-top: 36px"] .apply-install-shell { height: calc(100dvh - 36
   .dash-flow-ring { width: 76px; height: 76px; } .dash-flow-ring > div { width: 60px; height: 60px; }
   .dash-stat-value { font-size: 26px; }
 }
+/* Dashboard panels */
+.dash-panel { border-radius: 20px !important; transition: box-shadow .3s, border-color .3s; animation: adx-up .6s both; }
+.dash-panel:hover { border-color: color-mix(in oklab, var(--foreground) 25%, transparent) !important; box-shadow: 0 20px 44px -30px color-mix(in oklab, var(--foreground) 45%, transparent) !important; }
+.dash-ref, .dash-li { position: relative; isolation: isolate; animation: adx-up .5s both; }
+.dash-ref { padding: 8px 10px; border-radius: 10px; }
+.dash-ref::before, .dash-li::before { content: ""; position: absolute; inset: 0 auto 0 0; z-index: -1; width: var(--w); background: color-mix(in oklab, var(--foreground) 6%, transparent); border-radius: inherit; transform-origin: left; animation: dash-wbar 1s cubic-bezier(.2,.8,.2,1) both; }
+.dash-li::before { border-radius: 0; }
+.dash-li:hover::before, .dash-ref:hover::before { background: color-mix(in oklab, var(--foreground) 11%, transparent); }
+@keyframes dash-wbar { from { transform: scaleX(0); } }
+.dash-rank { display: grid; place-items: center; width: 20px; height: 20px; flex: none; border-radius: 6px; background: var(--foreground); color: var(--background); font-size: 10px; font-weight: 700; }
+.dash-embed { background: var(--background); }
+.dash-code { background: var(--foreground); color: color-mix(in oklab, var(--background) 80%, transparent); border: 1px solid var(--foreground); }
+.dash-chip { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; padding: 4px 10px; border-radius: 999px; background: var(--foreground); color: var(--background); }
