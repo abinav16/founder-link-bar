@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useWebMCP } from "use-webmcp-tool";
 import { runWebMCPTool } from "@/lib/webmcp-telemetry";
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState, type ReactNode } from "react";
 import { BannerSlot } from "@/components/BannerAd";
 import { BANNER_EVERY_N_ROWS } from "@/lib/banner-ads";
 import { DashboardLayout } from "@/components/DashboardLayout";
@@ -271,15 +271,179 @@ function LeaderboardPage() {
   });
 
 
+  const activityPanel = (
+              <div className="flex flex-col">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-black/30">Network Activity</p>
+                  <p className="text-[10px] text-black/35 text-right whitespace-nowrap">Resets 5:30 AM IST</p>
+                </div>
+                <div className="rounded-xl border border-black/8 bg-white p-3 flex-1 flex flex-col">
+                  <div className="grid grid-cols-2 gap-2 flex-1 min-h-0">
+                    <div className="rounded-lg bg-black/[0.03] p-2.5 flex flex-col justify-between">
+                      <div className="flex items-center gap-1">
+                        <div className="h-1 w-1 rounded-full bg-black/25" />
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-black/35">Yesterday</span>
+                      </div>
+                      <div>
+                        <div className="text-xl font-bold tabular-nums text-black leading-none">
+                          {activity?.yesterdayImpressions.toLocaleString() ?? "—"}
+                        </div>
+                        <div className="text-[10px] uppercase tracking-wide text-black/40 mt-1">Impressions</div>
+                      </div>
+                    </div>
+                    <div className="rounded-lg bg-black/[0.03] p-2.5 flex flex-col justify-between">
+                      <div className="flex items-center gap-1">
+                        <div className="h-1 w-1 rounded-full bg-black/25" />
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-black/35">Yesterday</span>
+                      </div>
+                      <div>
+                        <div className="text-xl font-bold tabular-nums text-black leading-none">
+                          {activity?.yesterdayClicks.toLocaleString() ?? "—"}
+                        </div>
+                        <div className="text-[10px] uppercase tracking-wide text-black/40 mt-1">Clicks</div>
+                      </div>
+                    </div>
+                    <div className="rounded-lg bg-black p-2.5 flex flex-col justify-between">
+                      <div className="flex items-center gap-1">
+                        <span className="relative flex h-1 w-1">
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-60" />
+                          <span className="relative inline-flex h-1 w-1 rounded-full bg-white" />
+                        </span>
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-white/60">Today</span>
+                      </div>
+                      <div>
+                        <div className="text-xl font-bold tabular-nums text-white leading-none">
+                          {activity?.todayImpressions.toLocaleString() ?? "—"}
+                        </div>
+                        <div className="text-[10px] uppercase tracking-wide text-white/50 mt-1">Impressions</div>
+                      </div>
+                    </div>
+                    <div className="rounded-lg bg-black p-2.5 flex flex-col justify-between">
+                      <div className="flex items-center gap-1">
+                        <span className="relative flex h-1 w-1">
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-60" />
+                          <span className="relative inline-flex h-1 w-1 rounded-full bg-white" />
+                        </span>
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-white/60">Today</span>
+                      </div>
+                      <div>
+                        <div className="text-xl font-bold tabular-nums text-white leading-none">
+                          {activity?.todayClicks.toLocaleString() ?? "—"}
+                        </div>
+                        <div className="text-[10px] uppercase tracking-wide text-white/50 mt-1">Clicks</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+  );
+
+  const top10 = windowEmpty ? [] : activeRows.slice(0, 8);
+  const top10Total = top10.reduce((n, r) => n + primaryMetric(r), 0) || 1;
+  const allTotal = activeRows.reduce((n, r) => n + primaryMetric(r), 0) || 1;
+  const movers = [...rowsByReceived]
+    .map((r) => {
+      const d = r.dailyImpressions;
+      const recent = (d[4] ?? 0) + (d[5] ?? 0) + (d[6] ?? 0);
+      const prev = (d[1] ?? 0) + (d[2] ?? 0) + (d[3] ?? 0);
+      return { r, recent, growth: prev > 0 ? (recent - prev) / prev : recent > 0 ? 1 : 0 };
+    })
+    .filter((x) => x.recent >= 20 && x.growth > 0)
+    .sort((a, b) => b.growth - a.growth)
+    .slice(0, 5);
+  const bestCtr = [...rowsByReceived]
+    .filter((r) => r.impressions >= 1000)
+    .map((r) => ({ r, v: (r.clicks / r.impressions) * 100 }))
+    .sort((a, b) => b.v - a.v)
+    .slice(0, 5);
+  const maxCtr = bestCtr[0]?.v || 1;
+
+  const sideRow = (r: LeaderboardRow, right: ReactNode, i: number) => {
+    const inner = (
+      <>
+        <StartupFavicon url={r.website_url} name={r.name} logoUrl={r.logo_url} size={26} className="rounded-lg ring-1 ring-black/8 bg-white shrink-0" />
+        <span className="min-w-0 flex-1 truncate text-[13px] font-medium">{r.name}</span>
+        {right}
+      </>
+    );
+    return r.slug ? (
+      <Link key={r.id} to="/startup/$slug" params={{ slug: r.slug }} className="lb-side-row" style={{ animationDelay: `${i * 70}ms` }}>{inner}</Link>
+    ) : (
+      <div key={r.id} className="lb-side-row" style={{ animationDelay: `${i * 70}ms` }}>{inner}</div>
+    );
+  };
+
+  const leftRail = (
+    <aside className="lb-rail space-y-4">
+      {activityPanel}
+      {top10.length > 0 && (
+        <div className="lb-card">
+          <p className="lb-eyebrow">Share of {tab === "received" ? "views" : "traffic given"}</p>
+          <p className="mt-2 text-2xl font-bold tabular-nums">{Math.round((top10Total / allTotal) * 100)}%</p>
+          <p className="text-xs text-black/55">held by the top {top10.length} ({rangeSuffix})</p>
+          <div className="lb-stack mt-4">
+            {top10.map((r, i) => (
+              <span key={r.id} title={r.name} style={{ flexGrow: primaryMetric(r), opacity: 1 - i * 0.1, animationDelay: `${i * 80}ms` }} />
+            ))}
+          </div>
+          <ul className="mt-4 space-y-2">
+            {top10.slice(0, 5).map((r, i) => (
+              <li key={r.id} className="flex items-center gap-2 text-[12px]">
+                <i className="lb-dot" style={{ opacity: 1 - i * 0.1 }} />
+                <span className="min-w-0 flex-1 truncate">{r.name}</span>
+                <span className="tabular-nums text-black/60">{((primaryMetric(r) / allTotal) * 100).toFixed(1)}%</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </aside>
+  );
+
+  const rightRail = (
+    <aside className="lb-rail space-y-4">
+      {movers.length > 0 && (
+        <div className="lb-card">
+          <div className="flex items-center justify-between"><p className="lb-eyebrow">Rising fast</p><span className="lb-live"><i />Last 3 days</span></div>
+          <div className="mt-3 space-y-0.5">
+            {movers.map((m, i) => sideRow(m.r, <span className="lb-up">▲ {Math.round(m.growth * 100)}%</span>, i))}
+          </div>
+        </div>
+      )}
+      {bestCtr.length > 0 && (
+        <div className="lb-card">
+          <p className="lb-eyebrow">Best click rate</p>
+          <div className="mt-3 space-y-0.5">
+            {bestCtr.map((b, i) => sideRow(b.r, (
+              <span className="flex items-center gap-2">
+                <span className="lb-mini"><span style={{ width: `${(b.v / maxCtr) * 100}%` }} /></span>
+                <span className="w-10 text-right text-[12px] font-semibold tabular-nums">{b.v.toFixed(1)}%</span>
+              </span>
+            ), i))}
+          </div>
+        </div>
+      )}
+      <div className="lb-card lb-dark">
+        <Trophy className="h-5 w-5" />
+        <p className="mt-3 text-lg font-semibold leading-snug">Climb the board</p>
+        <p className="mt-1 text-[13px] opacity-75">Every visitor your bar sends out earns your startup views back across the network.</p>
+        <Link to="/apply" className="lb-cta mt-4">Join free</Link>
+      </div>
+    </aside>
+  );
+
   const body = (
-    <div className="max-w-5xl mx-auto">
+    <div className="lb-shell">
+    {leftRail}
+    <div className="min-w-0">
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Trophy className="h-4 w-4 text-black/30" />
             <span className="text-xs font-semibold uppercase tracking-[0.12em] text-black/30">Network</span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
             Leaderboard
           </h1>
         </div>
@@ -355,10 +519,10 @@ function LeaderboardPage() {
       ) : (
         <>
           {podium.length > 0 && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
-              <div className="lg:col-span-2">
+            <div className="lb-podium">
+              <div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-black/30 mb-3">Top 3</p>
-                <div className="grid grid-cols-3 gap-3 items-end">
+                <div className="grid grid-cols-3 gap-3 sm:gap-5 items-end">
                   {podiumDisplay.map((row: LeaderboardRow) => {
                     const originalIndex = podium.findIndex((r: LeaderboardRow) => r.id === row.id);
                     const dark = row.sponsored || (originalIndex === 0 && !row.supporter);
@@ -464,71 +628,6 @@ function LeaderboardPage() {
                 </div>
               </div>
 
-              <div className="lg:col-span-1 flex flex-col">
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-black/30">Network Activity</p>
-                  <p className="text-[10px] text-black/35 text-right whitespace-nowrap">Resets 5:30 AM IST</p>
-                </div>
-                <div className="rounded-xl border border-black/8 bg-white p-3 flex-1 flex flex-col">
-                  <div className="grid grid-cols-2 gap-2 flex-1 min-h-0">
-                    <div className="rounded-lg bg-black/[0.03] p-2.5 flex flex-col justify-between">
-                      <div className="flex items-center gap-1">
-                        <div className="h-1 w-1 rounded-full bg-black/25" />
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-black/35">Yesterday</span>
-                      </div>
-                      <div>
-                        <div className="text-xl font-bold tabular-nums text-black leading-none">
-                          {activity?.yesterdayImpressions.toLocaleString() ?? "—"}
-                        </div>
-                        <div className="text-[10px] uppercase tracking-wide text-black/40 mt-1">Impressions</div>
-                      </div>
-                    </div>
-                    <div className="rounded-lg bg-black/[0.03] p-2.5 flex flex-col justify-between">
-                      <div className="flex items-center gap-1">
-                        <div className="h-1 w-1 rounded-full bg-black/25" />
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-black/35">Yesterday</span>
-                      </div>
-                      <div>
-                        <div className="text-xl font-bold tabular-nums text-black leading-none">
-                          {activity?.yesterdayClicks.toLocaleString() ?? "—"}
-                        </div>
-                        <div className="text-[10px] uppercase tracking-wide text-black/40 mt-1">Clicks</div>
-                      </div>
-                    </div>
-                    <div className="rounded-lg bg-black p-2.5 flex flex-col justify-between">
-                      <div className="flex items-center gap-1">
-                        <span className="relative flex h-1 w-1">
-                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-60" />
-                          <span className="relative inline-flex h-1 w-1 rounded-full bg-white" />
-                        </span>
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-white/60">Today</span>
-                      </div>
-                      <div>
-                        <div className="text-xl font-bold tabular-nums text-white leading-none">
-                          {activity?.todayImpressions.toLocaleString() ?? "—"}
-                        </div>
-                        <div className="text-[10px] uppercase tracking-wide text-white/50 mt-1">Impressions</div>
-                      </div>
-                    </div>
-                    <div className="rounded-lg bg-black p-2.5 flex flex-col justify-between">
-                      <div className="flex items-center gap-1">
-                        <span className="relative flex h-1 w-1">
-                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-60" />
-                          <span className="relative inline-flex h-1 w-1 rounded-full bg-white" />
-                        </span>
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-white/60">Today</span>
-                      </div>
-                      <div>
-                        <div className="text-xl font-bold tabular-nums text-white leading-none">
-                          {activity?.todayClicks.toLocaleString() ?? "—"}
-                        </div>
-                        <div className="text-[10px] uppercase tracking-wide text-white/50 mt-1">Clicks</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
             </div>
           )}
 
@@ -737,7 +836,9 @@ function LeaderboardPage() {
         </>
       )}
     </div>
+    {rightRail}
+    </div>
   );
 
-  return <DashboardLayout rail={<SponsoredRail />}><TooltipProvider>{body}</TooltipProvider></DashboardLayout>;
+  return <DashboardLayout fullWidth rail={<SponsoredRail />}><TooltipProvider>{body}</TooltipProvider></DashboardLayout>;
 }
