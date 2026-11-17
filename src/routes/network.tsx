@@ -1200,7 +1200,7 @@ function ProofPanel({ startups, totalClicks, totalImpressions }: { startups: Pro
             {feed.map((f, i) => (
               <li key={f.key} style={{ animationDelay: `${i * 50}ms` }} className="nw-row-wrap">
                 <ProofLink slug={f.s.slug}>
-                  <span className="nw-ms-icon">{f.icon}</span>
+                  <StartupFavicon url={f.s.website_url} name={f.s.name} logoUrl={f.s.logo_url} size={28} />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[13px] font-medium">{f.s.name}</p>
                     <p className="truncate text-[11px] text-muted-foreground">{f.text}</p>
