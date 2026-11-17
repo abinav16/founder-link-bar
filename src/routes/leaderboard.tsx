@@ -171,9 +171,9 @@ function LeaderboardPage() {
   const [range, setRange] = useState<Range>("all");
   // Hydrate myId from sessionStorage so repeat visits highlight "You"
   // without the post-render fetch flicker.
-  const [myId, setMyId] = useState<string | null>(() => {
-    if (typeof window === "undefined") return null;
-    return window.sessionStorage.getItem("sb_my_startup_id");
+  const [myIds, setMyIds] = useState<string[]>(() => {
+    if (typeof window === "undefined") return [];
+    return (window.sessionStorage.getItem("sb_my_startup_ids") ?? "").split(",").filter(Boolean);
   });
 
   useEffect(() => {
@@ -183,8 +183,8 @@ function LeaderboardPage() {
       const { data: sess } = await supabase.auth.getSession();
       if (cancelled) return;
       if (!sess.session?.user) {
-        setMyId(null);
-        window.sessionStorage.removeItem("sb_my_startup_id");
+        setMyIds([]);
+        window.sessionStorage.removeItem("sb_my_startup_ids");
         return;
       }
       const { data: mine } = await supabase
@@ -195,16 +195,14 @@ function LeaderboardPage() {
         .order("created_at", { ascending: true });
       if (cancelled) return;
       const ids = (mine ?? []).map((m) => m.id);
-      const ranked = rowsByReceived.find((r) => ids.includes(r.id));
-      const id = ranked?.id ?? ids[0] ?? null;
-      setMyId(id);
-      if (id) window.sessionStorage.setItem("sb_my_startup_id", id);
-      else window.sessionStorage.removeItem("sb_my_startup_id");
+      setMyIds(ids);
+      if (ids.length) window.sessionStorage.setItem("sb_my_startup_ids", ids.join(","));
+      else window.sessionStorage.removeItem("sb_my_startup_ids");
     })();
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       if (!session?.user) {
-        setMyId(null);
-        window.sessionStorage.removeItem("sb_my_startup_id");
+        setMyIds([]);
+        window.sessionStorage.removeItem("sb_my_startup_ids");
       }
     });
     return () => {
@@ -404,10 +402,10 @@ function LeaderboardPage() {
     </aside>
   );
 
-  const myIndex = myId ? activeRows.findIndex((r) => r.id === myId) : -1;
-  const myRow = myIndex >= 0 ? activeRows[myIndex] : null;
-  const myRank = myIndex + 1;
-  const aboveRow = myIndex > 0 ? activeRows[myIndex - 1] : null;
+  const myPositions = activeRows
+    .map((r, i) => ({ r, i }))
+    .filter(({ r }) => myIds.includes(r.id))
+    .map(({ r, i }) => ({ row: r, rank: i + 1, above: i > 0 ? activeRows[i - 1] : null }));
 
   const rightRail = (
     <aside className="lb-rail space-y-4">
@@ -432,22 +430,29 @@ function LeaderboardPage() {
           </div>
         </div>
       )}
-      {myRow ? (
+      {myPositions.length > 0 ? (
         <div className="lb-card lb-dark">
-          <p className="lb-eyebrow" style={{ color: "inherit", opacity: .6 }}>Your position</p>
-          <div className="mt-3 flex items-end gap-3">
-            <p className="text-5xl font-bold tabular-nums leading-none">#{myRank}</p>
-            <p className="pb-1 text-[13px] opacity-75">of {activeRows.length}</p>
-          </div>
-          <p className="mt-3 text-[13px] opacity-80">{myRow.name} · {primaryMetric(myRow).toLocaleString()} {tab === "received" ? "views" : "given"} ({rangeSuffix})</p>
-          {aboveRow ? (
-            <>
-              <div className="mt-4 h-1.5 overflow-hidden rounded-full" style={{ background: "color-mix(in oklab, var(--background) 20%, transparent)" }}>
-                <span className="block h-full rounded-full" style={{ width: `${Math.min(100, (primaryMetric(myRow) / Math.max(1, primaryMetric(aboveRow))) * 100)}%`, background: "var(--background)" }} />
+          <p className="lb-eyebrow" style={{ color: "inherit", opacity: .6 }}>{myPositions.length > 1 ? "Your startups" : "Your position"}</p>
+          <div className="mt-3 space-y-4">
+            {myPositions.map(({ row, rank, above }) => (
+              <div key={row.id}>
+                <div className="flex items-center gap-3">
+                  <StartupFavicon url={row.website_url} name={row.name} logoUrl={row.logo_url} size={28} className="rounded-lg bg-white shrink-0" />
+                  <p className="min-w-0 flex-1 truncate text-[13px] font-semibold">{row.name}</p>
+                  <p className={`${myPositions.length > 1 ? "text-2xl" : "text-4xl"} font-bold tabular-nums leading-none`}>#{rank}</p>
+                </div>
+                <p className="mt-1.5 text-[12px] opacity-75">{primaryMetric(row).toLocaleString()} {tab === "received" ? "views" : "given"} ({rangeSuffix}) · of {activeRows.length}</p>
+                {above ? (
+                  <>
+                    <div className="mt-2 h-1.5 overflow-hidden rounded-full" style={{ background: "color-mix(in oklab, var(--background) 20%, transparent)" }}>
+                      <span className="block h-full rounded-full" style={{ width: `${Math.min(100, (primaryMetric(row) / Math.max(1, primaryMetric(above))) * 100)}%`, background: "var(--background)" }} />
+                    </div>
+                    <p className="mt-1.5 text-[11px] opacity-75">{(primaryMetric(above) - primaryMetric(row) + 1).toLocaleString()} more to pass {above.name}</p>
+                  </>
+                ) : <p className="mt-1.5 text-[11px] opacity-75">Leading the board 🏆</p>}
               </div>
-              <p className="mt-2 text-[12px] opacity-75">{(primaryMetric(aboveRow) - primaryMetric(myRow) + 1).toLocaleString()} more to pass {aboveRow.name}</p>
-            </>
-          ) : <p className="mt-3 text-[12px] opacity-75">You're leading the board 🏆</p>}
+            ))}
+          </div>
           <Link to="/dashboard" className="lb-cta mt-4">View my stats</Link>
         </div>
       ) : (
@@ -607,7 +612,7 @@ function LeaderboardPage() {
                           );
                         })()}
 
-                        {row.id === myId && (
+                        {myIds.includes(row.id) && (
                           <span className={`mt-0.5 rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase ${
                             dark ? "bg-white/20 text-white" : "bg-black text-white"
                           }`}>You</span>
@@ -728,7 +733,7 @@ function LeaderboardPage() {
                     ? "sb-featured-row relative hover:shadow-[0_8px_24px_-12px_oklch(0.65_0.15_68_/_0.3)]"
                     : row.supporter
                       ? "sb-featured-row relative hover:shadow-[0_8px_24px_-12px_oklch(0.65_0.15_68_/_0.3)]"
-                      : row.id === myId
+                      : myIds.includes(row.id)
                       ? "bg-white border-black/20 ring-1 ring-black/8 hover:border-black/20 hover:shadow-sm"
                       : "bg-white border-black/8 hover:border-black/20 hover:shadow-sm"
                 }`}
@@ -763,7 +768,7 @@ function LeaderboardPage() {
                           <span className="rounded-full border border-[oklch(0.72_0.13_75_/_0.6)] bg-[oklch(0.9_0.1_85_/_0.5)] px-1.5 py-0.5 text-[8px] font-bold text-[oklch(0.45_0.1_70)] uppercase tracking-wide shrink-0">Supporter</span>
                         ) : null}
                         {isNew(row.created_at) && <NewBadge />}
-                        {row.id === myId && (
+                        {myIds.includes(row.id) && (
                           <span className="rounded-full bg-black px-1.5 py-0.5 text-[8px] font-bold text-white uppercase tracking-wide shrink-0">You</span>
                         )}
                       </div>
@@ -788,7 +793,7 @@ function LeaderboardPage() {
                           <span className="rounded-full border border-[oklch(0.72_0.13_75_/_0.6)] bg-[oklch(0.9_0.1_85_/_0.5)] px-1.5 py-0.5 text-[8px] font-bold text-[oklch(0.45_0.1_70)] uppercase tracking-wide shrink-0">Supporter</span>
                         ) : null}
                         {isNew(row.created_at) && <NewBadge />}
-                        {row.id === myId && (
+                        {myIds.includes(row.id) && (
                           <span className="rounded-full bg-black px-1.5 py-0.5 text-[8px] font-bold text-white uppercase tracking-wide shrink-0">You</span>
                         )}
                       </div>
