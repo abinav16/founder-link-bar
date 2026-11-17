@@ -978,13 +978,16 @@ function NetworkDashboardPage() {
           <MagneticField startups={data.recentStartups} stats={stats} />
         )}
 
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-8">
+        <div className="min-w-0 space-y-10">
+
         {trending.length > 1 && (
           <div>
             <SectionLabel title="Trending — last 24h" />
             <div className="sm:hidden">
               <HorizontalCardRail items={trending} />
             </div>
-            <div className="hidden sm:grid gap-4 sm:grid-cols-3">
+            <div className="hidden sm:grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {trending.map((s) => <StartupCard key={s.id} s={s} />)}
             </div>
           </div>
@@ -1134,8 +1137,87 @@ function NetworkDashboardPage() {
             </div>
           )}
         </div>
+        </div>
+        <ProofPanel startups={allStartups} totalClicks={stats?.totalClicks ?? 0} totalImpressions={stats?.totalImpressions ?? 0} />
+        </div>
       </div>
     </DashboardLayout>
   );
 }
 
+
+type ProofStartup = NetworkDashboardResult["recentStartups"][number];
+
+const CLICK_MILESTONES = [1000, 500, 250, 100, 50];
+const NETWORK_GOALS = [1000, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000, 5000000];
+
+function ProofPanel({ startups, totalClicks, totalImpressions }: { startups: ProofStartup[]; totalClicks: number; totalImpressions: number }) {
+  const clicks24 = startups.reduce((n, s) => n + (s.clicks_24h ?? 0), 0);
+  const impr24 = startups.reduce((n, s) => n + (s.impressions_24h ?? 0), 0);
+  const active24 = startups.filter((s) => (s.impressions_24h ?? 0) > 0).length;
+  const milestones = startups
+    .map((s) => ({ s, m: CLICK_MILESTONES.find((m) => (s.clicks ?? 0) >= m) }))
+    .filter((x): x is { s: ProofStartup; m: number } => !!x.m)
+    .sort((a, b) => (b.s.clicks ?? 0) - (a.s.clicks ?? 0))
+    .slice(0, 5);
+  const joined = [...startups].sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at)).slice(0, 4);
+  const goal = NETWORK_GOALS.find((g) => g > totalClicks) ?? totalClicks;
+  const pct = goal ? Math.min(100, (totalClicks / goal) * 100) : 100;
+  const reached = [...NETWORK_GOALS].reverse().find((g) => g <= totalClicks);
+  return (
+    <aside className="nw-proof min-w-0 space-y-4 lg:sticky lg:top-36 lg:self-start">
+      <div className="nw-card nw-dark">
+        <div className="flex items-center justify-between">
+          <span className="nw-eyebrow">Last 24 hours</span>
+          <span className="nw-live"><i />Live</span>
+        </div>
+        <div className="mt-4 grid grid-cols-3 gap-2">
+          <div><p className="nw-big">{fmt(clicks24)}</p><p className="nw-sub">clicks sent</p></div>
+          <div><p className="nw-big">{fmt(impr24)}</p><p className="nw-sub">views</p></div>
+          <div><p className="nw-big">{active24}</p><p className="nw-sub">sites active</p></div>
+        </div>
+      </div>
+
+      <div className="nw-card">
+        <span className="nw-eyebrow">Network milestone</span>
+        <p className="mt-3 text-2xl font-semibold tabular-nums">{fmt(totalClicks)} <span className="text-sm font-medium text-muted-foreground">clicks sent</span></p>
+        {reached ? <p className="mt-1 text-xs text-muted-foreground">Passed {fmt(reached)} clicks between founders ✓</p> : null}
+        <div className="nw-track mt-4"><span style={{ width: `${pct}%` }} /></div>
+        <div className="mt-2 flex justify-between text-[11px] text-muted-foreground tabular-nums"><span>{Math.round(pct)}%</span><span>Next: {fmt(goal)}</span></div>
+        <p className="mt-3 text-[11px] text-muted-foreground">{fmt(totalImpressions)} total views across member sites</p>
+      </div>
+
+      {milestones.length > 0 && (
+        <div className="nw-card">
+          <span className="nw-eyebrow">Founder milestones</span>
+          <ul className="mt-3 space-y-1">
+            {milestones.map(({ s, m }, i) => (
+              <li key={s.id} className="nw-row" style={{ animationDelay: `${i * 80}ms` }}>
+                <StartupFavicon url={s.website_url} name={s.name} logoUrl={s.logo_url} size={28} />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[13px] font-medium">{s.name}</p>
+                  <p className="text-[11px] text-muted-foreground">{fmt(s.clicks ?? 0)} visitors received</p>
+                </div>
+                <span className="nw-badge">{fmt(m)}+</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <div className="nw-card">
+        <span className="nw-eyebrow">Recently joined</span>
+        <ul className="mt-3 space-y-1">
+          {joined.map((s, i) => (
+            <li key={s.id} className="nw-row" style={{ animationDelay: `${i * 80}ms` }}>
+              <StartupFavicon url={s.website_url} name={s.name} logoUrl={s.logo_url} size={28} />
+              <p className="min-w-0 flex-1 truncate text-[13px] font-medium">{s.name}</p>
+              <span className="text-[11px] text-muted-foreground tabular-nums">{joinedLabel(s.created_at)}</span>
+            </li>
+          ))}
+        </ul>
+        <a href="/apply" className="nw-cta mt-4">Add your startup free <ArrowRight className="h-3.5 w-3.5" /></a>
+      </div>
+    </aside>
+  );
+}

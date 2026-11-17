@@ -2003,3 +2003,19 @@ body[style*="padding-top: 36px"] .apply-install-shell { height: calc(100dvh - 36
 .dash-embed { background: var(--background); }
 .dash-code { background: var(--foreground); color: color-mix(in oklab, var(--background) 80%, transparent); border: 1px solid var(--foreground); }
 .dash-chip { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; padding: 4px 10px; border-radius: 999px; background: var(--foreground); color: var(--background); }
+/* Network proof panel */
+.nw-card { border: 1px solid var(--border); background: var(--card); border-radius: 20px; padding: 18px; animation: adx-up .6s both; }
+.nw-dark { background: var(--foreground); color: var(--background); border-color: var(--foreground); }
+.nw-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; opacity: .55; }
+.nw-big { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
+.nw-sub { margin-top: 4px; font-size: 10px; opacity: .55; }
+.nw-live { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; }
+.nw-live i { width: 7px; height: 7px; border-radius: 99px; background: var(--background); animation: nw-pulse 1.6s infinite; }
+@keyframes nw-pulse { 0%,100% { opacity: 1; box-shadow: 0 0 0 0 color-mix(in oklab, var(--background) 60%, transparent); } 50% { opacity: .6; box-shadow: 0 0 0 6px transparent; } }
+.nw-track { height: 8px; border-radius: 99px; background: var(--muted); overflow: hidden; }
+.nw-track span { display: block; height: 100%; border-radius: inherit; background: var(--foreground); transform-origin: left; animation: dash-wbar 1.4s cubic-bezier(.2,.8,.2,1) both; }
+.nw-row { display: flex; align-items: center; gap: 10px; padding: 7px 6px; border-radius: 12px; animation: adx-up .5s both; transition: background .2s; }
+.nw-row:hover { background: var(--muted); }
+.nw-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 99px; background: var(--foreground); color: var(--background); font-variant-numeric: tabular-nums; }
+.nw-cta { display: flex; align-items: center; justify-content: center; gap: 6px; height: 38px; border-radius: 99px; background: var(--foreground); color: var(--background); font-size: 13px; font-weight: 600; transition: opacity .2s; }
+.nw-cta:hover { opacity: .85; }
