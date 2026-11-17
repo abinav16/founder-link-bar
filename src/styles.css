@@ -2019,3 +2019,4 @@ body[style*="padding-top: 36px"] .apply-install-shell { height: calc(100dvh - 36
 .nw-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 99px; background: var(--foreground); color: var(--background); font-variant-numeric: tabular-nums; }
 .nw-cta { display: flex; align-items: center; justify-content: center; gap: 6px; height: 38px; border-radius: 99px; background: var(--foreground); color: var(--background); font-size: 13px; font-weight: 600; transition: opacity .2s; }
 .nw-cta:hover { opacity: .85; }
+.nw-scroll { scrollbar-width: thin; overscroll-behavior: contain; padding-bottom: 8px; }

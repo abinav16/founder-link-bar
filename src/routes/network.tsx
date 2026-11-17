@@ -1167,7 +1167,7 @@ function ProofPanel({ startups, totalClicks, totalImpressions }: { startups: Pro
   const pct = goal ? Math.min(100, (totalClicks / goal) * 100) : 100;
   const reached = [...NETWORK_GOALS].reverse().find((g) => g <= totalClicks);
   return (
-    <aside className="nw-proof min-w-0 space-y-4 lg:sticky lg:top-36 lg:self-start">
+    <aside className="nw-proof min-w-0 space-y-4 lg:sticky lg:top-28 lg:self-start lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto nw-scroll">
       <div className="nw-card nw-dark">
         <div className="flex items-center justify-between">
           <span className="nw-eyebrow">Last 24 hours</span>
