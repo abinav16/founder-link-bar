@@ -1765,7 +1765,7 @@ body[style*="padding-top: 36px"] .apply-install-shell { height: calc(100dvh - 36
 
 .adx-steps-wrap { padding-top: clamp(56px, 7vw, 100px); padding-bottom: clamp(40px, 5vw, 72px); }
 .adx-steps { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
-.adx-steps::before { content: ""; position: absolute; top: 24px; left: 24px; right: 24px; height: 2px; background: var(--foreground); transform: scaleX(0); transform-origin: left; transition: transform 1.4s cubic-bezier(.5,0,.2,1); }
+.adx-steps::before { content: ""; position: absolute; top: 24px; left: 24px; right: calc((100% - 72px) / 4 - 24px); height: 2px; background: var(--foreground); transform: scaleX(0); transform-origin: left; transition: transform 1.4s cubic-bezier(.5,0,.2,1); }
 .adx-reveal.is-in .adx-steps::before { transform: scaleX(1); }
 .adx-steps li { position: relative; opacity: 0; transform: translateY(16px); transition: opacity .6s, transform .6s; }
 .adx-reveal.is-in .adx-steps li { opacity: 1; transform: none; }

@@ -10,7 +10,7 @@ import { CLICK_PACKS, NEWSLETTER_PRICE_PER_FOUNDER_USD } from "@/lib/checkout-pl
 export const Route = createFileRoute("/advertise")({
   head: () => ({
     meta: [
-      { title: "Advertise on StartupBar — reach founders and early adopters" },
+      { title: "Advertise on StartupBar: reach founders and early adopters" },
       { name: "description", content: "Banner ads across the StartupBar network, gold highlights with guaranteed clicks, and Sunday newsletter sponsorships. Open to any company." },
       { property: "og:title", content: "Advertise on StartupBar" },
       { property: "og:description", content: "Banner ads, gold highlights and newsletter sponsorships in front of founders and makers." },
@@ -89,7 +89,7 @@ function Diagram({ id }: { id: PId }) {
     <div className="adx-browser" key="b"><div className="adx-bar"><i /><i /><i /><span>startupbar.co/network</span></div>
       <div className="adx-page">{[0, 1, 2].map((i) => <Row key={i} i={i} />)}
         <div className="adx-banner"><span className="adx-adtag">Ad</span>
-          <div className="adx-cr-copy"><strong>Ship to <em>every</em> founder.</strong><div className="adx-cr-row"><span className="adx-cr-btn">Try your product free</span><small>Your headline, image<br />and link — right here.</small></div></div>
+          <div className="adx-cr-copy"><strong>Ship to <em>every</em> founder.</strong><div className="adx-cr-row"><span className="adx-cr-btn">Try your product free</span><small>Your headline, image<br />and link, right here.</small></div></div>
           <div className="adx-dock">{[BarChart3, Zap, Rocket, Globe, Sparkles].map((I, i) => <span key={i} className={i === 2 ? "is-up" : ""}><I /></span>)}</div>
           <MousePointerClick className="adx-cursor" /></div>
         {[3, 4].map((i) => <Row key={i} i={i} />)}</div></div>
@@ -145,8 +145,8 @@ function AdvertisePage() {
             <h1>Get seen by the people <span>building the internet.</span></h1>
             <p className="adx-lead">Three simple ways to reach founders and early adopters. Pick one, pay once, track every click.</p>
             <div className="adx-cta"><Button asChild size="lg" className="h-12 rounded-full"><Link to="/advertise/new">Start a campaign <ArrowRight /></Link></Button><Button asChild variant="outline" size="lg" className="h-12 rounded-full"><a href="#choose">Compare options</a></Button></div>
-            <dl className="adx-stats">{[["Member sites", stats ? fmt(stats.sites) : "—"], ["Founders on email", stats ? fmt(stats.founders) : "—"], ["Network widget views*", stats ? fmt(stats.views) : "—"]].map(([l, v]) => <div key={l}><dd>{v}</dd><dt>{l}</dt></div>)}</dl>
-            <p className="adx-note">*Across member sites — not banner reach. Every campaign reports its own real views and clicks.</p>
+            <dl className="adx-stats">{[["Member sites", stats ? fmt(stats.sites) : "..."], ["Founders on email", stats ? fmt(stats.founders) : "..."], ["Network widget views*", stats ? fmt(stats.views) : "..."]].map(([l, v]) => <div key={l}><dd>{v}</dd><dt>{l}</dt></div>)}</dl>
+            <p className="adx-note">*Across member sites, not banner reach. Every campaign reports its own real views and clicks.</p>
           </div>
           <div className="adx-hero-art" aria-hidden="true"><HeroArt /></div>
         </section>
@@ -163,16 +163,16 @@ function AdvertisePage() {
 
         <section className="adx-wrap adx-steps-wrap"><div ref={steps.ref} className={steps.className}>
           <p className="adx-eyebrow">Step 2 · Launch</p><h2>Live in four easy steps.</h2>
-          <ol className="adx-steps">{[["Pick", "Choose a format above."], ["Upload", "Add your images or pick a Sunday."], ["Pay once", "No subscription, no surprise fees."], ["Go live", "We approve it — your time starts then."]].map(([t, b], i) => <li key={t} style={{ transitionDelay: `${i * 180}ms` }}><span>{i + 1}</span><strong>{t}</strong><p>{b}</p></li>)}</ol>
+          <ol className="adx-steps">{[["Pick", "Choose a format above."], ["Upload", "Add your images or pick a Sunday."], ["Pay once", "No subscription, no surprise fees."], ["Go live", "We approve it, then your time starts then."]].map(([t, b], i) => <li key={t} style={{ transitionDelay: `${i * 180}ms` }}><span>{i + 1}</span><strong>{t}</strong><p>{b}</p></li>)}</ol>
         </div></section>
 
         <section className="adx-wrap adx-compare"><p className="adx-eyebrow">At a glance</p><h2>Side by side.</h2>
           <div className="adx-table"><div className="adx-th"><span /> {PRODUCTS.map((p) => <span key={p.id}>{p.name}</span>)}</div>
-            {([["Price", "$49 / week", `$${CLICK_PACKS[0].priceUsd}–$${CLICK_PACKS[CLICK_PACKS.length - 1].priceUsd}`, `$${NEWSLETTER_PRICE_PER_FOUNDER_USD.toFixed(2)} / founder`], ["Need a listing?", false, true, true], ["Clicks guaranteed", false, true, false], ["Your own image", true, false, false], ["Where", "Network, Leaderboard, profiles", "Startup lists & member bar", "Sunday email"]] as const).map(([label, ...vals]) => <div key={label} className="adx-tr"><span>{label}</span>{vals.map((v, i) => <span key={i}>{typeof v === "boolean" ? (v ? <Check className="size-4" /> : <X className="size-4 opacity-30" />) : v}</span>)}</div>)}
+            {([["Price", "$49 / week", `$${CLICK_PACKS[0].priceUsd} to $${CLICK_PACKS[CLICK_PACKS.length - 1].priceUsd}`, `$${NEWSLETTER_PRICE_PER_FOUNDER_USD.toFixed(2)} / founder`], ["Need a listing?", false, true, true], ["Clicks guaranteed", false, true, false], ["Your own image", true, false, false], ["Where", "Network, Leaderboard, profiles", "Startup lists & member bar", "Sunday email"]] as const).map(([label, ...vals]) => <div key={label} className="adx-tr"><span>{label}</span>{vals.map((v, i) => <span key={i}>{typeof v === "boolean" ? (v ? <Check className="size-4" /> : <X className="size-4 opacity-30" />) : v}</span>)}</div>)}
           </div></section>
 
         <section className="adx-wrap adx-faq"><h2>Questions</h2><div>{[
-          ["Do I need a listed startup?", "Not for banners — any company can advertise after signing in. Gold highlights and newsletter spots are for listed startups."],
+          ["Do I need a listed startup?", "Not for banners. Any company can advertise after signing in. Gold highlights and newsletter spots are for listed startups."],
           ["What sizes do banners need?", "Desktop at least 1200 × 200 px (6:1), mobile at least 600 × 300 px (2:1). PNG, JPG or WebP up to 5 MB."],
           ["Are banner views guaranteed?", "No. Banners share random rotation for the weeks you buy, and you see actual views and clicks. Guaranteed clicks come with Gold highlights."],
           ["What if my banner is rejected?", "We tell you why and refund your payment through Dodo."],
