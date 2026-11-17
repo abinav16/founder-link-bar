@@ -138,10 +138,10 @@ function ColHeader({ label, hint, className = "" }: { label: string; hint: strin
       <TooltipTrigger asChild>
         <span
           tabIndex={0}
-          className={`inline-flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wide text-black/35 cursor-help outline-none ${className}`}
+          className={`inline-flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wide text-black/55 cursor-help outline-none ${className}`}
         >
           {label}
-          <Info className="h-2.5 w-2.5 text-black/25" />
+          <Info className="h-2.5 w-2.5 text-black/55" />
         </span>
       </TooltipTrigger>
       <TooltipContent side="top" className="max-w-[230px] text-[11px] leading-relaxed">
@@ -275,33 +275,33 @@ function LeaderboardPage() {
   const activityPanel = (
               <div className="flex flex-col">
                 <div className="mb-3 flex items-center justify-between gap-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-black/30">Network Activity</p>
-                  <p className="text-[10px] text-black/35 text-right whitespace-nowrap">Resets 5:30 AM IST</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-black/55">Network Activity</p>
+                  <p className="text-[10px] text-black/55 text-right whitespace-nowrap">Resets 5:30 AM IST</p>
                 </div>
                 <div className="rounded-xl border border-black/8 bg-white p-3 flex-1 flex flex-col">
                   <div className="grid grid-cols-2 gap-2 flex-1 min-h-0">
                     <div className="rounded-lg bg-black/[0.03] p-2.5 flex flex-col justify-between">
                       <div className="flex items-center gap-1">
                         <div className="h-1 w-1 rounded-full bg-black/25" />
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-black/35">Yesterday</span>
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-black/55">Yesterday</span>
                       </div>
                       <div>
                         <div className="text-xl font-bold tabular-nums text-black leading-none">
                           {activity?.yesterdayImpressions.toLocaleString() ?? "—"}
                         </div>
-                        <div className="text-[10px] uppercase tracking-wide text-black/40 mt-1">Impressions</div>
+                        <div className="text-[10px] uppercase tracking-wide text-black/65 mt-1">Impressions</div>
                       </div>
                     </div>
                     <div className="rounded-lg bg-black/[0.03] p-2.5 flex flex-col justify-between">
                       <div className="flex items-center gap-1">
                         <div className="h-1 w-1 rounded-full bg-black/25" />
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-black/35">Yesterday</span>
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-black/55">Yesterday</span>
                       </div>
                       <div>
                         <div className="text-xl font-bold tabular-nums text-black leading-none">
                           {activity?.yesterdayClicks.toLocaleString() ?? "—"}
                         </div>
-                        <div className="text-[10px] uppercase tracking-wide text-black/40 mt-1">Clicks</div>
+                        <div className="text-[10px] uppercase tracking-wide text-black/65 mt-1">Clicks</div>
                       </div>
                     </div>
                     <div className="rounded-lg bg-black p-2.5 flex flex-col justify-between">
@@ -316,7 +316,7 @@ function LeaderboardPage() {
                         <div className="text-xl font-bold tabular-nums text-white leading-none">
                           {activity?.todayImpressions.toLocaleString() ?? "—"}
                         </div>
-                        <div className="text-[10px] uppercase tracking-wide text-white/50 mt-1">Impressions</div>
+                        <div className="text-[10px] uppercase tracking-wide text-white/70 mt-1">Impressions</div>
                       </div>
                     </div>
                     <div className="rounded-lg bg-black p-2.5 flex flex-col justify-between">
@@ -331,7 +331,7 @@ function LeaderboardPage() {
                         <div className="text-xl font-bold tabular-nums text-white leading-none">
                           {activity?.todayClicks.toLocaleString() ?? "—"}
                         </div>
-                        <div className="text-[10px] uppercase tracking-wide text-white/50 mt-1">Clicks</div>
+                        <div className="text-[10px] uppercase tracking-wide text-white/70 mt-1">Clicks</div>
                       </div>
                     </div>
                   </div>
@@ -473,8 +473,8 @@ function LeaderboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Trophy className="h-4 w-4 text-black/30" />
-            <span className="text-xs font-semibold uppercase tracking-[0.12em] text-black/30">Network</span>
+            <Trophy className="h-4 w-4 text-black/55" />
+            <span className="text-xs font-semibold uppercase tracking-[0.12em] text-black/55">Network</span>
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
             Leaderboard
@@ -519,7 +519,7 @@ function LeaderboardPage() {
             className={`shrink-0 px-3 py-1.5 rounded-full text-[12px] font-medium transition-all border ${
               range === opt.key
                 ? "bg-black text-white border-black"
-                : "bg-white text-black/50 border-black/10 hover:text-black hover:border-black/25"
+                : "bg-white text-black/65 border-black/10 hover:text-black hover:border-black/25"
             }`}
           >
             {opt.label}
@@ -527,7 +527,7 @@ function LeaderboardPage() {
         ))}
       </div>
 
-      <p className="text-sm text-black/45 mb-6">
+      <p className="text-sm text-black/65 mb-6">
         {tab === "received"
           ? range === "today"
             ? "Startups seen most across the network today — ranked by impressions received since the 5:30 AM IST reset."
@@ -542,9 +542,9 @@ function LeaderboardPage() {
       </p>
 
       {activeRows.length === 0 ? (
-        <div className="mt-16 text-center text-sm text-black/40">No approved startups yet.</div>
+        <div className="mt-16 text-center text-sm text-black/65">No approved startups yet.</div>
       ) : windowEmpty ? (
-        <div className="mt-16 text-center text-sm text-black/40">
+        <div className="mt-16 text-center text-sm text-black/65">
           {range === "today"
             ? "No activity yet today — check back after the 5:30 AM IST reset."
             : "No activity in the last 7 days yet."}
@@ -554,7 +554,7 @@ function LeaderboardPage() {
           {podium.length > 0 && (
             <div className="lb-podium">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-black/30 mb-3">Top 3</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-black/55 mb-3">Top 3</p>
                 <div className="grid grid-cols-3 gap-3 sm:gap-5 items-end">
                   {podiumDisplay.map((row: LeaderboardRow) => {
                     const originalIndex = podium.findIndex((r: LeaderboardRow) => r.id === row.id);
@@ -573,7 +573,7 @@ function LeaderboardPage() {
                         }`}
                       >
                         {dark && !row.sponsored && (
-                          <p className="text-[8px] font-bold tracking-[0.15em] uppercase text-white/40 mb-1">Leader</p>
+                          <p className="text-[8px] font-bold tracking-[0.15em] uppercase text-white/70 mb-1">Leader</p>
                         )}
                         {row.sponsored ? (
                           <span className="absolute top-2 left-1/2 -translate-x-1/2 text-[8px] font-bold uppercase tracking-[0.12em] text-[oklch(0.82_0.13_75)]">Featured</span>
@@ -621,7 +621,7 @@ function LeaderboardPage() {
                           <div className={`text-xl font-bold tabular-nums ${dark ? "text-white" : "text-black"}`}>
                             {primaryMetric(row).toLocaleString()}
                           </div>
-                          <div className={`text-[8px] uppercase tracking-widest font-semibold mt-0.5 ${dark ? "text-white/40" : "text-black/30"}`}>
+                          <div className={`text-[8px] uppercase tracking-widest font-semibold mt-0.5 ${dark ? "text-white/70" : "text-black/55"}`}>
                             {(tab === "received" ? "impressions" : "given") +
                               (range === "today" ? " today" : range === "week" ? " · 7d" : "")}
                           </div>
@@ -631,17 +631,17 @@ function LeaderboardPage() {
                             <>
                               <div>
                                 <div className={`text-xs font-semibold ${dark ? "text-white" : "text-black"}`}>{clicksMetric(row)}</div>
-                                <div className={`text-[8px] uppercase tracking-wide ${dark ? "text-white/35" : "text-black/30"}`}>Clicks</div>
+                                <div className={`text-[8px] uppercase tracking-wide ${dark ? "text-white/70" : "text-black/55"}`}>Clicks</div>
                               </div>
                               <div>
                                 <div className={`text-xs font-semibold ${dark ? "text-white" : "text-black"}`}>{ctr(row)}</div>
-                                <div className={`text-[8px] uppercase tracking-wide ${dark ? "text-white/35" : "text-black/30"}`}>CTR</div>
+                                <div className={`text-[8px] uppercase tracking-wide ${dark ? "text-white/70" : "text-black/55"}`}>CTR</div>
                               </div>
                             </>
                           ) : (
                             <div>
                               <div className={`text-xs font-semibold ${dark ? "text-white" : "text-black"}`}>{receivedMetric(row)}</div>
-                              <div className={`text-[8px] uppercase tracking-wide ${dark ? "text-white/35" : "text-black/30"}`}>Received</div>
+                              <div className={`text-[8px] uppercase tracking-wide ${dark ? "text-white/70" : "text-black/55"}`}>Received</div>
                             </div>
                           )}
                         </div>
@@ -650,7 +650,7 @@ function LeaderboardPage() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className={`mt-2 inline-flex items-center gap-1 text-[10px] font-semibold transition-opacity hover:opacity-70 ${
-                            dark ? "text-white/60" : "text-black/40"
+                            dark ? "text-white/60" : "text-black/65"
                           }`}
                         >
                           Visit site <ExternalLink className="h-2.5 w-2.5" />
@@ -668,9 +668,9 @@ function LeaderboardPage() {
           <div className="mt-6">
             {/* Column headers — desktop only; each metric explains itself on hover */}
             <div className="hidden sm:flex items-center gap-4 px-5 pb-2">
-              <div className="w-7 shrink-0 text-center text-[9px] font-semibold uppercase tracking-wide text-black/25">#</div>
+              <div className="w-7 shrink-0 text-center text-[9px] font-semibold uppercase tracking-wide text-black/55">#</div>
               <div className="w-9 shrink-0" />
-              <div className="flex-1 min-w-0 text-[9px] font-semibold uppercase tracking-wide text-black/35">Startup</div>
+              <div className="flex-1 min-w-0 text-[9px] font-semibold uppercase tracking-wide text-black/55">Startup</div>
               <div className="w-[76px] shrink-0 flex justify-center">
                 <ColHeader
                   label="Trend"
@@ -742,7 +742,7 @@ function LeaderboardPage() {
                   {i < 3 ? (
                     <span className="text-lg">{MEDALS[i]}</span>
                   ) : (
-                    <span className="text-sm font-semibold text-black/25 tabular-nums">{i + 1}</span>
+                    <span className="text-sm font-semibold text-black/55 tabular-nums">{i + 1}</span>
                   )}
                 </div>
 
@@ -772,7 +772,7 @@ function LeaderboardPage() {
                           <span className="rounded-full bg-black px-1.5 py-0.5 text-[8px] font-bold text-white uppercase tracking-wide shrink-0">You</span>
                         )}
                       </div>
-                      <p className="text-xs text-black/40 truncate mt-0.5">{row.description}</p>
+                      <p className="text-xs text-black/65 truncate mt-0.5">{row.description}</p>
                     </div>
                   </Link>
                 ) : (
@@ -797,7 +797,7 @@ function LeaderboardPage() {
                           <span className="rounded-full bg-black px-1.5 py-0.5 text-[8px] font-bold text-white uppercase tracking-wide shrink-0">You</span>
                         )}
                       </div>
-                      <p className="text-xs text-black/40 truncate mt-0.5">{row.description}</p>
+                      <p className="text-xs text-black/65 truncate mt-0.5">{row.description}</p>
                     </div>
                   </>
                 )}
@@ -805,23 +805,23 @@ function LeaderboardPage() {
 
                 <div className="w-[76px] shrink-0 hidden sm:flex flex-col items-center gap-1">
                   <MiniSparkline data={sparkData(row)} />
-                  <span className="text-[8px] uppercase tracking-wide text-black/20 whitespace-nowrap">{sparkLabel}</span>
+                  <span className="text-[8px] uppercase tracking-wide text-black/55 whitespace-nowrap">{sparkLabel}</span>
                 </div>
 
                 {tab === "received" ? (
                   <div className="shrink-0 flex gap-3 sm:gap-5 text-right">
                     <div className="sm:w-16">
                       <div className="text-sm sm:text-base font-bold tabular-nums text-black">{receivedMetric(row).toLocaleString()}</div>
-                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5 sm:hidden">Impr.</div>
+                      <div className="text-[9px] uppercase tracking-wide text-black/55 mt-0.5 sm:hidden">Impr.</div>
                       {range !== "all" && (
-                        <div className="text-[9px] tabular-nums text-black/25 mt-0.5">{row.impressions.toLocaleString()} all-time</div>
+                        <div className="text-[9px] tabular-nums text-black/55 mt-0.5">{row.impressions.toLocaleString()} all-time</div>
                       )}
                     </div>
                     <div className="sm:w-16">
                       <div className="text-sm sm:text-base font-bold tabular-nums text-black">{clicksMetric(row).toLocaleString()}</div>
-                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5 sm:hidden">Clicks</div>
+                      <div className="text-[9px] uppercase tracking-wide text-black/55 mt-0.5 sm:hidden">Clicks</div>
                       {range !== "all" && (
-                        <div className="text-[9px] tabular-nums text-black/25 mt-0.5">{row.clicks.toLocaleString()} all-time</div>
+                        <div className="text-[9px] tabular-nums text-black/55 mt-0.5">{row.clicks.toLocaleString()} all-time</div>
                       )}
                     </div>
                     <div className="hidden sm:block sm:w-14">
@@ -832,16 +832,16 @@ function LeaderboardPage() {
                   <div className="shrink-0 flex gap-3 sm:gap-5 text-right">
                     <div className="sm:w-16">
                       <div className="text-sm sm:text-base font-bold tabular-nums text-black">{givenMetric(row).toLocaleString()}</div>
-                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5 sm:hidden">Given</div>
+                      <div className="text-[9px] uppercase tracking-wide text-black/55 mt-0.5 sm:hidden">Given</div>
                       {range !== "all" && (
-                        <div className="text-[9px] tabular-nums text-black/25 mt-0.5">{row.impressions_given.toLocaleString()} all-time</div>
+                        <div className="text-[9px] tabular-nums text-black/55 mt-0.5">{row.impressions_given.toLocaleString()} all-time</div>
                       )}
                     </div>
                     <div className="sm:w-16">
                       <div className="text-sm sm:text-base font-bold tabular-nums text-black">{receivedMetric(row).toLocaleString()}</div>
-                      <div className="text-[9px] uppercase tracking-wide text-black/30 mt-0.5 sm:hidden">Recv.</div>
+                      <div className="text-[9px] uppercase tracking-wide text-black/55 mt-0.5 sm:hidden">Recv.</div>
                       {range !== "all" && (
-                        <div className="text-[9px] tabular-nums text-black/25 mt-0.5">{row.impressions.toLocaleString()} all-time</div>
+                        <div className="text-[9px] tabular-nums text-black/55 mt-0.5">{row.impressions.toLocaleString()} all-time</div>
                       )}
                     </div>
                     <div className="hidden sm:block sm:w-16">
@@ -857,7 +857,7 @@ function LeaderboardPage() {
                   aria-label={`Visit ${row.name}`}
                   className="shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                 >
-                  <ExternalLink className="h-3.5 w-3.5 text-black/30 hover:text-black transition-colors" />
+                  <ExternalLink className="h-3.5 w-3.5 text-black/55 hover:text-black transition-colors" />
                 </a>
               </div>
               </Fragment>
