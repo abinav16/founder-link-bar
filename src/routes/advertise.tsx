@@ -170,9 +170,11 @@ function AdvertisePage() {
           <div className="adx-plans">{PRODUCTS.map((p, idx) => {
             const rows: [string, boolean | string][] = [
               ["Where it shows", ["Network, Leaderboard, profiles", "Network & Leaderboard lists", "Sunday email"][idx]],
-              ["Open to any company", idx === 0],
-              ["Clicks guaranteed", idx === 1],
-              ["Use your own image", idx === 0],
+              ...[
+                ["Your own desktop and mobile image", "Run 1 to 52 weeks, paid once", "Starts only after approval", "See real views and clicks"],
+                ["Gold glow on your listing", "Shown first in rotation", "Clicks guaranteed", "Track delivery live"],
+                ["The only sponsor that Sunday", "Pick any free Sunday", "Your logo, one line and link", "Lands in every founder's inbox"],
+              ][idx].map((t) => [t, true] as [string, boolean]),
             ];
             const price = ["$49", `$${CLICK_PACKS[0].priceUsd} to $${CLICK_PACKS[CLICK_PACKS.length - 1].priceUsd}`, `$${NEWSLETTER_PRICE_PER_FOUNDER_USD.toFixed(2)}`][idx];
             const unit = ["per week, 1 to 52 weeks", "per click pack", "per founder on the list"][idx];
