@@ -311,7 +311,7 @@ function StartupRow({ s }: { s: Card }) {
 
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 items-center gap-2 sm:gap-2.5">
-            <span className="text-sm font-semibold text-black truncate">{s.name}</span>
+            <span className="text-[17px] font-semibold text-black truncate">{s.name}</span>
             {sponsored && (
               <span className="shrink-0 rounded-full bg-[oklch(0.65_0.15_68)] px-1.5 py-0.5 text-[10px] font-bold text-white uppercase tracking-wide">Featured</span>
             )}
@@ -326,11 +326,12 @@ function StartupRow({ s }: { s: Card }) {
               <span className="hidden sm:inline">Visit site</span>
               <ArrowUpRight className="h-2.5 w-2.5" strokeWidth={2.5} />
             </a>
+            {s.category && <span className="hidden sm:inline-flex shrink-0 rounded-md border border-border bg-muted px-2 py-0.5 text-[13px] font-medium text-muted-foreground">{s.category}</span>}
           </div>
+          {s.category && <span className="sm:hidden mt-1.5 inline-flex rounded-md border border-border bg-muted px-2 py-0.5 text-[13px] font-medium text-muted-foreground">{s.category}</span>}
           <div className="mt-1.5 flex items-center gap-2 min-w-0">
             <FounderChip s={s} />
           </div>
-          {s.category && <span className="mt-2 inline-flex rounded-md border border-border bg-muted px-2 py-0.5 text-[12px] font-medium text-muted-foreground">{s.category}</span>}
 
 
 
@@ -357,7 +358,7 @@ function StartupRow({ s }: { s: Card }) {
         </div>
       </div>
 
-      <p className="relative z-10 mt-2.5 text-xs text-black/65 leading-relaxed pointer-events-none">
+      <p className="relative z-10 mt-2.5 text-[15px] text-black/70 leading-relaxed pointer-events-none">
         {s.description}
       </p>
 
