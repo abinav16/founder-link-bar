@@ -100,9 +100,20 @@ function Diagram({ id }: { id: PId }) {
         <ClickMeter /></div></div>
   );
   return (
-    <div className="adx-browser adx-mail" key="n"><div className="adx-bar"><i /><i /><i /><span>Sunday · StartupBar Weekly</span></div>
-      <div className="adx-page"><Sk w="40%" /><Sk w="70%" /><div className="adx-sponsor"><span className="adx-adtag">Sponsor</span><b className="adx-capsule" /><div><strong>Your startup</strong><small>One line, one link, every founder</small></div></div><Sk w="90%" /><Sk w="80%" /><Sk w="60%" />
-        <div className="adx-fly">{[0, 1, 2, 3, 4].map((i) => <Mail key={i} style={{ animationDelay: `${i * 0.5}s` }} />)}</div></div></div>
+    <div className="adx-email" key="n">
+      <div className="adx-email-head">
+        <div className="adx-email-from"><b className="adx-avatar"><i className="adx-capsule" /></b><div><strong>StartupBar Weekly</strong><small>to you · Sunday 9:00 AM</small></div><Mail className="size-4 ml-auto opacity-50" /></div>
+        <p className="adx-email-subject">This week on StartupBar 🚀</p>
+      </div>
+      <div className="adx-email-body">
+        <div className="adx-email-brand"><i className="adx-capsule" /> StartupBar</div>
+        <p className="adx-email-hi">Hi founder,</p><Sk w="92%" /><Sk w="70%" />
+        <div className="adx-email-sponsor"><span className="adx-adtag">Sponsored</span><b className="adx-sk adx-sk-logo" /><div><strong>Your startup</strong><small>One line about your product</small></div><em>Try it →</em></div>
+        <p className="adx-email-label">Top startups this week</p>
+        {[0, 1].map((i) => <div key={i} className="adx-email-item"><b className="adx-sk adx-sk-logo" /><span><Sk w="60%" /><Sk w="40%" /></span></div>)}
+        <div className="adx-fly">{[0, 1, 2, 3, 4].map((i) => <Mail key={i} style={{ animationDelay: `${i * 0.5}s` }} />)}</div>
+      </div>
+    </div>
   );
 }
 

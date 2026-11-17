@@ -1842,3 +1842,36 @@ body[style*="padding-top: 36px"] .apply-install-shell { height: calc(100dvh - 36
 @keyframes adx-sweep { to { background-position: -250% 0; } }
 @keyframes adx-draw { 0% { stroke-dashoffset: 120; } 60%, 100% { stroke-dashoffset: 0; } }
 @media (max-width: 900px) { .adx-phone { width: 240px; } .adx-float { transform: scale(.85); } .adx-stage { min-height: 440px; } .adx-ring { width: 340px; height: 340px; } .adx-float-1 { right: 0; } }
+
+/* Advertise newsletter email mock */
+.adx-email { position: relative; border: 1px solid var(--border); border-radius: 18px; background: var(--muted); overflow: hidden; box-shadow: 0 30px 60px -30px color-mix(in oklab, var(--foreground) 35%, transparent); animation: adx-pop .6s both; }
+.adx-email-head { padding: 14px 18px; background: var(--background); border-bottom: 1px solid var(--border); }
+.adx-email-from { display: flex; align-items: center; gap: 10px; }
+.adx-email-from div { display: flex; flex-direction: column; } .adx-email-from strong { font-size: 13px; } .adx-email-from small { font-size: 11px; color: var(--muted-foreground); }
+.adx-avatar { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--foreground); color: var(--background); }
+.adx-avatar .adx-capsule { width: 18px; height: 8px; }
+.adx-email-subject { margin-top: 10px; font-size: 16px; font-weight: 650; }
+.adx-email-body { position: relative; display: flex; flex-direction: column; gap: 8px; margin: 16px auto; width: min(88%, 460px); padding: 20px; border-radius: 12px; background: var(--background); border: 1px solid var(--border); }
+.adx-email-brand { display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 700; font-size: 13px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.adx-email-brand .adx-capsule { width: 22px; height: 9px; }
+.adx-email-hi { font-size: 13px; font-weight: 600; margin-top: 4px; }
+.adx-email-sponsor { position: relative; display: flex; align-items: center; gap: 10px; margin: 10px 0 4px; padding: 14px; border-radius: 12px; border: 2px solid var(--foreground); animation: adx-slide .7s .3s both, adx-glow 3s 1s ease-in-out infinite; }
+.adx-email-sponsor div { flex: 1; display: flex; flex-direction: column; } .adx-email-sponsor strong { font-size: 13px; } .adx-email-sponsor small { font-size: 11px; color: var(--muted-foreground); }
+.adx-email-sponsor em { font-style: normal; font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: 999px; background: var(--foreground); color: var(--background); }
+.adx-email-label { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted-foreground); margin-top: 6px; }
+.adx-email-item { display: flex; align-items: center; gap: 10px; } .adx-email-item span { flex: 1; display: grid; gap: 5px; }
+@media (max-width: 640px) {
+  .adx-hero h1 { font-size: 38px; }
+  .adx-stats { gap: 18px; } .adx-stats > div { flex: 1 1 28%; } .adx-stats dd { font-size: 24px; } .adx-stats dt { font-size: 11px; }
+  .adx-cta > * { flex: 1; }
+  .adx-detail { padding: 18px; border-radius: 20px; }
+  .adx-tab { padding: 14px 16px; }
+  .adx-steps { grid-template-columns: 1fr; gap: 16px; }
+  .adx-steps li { display: grid; grid-template-columns: 48px 1fr; column-gap: 14px; } .adx-steps li strong { margin-top: 2px; } .adx-steps li p { grid-column: 2; margin-top: -16px; } .adx-steps li strong { align-self: center; }
+  .adx-table { overflow-x: auto; } .adx-th, .adx-tr { min-width: 560px; }
+  .adx-email-body { width: 92%; padding: 14px; }
+  .adx-banner { padding-left: 16px; } .adx-banner .adx-cr-copy strong { font-size: 18px; }
+  .adx-browser .adx-page { padding: 12px; }
+  .adx-faq summary { font-size: 16px; }
+  .adx-end .adx-wrap > * { width: 100%; }
+}
