@@ -317,19 +317,45 @@ function StatusPill({ status }: { status: Startup["status"] }) {
   );
 }
 
-function StatCard({ icon: Icon, label, value, sub, accent }: {
-  icon: React.ElementType; label: string; value: string; sub: string; accent?: boolean;
+function useCountUp(target: number) {
+  const [v, setV] = useState(0);
+  useEffect(() => {
+    if (!Number.isFinite(target)) return;
+    let raf = 0; const start = performance.now(); const from = 0;
+    const tick = (t: number) => { const k = Math.min(1, (t - start) / 900); setV(from + (target - from) * (1 - Math.pow(1 - k, 3))); if (k < 1) raf = requestAnimationFrame(tick); };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target]);
+  return v;
+}
+
+function StatCard({ icon: Icon, label, value, sub, accent, index = 0 }: {
+  icon: React.ElementType; label: string; value: string; sub: string; accent?: boolean; index?: number;
 }) {
+  const m = value.match(/^(#?)([\d,.]+)(%?)$/);
+  const num = m ? Number(m[2].replace(/,/g, "")) : NaN;
+  const counted = useCountUp(m ? num : 0);
+  const decimals = m && m[2].includes(".") ? (m[2].split(".")[1]?.length ?? 0) : 0;
+  const shown = m ? `${m[1]}${decimals ? counted.toFixed(decimals) : Math.round(counted).toLocaleString()}${m[3]}` : value;
   return (
-    <div className={`rounded-xl border bg-white p-5 ${accent ? "border-black/20" : "border-black/8"}`}>
-      <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-black/35">
-        <Icon className="h-3.5 w-3.5" />
-        {label}
-      </div>
-      <div className="mt-3 text-3xl font-semibold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-        {value}
-      </div>
-      <div className="mt-1 text-xs text-black/35">{sub}</div>
+    <div className={`dash-stat ${accent ? "is-accent" : ""}`} style={{ animationDelay: `${index * 70}ms` }}>
+      <div className="dash-stat-head"><span className="dash-stat-icon"><Icon className="h-3.5 w-3.5" /></span>{label}</div>
+      <div className="dash-stat-value" style={{ fontFamily: "var(--font-display)" }}>{shown}</div>
+      <div className="dash-stat-sub">{sub}</div>
+      <i className="dash-stat-line" />
+    </div>
+  );
+}
+
+function ExchangeFlow({ impressions, clicks, ctr }: { impressions: number; clicks: number; ctr: string }) {
+  const pct = Math.min(100, Math.max(2, Number(ctr) * 10));
+  return (
+    <div className="dash-flow">
+      <div className="dash-flow-step"><span>Seen on member sites</span><strong>{impressions.toLocaleString()}</strong><small>impressions</small></div>
+      <div className="dash-flow-pipe" aria-hidden="true"><i /><i /><i /></div>
+      <div className="dash-flow-step"><span>Visited your startup</span><strong>{clicks.toLocaleString()}</strong><small>clicks</small></div>
+      <div className="dash-flow-pipe" aria-hidden="true"><i /><i /><i /></div>
+      <div className="dash-flow-ring" style={{ ["--p" as string]: `${pct}` }}><div><strong>{ctr}%</strong><small>CTR</small></div></div>
     </div>
   );
 }
@@ -347,7 +373,7 @@ function rollingLabels(): string[] {
 function Sparkline({ data, labels }: { data: number[]; labels: string[] }) {
   const max = Math.max(...data, 1);
   const [tooltip, setTooltip] = useState<{ idx: number } | null>(null);
-  const TRACK = 80;
+  const TRACK = 140;
   return (
     <div className="flex gap-1.5 sm:gap-2">
       {data.map((v, i) => (
@@ -365,10 +391,11 @@ function Sparkline({ data, labels }: { data: number[]; labels: string[] }) {
               </div>
             )}
             <div
-              className="w-full rounded-t-sm bg-black transition-all duration-500"
+              className="dash-bar w-full rounded-t-md transition-all duration-500"
               style={{
                 height: v > 0 ? `${Math.max((v / max) * TRACK, 4)}px` : "2px",
                 opacity: v > 0 ? 1 : 0.12,
+                animationDelay: `${i * 40}ms`,
               }}
             />
           </div>
@@ -712,7 +739,7 @@ function DashboardPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            <div>
+            <div className="dash-hero">
               <p className="text-sm text-black/40">
                 {greeting}{userName ? `, ${userName}` : ""} 👋
               </p>
@@ -884,17 +911,19 @@ function DashboardPage() {
 
             <div className={`grid grid-cols-2 gap-4 lg:grid-cols-5 transition-opacity ${rangeLoading ? "opacity-60" : ""}`}>
 
-              <StatCard icon={BarChart2} label="Impressions" value={stats.impressions.toLocaleString()} sub={RANGE_SUB[range]} />
-              <StatCard icon={MousePointerClick} label="Clicks" value={stats.clicks.toLocaleString()} sub={RANGE_SUB[range]} />
-              <StatCard icon={Percent} label="CTR" value={`${ctr}%`} sub="Click-through rate" />
-              <StatCard icon={Eye} label="Profile views" value={profileViews === null ? "—" : profileViews.toLocaleString()} sub={`Your StartupBar page · ${RANGE_SUB[range].toLowerCase()}`} />
-              <StatCard icon={BarChart2} label="Rank" value={rank ? `#${rank}` : "—"} sub="By impressions (all time)" />
+              <StatCard index={0} icon={BarChart2} label="Impressions" value={stats.impressions.toLocaleString()} sub={RANGE_SUB[range]} />
+              <StatCard index={1} icon={MousePointerClick} label="Clicks" value={stats.clicks.toLocaleString()} sub={RANGE_SUB[range]} />
+              <StatCard index={2} icon={Percent} label="CTR" value={`${ctr}%`} sub="Click-through rate" />
+              <StatCard index={3} icon={Eye} label="Profile views" value={profileViews === null ? "—" : profileViews.toLocaleString()} sub={`Your StartupBar page · ${RANGE_SUB[range].toLowerCase()}`} />
+              <StatCard index={4} icon={BarChart2} label="Rank" value={rank ? `#${rank}` : "—"} sub="By impressions (all time)" />
             </div>
+
+            <ExchangeFlow impressions={stats.impressions} clicks={stats.clicks} ctr={String(ctr)} />
 
             <SignupTrackingPanel startupId={startup.id} range={range} status={startup.status} />
             {isSupporter && <SupporterNewsletter key={startup.id} startupId={startup.id} approved={startup.status === "approved"} />}
 
-            <div className={`rounded-xl border border-black/8 bg-white p-6 transition-opacity ${rangeLoading ? "opacity-60" : ""}`}>
+            <div className={`dash-chart rounded-xl border border-black/8 bg-white p-6 transition-opacity ${rangeLoading ? "opacity-60" : ""}`}>
               <div className="flex items-center justify-between">
                 <p className="text-sm font-semibold text-black">Impressions — {RANGE_CHART_TITLE[range]}</p>
                 <span className="text-xs text-black/30">{RANGE_OPTIONS.find((o) => o.key === range)?.label}</span>
