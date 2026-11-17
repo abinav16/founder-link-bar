@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Check, Image as ImageIcon, Mail, MousePointerClick, Sparkles, X } from "lucide-react";
+import { ArrowRight, Check, Image as ImageIcon, Mail, MousePointerClick, Sparkles, X, BarChart3, Zap, Rocket, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
@@ -64,7 +64,10 @@ function Diagram({ id }: { id: PId }) {
   if (id === "banner") return (
     <div className="adx-browser" key="b"><div className="adx-bar"><i /><i /><i /><span>startupbar.co/network</span></div>
       <div className="adx-page">{[0, 1, 2].map((i) => <Row key={i} i={i} />)}
-        <div className="adx-banner"><span className="adx-adtag">Ad</span><b className="adx-capsule" /><div><strong>Your product. Right here.</strong><small>Your headline, image and link</small></div><em>Visit <ArrowRight className="size-3" /></em><MousePointerClick className="adx-cursor" /></div>
+        <div className="adx-banner"><span className="adx-adtag">Ad</span>
+          <div className="adx-cr-copy"><strong>Ship to <em>every</em> founder.</strong><div className="adx-cr-row"><span className="adx-cr-btn">Try your product free</span><small>Your headline, image<br />and link — right here.</small></div></div>
+          <div className="adx-dock">{[BarChart3, Zap, Rocket, Globe, Sparkles].map((I, i) => <span key={i} className={i === 2 ? "is-up" : ""}><I /></span>)}</div>
+          <MousePointerClick className="adx-cursor" /></div>
         {[3, 4].map((i) => <Row key={i} i={i} />)}</div></div>
   );
   if (id === "gold") return (

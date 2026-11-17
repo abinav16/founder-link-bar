@@ -1715,10 +1715,21 @@ body[style*="padding-top: 36px"] .apply-install-shell { height: calc(100dvh - 36
 .adx-row strong, .adx-banner strong, .adx-sponsor strong { font-size: 13px; }
 .adx-row small, .adx-banner small, .adx-sponsor small { font-size: 11px; color: var(--muted-foreground); }
 .adx-capsule { width: 36px; height: 14px; border-radius: 999px; background: currentColor; flex: none; }
-.adx-banner { position: relative; display: flex; align-items: center; gap: 14px; padding: 18px 16px; border-radius: 14px; background: var(--foreground); color: var(--background); animation: adx-slide .7s .45s cubic-bezier(.2,.9,.2,1.1) both, adx-glow 3s 1.2s ease-in-out infinite; }
-.adx-banner > div { flex: 1; display: flex; flex-direction: column; }
-.adx-banner small { color: color-mix(in oklab, var(--background) 65%, transparent); }
-.adx-banner em { display: flex; align-items: center; gap: 4px; font-style: normal; font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 999px; background: var(--background); color: var(--foreground); }
+.adx { --adx-cr-bg: oklch(0.36 0.05 175); --adx-cr-ink: oklch(0.97 0.01 175); --adx-cr-accent: oklch(0.86 0.07 305); --adx-cr-dock: oklch(0.5 0.04 175); }
+.adx-banner { position: relative; display: flex; align-items: center; gap: 16px; min-height: 120px; padding: 18px 0 18px 22px; border-radius: 14px; overflow: hidden; background: var(--adx-cr-bg); color: var(--adx-cr-ink); animation: adx-slide .7s .45s cubic-bezier(.2,.9,.2,1.1) both, adx-glow 3s 1.2s ease-in-out infinite; }
+.adx-cr-copy { flex: 1; min-width: 0; }
+.adx-banner .adx-cr-copy strong { display: block; font-family: Georgia, "Times New Roman", serif; font-weight: 400; font-size: clamp(20px, 2.1vw, 32px); letter-spacing: -0.02em; line-height: 1.05; }
+.adx-cr-copy em { color: var(--adx-cr-accent); font-style: italic; }
+.adx-cr-row { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+.adx-cr-btn { flex: none; font-size: 11px; font-weight: 600; padding: 6px 12px; border-radius: 7px; background: var(--adx-cr-accent); color: var(--foreground); border: 1.5px solid var(--foreground); }
+.adx-banner .adx-cr-row small { font-size: 10px; line-height: 1.3; color: var(--adx-cr-ink); }
+.adx-dock { display: flex; gap: 8px; padding: 10px 12px; border-radius: 16px 0 0 16px; background: color-mix(in oklab, var(--adx-cr-dock) 75%, transparent); border: 1px solid color-mix(in oklab, var(--adx-cr-ink) 18%, transparent); border-right: 0; }
+.adx-dock span { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: var(--background); color: var(--foreground); box-shadow: 0 4px 10px -4px rgb(0 0 0 / .4); animation: adx-dock 3.2s ease-in-out infinite; }
+.adx-dock span:nth-child(2) { animation-delay: .3s; } .adx-dock span:nth-child(4) { animation-delay: .6s; } .adx-dock span:nth-child(5) { animation-delay: .9s; }
+.adx-dock span svg { width: 18px; height: 18px; }
+.adx-dock span.is-up { background: var(--foreground); color: var(--background); transform: translateY(-10px); animation: none; }
+@keyframes adx-dock { 50% { transform: translateY(-3px); } }
+@media (max-width: 640px) { .adx-dock span:nth-child(n+4) { display: none; } .adx-cr-row small { display: none; } }
 .adx-adtag { position: absolute; top: -8px; left: 12px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; padding: 2px 7px; border-radius: 999px; background: var(--background); color: var(--foreground); border: 1px solid var(--border); }
 .adx-cursor { position: absolute; right: 24px; bottom: -6px; width: 22px; height: 22px; color: var(--background); filter: drop-shadow(0 2px 3px rgb(0 0 0 / .5)); animation: adx-cursor 3s 1.2s ease-in-out infinite; }
 .adx-gold { border-color: var(--featured-edge); background: linear-gradient(110deg, color-mix(in oklab, var(--featured-gold) 30%, var(--background)), color-mix(in oklab, var(--featured-gold) 55%, var(--background))); color: var(--foreground); box-shadow: 0 10px 24px -14px var(--featured-edge); animation: adx-slide .7s .3s both; }
