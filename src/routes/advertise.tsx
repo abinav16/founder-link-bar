@@ -167,9 +167,27 @@ function AdvertisePage() {
         </div></section>
 
         <section className="adx-wrap adx-compare"><p className="adx-eyebrow">At a glance</p><h2>Side by side.</h2>
-          <div className="adx-table"><div className="adx-th"><span /> {PRODUCTS.map((p) => <span key={p.id}>{p.name}</span>)}</div>
-            {([["Price", "$49 / week", `$${CLICK_PACKS[0].priceUsd} to $${CLICK_PACKS[CLICK_PACKS.length - 1].priceUsd}`, `$${NEWSLETTER_PRICE_PER_FOUNDER_USD.toFixed(2)} / founder`], ["Need a listing?", false, true, true], ["Clicks guaranteed", false, true, false], ["Your own image", true, false, false], ["Where", "Network, Leaderboard, profiles", "Startup lists & member bar", "Sunday email"]] as const).map(([label, ...vals]) => <div key={label} className="adx-tr"><span>{label}</span>{vals.map((v, i) => <span key={i}>{typeof v === "boolean" ? (v ? <Check className="size-4" /> : <X className="size-4 opacity-30" />) : v}</span>)}</div>)}
-          </div></section>
+          <div className="adx-plans">{PRODUCTS.map((p, idx) => {
+            const rows: [string, boolean | string][] = [
+              ["Where it shows", ["Network, Leaderboard, profiles", "Network & Leaderboard lists", "Sunday email"][idx]],
+              ["Open to any company", idx === 0],
+              ["Clicks guaranteed", idx === 1],
+              ["Use your own image", idx === 0],
+            ];
+            const price = ["$49", `$${CLICK_PACKS[0].priceUsd} to $${CLICK_PACKS[CLICK_PACKS.length - 1].priceUsd}`, `$${NEWSLETTER_PRICE_PER_FOUNDER_USD.toFixed(2)}`][idx];
+            const unit = ["per week, 1 to 52 weeks", "per click pack", "per founder on the list"][idx];
+            return (
+              <article key={p.id} className={`adx-plan ${idx === 1 ? "is-feature" : ""}`} style={{ animationDelay: `${idx * 120}ms` }}>
+                {idx === 1 && <span className="adx-plan-badge">Guaranteed clicks</span>}
+                <div className="adx-plan-icon"><p.icon className="size-5" /></div>
+                <h3>{p.name}</h3><p className="adx-plan-who">{p.who}</p>
+                <p className="adx-plan-price">{price}</p><p className="adx-plan-unit">{unit}</p>
+                <ul>{rows.map(([l, v]) => <li key={l} className={v === false ? "is-off" : ""}>{typeof v === "string" ? <><span>{l}</span><b>{v}</b></> : <>{v ? <Check className="size-4" /> : <X className="size-4" />}<span>{l}</span></>}</li>)}</ul>
+                <Button asChild variant={idx === 1 ? "default" : "outline"} className="mt-auto w-full rounded-full"><Link to="/advertise/new">Choose {p.name.toLowerCase()} <ArrowRight /></Link></Button>
+              </article>
+            );
+          })}</div>
+        </section>
 
         <section className="adx-wrap adx-faq"><h2>Questions</h2><div>{[
           ["Do I need a listed startup?", "Not for banners. Any company can advertise after signing in. Gold highlights and newsletter spots are for listed startups."],

@@ -1875,3 +1875,21 @@ body[style*="padding-top: 36px"] .apply-install-shell { height: calc(100dvh - 36
   .adx-faq summary { font-size: 16px; }
   .adx-end .adx-wrap > * { width: 100%; }
 }
+
+/* Advertise comparison cards */
+.adx-plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: stretch; }
+.adx-plan { position: relative; display: flex; flex-direction: column; padding: 28px; border-radius: 24px; border: 1px solid var(--border); background: var(--background); transition: transform .3s, box-shadow .3s; animation: adx-up .6s both; }
+.adx-plan:hover { transform: translateY(-4px); box-shadow: 0 24px 50px -28px color-mix(in oklab, var(--foreground) 45%, transparent); }
+.adx-plan.is-feature { border: 2px solid var(--featured-edge); background: linear-gradient(180deg, color-mix(in oklab, var(--featured-gold) 14%, var(--background)), var(--background) 45%); }
+.adx-plan-badge { position: absolute; top: -12px; left: 28px; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 999px; background: var(--foreground); color: var(--background); }
+.adx-plan-icon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 14px; background: var(--foreground); color: var(--background); }
+.adx-plan h3 { margin-top: 18px; font-size: 22px; font-weight: 650; letter-spacing: -0.02em; }
+.adx-plan-who { font-size: 13px; color: var(--muted-foreground); }
+.adx-plan-price { margin-top: 18px; font-size: 40px; font-weight: 700; letter-spacing: -0.04em; line-height: 1; }
+.adx-plan-unit { margin-top: 6px; font-size: 13px; color: var(--muted-foreground); }
+.adx-plan ul { display: grid; gap: 12px; margin: 22px 0 26px; padding-top: 22px; border-top: 1px solid var(--border); font-size: 14px; }
+.adx-plan li { display: flex; align-items: center; gap: 10px; }
+.adx-plan li > svg { flex: none; padding: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--foreground); color: var(--background); }
+.adx-plan li.is-off { color: var(--muted-foreground); } .adx-plan li.is-off > svg { background: var(--muted); color: var(--muted-foreground); }
+.adx-plan li:first-child { flex-direction: column; align-items: flex-start; gap: 2px; } .adx-plan li:first-child span { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted-foreground); }
+@media (max-width: 900px) { .adx-plans { grid-template-columns: 1fr; gap: 24px; } }
