@@ -180,12 +180,12 @@ function AdvertisePage() {
             const unit = ["per week, 1 to 52 weeks", "per click pack", "per founder on the list"][idx];
             return (
               <article key={p.id} className={`adx-plan ${idx === 1 ? "is-feature" : ""}`} style={{ animationDelay: `${idx * 120}ms` }}>
-                {idx === 1 && <span className="adx-plan-badge">Guaranteed clicks</span>}
+                <span className="adx-plan-badge">{["Open to any company", "Guaranteed clicks", "Every founder's inbox"][idx]}</span>
                 <div className="adx-plan-icon"><p.icon className="size-5" /></div>
                 <h3>{p.name}</h3><p className="adx-plan-who">{p.who}</p>
                 <p className="adx-plan-price">{price}</p><p className="adx-plan-unit">{unit}</p>
                 <ul>{rows.map(([l, v]) => <li key={l} className={v === false ? "is-off" : ""}>{typeof v === "string" ? <><span>{l}</span><b>{v}</b></> : <>{v ? <Check className="size-4" /> : <X className="size-4" />}<span>{l}</span></>}</li>)}</ul>
-                <Button asChild variant={idx === 1 ? "default" : "outline"} className="mt-auto w-full rounded-full"><Link to="/advertise/new">Choose {p.name.toLowerCase()} <ArrowRight /></Link></Button>
+                <Button asChild className="mt-auto w-full rounded-full"><Link to="/advertise/new">Choose {p.name.toLowerCase()} <ArrowRight /></Link></Button>
               </article>
             );
           })}</div>
