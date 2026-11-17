@@ -44,10 +44,21 @@ function Row({ i }: { i: number }) {
 
 const PRODUCTS = [
   { id: "banner", icon: ImageIcon, name: "Banner ad", who: "Any company", price: "$49", unit: "per week", line: "Your image inside the Network, Leaderboard and startup pages.", facts: ["Upload a desktop and a mobile image", "Run 1 to 52 weeks, pay once", "Starts only after we approve it"] },
-  { id: "gold", icon: MousePointerClick, name: "Gold highlight", who: "Listed startups", price: `$${CLICK_PACKS[0].priceUsd}`, unit: `for ${CLICK_PACKS[0].clicks} clicks`, line: "Your listing glows gold and rotates first until your clicks are delivered.", facts: ["Real clicks guaranteed", `Packs of ${CLICK_PACKS.map((p) => p.clicks).join(" / ")} clicks`, "Track delivery in your dashboard"] },
+  { id: "gold", icon: MousePointerClick, name: "Gold highlight", who: "Listed startups", price: `$${CLICK_PACKS[0].priceUsd}`, unit: `for ${CLICK_PACKS[0].clicks} clicks`, line: "Your listing is highlighted in gold on the Network and Leaderboard pages and shown first until your clicks are delivered.", facts: ["Gold highlight on Network & Leaderboard", "Real clicks guaranteed", `Packs of ${CLICK_PACKS.map((p) => p.clicks).join(" / ")} clicks`, "Track delivery in your dashboard"] },
   { id: "newsletter", icon: Mail, name: "Newsletter spot", who: "Listed startups", price: `$${NEWSLETTER_PRICE_PER_FOUNDER_USD.toFixed(2)}`, unit: "per founder", line: "The single sponsor slot in our Sunday email to every founder.", facts: ["One sponsor per Sunday", "Pick any free Sunday", "Sent to the whole founder list"] },
 ] as const;
 type PId = (typeof PRODUCTS)[number]["id"];
+
+function ClickMeter() {
+  const total = 500;
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setN((v) => (v >= total ? 0 : Math.min(total, v + 7))), 60);
+    return () => clearInterval(t);
+  }, []);
+  const pct = (n / total) * 100;
+  return <div className="adx-meter"><div className="adx-meter-head"><span>Clicks delivered</span><strong>{n} <small>/ {total}</small></strong></div><div className="adx-meter-track"><i style={{ width: `${pct}%` }} /></div><div className="adx-meter-foot"><span>Pack: 500 clicks</span><span>{n >= total ? "Delivered ✓" : `${Math.round(pct)}%`}</span></div></div>;
+}
 
 function Diagram({ id }: { id: PId }) {
   if (id === "banner") return (
@@ -58,8 +69,8 @@ function Diagram({ id }: { id: PId }) {
   );
   if (id === "gold") return (
     <div className="adx-browser" key="g"><div className="adx-bar"><i /><i /><i /><span>startupbar.co/leaderboard</span></div>
-      <div className="adx-page"><Row i={0} /><div className="adx-row adx-gold"><b className="adx-capsule" /><span><strong>Your startup</strong><small>Highlighted · rotates first</small></span><em className="adx-count">+1 click</em></div>{[1, 2, 3].map((i) => <Row key={i} i={i} />)}
-        <div className="adx-meter"><span>Clicks delivered</span><div><i /></div></div></div></div>
+      <div className="adx-page"><Row i={0} /><div className="adx-row adx-gold"><b className="adx-capsule" /><span><strong>Your startup</strong><small>Gold highlight · shown first</small></span><em className="adx-count">+1 click</em></div>{[1, 2, 3].map((i) => <Row key={i} i={i} />)}
+        <ClickMeter /></div></div>
   );
   return (
     <div className="adx-browser adx-mail" key="n"><div className="adx-bar"><i /><i /><i /><span>Sunday · StartupBar Weekly</span></div>

@@ -1721,12 +1721,16 @@ body[style*="padding-top: 36px"] .apply-install-shell { height: calc(100dvh - 36
 .adx-banner em { display: flex; align-items: center; gap: 4px; font-style: normal; font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 999px; background: var(--background); color: var(--foreground); }
 .adx-adtag { position: absolute; top: -8px; left: 12px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; padding: 2px 7px; border-radius: 999px; background: var(--background); color: var(--foreground); border: 1px solid var(--border); }
 .adx-cursor { position: absolute; right: 24px; bottom: -6px; width: 22px; height: 22px; color: var(--background); filter: drop-shadow(0 2px 3px rgb(0 0 0 / .5)); animation: adx-cursor 3s 1.2s ease-in-out infinite; }
-.adx-gold { border-color: var(--featured-edge, var(--foreground)); background: var(--featured-surface, var(--muted)); color: var(--featured-text); animation: adx-slide .7s .3s both; }
-.adx-gold > span { gap: 2px; } .adx-gold small { color: var(--featured-muted); } .adx-gold .adx-capsule { color: var(--featured-gold); } .adx-gold .adx-count { color: var(--featured-gold); }
+.adx-gold { border-color: var(--featured-edge); background: linear-gradient(110deg, color-mix(in oklab, var(--featured-gold) 30%, var(--background)), color-mix(in oklab, var(--featured-gold) 55%, var(--background))); color: var(--foreground); box-shadow: 0 10px 24px -14px var(--featured-edge); animation: adx-slide .7s .3s both; }
+.adx-gold > span { gap: 2px; } .adx-gold small { color: color-mix(in oklab, var(--foreground) 65%, transparent); } .adx-gold .adx-capsule { color: var(--foreground); } .adx-gold .adx-count { color: var(--foreground); background: var(--background); padding: 3px 8px; border-radius: 999px; }
 .adx-count { font-style: normal; font-size: 11px; font-weight: 700; animation: adx-tick 1.6s 1s ease-in-out infinite; }
-.adx-meter { margin-top: 6px; font-size: 11px; color: var(--muted-foreground); }
-.adx-meter div { margin-top: 6px; height: 8px; border-radius: 999px; background: var(--muted); overflow: hidden; }
-.adx-meter i { display: block; height: 100%; border-radius: inherit; background: var(--foreground); animation: adx-fill 3.5s .5s cubic-bezier(.3,.7,.2,1) infinite; }
+.adx-meter { margin-top: 8px; padding: 14px; border: 1px solid var(--border); border-radius: 14px; font-size: 12px; color: var(--muted-foreground); }
+.adx-meter-head, .adx-meter-foot { display: flex; justify-content: space-between; align-items: baseline; }
+.adx-meter-head strong { font-size: 20px; color: var(--foreground); font-variant-numeric: tabular-nums; }
+.adx-meter-head small { font-size: 12px; color: var(--muted-foreground); font-weight: 500; }
+.adx-meter-track { margin: 10px 0 8px; height: 10px; border-radius: 999px; background: var(--muted); overflow: hidden; }
+.adx-meter-track i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--featured-edge), var(--featured-gold)); transition: width .06s linear; }
+.adx-meter-foot { font-size: 11px; font-variant-numeric: tabular-nums; }
 .adx-sponsor { position: relative; display: flex; align-items: center; gap: 12px; padding: 16px; border: 2px solid var(--foreground); border-radius: 14px; margin: 6px 0; animation: adx-slide .7s .3s both; }
 .adx-sponsor > div { display: flex; flex-direction: column; }
 .adx-fly { position: absolute; right: 18px; top: 18px; width: 60px; height: 60px; }
