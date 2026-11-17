@@ -1698,7 +1698,6 @@ body[style*="padding-top: 36px"] .apply-install-shell { height: calc(100dvh - 36
 .adx-note { font-size: 11px; color: var(--muted-foreground); margin-top: 12px; }
 .adx-hero-art { position: relative; padding: 32px; animation: adx-up 1s .15s both; }
 .adx-orbit { position: absolute; inset: 0; border-radius: 32px; background: radial-gradient(circle at 30% 20%, var(--muted), transparent 70%); border: 1px solid var(--border); }
-.adx-orbit::after { content: ""; position: absolute; inset: -1px; border-radius: inherit; background: conic-gradient(from 0deg, transparent 0 80%, var(--foreground) 92%, transparent); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; padding: 1px; animation: adx-spin 6s linear infinite; opacity: .5; }
 .adx-hero-art .adx-browser { position: relative; transform: rotate(-1.5deg); }
 .adx-chip { position: absolute; display: flex; align-items: center; gap: 6px; padding: 9px 14px; border-radius: 999px; background: var(--foreground); color: var(--background); font-size: 13px; font-weight: 600; box-shadow: 0 12px 30px -10px color-mix(in oklab, var(--foreground) 50%, transparent); }
 .adx-chip-1 { top: 6%; right: -2%; animation: adx-float 4s ease-in-out infinite; }
