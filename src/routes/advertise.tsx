@@ -1,11 +1,11 @@
+import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Check } from "lucide-react";
-import { AdvertisePlacements } from "@/components/AdvertisePlacements";
-import studioImage from "@/assets/startupbar-studio.jpg";
+import { ArrowRight, Check, Image as ImageIcon, Mail, MousePointerClick, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
+import { CLICK_PACKS, NEWSLETTER_PRICE_PER_FOUNDER_USD } from "@/lib/checkout-plans";
 
 export const Route = createFileRoute("/advertise")({
   head: () => ({
@@ -22,9 +22,57 @@ export const Route = createFileRoute("/advertise")({
   component: AdvertisePage,
 });
 
-const fmt = (n: number) => n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `${Math.round(n / 1000)}k` : String(n);
+const fmt = (n: number) => (n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `${Math.round(n / 1000)}k` : String(n));
+
+function useReveal<T extends HTMLElement>() {
+  const ref = useRef<T>(null);
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setShown(true); io.disconnect(); } }, { threshold: 0.2 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return { ref, className: shown ? "adx-reveal is-in" : "adx-reveal" };
+}
+
+function Sk({ w = "100%" }: { w?: string }) { return <i className="adx-sk" style={{ width: w }} />; }
+function Row({ i }: { i: number }) {
+  return <div className="adx-row" style={{ animationDelay: `${i * 80}ms` }}><b className="adx-sk adx-sk-logo" /><span><Sk w={`${55 + ((i * 17) % 30)}%`} /><Sk w={`${35 + ((i * 11) % 25)}%`} /></span><Sk w="44px" /></div>;
+}
+
+const PRODUCTS = [
+  { id: "banner", icon: ImageIcon, name: "Banner ad", who: "Any company", price: "$49", unit: "per week", line: "Your image inside the Network, Leaderboard and startup pages.", facts: ["Upload a desktop and a mobile image", "Run 1 to 52 weeks, pay once", "Starts only after we approve it"] },
+  { id: "gold", icon: MousePointerClick, name: "Gold highlight", who: "Listed startups", price: `$${CLICK_PACKS[0].priceUsd}`, unit: `for ${CLICK_PACKS[0].clicks} clicks`, line: "Your listing glows gold and rotates first until your clicks are delivered.", facts: ["Real clicks guaranteed", `Packs of ${CLICK_PACKS.map((p) => p.clicks).join(" / ")} clicks`, "Track delivery in your dashboard"] },
+  { id: "newsletter", icon: Mail, name: "Newsletter spot", who: "Listed startups", price: `$${NEWSLETTER_PRICE_PER_FOUNDER_USD.toFixed(2)}`, unit: "per founder", line: "The single sponsor slot in our Sunday email to every founder.", facts: ["One sponsor per Sunday", "Pick any free Sunday", "Sent to the whole founder list"] },
+] as const;
+type PId = (typeof PRODUCTS)[number]["id"];
+
+function Diagram({ id }: { id: PId }) {
+  if (id === "banner") return (
+    <div className="adx-browser" key="b"><div className="adx-bar"><i /><i /><i /><span>startupbar.co/network</span></div>
+      <div className="adx-page">{[0, 1, 2].map((i) => <Row key={i} i={i} />)}
+        <div className="adx-banner"><span className="adx-adtag">Ad</span><b className="adx-capsule" /><div><strong>Your product. Right here.</strong><small>Your headline, image and link</small></div><em>Visit <ArrowRight className="size-3" /></em><MousePointerClick className="adx-cursor" /></div>
+        {[3, 4].map((i) => <Row key={i} i={i} />)}</div></div>
+  );
+  if (id === "gold") return (
+    <div className="adx-browser" key="g"><div className="adx-bar"><i /><i /><i /><span>startupbar.co/leaderboard</span></div>
+      <div className="adx-page"><Row i={0} /><div className="adx-row adx-gold"><b className="adx-capsule" /><span><strong>Your startup</strong><small>Highlighted · rotates first</small></span><em className="adx-count">+1 click</em></div>{[1, 2, 3].map((i) => <Row key={i} i={i} />)}
+        <div className="adx-meter"><span>Clicks delivered</span><div><i /></div></div></div></div>
+  );
+  return (
+    <div className="adx-browser adx-mail" key="n"><div className="adx-bar"><i /><i /><i /><span>Sunday · StartupBar Weekly</span></div>
+      <div className="adx-page"><Sk w="40%" /><Sk w="70%" /><div className="adx-sponsor"><span className="adx-adtag">Sponsor</span><b className="adx-capsule" /><div><strong>Your startup</strong><small>One line, one link, every founder</small></div></div><Sk w="90%" /><Sk w="80%" /><Sk w="60%" />
+        <div className="adx-fly">{[0, 1, 2, 3, 4].map((i) => <Mail key={i} style={{ animationDelay: `${i * 0.5}s` }} />)}</div></div></div>
+  );
+}
 
 function AdvertisePage() {
+  const [active, setActive] = useState<PId>("banner");
+  const product = PRODUCTS.find((p) => p.id === active)!;
+  const steps = useReveal<HTMLDivElement>();
+  const pick = useReveal<HTMLDivElement>();
   const { data: stats } = useQuery({
     queryKey: ["advertise-stats"],
     queryFn: async () => {
@@ -41,45 +89,47 @@ function AdvertisePage() {
 
   return (
     <DashboardLayout fullWidth>
-      <div className="advertise-page">
-        <section className="advertise-hero">
-          <img src={studioImage} width={1536} height={768} alt="StartupBar-branded laptop and phone showing directory banner placements" className="advertise-hero-image" />
-          <div className="advertise-container advertise-hero-inner">
-            <div className="advertise-hero-copy">
-              <p className="advertise-eyebrow">STARTUPBAR / ADVERTISE</p>
-              <h1>Advertise on<br />StartupBar.</h1>
-              <p className="advertise-hero-description">Your next customers are building here.<br className="hidden sm:block" /> Put your product in front of founders, makers<br className="hidden lg:block" /> and early adopters.</p>
-              <div className="flex flex-wrap items-center gap-3 mt-7">
-                <Button asChild size="lg" className="h-12 rounded-full"><Link to="/advertise/new">Create a campaign <ArrowRight /></Link></Button>
-                <Button asChild variant="outline" size="lg" className="h-12 rounded-full"><a href="mailto:hello@startupbar.co">Talk to us</a></Button>
-              </div>
-              <p className="mt-5 flex items-center gap-2 text-xs text-muted-foreground"><Check className="size-3.5" /> Banner ads are open to every company. No listing needed.</p>
-            </div>
+      <div className="adx">
+        <section className="adx-hero adx-wrap">
+          <div className="adx-hero-copy">
+            <p className="adx-eyebrow"><Sparkles className="size-3.5" /> Advertise on StartupBar</p>
+            <h1>Get seen by the people <span>building the internet.</span></h1>
+            <p className="adx-lead">Three simple ways to reach founders and early adopters. Pick one, pay once, track every click.</p>
+            <div className="adx-cta"><Button asChild size="lg" className="h-12 rounded-full"><Link to="/advertise/new">Start a campaign <ArrowRight /></Link></Button><Button asChild variant="outline" size="lg" className="h-12 rounded-full"><a href="#choose">Compare options</a></Button></div>
+            <dl className="adx-stats">{[["Member sites", stats ? fmt(stats.sites) : "—"], ["Founders on email", stats ? fmt(stats.founders) : "—"], ["Network widget views*", stats ? fmt(stats.views) : "—"]].map(([l, v]) => <div key={l}><dd>{v}</dd><dt>{l}</dt></div>)}</dl>
+            <p className="adx-note">*Across member sites — not banner reach. Every campaign reports its own real views and clicks.</p>
           </div>
+          <div className="adx-hero-art" aria-hidden="true"><div className="adx-orbit" /><Diagram id="banner" /><div className="adx-chip adx-chip-1"><MousePointerClick className="size-4" /> New click</div><div className="adx-chip adx-chip-2"><Check className="size-4" /> Approved & live</div></div>
         </section>
 
-        <section className="advertise-audience">
-          <div className="advertise-container advertise-audience-inner">
-            <div><p className="advertise-eyebrow">A COMMUNITY OF BUILDERS</p><h2>Be part of their next discovery.</h2></div>
-            <dl className="advertise-stats">
-              {[["Member sites", stats ? fmt(stats.sites) : "—"], ["Founders on email", stats ? fmt(stats.founders) : "—"], ["Network widget views¹", stats ? fmt(stats.views) : "—"]].map(([label, value]) => <div key={label}><dd>{value}</dd><dt>{label}</dt></div>)}
-            </dl>
+        <section id="choose" className="adx-choose"><div ref={pick.ref} className={`adx-wrap ${pick.className}`}>
+          <p className="adx-eyebrow">Step 1 · Choose</p><h2>Which one is for you?</h2>
+          <div className="adx-tabs" role="tablist">{PRODUCTS.map((p) => <button key={p.id} role="tab" aria-selected={active === p.id} className="adx-tab" onClick={() => setActive(p.id)}><p.icon className="size-5" /><span><strong>{p.name}</strong><small>{p.who}</small></span><em>{p.price}<small> {p.unit}</small></em></button>)}</div>
+          <div className="adx-detail" key={active}>
+            <div><h3>{product.name}</h3><p>{product.line}</p><ul>{product.facts.map((f) => <li key={f}><Check className="size-4" />{f}</li>)}</ul>
+              <Button asChild className="mt-6 rounded-full"><Link to="/advertise/new">Choose {product.name.toLowerCase()} <ArrowRight /></Link></Button></div>
+            <Diagram id={active} />
           </div>
-          <p className="advertise-container advertise-stats-note">¹ Network-wide widget views, not banner reach. Banner campaigns report their own actual impressions and clicks.</p>
-        </section>
+        </div></section>
 
-        <AdvertisePlacements />
+        <section className="adx-wrap adx-steps-wrap"><div ref={steps.ref} className={steps.className}>
+          <p className="adx-eyebrow">Step 2 · Launch</p><h2>Live in four easy steps.</h2>
+          <ol className="adx-steps">{[["Pick", "Choose a format above."], ["Upload", "Add your images or pick a Sunday."], ["Pay once", "No subscription, no surprise fees."], ["Go live", "We approve it — your time starts then."]].map(([t, b], i) => <li key={t} style={{ transitionDelay: `${i * 180}ms` }}><span>{i + 1}</span><strong>{t}</strong><p>{b}</p></li>)}</ol>
+        </div></section>
 
-        <section className="advertise-process"><div className="advertise-container"><div className="advertise-section-heading"><div><p className="advertise-eyebrow">FROM IDEA TO LIVE CAMPAIGN</p><h2>A simple start. No surprises.</h2></div></div><div className="advertise-process-grid">{[["01", "Make it yours", "Choose your placement. For banners, upload desktop and mobile images and preview your creative."], ["02", "Choose your run", "Pick 1–52 weeks for banners and pay once upfront. No subscription and no per-view charges."], ["03", "Go live after review", "We review your paid banner before it runs. Your purchased time begins on approval, not during review."], ["04", "See what happens", "Follow your dates, actual impressions and clicks. Banners share random rotation; reach is not guaranteed."]].map(([number, title, body]) => <div key={number}><span>{number}</span><h3>{title}</h3><p>{body}</p></div>)}</div></div></section>
+        <section className="adx-wrap adx-compare"><p className="adx-eyebrow">At a glance</p><h2>Side by side.</h2>
+          <div className="adx-table"><div className="adx-th"><span /> {PRODUCTS.map((p) => <span key={p.id}>{p.name}</span>)}</div>
+            {([["Price", "$49 / week", `$${CLICK_PACKS[0].priceUsd}–$${CLICK_PACKS[CLICK_PACKS.length - 1].priceUsd}`, `$${NEWSLETTER_PRICE_PER_FOUNDER_USD.toFixed(2)} / founder`], ["Need a listing?", false, true, true], ["Clicks guaranteed", false, true, false], ["Your own image", true, false, false], ["Where", "Network, Leaderboard, profiles", "Startup lists & member bar", "Sunday email"]] as const).map(([label, ...vals]) => <div key={label} className="adx-tr"><span>{label}</span>{vals.map((v, i) => <span key={i}>{typeof v === "boolean" ? (v ? <Check className="size-4" /> : <X className="size-4 opacity-30" />) : v}</span>)}</div>)}
+          </div></section>
 
-        <section className="advertise-container advertise-faq"><div><p className="advertise-eyebrow">GOOD TO KNOW</p><h2>A few questions,<br />answered.</h2><Button asChild variant="link" className="mt-5 px-0"><a href="mailto:hello@startupbar.co">Ask us anything <ArrowRight /></a></Button></div><div>{[
-          ["Do I need a listed startup?", "Not for banners — any company can advertise after signing in. Gold highlights and newsletter sponsorships are for startups listed on StartupBar."],
-          ["What sizes do banners need?", "A desktop image of at least 1200 × 200 px (6:1) and a mobile image of at least 600 × 300 px (2:1). PNG, JPG or WebP, up to 5 MB."],
-          ["How long will my banner run?", "Choose any whole number from 1 to 52 weeks. Each week is seven days; four weeks costs $196 and 52 weeks costs $2,548, paid once upfront. Review time does not use your purchased duration."],
-          ["Are banner impressions or clicks guaranteed?", "No. Banners are time-based sponsorships in shared random rotation. Your campaign shows actual measured views and clicks. Network-wide member-site widget views are separate from banner impressions. Guaranteed clicks are available through our Gold highlight packs."],
-          ["What if my banner is rejected?", "We tell you why and arrange a refund of the sponsorship payment through Dodo."],
-        ].map(([question, answer]) => <details key={question}><summary>{question}<span className="advertise-faq-plus">+</span></summary><p>{answer}</p></details>)}</div></section>
-        <section className="advertise-bottom"><div className="advertise-container"><div><p className="advertise-eyebrow">YOUR PRODUCT. ITS NEXT CHAPTER.</p><h2>Let’s get you discovered.</h2></div><Button asChild size="lg" className="h-12 rounded-full"><Link to="/advertise/new">Create a campaign <ArrowRight /></Link></Button></div></section>
+        <section className="adx-wrap adx-faq"><h2>Questions</h2><div>{[
+          ["Do I need a listed startup?", "Not for banners — any company can advertise after signing in. Gold highlights and newsletter spots are for listed startups."],
+          ["What sizes do banners need?", "Desktop at least 1200 × 200 px (6:1), mobile at least 600 × 300 px (2:1). PNG, JPG or WebP up to 5 MB."],
+          ["Are banner views guaranteed?", "No. Banners share random rotation for the weeks you buy, and you see actual views and clicks. Guaranteed clicks come with Gold highlights."],
+          ["What if my banner is rejected?", "We tell you why and refund your payment through Dodo."],
+        ].map(([q, a]) => <details key={q}><summary>{q}<span>+</span></summary><p>{a}</p></details>)}</div></section>
+
+        <section className="adx-end"><div className="adx-wrap"><h2>Ready to be discovered?</h2><Button asChild size="lg" variant="secondary" className="h-12 rounded-full"><Link to="/advertise/new">Start a campaign <ArrowRight /></Link></Button></div></section>
       </div>
     </DashboardLayout>
   );
