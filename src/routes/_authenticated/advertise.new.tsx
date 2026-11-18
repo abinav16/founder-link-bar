@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Image as ImageIcon, Loader2, Mail, Monitor, Smartphone, Sparkles, Upload } from "lucide-react";
+import { ArrowLeft, ArrowRight, BarChart3, Check, CheckCircle2, Clock3, ExternalLink, Globe2, Image as ImageIcon, Layers3, Loader2, Mail, Monitor, ShieldCheck, Smartphone, Sparkles, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { DashboardLayout } from "@/components/DashboardLayout";
@@ -70,38 +70,41 @@ function AdSetup() {
     }).catch(() => toast.error("Payment confirmation is delayed. Your campaign will update once it clears."));
   }, [qc, confirmPayment]);
 
-  const menu: { id: Section; label: string; icon: typeof ImageIcon }[] = [
-    { id: "banner", label: "Banner ad", icon: ImageIcon },
-    { id: "gold", label: "Gold highlight", icon: Sparkles },
-    { id: "newsletter", label: "Sunday newsletter", icon: Mail },
-    { id: "campaigns", label: "My campaigns", icon: Check },
+  const menu: { id: Section; label: string; detail: string; icon: typeof ImageIcon }[] = [
+    { id: "banner", label: "Banner ad", detail: "$49 / week", icon: ImageIcon },
+    { id: "gold", label: "Gold highlight", detail: "Guaranteed clicks", icon: Sparkles },
+    { id: "newsletter", label: "Sunday newsletter", detail: "One exclusive sponsor", icon: Mail },
   ];
 
   return (
-    <DashboardLayout>
-      <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
-        <aside className="space-y-4 lg:sticky lg:top-28 lg:self-start">
-          <nav className="rounded-2xl border border-border bg-card p-3" aria-label="Campaign sections">
-            <h1 className="px-3 pb-3 pt-1 text-lg font-semibold">New campaign</h1>
-            {menu.map((m) => (
-              <Button variant="ghost" key={m.id} type="button" onClick={() => setSection(m.id)} aria-current={section === m.id ? "page" : undefined}
-                className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors ${section === m.id ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-                <m.icon className="h-4 w-4" /> {m.label}
-              </Button>
-            ))}
-          </nav>
-          <div className="rounded-2xl border border-border bg-card p-4 text-sm">
-            <p className="font-semibold">Need a hand?</p>
-            <p className="mt-1 text-muted-foreground">Ask us about placements or timing.</p>
-            <a href="mailto:hello@startupbar.co" className="mt-3 inline-flex h-9 w-full items-center justify-center rounded-full border border-foreground text-sm font-semibold">Talk to us</a>
+    <DashboardLayout fullWidth>
+      <div className="campaign-studio">
+        <header className="campaign-heading">
+          <div>
+            <Link to="/advertise" className="campaign-back"><ArrowLeft size={14} /> Advertise on StartupBar</Link>
+            <h1>{section === "campaigns" ? "Your campaigns." : "Make your next big move."}</h1>
+            <p>{section === "campaigns" ? "Your placements, progress and performance in one place." : "Your brand. The founder network. A campaign that fits."}</p>
           </div>
-        </aside>
-        <div className="min-w-0">
-          {section === "banner" && <BannerSection onDone={() => setSection("campaigns")} />}
+          <Button variant="outline" onClick={() => setSection(section === "campaigns" ? "banner" : "campaigns")} className="campaign-manage">
+            {section === "campaigns" ? <ImageIcon /> : <BarChart3 />}{section === "campaigns" ? "New campaign" : "My campaigns"}<ArrowRight />
+          </Button>
+        </header>
+        <nav className="campaign-formats" aria-label="Campaign sections">
+          {menu.map((m) => (
+            <Button variant="ghost" key={m.id} onClick={() => setSection(m.id)} aria-pressed={section === m.id} className="campaign-format">
+              <span className="campaign-format-icon"><m.icon /></span>
+              <span><strong>{m.label}</strong><small>{m.detail}</small></span>
+              <span className="campaign-format-check">{section === m.id ? <CheckCircle2 /> : <ArrowRight />}</span>
+            </Button>
+          ))}
+        </nav>
+        <div key={section} className="campaign-content">
+          {section === "banner" && <BannerSection />}
           {section === "gold" && <GoldSection />}
           {section === "newsletter" && <NewsletterSection />}
           {section === "campaigns" && <CampaignsSection />}
         </div>
+        <div className="campaign-help"><ShieldCheck size={18} /><span>Every banner is reviewed before it goes live.</span><Button variant="link" asChild><a href="mailto:hello@startupbar.co">Need a hand? Talk to us <ArrowRight /></a></Button></div>
       </div>
     </DashboardLayout>
   );
@@ -109,9 +112,9 @@ function AdSetup() {
 
 function Card({ title, desc, children }: { title: string; desc: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-2xl border border-border bg-card p-5 sm:p-7">
-      <h2 className="text-2xl font-semibold">{title}</h2>
-      <p className="mt-1 text-sm text-muted-foreground">{desc}</p>
+    <section className="campaign-section">
+      <h2>{title}</h2>
+      <p className="campaign-description">{desc}</p>
       <div className="mt-6">{children}</div>
     </section>
   );
@@ -144,18 +147,17 @@ function ImageDrop({ label, spec, value, onChange }: { label: string; spec: { wi
     onChange(supabase.storage.from("ad-banners").getPublicUrl(path).data.publicUrl);
   };
   return (
-    <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border p-5 text-center hover:border-foreground/40">
-      {value ? <img src={value} alt="" className="max-h-24 w-full rounded object-contain" /> : <Upload className="h-5 w-5 text-muted-foreground" />}
+    <label className={`campaign-upload ${value ? "campaign-upload-done" : ""}`}>
+      {value ? <img src={value} alt="" className="max-h-24 w-full rounded object-contain" /> : <span className="campaign-upload-icon">{label === "Desktop banner" ? <Monitor /> : <Smartphone />}</span>}
       <span className="text-sm font-semibold">{label}</span>
-      <span className="text-xs text-muted-foreground">{spec.label} min · up to 5 MB</span>
-      <span className="text-xs font-medium underline">{busy ? "Uploading…" : value ? "Replace" : "Upload"}</span>
+      <span className="text-sm text-muted-foreground">{spec.label} min · up to 5 MB</span>
+      <span className="campaign-upload-action">{busy ? <Loader2 className="animate-spin" size={14} /> : value ? <CheckCircle2 size={14} /> : <Upload size={14} />}{busy ? "Uploading…" : value ? "Replace image" : "Choose image"}</span>
       <input type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={(e) => pick(e.target.files?.[0])} />
     </label>
   );
 }
 
-function BannerSection({ onDone }: { onDone: () => void }) {
-  void onDone;
+function BannerSection() {
   const [weeks, setWeeks] = useState(1);
   const checkout = useServerFn(createBannerCheckout);
   const [name, setName] = useState("");
@@ -180,58 +182,58 @@ function BannerSection({ onDone }: { onDone: () => void }) {
   };
 
   const b = { advertiser_name: name, headline, destination_url: dest, desktop_image_url: desktop, mobile_image_url: mobile };
-  const row = (w: string) => <div className="flex items-center gap-3 rounded-lg border border-border p-3"><div className="h-7 w-7 shrink-0 rounded-md bg-muted" /><div className={`h-2 rounded bg-muted ${w}`} /></div>;
+  const row = (index: number) => <div className="campaign-preview-row" aria-hidden="true"><span>{String(index).padStart(2, "0")}</span><i /><div><i /><i /></div><ExternalLink size={14} /></div>;
+  const completed = [Boolean(name.trim() && normalizeDestination(dest)), Boolean(desktop && mobile), isValidWeeks(weeks)];
+  const steps = ["Brand details", "Banner images", "Campaign duration"];
 
   return (
-    <div className="space-y-6">
-      <Card title="Banner ad" desc="Shown between startups on Network and Leaderboard, and on startup profiles. Open to any company.">
-        <div className="grid gap-0 overflow-hidden rounded-xl border border-border sm:grid-cols-[260px_1fr]">
-          <div className="border-b border-border p-4 sm:border-b-0 sm:border-r">
-            <label className="text-sm font-semibold" htmlFor="weeks">Campaign duration</label>
-            <div className="mt-2 flex items-center gap-3">
-              <Input id="weeks" type="number" min={1} max={BANNER_MAX_WEEKS} step={1} value={weeks || ""} onChange={(e) => setWeeks(Number(e.target.value))} className="text-lg" /><span className="text-sm text-muted-foreground">weeks</span></div>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {BANNER_WEEK_PRESETS.map((p) => <Button variant="outline" size="sm" key={p} type="button" onClick={() => setWeeks(p)} aria-pressed={weeks === p} className={`h-8 px-2 text-xs ${weeks === p ? "border-foreground font-semibold" : "border-border"}`}>{p}w</Button>)}
+    <div className="campaign-workspace">
+      <div className="campaign-editor">
+        <div className="campaign-editor-intro"><span className="campaign-kicker"><ImageIcon size={15} /> BANNER CAMPAIGN</span><h2>Let’s put your brand out there.</h2><p>Appear on Network, Leaderboard and startup profiles.</p></div>
+        <section className="campaign-form-section">
+          <div className="campaign-step-title"><span>01</span><div><h3>Your brand</h3><p>Where should founders go when they click?</p></div></div>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div><label htmlFor="adv">Company name <span className="text-muted-foreground">*</span></label><Input id="adv" maxLength={60} value={name} onChange={(e) => setName(e.target.value)} placeholder="Your company" /></div>
+            <div><label htmlFor="alt">Image description <span className="campaign-optional">Optional</span></label><Input id="alt" maxLength={120} value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="Describe your banner" /><p className="campaign-field-note">For founders using screen readers.</p></div>
+            <div className="sm:col-span-2"><label htmlFor="dest">Destination link <span className="text-muted-foreground">*</span></label><div className="campaign-link-field"><Globe2 size={18} /><Input id="dest" value={dest} onChange={(e) => setDest(e.target.value)} placeholder="https://yourcompany.com" /></div><p className="campaign-field-note">Use a full https:// link. UTM tracking tags are welcome.</p></div>
+          </div>
+        </section>
+        <section className="campaign-form-section">
+          <div className="campaign-step-title"><span>02</span><div><h3>Your creative</h3><p>Two sizes. A great fit on every screen.</p></div></div>
+          <div className="grid gap-4 sm:grid-cols-2"><ImageDrop label="Desktop banner" spec={BANNER_DESKTOP} value={desktop} onChange={setDesktop} /><ImageDrop label="Mobile banner" spec={BANNER_MOBILE} value={mobile} onChange={setMobile} /></div>
+          <p className="campaign-field-note">PNG, JPG or WebP · Both images are required.</p>
+        </section>
+        <section className="campaign-form-section">
+          <div className="campaign-step-title"><span>03</span><div><h3>Make it a week. Or a year.</h3><p>One payment. Your time starts only after approval.</p></div></div>
+          <div className="campaign-duration">
+            <div><label htmlFor="weeks">Campaign duration</label><div className="campaign-week-input"><Input id="weeks" type="number" min={1} max={BANNER_MAX_WEEKS} step={1} value={weeks || ""} onChange={(e) => setWeeks(Number(e.target.value))} /><span>weeks</span></div></div>
+            <div className="campaign-duration-days"><strong>{isValidWeeks(weeks) ? weeks * 7 : "—"}</strong><span>days in rotation</span></div>
+          </div>
+          <div className="campaign-week-presets">{BANNER_WEEK_PRESETS.map((p) => <Button variant="outline" key={p} onClick={() => setWeeks(p)} aria-pressed={weeks === p}>{p} {p === 1 ? "week" : "weeks"}{weeks === p && <Check size={14} />}</Button>)}</div>
+          <p className="campaign-field-note">Choose 1–52 whole weeks. Shared random rotation; views and clicks are measured, not guaranteed.</p>
+        </section>
+      </div>
+      <aside className="campaign-preview-column" aria-label="Campaign preview and order">
+        <section className="campaign-preview-tool">
+          <div className="campaign-preview-heading"><span><span className="campaign-live-dot" /> Live preview</span><div className="campaign-device-switch">{(["desktop", "mobile"] as const).map((v) => <Button variant="ghost" size="icon" key={v} title={`${v === "desktop" ? "Desktop" : "Mobile"} preview`} aria-label={`${v === "desktop" ? "Desktop" : "Mobile"} preview`} aria-pressed={view === v} onClick={() => setView(v)}>{v === "desktop" ? <Monitor /> : <Smartphone />}</Button>)}</div></div>
+          <div className={`campaign-preview-canvas ${view === "mobile" ? "campaign-preview-mobile" : ""}`}>
+            <div className="campaign-browser-bar"><div><i /><i /><i /></div><span>startupbar.co/network</span><ShieldCheck size={12} /></div>
+            <div className="campaign-preview-site"><div className="campaign-preview-brand"><span className="placement-brand-capsule" />StartupBar<span>Network</span></div>{row(5)}{row(6)}
+              {(view === "desktop" ? desktop : mobile) ? <BannerCreative b={b} preview={view} onClick={() => {}} /> : <div className={`campaign-empty-banner campaign-empty-${view}`}><span className="campaign-empty-label">YOUR AD GOES HERE</span><div><span className="placement-brand-capsule" /><strong>{name.trim() || "Your next big thing."}</strong><ArrowRight /></div><small>{headline.trim() || "A little space. A big first impression."}</small></div>}
+              {row(7)}
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4 p-4 sm:grid-cols-3">
-            <div><p className="text-[11px] uppercase tracking-wider text-muted-foreground">Per week</p><p className="text-xl font-semibold">$49</p></div>
-            <div><p className="text-[11px] uppercase tracking-wider text-muted-foreground">Duration</p><p className="text-xl font-semibold tabular-nums">{isValidWeeks(weeks) ? weeks * 7 : "—"} days</p></div>
-            <div><p className="text-[11px] uppercase tracking-wider text-muted-foreground">Total</p><p className="text-xl font-semibold">${(cents / 100).toLocaleString()}</p></div>
-            <p className="col-span-full text-xs text-muted-foreground">1–52 weeks. Paid once; no subscription. Starts after approval and runs in shared random rotation. Views and clicks are measured, not guaranteed.</p>
-          </div>
-        </div>
-
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <div><label className="text-sm font-semibold" htmlFor="adv">Company name</label><Input id="adv" className="mt-2" maxLength={60} value={name} onChange={(e) => setName(e.target.value)} /></div>
-          <div><label className="text-sm font-semibold" htmlFor="alt">Short description <span className="font-normal text-muted-foreground">(for screen readers)</span></label><Input id="alt" className="mt-2" maxLength={120} value={headline} onChange={(e) => setHeadline(e.target.value)} /></div>
-          <div className="sm:col-span-2"><label className="text-sm font-semibold" htmlFor="dest">Destination link</label><Input id="dest" className="mt-2" value={dest} onChange={(e) => setDest(e.target.value)} placeholder="https://yoursite.com/?utm_source=startupbar" />
-            <p className="mt-1 text-xs text-muted-foreground">Full https:// link. Add UTM tags to track visits in your analytics.</p></div>
-          <ImageDrop label="Desktop banner" spec={BANNER_DESKTOP} value={desktop} onChange={setDesktop} />
-          <ImageDrop label="Mobile banner" spec={BANNER_MOBILE} value={mobile} onChange={setMobile} />
-        </div>
-      </Card>
-
-      <Card title="Preview" desc="How your banner looks inside the startup list.">
-        <div className="mb-4 inline-flex rounded-full border border-border p-1">
-          {(["desktop", "mobile"] as const).map((v) => (
-            <Button variant="ghost" key={v} type="button" onClick={() => setView(v)} aria-pressed={view === v} className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${view === v ? "bg-foreground text-background" : "text-muted-foreground"}`}>
-              {v === "desktop" ? <Monitor className="h-3.5 w-3.5" /> : <Smartphone className="h-3.5 w-3.5" />} {v === "desktop" ? "Desktop" : "Mobile"}
-            </Button>
-          ))}
-        </div>
-        <div className={`mx-auto space-y-2 rounded-2xl border border-border bg-background p-3 ${view === "mobile" ? "max-w-[340px]" : ""}`}>
-          {row("w-40")}{row("w-28")}
-          <BannerCreative b={b} preview={view} onClick={(() => {}) as () => void} />
-          {row("w-32")}{row("w-24")}
-        </div>
-      </Card>
-
-      <div className="flex flex-col items-start gap-3 rounded-2xl border border-border bg-card p-5 sm:flex-row sm:items-center sm:justify-between">
-        <div><p className="text-sm text-muted-foreground">Due today · one-time payment</p><p className="text-2xl font-semibold">${(cents / 100).toLocaleString()}</p>
-          <p className="text-xs text-muted-foreground">{isValidWeeks(weeks) ? `${weeks} ${weeks === 1 ? "week" : "weeks"} at $49/week. ` : "Choose 1–52 whole weeks. "}Review time does not use your purchased days. Taxes, if applicable, appear at checkout.</p></div>
-        <Button onClick={pay} disabled={!ready || busy} className="h-11 rounded-full px-6">{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Pay & submit for review"}</Button>
-      </div>
+          <div className="campaign-placement-note"><Layers3 size={18} /><p>Between every 6 startup rows.<span>Also on Leaderboard and startup profiles.</span></p></div>
+        </section>
+        <section className="campaign-order" aria-label="Order summary">
+          <div className="campaign-order-top"><span>YOUR CAMPAIGN</span><span><Clock3 size={14} /> Starts after approval</span></div>
+          <div className="campaign-order-total"><div><strong>${(cents / 100).toLocaleString()}</strong><span>one-time payment</span></div><span>{isValidWeeks(weeks) ? `${weeks} ${weeks === 1 ? "week" : "weeks"}` : "1–52 weeks"}<small>$49 / week</small></span></div>
+          <ul className="campaign-checklist">{steps.map((step, i) => <li key={step} className={completed[i] ? "is-complete" : ""}>{completed[i] ? <CheckCircle2 size={16} /> : <span className="campaign-pending-dot" />}{step}<span>{completed[i] ? "Ready" : "To complete"}</span></li>)}</ul>
+          <Button onClick={pay} disabled={!ready || busy} className="campaign-pay">{busy ? <><Loader2 className="animate-spin" />Opening checkout…</> : <>Continue to payment<ArrowRight /></>}</Button>
+          <p className="campaign-order-note"><ShieldCheck size={14} /> Secure checkout · No subscription</p>
+          <p className="campaign-tax-note">Review time never uses your purchased days. Taxes, if applicable, appear at checkout.</p>
+        </section>
+      </aside>
     </div>
   );
 }

@@ -1,3 +1,6 @@
+# Campaign setup redesign
+- [x] Redesign /advertise/new with a wide monochrome workspace, format choices, live preview and order summary; verified signed-in real image uploads/readback, device and section switches, 4-week $196 summary, enabled payment and 390/768px fit; five banner tests pass. No payment initiated; temporary uploads removed.
+
 # Agent integrations
 - [x] Enable OAuth and protected MCP with own-startup and network-search read tools; add WebMCP directory/leaderboard reads. Catalog extraction, two redirect tests, clean build, signed-in return, readable consent errors and rejection of anonymous/copied-session MCP access verified. Cloud/auth and asymmetric signing were already present; OAuth server newly activated.
 - [ ] Republish and verify actual approve/deny plus OAuth tool reads on the canonical site; provider rejects localhost consent with unauthorized request origin. No auth policies were weakened. Native WebMCP registration cannot be inspected in the installed browser, which lacks the API.
