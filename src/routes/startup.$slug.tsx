@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { getStartupPage, getStartupPulse } from "@/lib/startup-page.functions";
 import { StartupEmbed } from "@/components/StartupEmbed";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { SponsoredRail } from "@/components/SponsoredRail";
 import { BannerSlot } from "@/components/BannerAd";
 import { ProfileMomentum, FounderVouches, RelatedStartups, OwnerStatsShare } from '@/components/StartupProfileInsights';
 
@@ -21,7 +20,7 @@ const pageQuery = (slug: string) =>
 
 function StartupPageSkeleton() {
   return (
-    <DashboardLayout rail={<SponsoredRail />}>
+    <DashboardLayout>
       <div className="-mx-4 -my-6 bg-white text-black sm:-mx-6 sm:-my-8">
         <main className="mx-auto max-w-6xl px-5 pb-8 pt-4 sm:pt-5">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
@@ -182,7 +181,7 @@ function StartupPage() {
     s.membership_mode === "supporter" && (!s.supporter_until || new Date(s.supporter_until).getTime() > Date.now());
 
   return (
-    <DashboardLayout rail={<SponsoredRail />}>
+    <DashboardLayout>
       <div className="-mx-4 -my-6 sm:-mx-6 sm:-my-8 bg-white text-black">
       <main className="mx-auto max-w-6xl px-4 sm:px-5 pt-4 sm:pt-5 pb-8">
         <button

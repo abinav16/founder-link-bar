@@ -5,13 +5,11 @@ import { Fragment, useEffect, useMemo, useState, type ReactNode } from "react";
 import { BannerSlot } from "@/components/BannerAd";
 import { BANNER_EVERY_N_ROWS } from "@/lib/banner-ads";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { SponsoredRail } from "@/components/SponsoredRail";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { getLeaderboard, getNetworkActivity, type LeaderboardRow } from "@/lib/leaderboard.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Trophy, ExternalLink, Info, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useFeaturedStartupIds } from "@/lib/featured";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 
@@ -154,19 +152,8 @@ function ColHeader({ label, hint, className = "" }: { label: string; hint: strin
 
 function LeaderboardPage() {
   const { leaderboard, activity } = Route.useLoaderData();
-  const featuredIds = useFeaturedStartupIds();
-  const markFeatured = (rows: LeaderboardRow[]) =>
-    rows.map((r) => (featuredIds.has(r.id) && !r.sponsored ? { ...r, sponsored: true } : r));
-  const rowsByReceived = useMemo(
-    () => markFeatured(leaderboard.rowsByReceived),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [leaderboard.rowsByReceived, featuredIds],
-  );
-  const rowsByGiven = useMemo(
-    () => markFeatured(leaderboard.rowsByGiven),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [leaderboard.rowsByGiven, featuredIds],
-  );
+  const rowsByReceived = leaderboard.rowsByReceived;
+  const rowsByGiven = leaderboard.rowsByGiven;
   const [tab, setTab] = useState<"received" | "given">("received");
   const [range, setRange] = useState<Range>("all");
   // Hydrate myId from sessionStorage so repeat visits highlight "You"
@@ -875,5 +862,5 @@ function LeaderboardPage() {
     </div>
   );
 
-  return <DashboardLayout fullWidth rail={<SponsoredRail />}><TooltipProvider>{body}</TooltipProvider></DashboardLayout>;
+  return <DashboardLayout fullWidth><TooltipProvider>{body}</TooltipProvider></DashboardLayout>;
 }

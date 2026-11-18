@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Copy, Check, Code2, ArrowRight, BarChart2, MousePointerClick, Layers, Percent, ChevronDown, Globe2, Smartphone, Monitor, Tablet, User, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { PromoteButton } from "@/components/FeaturedBookingDialog";
 import { BoostClicksButton } from "@/components/BoostClicksDialog";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { LiveVisitorMap } from "@/components/LiveVisitorMap";
@@ -786,7 +785,6 @@ function DashboardPage() {
               <p className="mt-0.5 text-sm text-black/40">{startup.description}</p>
               {startup.status === "approved" && (
                 <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <PromoteButton startupId={startup.id} />
                   <BoostClicksButton startupId={startup.id} startupName={startup.name} />
                 </div>
               )}

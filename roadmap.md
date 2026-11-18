@@ -1,3 +1,6 @@
+# Retired featured slots
+- [x] Remove dashboard/account badges, booking/waitlist dialog, return watcher, unused rails and monthly-slot highlight queries; preserve current Gold/click-pack data and legacy owner-only billing cancellation/history. Signed-in dashboard, click-pack dialog, real legacy Account record, four public pages and 390px fit verified; 23 checkout/banner tests and preview build pass. No live subscription cancelled or payment records deleted; retired checkout remains blocked by the existing 410 response.
+
 # Mobile page optimization
 - [x] Improve Network, Leaderboard, Advertise, campaign setup and Pricing phone layouts; verified 360/390/430px fit, search, ranking/range controls, newsletter diagram, click-pack selection, signed-in campaign duration and desktop fit without runtime errors. Banner/milestone/checkout tests pass; Supporter uses its native test runner. Prices and ranking remain unchanged.
 

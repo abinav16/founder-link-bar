@@ -9,7 +9,7 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { Save, User, Globe, Trash2, Plus, ChevronDown, ChevronUp, ExternalLink, Info, Upload, X, Clock } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { AvatarCropDialog } from "@/components/AvatarCropDialog";
-import { PromoteButton } from "@/components/FeaturedBookingDialog";
+import { LegacyPromotionBilling } from "@/components/LegacyPromotionBilling";
 import { BoostClicksButton } from "@/components/BoostClicksDialog";
 import { deleteMyAccount } from "@/lib/account.functions";
 
@@ -406,11 +406,6 @@ function StartupCard({ startup, onUpdate, onDelete }: {
           </div>
           <p className="mt-0.5 text-xs text-black/40 truncate">{startup.website_url}</p>
         </div>
-        {startup.status === "approved" && (
-          <span className="hidden shrink-0 sm:inline-flex">
-            <PromoteButton startupId={startup.id} as="span" showCancel />
-          </span>
-        )}
         {startup.status === "approved" && !expanded && (
           <span className="hidden shrink-0 sm:inline-flex">
             <BoostClicksButton startupId={startup.id} startupName={startup.name} />
@@ -440,7 +435,6 @@ function StartupCard({ startup, onUpdate, onDelete }: {
         <div className="border-t border-black/6 px-5 py-5">
           {startup.status === "approved" && (
             <div className="mb-4 flex flex-wrap items-center gap-2 sm:hidden">
-              <PromoteButton startupId={startup.id} showCancel />
               <BoostClicksButton startupId={startup.id} startupName={startup.name} />
             </div>
           )}
@@ -556,6 +550,7 @@ function StartupCard({ startup, onUpdate, onDelete }: {
           </form>
 
           <MembershipSection startup={startup} onUpdate={onUpdate} />
+          <LegacyPromotionBilling startupId={startup.id} />
 
           {!isSupporterMode && (
           <div className="mt-6 border-t border-black/6 pt-5">

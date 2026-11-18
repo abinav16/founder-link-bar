@@ -5,14 +5,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { SponsoredRail } from "@/components/SponsoredRail";
 import { BannerSlot } from "@/components/BannerAd";
 import { BANNER_EVERY_N_ROWS } from "@/lib/banner-ads";
 import { Fragment } from "react";
 import { StartupFavicon } from "@/components/StartupFavicon";
 import { getNetworkDashboard, type NetworkDashboardResult } from "@/lib/network-dashboard.functions";
 import { ArrowUpRight, ArrowRight, Eye, Globe, Search, Star, X } from "lucide-react";
-import { useFeaturedStartupIds } from "@/lib/featured";
 
 
 function NetworkPending() {
@@ -906,14 +904,7 @@ function NetworkDashboardPage() {
     }
   }
 
-  const featuredIds = useFeaturedStartupIds();
-  const allStartups = useMemo(
-    () =>
-      data.recentStartups.map((s) =>
-        featuredIds.has(s.id) && !s.sponsored ? { ...s, sponsored: true } : s,
-      ),
-    [data.recentStartups, featuredIds],
-  );
+  const allStartups = data.recentStartups;
   const q = query.trim().toLowerCase();
   const filtered = useMemo(() => {
     let base = q
@@ -964,16 +955,10 @@ function NetworkDashboardPage() {
     return sorted.slice(0, 3);
   })();
 
-  const newThisWeek = useMemo(
-    () =>
-      data.newThisWeek.map((s) =>
-        featuredIds.has(s.id) && !s.sponsored ? { ...s, sponsored: true } : s,
-      ),
-    [data.newThisWeek, featuredIds],
-  );
+  const newThisWeek = data.newThisWeek;
 
   return (
-    <DashboardLayout fullWidth rail={<SponsoredRail />}>
+    <DashboardLayout fullWidth>
       <div className="network-page space-y-10 px-4 py-6 sm:px-6 sm:py-8 xl:px-10">
         {data.recentStartups.length > 0 && (
           <div className="mx-auto max-w-6xl">

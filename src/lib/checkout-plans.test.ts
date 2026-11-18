@@ -22,6 +22,11 @@ describe("checkout plans", () => {
     expect(parsePlan(null)).toEqual({ base: "free" });
     expect(parsePlan({ base: "clicks", clicks: 7 }).clicks).toBe(500);
   });
+  it("retired featured subscription plans cannot select a paid product", () => {
+    const plan = parsePlan({ base: "featured", slot_index: 8 });
+    expect(plan.base).toBe("free");
+    expect(planTotalUsd(plan, 260)).toBe(0);
+  });
 });
 
 import { listingKind as _lk, planTotalUsd as _pt } from "./checkout-plans";

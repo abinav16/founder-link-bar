@@ -1,6 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 
-import { FeaturedReturnWatcher } from "@/components/FeaturedBookingDialog";
 import { SiteHeader } from "@/components/SiteHeader";
 
 function FooterBar({ wide }: { wide?: boolean }) {
@@ -39,11 +38,9 @@ function FooterBar({ wide }: { wide?: boolean }) {
 
 export function DashboardLayout({
   children,
-  rail,
   fullWidth = false,
 }: {
   children: React.ReactNode;
-  rail?: React.ReactNode;
   fullWidth?: boolean;
 }) {
   const { status } = useRouterState();
@@ -64,15 +61,13 @@ export function DashboardLayout({
 
       <SiteHeader />
 
-      {/* Side featured rails were retired in favour of in-list banner ads; `rail` is kept for callers. */}
-      <main className={fullWidth ? "w-full flex-1" : "mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8"} data-rail={rail ? "" : undefined}>
+      <main className={fullWidth ? "w-full flex-1" : "mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8"}>
         <div className="min-w-0">
           <div className="page-enter">{children}</div>
         </div>
       </main>
 
       <FooterBar wide={fullWidth} />
-      <FeaturedReturnWatcher />
     </div>
   );
 }
