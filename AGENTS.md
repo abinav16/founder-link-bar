@@ -38,3 +38,4 @@
 - Advertise uses DashboardLayout's opt-in full-width canvas and a pure placement-guide component with fixture-only page diagrams and global presentation tokens, so examples never record campaign analytics or change payment logic.
 - Founder MCP writes use caller-scoped ownership checks and existing edit review; removal hands off to Account's human confirmation, preserving billing records and preventing assistant-driven irreversible deletion.
 - MCP comparisons use bounded per-startup daily reads over equal complete UTC windows, excluding today, so database response caps and partial days cannot distort comparisons.
+- Keep the MCP guide in its public content route with browser-safe reference data; shared announcements follow SiteHeader outside its sticky box so existing page offsets remain unchanged.

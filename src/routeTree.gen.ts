@@ -28,6 +28,7 @@ import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } fr
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthCallbackRouteImport } from './routes/auth_.callback'
+import { Route as DocsMcpRouteImport } from './routes/docs.mcp'
 import { Route as StartupSlugRouteImport } from './routes/startup.$slug'
 import { Route as UTokenRouteImport } from './routes/u.$token'
 import { Route as WidgetBarRouteImport } from './routes/widget.bar'
@@ -146,6 +147,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
   id: '/auth_/callback',
   path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsMcpRoute = DocsMcpRouteImport.update({
+  id: '/docs/mcp',
+  path: '/docs/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StartupSlugRoute = StartupSlugRouteImport.update({
@@ -291,6 +297,7 @@ export interface FileRoutesByFullPath {
   '/account': typeof AuthenticatedAccountRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/docs/mcp': typeof DocsMcpRoute
   '/startup/$slug': typeof StartupSlugRoute
   '/u/$token': typeof UTokenRoute
   '/widget/bar': typeof WidgetBarRoute
@@ -335,6 +342,7 @@ export interface FileRoutesByTo {
   '/account': typeof AuthenticatedAccountRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/docs/mcp': typeof DocsMcpRoute
   '/startup/$slug': typeof StartupSlugRoute
   '/u/$token': typeof UTokenRoute
   '/widget/bar': typeof WidgetBarRoute
@@ -381,6 +389,7 @@ export interface FileRoutesById {
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/auth_/callback': typeof AuthCallbackRoute
+  '/docs/mcp': typeof DocsMcpRoute
   '/startup/$slug': typeof StartupSlugRoute
   '/u/$token': typeof UTokenRoute
   '/widget/bar': typeof WidgetBarRoute
@@ -427,6 +436,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/dashboard'
     | '/auth/callback'
+    | '/docs/mcp'
     | '/startup/$slug'
     | '/u/$token'
     | '/widget/bar'
@@ -471,6 +481,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/dashboard'
     | '/auth/callback'
+    | '/docs/mcp'
     | '/startup/$slug'
     | '/u/$token'
     | '/widget/bar'
@@ -516,6 +527,7 @@ export interface FileRouteTypes {
     | '/_authenticated/account'
     | '/_authenticated/dashboard'
     | '/auth_/callback'
+    | '/docs/mcp'
     | '/startup/$slug'
     | '/u/$token'
     | '/widget/bar'
@@ -560,6 +572,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
+  DocsMcpRoute: typeof DocsMcpRoute
   StartupSlugRoute: typeof StartupSlugRoute
   UTokenRoute: typeof UTokenRoute
   WidgetBarRoute: typeof WidgetBarRoute
@@ -718,6 +731,13 @@ declare module '@tanstack/react-router' {
       path: '/auth/callback'
       fullPath: '/auth/callback'
       preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/mcp': {
+      id: '/docs/mcp'
+      path: '/docs/mcp'
+      fullPath: '/docs/mcp'
+      preLoaderRoute: typeof DocsMcpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/startup/$slug': {
@@ -925,6 +945,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   AuthCallbackRoute: AuthCallbackRoute,
+  DocsMcpRoute: DocsMcpRoute,
   StartupSlugRoute: StartupSlugRoute,
   UTokenRoute: UTokenRoute,
   WidgetBarRoute: WidgetBarRoute,

@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Settings, LogOut, ChevronsRight, Menu, X, ChevronDown, ArrowRight, Image, Layers3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { McpAnnouncement } from "@/components/McpAnnouncement";
 
 function Logo() {
   return (
@@ -89,6 +90,7 @@ export function SiteHeader({ children }: { children?: ReactNode }) {
   }
 
   return (
+    <>
     <header
       className={cn(
         "site-header sticky top-0 z-40 border-b border-header-ink/8 bg-header-surface/85 backdrop-blur-xl transition-shadow duration-300",
@@ -125,5 +127,7 @@ export function SiteHeader({ children }: { children?: ReactNode }) {
       </nav>}
       {children}
     </header>
+    <McpAnnouncement />
+    </>
   );
 }

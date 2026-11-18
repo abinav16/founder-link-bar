@@ -4,6 +4,7 @@ import { collectSitemapSlugs, PUBLIC_SITEMAP_PATHS, renderSitemap } from "./site
 describe("public sitemap", () => {
   it("includes Advertise but excludes private campaign and account pages", () => {
     expect(PUBLIC_SITEMAP_PATHS).toContain("/advertise");
+    expect(PUBLIC_SITEMAP_PATHS).toContain("/docs/mcp");
     for (const path of ["/advertise/new", "/dashboard", "/account", "/admin", "/auth", "/widget/bar", "/.lovable/oauth/consent"]) expect(PUBLIC_SITEMAP_PATHS).not.toContain(path);
   });
   it("uses the public origin, encodes slugs and never fabricates lastmod", () => {

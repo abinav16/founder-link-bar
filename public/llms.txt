@@ -73,12 +73,15 @@ Eligible referrals have a 30-day attribution window. Browser referral storage an
 - [Advertise](/advertise): Compare banner ads, Gold click packs and Sunday newsletter sponsorships.
 - [Pricing](/pricing): Free first listing, $9.99 additional listings, one-time click packs and annual Supporter membership.
 - [FAQ](/faq): Answers on getting started, widget install, membership and approval, billing, click packs, sponsorships, traffic and delivery.
+- [MCP documentation](/docs/mcp): OAuth connection instructions, the latest 11-tool reference, example requests, safety and troubleshooting.
 - [Privacy Policy](/privacy): How StartupBar collects, uses, and protects founder and visitor data.
 - [Terms of Service](/terms): Rules for participating in the traffic exchange, paid sponsorships, assistant access, billing, and acceptable use.
 
 ## Assistant access
 
-With account-owner approval, connected assistants can read the owner's startup listings and search approved public listings through MCP. Browser tools on Network and Leaderboard are read-only. Current tools cannot purchase ads, edit listings or submit bids. The campaign studio at /advertise/new, dashboard and account pages require sign-in and are not public search landing pages.
+The protected MCP address is https://startupbar.co/mcp. Use remote Streamable HTTP and OAuth; do not paste browser-session tokens or private keys. The latest documented revision includes list_my_startups, search_startups, submit_startup, get_startup_performance, get_leaderboard, get_leaderboard_standing, edit_startup, remove_startup, check_startup_installation, get_campaign_status and compare_startup_performance. External access to this revision requires publication and client discovery; a generated tool catalog is not deployment proof.
+
+Private operations use the connected founder's account permissions. Startup submission is draft-first and requires installation and existing listing-payment eligibility, never automatic approval. Approved text edits wait for review while current text stays live. Removal returns an Account confirmation link and never deletes directly or cancels billing. Performance comparisons exclude today's incomplete UTC day. Campaign tools read status only and cannot pay, book, send emails or submit bids. Browser tools on Network and Leaderboard read the current view; Account can open the existing human removal confirmation. The campaign studio at /advertise/new, dashboard and account require sign-in and are not public search landing pages.
 
 ## Optional
 

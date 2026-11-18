@@ -1,5 +1,5 @@
 export const SITEMAP_BASE_URL = "https://startupbar.co";
-export const PUBLIC_SITEMAP_PATHS = ["/", "/network", "/leaderboard", "/startupbid", "/advertise", "/apply", "/pricing", "/faq", "/terms", "/privacy"] as const;
+export const PUBLIC_SITEMAP_PATHS = ["/", "/network", "/leaderboard", "/startupbid", "/advertise", "/apply", "/pricing", "/faq", "/terms", "/privacy", "/docs/mcp"] as const;
 
 type PublicSlug = { slug: string | null };
 
