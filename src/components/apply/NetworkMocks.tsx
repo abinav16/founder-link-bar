@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { ArrowRight, ArrowUpRight, ChevronsRight, Globe, Info, Menu, Star, Trophy, Zap } from "lucide-react";
+import { ArrowRight, ArrowUpRight, ChevronsRight, Globe, Menu, Star, Trophy, Zap } from "lucide-react";
 import { StartupFavicon } from "@/components/StartupFavicon";
 
 /**
@@ -59,8 +59,8 @@ function DesktopHeader({ page }: { page: MockPage }) {
   return (
     <div className="flex h-[76px] shrink-0 items-center justify-between border-b border-border bg-card px-14">
       <Logo />
-      <nav className="flex items-center gap-10 text-[15px] font-medium text-muted-foreground">
-        {["Network", "Leaderboard", "StartupBid", "Pricing", "Apply"].map((l) => (
+      <nav className="flex items-center gap-6 text-[15px] font-medium text-muted-foreground">
+        {["Network", "Leaderboard", "StartupBid", "Advertise", "Pricing", "Apply"].map((l) => (
           <span key={l} className={l === active ? "text-foreground underline decoration-foreground/30 underline-offset-8" : ""}>{l}</span>
         ))}
       </nav>
@@ -69,54 +69,10 @@ function DesktopHeader({ page }: { page: MockPage }) {
   );
 }
 
-function RailCard({ name, founder, desc, url, logo, index, you }: { name: string; founder: string; desc: string; url: string; logo?: string | null; index: number; you?: boolean }) {
-  return (
-    <article className={`featured-glass relative flex min-w-0 shrink-0 flex-col overflow-hidden rounded-lg border p-3 text-featured-text ${you ? "mk-you" : ""}`}>
-      <div className="mb-2 flex items-center justify-between text-[9px] font-medium text-featured-gold">
-        <span>Featured</span>
-        <span className="font-mono text-featured-muted/60">0{index}</span>
-      </div>
-      <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2.5">
-        <span className="grid h-9 w-9 place-items-center rounded-lg border border-featured-gold/20 bg-featured-surface">
-          <StartupFavicon url={url} name={name} logoUrl={logo} size={26} />
-        </span>
-        <div className="min-w-0">
-          <p className="truncate text-[14px] font-semibold leading-tight">{name}</p>
-          <p className="mt-1 truncate text-[10px] text-featured-muted">{founder}</p>
-        </div>
-      </div>
-      <p className="my-2 line-clamp-3 text-[11px] leading-[1.5] text-featured-muted">{desc}</p>
-      <div className="flex items-center justify-between border-t border-featured-text/10 pt-2">
-        <span className="flex items-center gap-1 text-[11px] font-semibold text-featured-gold">Visit site <ArrowUpRight className="h-3.5 w-3.5" /></span>
-        <span className="text-[10px] text-featured-muted">View profile</span>
-      </div>
-    </article>
-  );
-}
-
-function EmptySlot() {
-  return (
-    <GhostBox className="flex min-h-[80px] flex-1 flex-col justify-center gap-2.5 p-3">
-      <span className="flex items-center gap-2"><span className="h-8 w-8 rounded-lg bg-muted" /><Bar w="55%" /></span>
-      <Bar w="85%" h={6} /><Bar w="65%" h={6} />
-    </GhostBox>
-  );
-}
-
-function Rail({ side, you }: { side: "left" | "right"; you: MockYou }) {
-  const idx = side === "left" ? [1, 2, 3, 4] : [5, 6, 7, 8];
-  return (
-    <aside className="flex min-h-0 flex-col gap-2.5 overflow-hidden pb-4">
-      {idx.map((i) =>
-        i === 1 ? <RailCard key={i} you index={1} name={you.name} founder="You" desc={you.desc} url={you.url} /> : <EmptySlot key={i} />,
-      )}
-    </aside>
-  );
-}
-
 function GlobePill({ you, compact }: { you: MockYou; compact?: boolean }) {
   return (
-    <div aria-hidden className={`relative overflow-hidden rounded-full border border-border bg-muted/60 ${compact ? "h-[110px]" : "h-[180px]"}`}>
+    <div aria-hidden className={`relative overflow-hidden rounded-full border border-border bg-foreground text-background ${compact ? "h-[110px]" : "h-[140px]"}`}>
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3"><p className="text-[18px] font-semibold">Founders helping founders</p><div className="flex gap-6 text-[12px]"><span>Startups</span><span>CTR</span><span>Impressions</span><span>Clicks</span></div></div>
       <span className="mk-you absolute bottom-[22%] right-[16%] grid h-9 w-9 place-items-center rounded-full border-2 border-featured-gold bg-featured-surface">
         <StartupFavicon url={you.url} name={you.name} size={22} />
       </span>
@@ -135,7 +91,7 @@ function SectionLabel({ children }: { children: ReactNode }) {
 
 function GridCard({ name, founder, cat, desc, url, you, impressions, clicks }: { name: string; founder: string; cat: string; desc: string; url: string; you?: boolean; impressions: string; clicks: number }) {
   return (
-    <div className={`relative flex flex-col gap-3 overflow-hidden rounded-2xl border p-5 ${you ? "sb-sponsored mk-you text-featured-text" : "border-border bg-card"}`}>
+    <div className={`relative flex flex-col gap-3 overflow-hidden rounded-2xl border p-5 ${you ? "sb-featured-row mk-you text-foreground" : "border-border bg-card"}`}>
       <div className="flex items-start gap-2">
         <span className={`relative grid h-10 w-10 shrink-0 place-items-center rounded-xl border ${you ? "border-featured-text/15 bg-featured-surface" : "border-border bg-card"}`}>
           <StartupFavicon url={url} name={name} size={30} />
@@ -207,9 +163,10 @@ function ListRow({ name, founder, cat, desc, url, you, impressions, clicks, mobi
             <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border bg-card px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
               <Globe className="h-3 w-3" /> {mobile ? "Visit" : "Visit site"} <ArrowUpRight className="h-2.5 w-2.5" />
             </span>
+            {!mobile && <span className="rounded-md border border-border px-2 py-0.5 text-[10px] text-muted-foreground">{cat}</span>}
           </div>
           <p className="mt-1.5 truncate text-[12px] text-muted-foreground">{founder}</p>
-          <span className="mt-2 inline-flex rounded-md border border-border bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">{cat}</span>
+          
           <p className="mt-2 truncate text-[13px] text-muted-foreground">{desc}</p>
         </div>
         {!mobile && (
@@ -310,6 +267,28 @@ function LeaderboardBody({ you, compact }: { you: MockYou; compact?: boolean }) 
   );
 }
 
+/** Static page diagrams: no live analytics or fabricated campaign delivery. */
+function ProofRows() {
+  return <div className="mt-3 space-y-3">{[0, 1, 2].map((i) => <div key={i} className="flex items-center gap-2"><span className="h-7 w-7 shrink-0 rounded-md bg-muted" /><div className="flex flex-1 flex-col gap-2"><Bar w="70%" h={7} /><Bar w="45%" h={5} /></div></div>)}</div>;
+}
+
+function NetworkProof({ you }: { you: MockYou }) {
+  return <aside className="space-y-5 border-l border-border pl-5">
+    <section><SectionLabel>Last 24 hours</SectionLabel><div className="mt-3 grid grid-cols-2 gap-3">{["Views", "Clicks", "Active sites", "Startups"].map((label) => <div key={label}><p className="text-[11px] text-muted-foreground">{label}</p><Bar w="60%" h={16} className="mt-2" /></div>)}</div></section>
+    <section><SectionLabel>Network milestone</SectionLabel><Bar w="75%" h={10} className="mt-3" /><div className="mt-3 h-1.5 rounded-full bg-muted"><div className="h-full w-3/4 rounded-full bg-foreground" /></div></section>
+    <section><SectionLabel>Founder milestones</SectionLabel><p className="mt-2 text-[10px] text-muted-foreground">Last 7 days · UTC</p><div className="mt-3 flex items-center gap-2"><StartupFavicon url={you.url} name={you.name} size={24} /><div className="min-w-0"><p className="truncate text-[12px] font-semibold">{you.name}</p><p className="text-[10px] text-muted-foreground">Joined the network</p></div></div><ProofRows /></section>
+    <section><SectionLabel>Recently joined</SectionLabel><ProofRows /></section>
+  </aside>;
+}
+
+function ActivityPanel() {
+  return <aside className="space-y-5"><section className="rounded-lg border border-border p-4"><SectionLabel>Network activity</SectionLabel><ProofRows /></section><section className="rounded-lg border border-border p-4"><SectionLabel>Share of views</SectionLabel><div className="mx-auto my-5 h-24 w-24 rounded-full border-[14px] border-foreground border-r-muted" /><ProofRows /></section></aside>;
+}
+
+function FounderPanel({ you }: { you: MockYou }) {
+  return <aside className="space-y-4"><section className="rounded-lg border border-border p-4"><SectionLabel>Rising fast</SectionLabel><ProofRows /></section><section className="rounded-lg border border-border p-4"><SectionLabel>Best click rate</SectionLabel><ProofRows /></section><section className="rounded-lg border border-border p-4"><SectionLabel>Your position</SectionLabel><div className="mt-3 flex items-center gap-2"><StartupFavicon url={you.url} name={you.name} size={24} /><p className="min-w-0 truncate text-[13px] font-semibold">{you.name}</p></div><p className="mt-2 text-[11px] text-muted-foreground">Your ranking appears once you go live</p></section></aside>;
+}
+
 /** Desktop page at 1280px. */
 export function DesktopNetworkMock({ page, you }: { page: MockPage; you: MockYou }) {
   const host = page === "leaderboard" ? "startupbar.co/leaderboard" : "startupbar.co/network";
@@ -321,40 +300,45 @@ export function DesktopNetworkMock({ page, you }: { page: MockPage; you: MockYou
           <span className="ml-3 rounded-md bg-card px-3 py-0.5">{host}</span>
         </div>
         <DesktopHeader page={page} />
-        <div className="grid min-h-0 flex-1 grid-cols-[220px_minmax(0,1fr)_220px] gap-6 px-5 pt-4">
-          <Rail side="left" you={you} />
-          <main className="min-h-0 overflow-hidden">
-            {page === "network" && (
-              <div className="space-y-6">
-                <GlobePill you={you} />
-                <SectionLabel>Trending · last 24h</SectionLabel>
-                <div className="grid grid-cols-3 gap-4">
-                  <GridCard you name={you.name} founder="You" cat="Featured" desc={you.desc} url={you.url} impressions="1.2K" clicks={42} />
-                  <GhostCard /><GhostCard />
-                </div>
+        <div className="min-h-0 flex-1 overflow-hidden px-8 pt-5">
+          {page !== "leaderboard" ? (
+            <>
+              <div className="mx-auto mb-5 max-w-[900px]"><GlobePill you={you} /></div>
+              <div className="grid grid-cols-[minmax(0,1fr)_280px] gap-7">
+                <main className="min-w-0 space-y-4">
+                  {page === "network" ? <>
+                    <SectionLabel>Trending · last 24h</SectionLabel>
+                    <div className="grid grid-cols-3 gap-4">
+                      <GridCard you name={you.name} founder="You" cat="Software" desc={you.desc} url={you.url} impressions="1.2K" clicks={42} />
+                      <GhostCard /><GhostCard />
+                    </div>
+                    <SectionLabel>All startups</SectionLabel>
+                    <GhostRow />
+                  </> : <>
+                    <SectionLabel>All startups</SectionLabel>
+                    <div className="flex gap-3 rounded-lg border border-border p-3 text-[12px] text-muted-foreground"><span className="flex-1">Search startups</span><span>All categories</span><span>All startups</span></div>
+                    <GhostRow />
+                    <ListRow you name={you.name} founder="You" cat="Software" desc={you.desc} url={you.url} impressions="1.2K" clicks={42} />
+                    <GhostRow /><GhostRow />
+                  </>}
+                </main>
+                <NetworkProof you={you} />
               </div>
-            )}
-            {page === "list" && (
-              <div>
-                <div className="flex items-center justify-between border-b border-border pb-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-                  <span>All startups</span>
-                  <span className="flex gap-12 pr-14"><span>Joined</span><span>Impr.</span><span>Clicks</span></span>
-                </div>
-                <GhostRow /><GhostRow />
-                <ListRow you name={you.name} founder="You" cat="Featured" desc={you.desc} url={you.url} impressions="1.2K" clicks={42} />
-                <GhostRow /><GhostRow /><GhostRow />
-              </div>
-            )}
-            {page === "leaderboard" && <LeaderboardBody you={you} />}
-          </main>
-          <Rail side="right" you={you} />
+            </>
+          ) : (
+            <div className="grid grid-cols-[220px_minmax(0,1fr)_240px] gap-6">
+              <ActivityPanel />
+              <main className="min-w-0"><LeaderboardBody you={you} /></main>
+              <FounderPanel you={you} />
+            </div>
+          )}
         </div>
       </div>
     </Scaled>
   );
 }
 
-/** Mobile page at 390px: compact featured banner replaces the rails. */
+/** Mobile page at 390px: native page content, without retired placement strips. */
 export function MobileNetworkMock({ page, you }: { page: MockPage; you: MockYou }) {
   return (
     <Scaled width={390}>
@@ -363,33 +347,19 @@ export function MobileNetworkMock({ page, you }: { page: MockPage; you: MockYou 
           <Logo small />
           <Menu className="h-5 w-5" />
         </div>
-        <div className="grid shrink-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 border-b border-border bg-background px-4 py-2">
-          <span className="grid h-8 w-8 place-items-center rounded-full border border-border text-muted-foreground"><Info className="h-4 w-4" /></span>
-          <div className="flex min-w-0 gap-2 overflow-hidden">
-            {[{ name: you.name, url: you.url, logo: null as string | null, you: true }].map((c, i) => (
-              <span key={i} className={`featured-glass relative flex h-11 shrink-0 items-center gap-2.5 overflow-hidden rounded-lg border px-3 ${c.you ? "mk-you" : ""}`}>
-                <span className="grid h-6 w-6 place-items-center overflow-hidden rounded-md bg-featured-surface"><StartupFavicon url={c.url} name={c.name} logoUrl={c.logo} size={18} /></span>
-                <span className="max-w-[8rem] truncate text-[13px] font-semibold text-featured-text">{c.name}</span>
-                <ArrowUpRight className="h-3.5 w-3.5 text-featured-gold" />
-              </span>
-            ))}
-            <span aria-hidden className="h-11 w-28 shrink-0 rounded-lg border border-border bg-card" />
-            <span aria-hidden className="h-11 w-28 shrink-0 rounded-lg border border-border bg-card" />
-          </div>
-        </div>
         <div className="min-h-0 flex-1 overflow-hidden px-4 pt-4">
           {page === "network" && (
             <div className="space-y-4">
               <GlobePill you={you} compact />
               <SectionLabel>Trending</SectionLabel>
-              <GridCard you name={you.name} founder="You" cat="Featured" desc={you.desc} url={you.url} impressions="1.2K" clicks={42} />
+              <GridCard you name={you.name} founder="You" cat="Software" desc={you.desc} url={you.url} impressions="1.2K" clicks={42} />
               <GhostCard />
             </div>
           )}
           {page === "list" && (
             <div>
               <GhostRow mobile />
-              <ListRow mobile you name={you.name} founder="You" cat="Featured" desc={you.desc} url={you.url} impressions="" clicks={0} />
+              <ListRow mobile you name={you.name} founder="You" cat="Software" desc={you.desc} url={you.url} impressions="" clicks={0} />
               <GhostRow mobile /><GhostRow mobile /><GhostRow mobile />
             </div>
           )}

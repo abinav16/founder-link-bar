@@ -146,7 +146,7 @@ export function PlanOptions({ plan, onChange, startupName, onFocusPreview, listi
           <PlanCard
             delay={70} gold selected={plan.base === "clicks"}
             onSelect={() => { onFocusPreview?.("clicks"); onChange({ ...plan, base: "clicks", clicks: plan.clicks ?? 500 }); }}
-            icon={<MousePointerClick className="h-4 w-4" />} title="Guaranteed clicks" tagline="Featured spot until every click is delivered."
+            icon={<MousePointerClick className="h-4 w-4" />} title="Guaranteed clicks" tagline="Gold highlight until every click is delivered."
             price={<><RollingNumber value={pack.priceUsd} /><span className="block text-[11px] font-normal text-muted-foreground">one-time</span></>}
           >
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4" onClick={(e) => e.stopPropagation()}>
@@ -169,7 +169,7 @@ export function PlanOptions({ plan, onChange, startupName, onFocusPreview, listi
               })}
             </div>
             <ul className="mt-4 space-y-2">
-              <Bullet>Priority in the bar across member sites, plus a featured card on the network page.</Bullet>
+              <Bullet>Priority in the bar across member sites, plus Gold highlights on Network and Leaderboard.</Bullet>
               <Bullet>Only real, bot-filtered clicks count toward your total.</Bullet>
               <Bullet><span className="font-medium text-foreground">Our promise:</span> you stay featured until all {pack.clicks.toLocaleString()} clicks arrive.</Bullet>
             </ul>

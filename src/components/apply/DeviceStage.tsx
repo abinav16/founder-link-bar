@@ -5,6 +5,7 @@ import { useAudience } from "./PlanPicker";
 import { DesktopNetworkMock, MobileNetworkMock } from "./NetworkMocks";
 import { previewSlides, type PreviewFocus, type PreviewSlide } from "@/lib/apply-preview-slides";
 import { NewsletterPreview } from "./NewsletterPreview";
+import { Button } from "@/components/ui/button";
 
 /**
  * Sticky rail that never drifts: its sticky offset equals its natural position,
@@ -41,7 +42,7 @@ export function StageRail({ children }: { children: ReactNode }) {
 
 type SlideId = PreviewSlide;
 const SLIDE_LABEL: Record<SlideId, string> = {
-  site: "Your site", network: "Featured rails", list: "Network list", leaderboard: "Leaderboard", digest: "Sunday digest",
+  site: "Your site", network: "Network overview", list: "Network list", leaderboard: "Leaderboard", digest: "Sunday digest",
 };
 
 export function DeviceStage({
@@ -85,7 +86,7 @@ export function DeviceStage({
     : active === "digest"
       ? { e: "Sunday digest", t: "First thing in every inbox.", s: `Your sponsor card leads the email to ${audience ? audience.toLocaleString() : "every"} founders.` }
       : active !== "site" && featured
-        ? { e: "Guaranteed clicks", t: "Featured on every screen.", s: `Gold spot in the featured rails, network list and leaderboard on desktop and mobile until ${pack?.clicks.toLocaleString() ?? ""} real clicks arrive.` }
+        ? { e: "Guaranteed clicks", t: "Stand out across the network.", s: `Gold highlights on your Network and Leaderboard listings, plus priority in the bar until ${pack?.clicks.toLocaleString() ?? ""} real clicks arrive.` }
         : { e: "Network listing", t: "One bar. Every member site.", s: "Your startup rotates across the network on desktop and mobile." };
 
   const you = { name: displayName, desc: displayDesc, url };
@@ -138,9 +139,9 @@ export function DeviceStage({
       <div className="stage-foot">
         <div className={`stage-tabs ${slides.length > 1 ? "is-on" : ""}`} role="tablist" aria-label="Preview screens">
           {slides.map((s) => (
-            <button key={s} type="button" role="tab" aria-selected={active === s} className={active === s ? "is-on" : ""} onClick={() => setActive(s)}>
+            <Button variant="ghost" key={s} type="button" role="tab" aria-selected={active === s} className={active === s ? "is-on" : ""} onClick={() => setActive(s)}>
               {SLIDE_LABEL[s]}
-            </button>
+            </Button>
           ))}
         </div>
         <div className="stage-caption">

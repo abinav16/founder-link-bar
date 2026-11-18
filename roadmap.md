@@ -1,3 +1,6 @@
+# Current Guaranteed Clicks mockups
+- [x] Remove laptop rails and phone featured strip; update shared application pricing previews with the current centered Network pill/proof column and Leaderboard activity/position columns, and replace retired placement copy. All three laptop/phone slides verified with entered startup details; 390px page fits, 18 preview/checkout tests pass and preview build is clean. Payment logic unchanged.
+
 # Retired featured slots
 - [x] Remove dashboard/account badges, booking/waitlist dialog, return watcher, unused rails and monthly-slot highlight queries; preserve current Gold/click-pack data and legacy owner-only billing cancellation/history. Signed-in dashboard, click-pack dialog, real legacy Account record, four public pages and 390px fit verified; 23 checkout/banner tests and preview build pass. No live subscription cancelled or payment records deleted; retired checkout remains blocked by the existing 410 response.
 
