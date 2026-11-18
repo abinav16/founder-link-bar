@@ -13,6 +13,10 @@ describe("public sitemap", () => {
     expect(xml).toContain("https://startupbar.co/startup/one%20%26%20two");
     expect(xml).not.toContain("<lastmod>");
   });
+  it("lists the public MCP guide exactly once at its canonical URL", () => {
+    const xml = renderSitemap([]);
+    expect(xml.match(/<loc>https:\/\/startupbar\.co\/docs\/mcp<\/loc>/g)).toHaveLength(1);
+  });
   it("reads beyond one page without losing startups", async () => {
     const rows = Array.from({ length: 1201 }, (_, i) => ({ slug: `startup-${i}` }));
     const calls: number[] = [];

@@ -1,3 +1,6 @@
+# MCP guide SEO
+- [x] Strengthen title/descriptions, self-referencing social URL and technical-article/breadcrumb structured data. Anonymous HTML verifies one canonical, all metadata, crawlable full tool reference and valid JSON-LD; existing sitemap includes the guide exactly once with no fabricated dates, five tests pass and preview build is clean. SEO scanners are stale with no failing rows returned; Google indexing is not verified. Live changes require publication.
+
 # MCP documentation and announcement
 - [x] Add /docs/mcp with connection instructions, all eleven tool arguments/limits, examples, workflows, permissions, safety and troubleshooting; unique SEO, canonical, sitemap and assistant index updated. Four sitemap tests pass; preview sitemap includes the guide.
 - [x] Add a shared animated below-header announcement outside sticky navigation; Network link opens the guide, copy gives the exact MCP URL, tool filters/details work, and 360/390/768/1375px fit with no runtime errors; preview build clean. Banner says MCP is here, not that the newest tools are live: published endpoint requires login and discovery responds, while eleven-tool hosted catalog and external OAuth remain unverified pending publication.

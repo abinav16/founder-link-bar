@@ -8,12 +8,38 @@ import { STARTUP_CATEGORIES } from "@/lib/startup-categories";
 
 export const Route = createFileRoute("/docs/mcp")({
   head: () => ({ meta: [
-    { title: "StartupBar MCP — Connection guide & tool documentation" },
-    { name: "description", content: "Connect your AI assistant to StartupBar with OAuth. Explore startup management, analytics, rankings, campaign status and safe removal with the complete MCP tool reference." },
-    { property: "og:title", content: "StartupBar MCP — Your founder workspace, connected" },
-    { property: "og:description", content: "Connection instructions, all 11 tools, example requests, permissions and troubleshooting for StartupBar MCP." },
+    { title: "StartupBar MCP Guide — Setup, OAuth & 11 AI Tools" },
+    { name: "description", content: "Connect your AI assistant to StartupBar MCP with OAuth. Follow the setup guide, explore 11 startup and analytics tools, and troubleshoot your connection." },
+    { property: "og:title", content: "StartupBar MCP Guide — Setup, OAuth & 11 AI Tools" },
+    { property: "og:description", content: "Connect an AI assistant to your founder workspace with the MCP setup guide, complete tool reference, permissions and troubleshooting." },
+    { property: "og:url", content: "https://startupbar.co/docs/mcp" },
+    { name: "twitter:title", content: "StartupBar MCP Guide — Setup, OAuth & 11 AI Tools" },
+    { name: "twitter:description", content: "OAuth connection instructions, startup management, analytics and the complete 11-tool MCP reference." },
     { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" },
-  ], links: [{ rel: "canonical", href: "https://startupbar.co/docs/mcp" }] }),
+  ], links: [{ rel: "canonical", href: "https://startupbar.co/docs/mcp" }], scripts: [{
+    type: "application/ld+json",
+    children: JSON.stringify({
+      "@context": "https://schema.org",
+      "@graph": [{
+        "@type": "TechArticle",
+        "@id": "https://startupbar.co/docs/mcp#guide",
+        url: "https://startupbar.co/docs/mcp",
+        headline: "StartupBar MCP Guide — Setup, OAuth & 11 AI Tools",
+        description: "OAuth connection instructions, the complete StartupBar MCP tool reference, founder workflows, permissions and troubleshooting.",
+        inLanguage: "en",
+        author: { "@type": "Organization", name: "StartupBar", url: "https://startupbar.co" },
+        publisher: { "@type": "Organization", name: "StartupBar", url: "https://startupbar.co" },
+        mainEntityOfPage: "https://startupbar.co/docs/mcp",
+        about: { "@type": "Thing", name: "Model Context Protocol (MCP)" },
+        articleSection: ["Connection setup", "MCP tool reference", "Founder workflows", "Permissions and safety", "Troubleshooting"],
+        hasPart: [{ "@type": "WebPageElement", name: "Connect your assistant", url: "https://startupbar.co/docs/mcp#connect" }, { "@type": "WebPageElement", name: "MCP tool reference", url: "https://startupbar.co/docs/mcp#tools" }],
+      }, {
+        "@type": "BreadcrumbList",
+        "@id": "https://startupbar.co/docs/mcp#breadcrumbs",
+        itemListElement: [{ "@type": "ListItem", position: 1, name: "StartupBar", item: "https://startupbar.co" }, { "@type": "ListItem", position: 2, name: "MCP guide", item: "https://startupbar.co/docs/mcp" }],
+      }],
+    }),
+  }] }),
   component: McpDocumentation,
 });
 
