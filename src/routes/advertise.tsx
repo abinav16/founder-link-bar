@@ -153,7 +153,7 @@ function AdvertisePage() {
 
         <section id="choose" className="adx-choose"><div ref={pick.ref} className={`adx-wrap ${pick.className}`}>
           <p className="adx-eyebrow">Step 1 · Choose</p><h2>Which one is for you?</h2>
-          <div className="adx-tabs" role="tablist">{PRODUCTS.map((p) => <button key={p.id} role="tab" aria-selected={active === p.id} className="adx-tab" onClick={() => setActive(p.id)}><p.icon className="size-5" /><span><strong>{p.name}</strong><small>{p.who}</small></span><em>{p.price}<small> {p.unit}</small></em></button>)}</div>
+          <div className="adx-tabs" role="tablist">{PRODUCTS.map((p) => <Button variant="ghost" key={p.id} role="tab" aria-selected={active === p.id} className="adx-tab" onClick={() => setActive(p.id)}><p.icon className="size-5" /><span><strong>{p.name}</strong><small>{p.who}</small></span><em>{p.price}<small> {p.unit}</small></em></Button>)}</div>
           <div className="adx-detail" key={active}>
             <div><h3>{product.name}</h3><p>{product.line}</p><ul>{product.facts.map((f) => <li key={f}><Check className="size-4" />{f}</li>)}</ul>
               <Button asChild className="mt-6 rounded-full"><Link to="/advertise/new">Choose {product.name.toLowerCase()} <ArrowRight /></Link></Button></div>

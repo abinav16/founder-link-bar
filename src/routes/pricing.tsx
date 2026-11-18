@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { ArrowRight, Check, Clock, Crown, DollarSign, Globe, Layers, MousePointerClick, Receipt, Rocket, ShieldCheck, Sparkles } from "lucide-react";
 import { SUPPORTER_PRICE_USD, SUPPORTER_TRIAL_DAYS } from "@/lib/supporter";
@@ -146,10 +147,10 @@ function PricingPage() {
             <h2>Want more visitors? Buy clicks, once.</h2>
             <p className="adx-lead">Your startup gets a gold highlight on the Network and Leaderboard pages and priority in the bar until every real, bot filtered click is delivered.</p>
             <div className="pr-packs" role="radiogroup">{CLICK_PACKS.map((c, i) => (
-              <button key={c.clicks} role="radio" aria-checked={pack === i} onClick={() => setPack(i)} className="pr-pack">
+              <Button variant="ghost" key={c.clicks} role="radio" aria-checked={pack === i} onClick={() => setPack(i)} className="pr-pack">
                 <strong>{c.clicks.toLocaleString()}</strong><small>clicks</small><em>${c.priceUsd}</em>
                 {packSavingsPct(c) > 0 && <span>Save {packSavingsPct(c)}%</span>}
-              </button>
+              </Button>
             ))}</div>
             <div className="flex flex-wrap items-center gap-4 mt-6">
               <Link to="/apply" className="pr-btn">Get {sel.clicks.toLocaleString()} clicks for ${sel.priceUsd} <ArrowRight className="size-4" /></Link>
@@ -160,11 +161,11 @@ function PricingPage() {
             <p className="pr-chart-title">Price per click</p>
             <div className="pr-bars">{CLICK_PACKS.map((c, i) => {
               const max = perClick(CLICK_PACKS[0]);
-              return <button key={c.clicks} onClick={() => setPack(i)} className={`pr-bar ${pack === i ? "is-on" : ""}`}>
+              return <Button variant="ghost" aria-label={`${c.clicks} clicks, $${perClick(c).toFixed(2)} per click`} aria-pressed={pack === i} key={c.clicks} onClick={() => setPack(i)} className={`pr-bar ${pack === i ? "is-on" : ""}`}>
                 <span className="pr-bar-val">${perClick(c).toFixed(2)}</span>
                 <i style={{ height: `${(perClick(c) / max) * 100}%`, animationDelay: `${i * 120}ms` }} />
                 <small>{c.clicks.toLocaleString()}</small>
-              </button>;
+              </Button>;
             })}</div>
             <div className="pr-chart-foot"><span>Delivered</span><div className="adx-meter-track"><i style={{ width: "100%" }} className="pr-fill" /></div><strong>{sel.clicks.toLocaleString()} / {sel.clicks.toLocaleString()}</strong></div>
           </div>

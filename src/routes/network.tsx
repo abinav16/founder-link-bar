@@ -297,7 +297,7 @@ function StartupRow({ s }: { s: Card }) {
   const visitHref = `/api/public/widget/click?id=${s.id}&source=dashboard`;
   const sponsored = s.sponsored;
   return (
-    <div className={`group relative py-4 border-b last:border-0 transition-colors duration-150 overflow-hidden ${sponsored ? "sb-featured-row rounded-xl border-b-0 my-1 px-3 border" : "border-black/[0.05]"}`}>
+    <div className={`network-listing group relative py-4 border-b last:border-0 transition-colors duration-150 overflow-hidden ${sponsored ? "sb-featured-row rounded-xl border-b-0 my-1 px-3 border" : "border-black/[0.05]"}`}>
       {s.slug && (
         <StartupProfileLink slug={s.slug} className="absolute inset-0 z-0">
           <span className="sr-only">View {s.name} profile</span>
@@ -974,7 +974,7 @@ function NetworkDashboardPage() {
 
   return (
     <DashboardLayout fullWidth rail={<SponsoredRail />}>
-      <div className="space-y-10 px-4 py-6 sm:px-6 sm:py-8 xl:px-10">
+      <div className="network-page space-y-10 px-4 py-6 sm:px-6 sm:py-8 xl:px-10">
         {data.recentStartups.length > 0 && (
           <div className="mx-auto max-w-6xl">
             <MagneticField startups={data.recentStartups} stats={stats} />

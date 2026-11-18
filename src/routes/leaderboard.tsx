@@ -510,9 +510,11 @@ function LeaderboardPage() {
         </div>
       </div>
 
-      <div className="mb-4 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+      <div className="lb-ranges mb-4 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
         {RANGE_OPTIONS.map((opt) => (
-          <button
+          <Button
+            variant="ghost"
+            aria-pressed={range === opt.key}
             key={opt.key}
             type="button"
             onClick={() => setRange(opt.key)}
@@ -523,7 +525,7 @@ function LeaderboardPage() {
             }`}
           >
             {opt.label}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -728,7 +730,7 @@ function LeaderboardPage() {
               <Fragment key={row.id}>
               {i > 0 && i % BANNER_EVERY_N_ROWS === 0 ? <BannerSlot slot={i / BANNER_EVERY_N_ROWS - 1} /> : null}
               <div
-                className={`group flex items-center gap-4 rounded-2xl border px-5 py-4 transition-all overflow-hidden ${
+                className={`lb-listing group flex items-center gap-4 rounded-2xl border px-5 py-4 transition-all overflow-hidden ${
                   row.sponsored
                     ? "sb-featured-row relative hover:shadow-[0_8px_24px_-12px_oklch(0.65_0.15_68_/_0.3)]"
                     : row.supporter

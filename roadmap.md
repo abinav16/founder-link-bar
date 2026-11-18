@@ -1,3 +1,6 @@
+# Mobile page optimization
+- [x] Improve Network, Leaderboard, Advertise, campaign setup and Pricing phone layouts; verified 360/390/430px fit, search, ranking/range controls, newsletter diagram, click-pack selection, signed-in campaign duration and desktop fit without runtime errors. Banner/milestone/checkout tests pass; Supporter uses its native test runner. Prices and ranking remain unchanged.
+
 # Network milestone scrolling
 - [x] Lock the right column during page scrolling and scroll milestones internally; seven-day UTC history uses existing daily counts with no guessed crossing dates. Four date/crossing tests, desktop fixed-position/internal-scroll checks, real startup profile readback and phone fit pass.
 
