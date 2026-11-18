@@ -1,3 +1,6 @@
+# Welcome page redesign
+- [x] Preserve the hero exactly; redesign the remaining homepage and footer with monochrome visuals, real startup logos, interactive exchange, live network map, signup journey, options and FAQ. Verified video playback/pause, step selection, FAQ expansion, 390/768/1631px fit, no runtime errors and 19 pricing/signup tests; payments unchanged.
+
 # Current Guaranteed Clicks mockups
 - [x] Remove laptop rails and phone featured strip; update shared application pricing previews with the current centered Network pill/proof column and Leaderboard activity/position columns, and replace retired placement copy. All three laptop/phone slides verified with entered startup details; 390px page fits, 18 preview/checkout tests pass and preview build is clean. Payment logic unchanged.
 
