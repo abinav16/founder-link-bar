@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { SitePreviewSurface } from "@/components/SitePreviewSurface";
 import { resolveEmbedUrl } from "@/lib/preview-probe.functions";
 import { resolveWidgetPalette, widgetMutedColor } from "@/lib/widget-palette";
+import { assignHeroOrbits } from "@/lib/hero-orbits";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -65,20 +66,15 @@ function HeroCanvas() {
   useEffect(() => {
     supabase.from("startups").select("website_url,logo_url").eq("status", "approved").then(({ data }) => {
       if (!data || data.length === 0) return;
-      // Total dots across all rings = 8+12+16+20 = 56. Spread logos evenly
-      // across unique dot slots so every approved startup gets its own orbit spot.
-      const TOTAL_DOTS = 100;
-      const shuffled = [...data].sort(() => Math.random() - 0.5).slice(0, TOTAL_DOTS);
-      const step = Math.max(1, Math.floor(TOTAL_DOTS / shuffled.length));
-      const used = new Set<number>();
-      logosRef.current = shuffled.map((s: any, i) => {
-        let slot = (i * step) % TOTAL_DOTS;
-        while (used.has(slot)) slot = (slot + 1) % TOTAL_DOTS;
-        used.add(slot);
+      logosRef.current = data.map((s, i) => {
         const img = new Image();
         const domain = (s.website_url || "").replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+        img.onerror = () => {
+          img.onerror = null;
+          img.src = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+        };
         img.src = s.logo_url || `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
-        return { img, dotIdx: slot };
+        return { img, dotIdx: i };
       });
     });
   }, []);
@@ -102,13 +98,9 @@ function HeroCanvas() {
       dots = [];
       const cx = canvas.offsetWidth / 2;
       const cy = canvas.offsetHeight * 0.52;
-      RINGS.forEach((radius, ri) => {
-        const count = 8 + ri * 4;
-        for (let i = 0; i < count; i++) {
-          const angle = (i / count) * Math.PI * 2;
-          const speed = (0.0012 + Math.random() * 0.0008) * (Math.random() > 0.5 ? 1 : -1);
-          dots.push({ angle, speed, radius, x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius, r: 1.8 + Math.random() * 1.2, ringIdx: ri, dotIdx: dots.length });
-        }
+      dots = assignHeroOrbits(logosRef.current.length).map(({ index, ring, angle }) => {
+        const radius = RINGS[ring];
+        return { angle, speed: (ring % 2 === 0 ? 1 : -1) * .0008, radius, x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius, r: 2, ringIdx: ring, dotIdx: index };
       });
     };
 
@@ -117,7 +109,7 @@ function HeroCanvas() {
       const dpr = window.devicePixelRatio || 1;
       const cssW = canvas.offsetWidth;
       const cssH = canvas.offsetHeight;
-      const base = Math.min(cssW * .34, 490);
+      const base = Math.min(cssW * .46, cssH * .45, 490);
       RINGS = [.39, .59, .8, 1].map(scale => base * scale);
       canvas.width = Math.round(cssW * dpr);
       canvas.height = Math.round(cssH * dpr);
@@ -129,6 +121,7 @@ function HeroCanvas() {
     };
 
     const draw = () => {
+      if (dots.length !== logosRef.current.length) init();
       const cx = canvas.offsetWidth / 2;
       const cy = canvas.offsetHeight * 0.52;
       ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
@@ -145,22 +138,8 @@ function HeroCanvas() {
         if (!reducedMotion.matches && !document.hidden) d.angle += d.speed * .6;
         const tx = cx + Math.cos(d.angle) * d.radius;
         const ty = cy + Math.sin(d.angle) * d.radius;
-        if (mouse.inside) {
-          const dx = mouse.x - tx;
-          const dy = mouse.y - ty;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 180) {
-            const pull = (1 - dist / 180) * 0.35;
-            d.x += (tx + dx * pull - d.x) * 0.1;
-            d.y += (ty + dy * pull - d.y) * 0.1;
-          } else {
-            d.x += (tx - d.x) * 0.1;
-            d.y += (ty - d.y) * 0.1;
-          }
-        } else {
-          d.x += (tx - d.x) * 0.1;
-          d.y += (ty - d.y) * 0.1;
-        }
+        d.x = tx;
+        d.y = ty;
       });
 
       for (let i = 0; i < dots.length; i++) {
@@ -202,11 +181,9 @@ function HeroCanvas() {
       }
 
       const logoMap = new Map<number, HTMLImageElement>();
-      logosRef.current.forEach(({ img, dotIdx }) => { logoMap.set(dotIdx % dots.length, img); });
+      logosRef.current.forEach(({ img, dotIdx }) => { logoMap.set(dotIdx, img); });
 
       dots.forEach((d) => {
-        // Keep the central headline and input clear while logos orbit at the sides.
-        if (d.y < canvas.offsetHeight * .56 && Math.abs(d.x - cx) < Math.min(380, canvas.offsetWidth * .39)) return;
         const logoImg = logoMap.get(d.dotIdx);
         if (logoImg && logoImg.complete && logoImg.naturalWidth > 0) {
           const lr = canvas.offsetWidth < 640 ? 9 : 14;
