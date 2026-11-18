@@ -1,5 +1,6 @@
 import { defineTool, ToolError } from "@lovable.dev/mcp-js";
 import { supabaseForUser } from "../supabase";
+import { startupHealth } from "../startup-rules";
 
 export default defineTool({
   name: "list_my_startups",
@@ -11,10 +12,10 @@ export default defineTool({
     const userId = ctx.getUserId();
     if (!userId) throw new ToolError("Sign in to read your startups.");
     const { data, error } = await supabaseForUser(ctx).from("startups")
-      .select("id, name, website_url, status, category, widget_last_heartbeat_at, created_at")
+      .select("id, name, slug, description, website_url, status, category, banned, membership_mode, supporter_until, widget_last_heartbeat_at, widget_currently_visible, iframe_blocked, created_at")
       .eq("user_id", userId).order("created_at", { ascending: false }).limit(100);
     if (error) throw new ToolError("Could not read your startups. Please try again.");
-    const startups = (data ?? []).map(s => ({ id: s.id, name: s.name, website_url: s.website_url, status: s.status, category: s.category, last_widget_heartbeat: s.widget_last_heartbeat_at }));
+    const startups = (data ?? []).map(s => ({ id: s.id, name: s.name, description: s.description, website_url: s.website_url, status: s.status, category: s.category, bar_status: startupHealth(s), profile_url: s.slug ? `https://startupbar.co/startup/${s.slug}` : null }));
     return { content: [{ type: "text", text: JSON.stringify({ startups }) }], structuredContent: { startups } };
   },
 });

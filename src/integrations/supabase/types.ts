@@ -1680,6 +1680,7 @@ export type Database = {
       is_approved_host: { Args: { _id: string }; Returns: boolean }
       is_approved_startup: { Args: { _id: string }; Returns: boolean }
       is_supporter: { Args: { _id: string }; Returns: boolean }
+      mcp_submit_startup: { Args: { _startup_id: string }; Returns: Json }
       move_to_dlq: {
         Args: {
           dlq_name: string

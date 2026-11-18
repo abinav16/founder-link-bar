@@ -155,6 +155,13 @@
       "when": 1794047369279,
       "tag": "0021_weekly_banner_sponsorship",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1794978308529,
+      "tag": "0022_agent_startup_submission",
+      "breakpoints": true
     }
   ]
 }

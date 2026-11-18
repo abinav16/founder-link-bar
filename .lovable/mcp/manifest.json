@@ -13,7 +13,7 @@
   "mcp": {
     "server": {
       "name": "startupbar",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "title": "StartupBAR"
     },
     "tools": [
@@ -52,12 +52,227 @@
               "default": "",
               "description": "Startup name to search for; omit to browse recent listings."
             },
+            "category": {
+              "type": "string",
+              "enum": [
+                "AI",
+                "Developer Tools",
+                "Productivity",
+                "Marketing & Sales",
+                "Design",
+                "Creator & Media",
+                "E-commerce",
+                "Finance",
+                "Education",
+                "Health & Wellness",
+                "Community",
+                "Other"
+              ],
+              "description": "Optionally filter by startup category."
+            },
             "limit": {
               "type": "integer",
               "minimum": 1,
               "maximum": 50,
               "default": 20,
               "description": "Maximum number of listings to return."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "submit_startup",
+        "title": "Add a startup",
+        "description": "Prepare a startup application and return its install snippet. Call again with submit=true after installation to submit for review. Additional listings require verified prepaid payment; this tool never charges you.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 60,
+              "description": "Startup name, 2–60 characters."
+            },
+            "website_url": {
+              "type": "string",
+              "format": "uri",
+              "maxLength": 200,
+              "description": "Public website URL."
+            },
+            "description": {
+              "type": "string",
+              "minLength": 10,
+              "maxLength": 100,
+              "description": "One-line description, 10–100 characters."
+            },
+            "category": {
+              "type": "string",
+              "enum": [
+                "AI",
+                "Developer Tools",
+                "Productivity",
+                "Marketing & Sales",
+                "Design",
+                "Creator & Media",
+                "E-commerce",
+                "Finance",
+                "Education",
+                "Health & Wellness",
+                "Community",
+                "Other"
+              ],
+              "description": "Startup category from the supported vocabulary."
+            },
+            "submit": {
+              "type": "boolean",
+              "default": false,
+              "description": "False prepares the application; true verifies installation and submits it for review."
+            },
+            "startup_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Use the ID returned during preparation when submitting."
+            },
+            "placement": {
+              "type": "string",
+              "enum": [
+                "top",
+                "bottom"
+              ],
+              "default": "top",
+              "description": "Position of the visible bar on your website."
+            }
+          },
+          "required": [
+            "name",
+            "website_url",
+            "description",
+            "category"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_startup_performance",
+        "title": "Startup performance",
+        "description": "Read one owned startup's approval and bar status, impressions and clicks received and delivered, CTR, daily history and guaranteed-click progress. Seven/thirty-day periods include today in UTC, not rolling hours.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "startup_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Owned startup ID from list_my_startups."
+            },
+            "period": {
+              "type": "string",
+              "enum": [
+                "7d",
+                "30d",
+                "all"
+              ],
+              "default": "7d",
+              "description": "Seven or thirty UTC calendar days including today, or all time."
+            }
+          },
+          "required": [
+            "startup_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_leaderboard",
+        "title": "Network leaderboard",
+        "description": "List approved non-banned startups ranked by impressions received or delivered, using the website's daily and lifetime counts.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "period": {
+              "type": "string",
+              "enum": [
+                "today",
+                "7d",
+                "all"
+              ],
+              "default": "7d",
+              "description": "Today UTC, seven UTC calendar days including today, or all time."
+            },
+            "direction": {
+              "type": "string",
+              "enum": [
+                "received",
+                "delivered"
+              ],
+              "default": "received",
+              "description": "Rank by impressions received from the network or delivered to others."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20,
+              "description": "Maximum ranked startups to return."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_leaderboard_standing",
+        "title": "My leaderboard positions",
+        "description": "Show the selected-period position of every owned startup and impressions needed to pass the preceding position. Non-approved listings are not ranked.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "period": {
+              "type": "string",
+              "enum": [
+                "today",
+                "7d",
+                "all"
+              ],
+              "default": "7d",
+              "description": "Today UTC, seven UTC calendar days including today, or all time."
+            },
+            "direction": {
+              "type": "string",
+              "enum": [
+                "received",
+                "delivered"
+              ],
+              "default": "received",
+              "description": "Rank by impressions received from the network or delivered to others."
             }
           },
           "additionalProperties": false,
