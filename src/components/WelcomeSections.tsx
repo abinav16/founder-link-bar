@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ClientOnly, Link } from "@tanstack/react-router";
-import { ArrowDown, ArrowRight, ArrowUpRight, Check, Code2, Eye, Globe, MousePointerClick, Plus, ShieldCheck, Sparkles, TrendingUp, Users } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Check, Eye, Globe, MousePointer2, MousePointerClick, Plus, ShieldCheck, Sparkles, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PromoVideo } from "@/components/PromoVideo";
 import { LiveVisitorMap } from "@/components/LiveVisitorMap";
@@ -25,15 +25,45 @@ function Reveal({ children, className = "" }: { children: ReactNode; className?:
 }
 
 const steps = [
-  { icon: Globe, title: "Add your startup", text: "A real product, a short description, and your link. Your first listing is free forever.", label: "Your startup", detail: "Ready to be discovered" },
-  { icon: Code2, title: "Make a little room", text: "Add one line of code. A small, 36px bar introduces another founder’s product on your site.", label: "Your website", detail: "One small bar. Another great startup." },
-  { icon: MousePointerClick, title: "Get discovered back", text: "Your startup appears on other founders’ sites. Follow the views and clicks in your dashboard.", label: "The founder network", detail: "Their visitors can discover you, too." },
+  { title: "Add your startup", text: "A real product, a short description, and your link. Your first listing is free forever." },
+  { title: "Make a little room", text: "Add one line of code. A small, 36px bar introduces another founder’s product on your site." },
+  { title: "Get discovered back", text: "Your startup appears on other founders’ sites. Follow the views and clicks in your dashboard." },
 ];
+
+function ExchangeScene({ step, startups }: { step: number; startups: Startup[] }) {
+  const startup = startups[0];
+  const logo = (size: number) => startup ? <StartupFavicon url={startup.website_url} name={startup.name} logoUrl={startup.logo_url} size={size} /> : <span className="promo-brand-mark" />;
+  if (step === 0) return <div className="exchange-scene exchange-profile-scene">
+    <div className="exchange-scene-heading"><span>01 / YOUR PRODUCT, INTRODUCED</span><span>Example listing</span></div>
+    <div className="exchange-profile-sheet">
+      <div className="exchange-sheet-top"><span>StartupBar / New listing</span><span>First listing · Free</span></div>
+      <div className="exchange-profile-identity">{logo(48)}<div><strong>{startup?.name ?? "Your startup"}</strong><span>{startup?.website_url.replace(/^https?:\/\//, "").replace(/\/$/, "") ?? "yourstartup.com"}</span></div></div>
+      <div className="exchange-profile-field"><span>THE ONE-LINER</span><p>{startup?.description ?? "Something great you’re building, ready for its first visitors."}</p></div>
+      <div className="exchange-profile-checks"><span><Check /> Product details</span><span><Check /> Website link</span></div>
+      <div className="exchange-profile-submit">Ready for review <ArrowRight /></div>
+      <MousePointer2 className="exchange-profile-cursor" fill="currentColor" aria-hidden="true" />
+    </div>
+    <div className="exchange-profile-arrival"><ShieldCheck /><div><strong>A place in the founder network</strong><span>Your product. Your story. Your own profile.</span></div></div>
+  </div>;
+  if (step === 1) return <div className="exchange-scene exchange-install-scene">
+    <div className="exchange-scene-heading"><span>02 / ONE LINE → A LITTLE BAR</span><span>Installation preview</span></div>
+    <div className="exchange-code"><div><span>your website / index.html</span><span>HTML</span></div><code><span>&lt;script</span><br /><span className="exchange-code-line">src="https://startupbar.co/widget/loader.js"</span><br /><span className="exchange-code-line">data-startup-id="your-startup"</span><br /><span>&gt;&lt;/script&gt;</span></code><span className="exchange-code-selection" aria-hidden="true" /></div>
+    <div className="exchange-install-connector" aria-hidden="true"><i /><span>↓</span></div>
+    <div className="exchange-installed-site"><div className="exchange-browser-chrome"><i /><i /><i /><span>yourstartup.com</span></div><div className="exchange-installed-bar"><span className="promo-brand-mark" />{logo(16)}<strong>{startup?.name ?? "Another founder’s startup"}</strong><span>Visit <ArrowUpRight /></span></div><div className="exchange-site-content"><strong>Your website.<br />Still yours.</strong><div><i /><i /><i /></div></div><span className="exchange-bar-size">36px <span>↕</span></span></div>
+    <div className="exchange-scene-note"><Check /> Blends with your site. Loads asynchronously.</div>
+  </div>;
+  return <div className="exchange-scene exchange-discovery-scene">
+    <div className="exchange-scene-heading"><span>03 / THEIR AUDIENCE → YOUR STARTUP</span><span>Illustrative activity</span></div>
+    <div className="exchange-discovery-websites">{[0, 1, 2].map(i => <div key={i} className={`exchange-referrer exchange-referrer-${i}`}><div><i /><i /><i /></div><span>{startups[i + 1]?.name ?? `Founder website ${i + 1}`}</span><div className="exchange-referrer-bar">{logo(14)}<span>{startup?.name ?? "Your startup"}</span><ArrowUpRight /></div><MousePointer2 className="exchange-referrer-cursor" fill="currentColor" aria-hidden="true" /></div>)}</div>
+    <div className="exchange-traffic-paths" aria-hidden="true"><div><i /></div><div><i /></div><div><i /></div></div>
+    <div className="exchange-traffic-destination">{logo(36)}<div><span>VISITORS ARRIVE AT</span><strong>{startup?.name ?? "Your startup"}</strong></div><ArrowUpRight /></div>
+    <div className="exchange-activity-feed"><div><MousePointerClick /><span>A visitor discovered your startup</span><span>Click</span></div><div><Eye /><span>Your listing appeared on a founder’s site</span><span>View</span></div></div>
+    <div className="exchange-scene-note"><TrendingUp /> Views and clicks, recorded in your dashboard.</div>
+  </div>;
+}
 
 function Exchange({ startups }: { startups: Startup[] }) {
   const [step, setStep] = useState(0);
-  const selected = steps[step];
-  const Icon = selected.icon;
   return <section id="how" className="welcome-section">
     <Reveal className="welcome-container">
       <div className="welcome-section-head"><div><span className="welcome-kicker">01 / THE EXCHANGE</span><h2>A little space.<br />A whole new audience.</h2></div><p>You’re building something worth finding.<br />Let other founders help people find it.</p></div>
@@ -50,12 +80,7 @@ function Exchange({ startups }: { startups: Startup[] }) {
           <Button asChild className="welcome-action"><Link to="/apply">Find your first visitors <ArrowRight /></Link></Button>
         </div>
         <div id="welcome-step-visual" role="tabpanel" aria-labelledby={`welcome-step-${step}`} className={`welcome-exchange-visual welcome-exchange-step-${step}`}>
-          <div className="welcome-diagram-caption"><span><span className="welcome-live-dot" /> FOUNDER TO FOUNDER</span><span>Give a little. Grow together.</span></div>
-          <div className="welcome-flow-node welcome-flow-source"><Icon /><strong>{selected.label}</strong><span>{selected.detail}</span></div>
-          <div className="welcome-flow-path" aria-hidden="true"><i /><i /><i /><ArrowDown /></div>
-          <div className="welcome-network-nodes">{startups.slice(0, 3).map((startup) => <div key={startup.website_url}><StartupFavicon url={startup.website_url} name={startup.name} logoUrl={startup.logo_url} size={36} /><span>{startup.name}</span></div>)}{startups.length === 0 && <div><Users size={36} /><span>Other founders</span></div>}</div>
-          <div className="welcome-return-line"><ArrowRight /><span>Your startup is shown on their sites</span><ArrowRight /></div>
-          <div className="welcome-visual-foot"><ShieldCheck /><span>Human-reviewed startups. Shared discovery.</span></div>
+          <ExchangeScene key={step} step={step} startups={startups} />
         </div>
       </div>
     </Reveal>
