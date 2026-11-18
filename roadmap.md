@@ -1,3 +1,7 @@
+# MCP submission repair and click-pack booking
+- [x] Fix composite draft conflict targeting; actual World of Messages application saved, resumed with the same ID and opened in signed-in /apply with the $9.99 additional-listing handoff. No submission or charge.
+- [x] Share owner-authorized checkout with book_guaranteed_clicks; twelve-tool guide and catalog updated. 32 tests pass and preview build clean. Real-account 100-click $49 checkout opens the secure payment page; pending order reads back through caller permissions. No payment made or delivery granted. Existing Cloud/auth/Dodo reused; no new services. Hosted revision and external OAuth await republishing.
+
 # MCP guide SEO
 - [x] Strengthen title/descriptions, self-referencing social URL and technical-article/breadcrumb structured data. Anonymous HTML verifies one canonical, all metadata, crawlable full tool reference and valid JSON-LD; existing sitemap includes the guide exactly once with no fabricated dates, five tests pass and preview build is clean. SEO scanners are stale with no failing rows returned; Google indexing is not verified. Live changes require publication.
 

@@ -13,9 +13,8 @@ function okReturn(raw: string) {
   } catch { return false; }
 }
 
-export type CreateOrderResult =
-  | { ok: true; paymentLink: string }
-  | { ok: false; reason: "date_taken" | "addons_unavailable" | "already_submitted" | "nothing_to_pay" | "invalid" | "error" };
+import type { CreateOrderResult } from "./boost-checkout.server";
+export type { CreateOrderResult } from "./boost-checkout.server";
 
 export const createOrderCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -118,44 +117,8 @@ export const createBoostCheckout = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }): Promise<CreateOrderResult> => {
     if (!okReturn(data.returnUrl)) return { ok: false, reason: "invalid" };
-    const apiKey = process.env.DODO_PAYMENTS_API_KEY;
-    if (!apiKey) return { ok: false, reason: "error" };
-    const uid = context.userId;
-    const { data: own } = await context.supabase.from("startups").select("id, user_id, status, banned").eq("id", data.startupId).maybeSingle();
-    if (!own || own.user_id !== uid || own.status !== "approved" || own.banned) return { ok: false, reason: "invalid" };
-    const lines = buildOrderLines({ base: "clicks", clicks: data.clicks }, { needsListing: false, audience: 0 });
-    if (!lines || !lines.clicks) return { ok: false, reason: "invalid" };
-    const productId = process.env[lines.items[0].productEnv];
-    if (!productId) return { ok: false, reason: "addons_unavailable" };
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const email = (context.claims as { email?: string }).email ?? "";
-    await supabaseAdmin.from("checkout_orders").update({ status: "expired" }).eq("status", "pending").eq("user_id", uid);
-    const { data: order, error } = await supabaseAdmin.from("checkout_orders").insert({
-      user_id: uid, startup_id: data.startupId, listing_cents: 0,
-      clicks: lines.clicks, clicks_cents: lines.clicksCents, newsletter_cents: 0, total_cents: lines.totalCents,
-    }).select("id").single();
-    if (error || !order) { console.error("[boost] insert", error); return { ok: false, reason: "error" }; }
-    const sep = data.returnUrl.includes("?") ? "&" : "?";
-    const res = await fetch("https://live.dodopayments.com/payments", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        billing: { city: "", country: "US", state: "", street: "", zipcode: "" },
-        customer: { email, name: email },
-        payment_link: true,
-        product_cart: [{ product_id: productId, quantity: 1 }],
-        return_url: `${data.returnUrl}${sep}payment_id={payment_id}`,
-        metadata: { kind: "order", order_id: order.id, user_id: uid, startup_id: data.startupId, listing: "0" },
-      }),
-    });
-    const out = (await res.json().catch(() => null)) as { payment_link?: string; payment_id?: string } | null;
-    if (!res.ok || !out?.payment_link) {
-      console.error("[boost] dodo", res.status, out);
-      await supabaseAdmin.from("checkout_orders").update({ status: "failed" }).eq("id", order.id);
-      return { ok: false, reason: "error" };
-    }
-    if (out.payment_id) await supabaseAdmin.from("checkout_orders").update({ dodo_payment_id: out.payment_id }).eq("id", order.id);
-    return { ok: true, paymentLink: out.payment_link };
+    const { boostCheckout } = await import("./boost-checkout.server");
+    return boostCheckout(data, { supabase: context.supabase, userId: context.userId, email: (context.claims as { email?: string }).email ?? "" });
   });
 
 /** Owner's click boosts with delivery progress. */

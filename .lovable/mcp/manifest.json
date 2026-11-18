@@ -13,7 +13,7 @@
   "mcp": {
     "server": {
       "name": "startupbar",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "title": "StartupBAR"
     },
     "tools": [
@@ -460,6 +460,44 @@
               "description": "Compare the last complete 7 or 30 UTC days with the preceding equal-length period."
             }
           },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "book_guaranteed_clicks",
+        "title": "Book Guaranteed Clicks",
+        "description": "Create a one-time Guaranteed Clicks checkout link for your approved startup. You must open the secure link and pay yourself; no charge or delivery is triggered by this tool.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "startup_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Approved startup ID from list_my_startups."
+            },
+            "clicks": {
+              "type": "number",
+              "enum": [
+                100,
+                250,
+                500,
+                1000
+              ],
+              "description": "One-time pack: 100/$49, 250/$99, 500/$179 or 1000/$299 USD."
+            }
+          },
+          "required": [
+            "startup_id",
+            "clicks"
+          ],
           "additionalProperties": false,
           "$schema": "http://json-schema.org/draft-07/schema#"
         },

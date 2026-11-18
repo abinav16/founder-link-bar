@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-const { client, responses } = vi.hoisted(() => ({ client: { from: vi.fn(), rpc: vi.fn() }, responses: [] as unknown[] }));
+const { client, responses } = vi.hoisted(() => ({ client: { from: vi.fn(), rpc: vi.fn(), upsert: vi.fn() }, responses: [] as unknown[] }));
 vi.mock("../supabase", () => ({ supabaseForUser: () => client }));
 import submitTool from "./submit-startup";
 import type { ToolContext, ToolHandlerResult } from "@lovable.dev/mcp-js";
@@ -17,6 +17,7 @@ beforeEach(() => {
     const result = responses.shift();
     const chain: Record<string, unknown> = {};
     for (const method of ["select", "eq", "is", "order", "limit", "upsert", "maybeSingle"]) chain[method] = () => chain;
+    chain.upsert = client.upsert.mockReturnValue(chain);
     chain.then = (resolve: (v: unknown) => unknown) => Promise.resolve(result).then(resolve);
     return chain;
   });
@@ -35,6 +36,7 @@ describe("startup submission handoff", () => {
   it("prepares the first listing free without submitting it", async () => {
     responses.push({ data: [] }, { data: [] }, { error: null }, { count: 0 }, { data: [] });
     const result = fields(await submitTool.handler(input, context));
+    expect(client.upsert).toHaveBeenCalledWith(expect.objectContaining({ user_id: "owner", startup_id: result.startup_id }), { onConflict: "user_id,startup_id" });
     expect(result.listing_fee_usd).toBe(0);
     expect(result.status).toBe("installation_required");
     expect(client.rpc).not.toHaveBeenCalled();

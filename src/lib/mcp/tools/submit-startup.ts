@@ -31,7 +31,7 @@ export default defineTool({
       if (error || !draft) throw new ToolError("Application draft not found in your account.");
       if (draft.name !== name || draft.website_url !== website_url || draft.description !== description || draft.category !== category || draft.placement !== placement) throw new ToolError("Application details changed. Prepare it again before submitting.");
     } else {
-      const { error } = await sb.from("application_drafts").upsert({ startup_id: id, user_id: uid, name, website_url, description, category, placement, mode: "widget", checkout_plan: DEFAULT_PLAN, updated_at: new Date().toISOString() }, { onConflict: "startup_id" });
+      const { error } = await sb.from("application_drafts").upsert({ startup_id: id, user_id: uid, name, website_url, description, category, placement, mode: "widget", checkout_plan: DEFAULT_PLAN, updated_at: new Date().toISOString() }, { onConflict: "user_id,startup_id" });
       if (error) throw new ToolError("Could not save this application in your account.");
     }
     const snippet = `<script async src="https://startupbar.co/widget/loader.js" data-startup-id="${id}"></script>`;
