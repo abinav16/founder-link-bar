@@ -12,8 +12,12 @@ import { AvatarCropDialog } from "@/components/AvatarCropDialog";
 import { LegacyPromotionBilling } from "@/components/LegacyPromotionBilling";
 import { BoostClicksButton } from "@/components/BoostClicksDialog";
 import { deleteMyAccount } from "@/lib/account.functions";
+import { useWebMCP } from "use-webmcp-tool";
+import { runWebMCPTool } from "@/lib/webmcp-telemetry";
+import { z } from "zod";
 
 export const Route = createFileRoute("/_authenticated/account")({
+  validateSearch: z.object({ remove: z.string().uuid().optional().catch(undefined) }),
   head: () => ({
     meta: [
       { name: "twitter:card", content: "summary" },
@@ -247,6 +251,24 @@ function StartupCard({ startup, onUpdate, onDelete }: {
   const [reviewOpen, setReviewOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const { remove } = Route.useSearch();
+  useEffect(() => {
+    if (remove === startup.id) {
+      setExpanded(true);
+      setConfirmDelete(true);
+    }
+  }, [remove, startup.id]);
+
+  useEffect(() => {
+    const request = (event: Event) => {
+      if (!(event instanceof CustomEvent) || event.detail !== startup.id || deleting) return;
+      setExpanded(true);
+      setConfirmDelete(true);
+    };
+    window.addEventListener("startup-removal-requested", request);
+    return () => window.removeEventListener("startup-removal-requested", request);
+  }, [startup.id, deleting]);
+
   const baseName = startup.pending_name ?? startup.name;
   const baseDesc = startup.pending_description ?? startup.description;
   const hasChanges = sName.trim() !== baseName || sDesc.trim() !== baseDesc;
@@ -389,7 +411,7 @@ function StartupCard({ startup, onUpdate, onDelete }: {
   }
 
   return (
-    <div className={`group rounded-2xl border bg-white transition-all ${expanded ? "border-black/15 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.18)]" : "border-black/8 hover:border-black/15 hover:shadow-[0_4px_20px_-14px_rgba(0,0,0,0.3)]"}`}>
+    <div id={`startup-${startup.id}`} className={`group rounded-2xl border bg-white transition-all ${expanded ? "border-black/15 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.18)]" : "border-black/8 hover:border-black/15 hover:shadow-[0_4px_20px_-14px_rgba(0,0,0,0.3)]"}`}>
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
@@ -535,7 +557,7 @@ function StartupCard({ startup, onUpdate, onDelete }: {
                 </button>
               ) : (
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-sm text-black/40">Sure?</span>
+                  <span className="text-sm text-foreground">Permanently remove this listing? This cannot be undone and does not cancel billing or issue a refund.</span>
                   <button type="button" onClick={handleDelete} disabled={deleting}
                     className="rounded-lg bg-red-500 px-3 py-2 text-sm font-medium text-white hover:bg-red-600 transition-all disabled:opacity-50">
                     {deleting ? "Deleting…" : "Yes, delete"}
@@ -673,6 +695,8 @@ const TABS = [
 
 function AccountPage() {
   const [tab, setTab] = useState<"profile" | "startups">("profile");
+  const { remove } = Route.useSearch();
+  useEffect(() => { if (remove) setTab("startups"); }, [remove]);
   const [email, setEmail] = useState("");
 
   const [name, setName] = useState("");
@@ -795,6 +819,25 @@ function AccountPage() {
   function handleUpdate(id: string, data: Partial<Startup>) {
     setStartups((prev) => prev.map((s) => s.id === id ? { ...s, ...data } : s));
   }
+
+  useWebMCP({
+    name: "request_startup_removal",
+    description: "Open the existing deletion confirmation for a startup shown in Your startups. The user must click Yes, delete; this tool never deletes or cancels billing.",
+    annotations: { readOnlyHint: false, untrustedContentHint: true },
+    enabled: Boolean(userId) && tab === "startups" && !deletingAccount,
+    inputSchema: { type: "object", properties: { startup_id: { type: "string", description: "The ID of your startup currently shown on Account." } }, required: ["startup_id"] },
+    execute: ({ startup_id }: { startup_id: string }) => runWebMCPTool("request_startup_removal", () => {
+      const parsed = z.string().uuid().safeParse(startup_id);
+      if (!parsed.success) throw new Error("Invalid startup ID.");
+      const target = startups.find(s => s.id === startup_id);
+      if (!target) throw new Error("Startup is not shown in your Account.");
+      const section = document.getElementById(`startup-${target.id}`);
+      if (!section) throw new Error("Open Your startups before requesting removal.");
+      window.dispatchEvent(new CustomEvent("startup-removal-requested", { detail: target.id }));
+      section.scrollIntoView({ block: "center", behavior: "smooth" });
+      return `Awaiting your confirmation to remove ${target.name}. Nothing has been deleted.`;
+    }),
+  });
 
   function handleDelete(id: string) {
     setStartups((prev) => prev.filter((s) => s.id !== id));

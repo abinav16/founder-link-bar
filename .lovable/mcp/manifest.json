@@ -13,7 +13,7 @@
   "mcp": {
     "server": {
       "name": "startupbar",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "title": "StartupBAR"
     },
     "tools": [
@@ -273,6 +273,191 @@
               ],
               "default": "received",
               "description": "Rank by impressions received from the network or delivered to others."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "edit_startup",
+        "title": "Edit my startup",
+        "description": "Update an owned startup's text, category or previously uploaded logo; approved text edits wait for review while the current listing stays live. Website changes and new logo uploads use Account.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "startup_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Owned startup ID from list_my_startups."
+            },
+            "name": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 60,
+              "description": "Startup name, 2–60 characters."
+            },
+            "description": {
+              "type": "string",
+              "minLength": 10,
+              "maxLength": 100,
+              "description": "One-line description, 10–100 characters."
+            },
+            "category": {
+              "type": "string",
+              "enum": [
+                "AI",
+                "Developer Tools",
+                "Productivity",
+                "Marketing & Sales",
+                "Design",
+                "Creator & Media",
+                "E-commerce",
+                "Finance",
+                "Education",
+                "Health & Wellness",
+                "Community",
+                "Other"
+              ],
+              "description": "Startup category from the supported vocabulary."
+            },
+            "logo_url": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uri",
+                  "maxLength": 2000
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "An existing logo uploaded to your own StartupBar storage folder, or null to restore the favicon. Upload new files from Account."
+            }
+          },
+          "required": [
+            "startup_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "remove_startup",
+        "title": "Request startup removal",
+        "description": "Prepare removal of an owned listing and open its Account confirmation link. Nothing is deleted by this tool; the user must confirm on the website. Removal does not cancel subscriptions or promise refunds.",
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "startup_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Owned startup ID to remove."
+            }
+          },
+          "required": [
+            "startup_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "check_startup_installation",
+        "title": "Check my bar installation",
+        "description": "Check an owned startup's published website and explain installation problems with a matching snippet; missing scan evidence does not prove removal, and Supporter listings may not require a bar.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "startup_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Owned startup ID to diagnose."
+            }
+          },
+          "required": [
+            "startup_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_campaign_status",
+        "title": "My campaign status",
+        "description": "Read your guaranteed-click delivery, banner review/dates/actual traffic, and newsletter booking statuses without charging, booking or changing campaigns.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "startup_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Filter clicks and newsletters to one owned startup. Banners are account-wide and are explicitly labeled."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20,
+              "description": "Maximum records per campaign type, newest first."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "compare_startup_performance",
+        "title": "Compare my startup performance",
+        "description": "Compare received/delivered impressions and clicks and CTR for equal seven- or thirty-day UTC periods, excluding today's incomplete day; works across all your startups.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "startup_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "One owned startup; omit to compare up to 20 owned listings."
+            },
+            "period": {
+              "type": "string",
+              "enum": [
+                "7d",
+                "30d"
+              ],
+              "default": "7d",
+              "description": "Compare the last complete 7 or 30 UTC days with the preceding equal-length period."
             }
           },
           "additionalProperties": false,

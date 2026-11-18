@@ -36,3 +36,5 @@
 - Share the startup category vocabulary and selector across application, owner editing and directory filters; validate stored values in the database and leave legacy listings uncategorized rather than guessing their category.
 - Banner sponsorships use server-priced weekly quantities, payment-verified review and atomic approval timestamps in ad_campaigns; equal random rotation and expiry checks govern serving, while service-only events count analytics without debiting money. Side featured rails stay retired.
 - Advertise uses DashboardLayout's opt-in full-width canvas and a pure placement-guide component with fixture-only page diagrams and global presentation tokens, so examples never record campaign analytics or change payment logic.
+- Founder MCP writes use caller-scoped ownership checks and existing edit review; removal hands off to Account's human confirmation, preserving billing records and preventing assistant-driven irreversible deletion.
+- MCP comparisons use bounded per-startup daily reads over equal complete UTC windows, excluding today, so database response caps and partial days cannot distort comparisons.
