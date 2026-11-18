@@ -2051,6 +2051,19 @@ a.lb-side-row:hover span:nth-child(2) { text-decoration: underline; text-underli
 .lb-podium > div > div > div:nth-child(2) { animation-delay: .12s; }
 .lb-podium > div > div > div:nth-child(3) { animation-delay: .24s; }
 
+.header-advertise { position: relative; }
+.header-advertise-trigger { height: auto; border-radius: 0; background: transparent; gap: 5px; }
+.header-advertise-trigger:hover { background: transparent; }
+.header-advertise-trigger > svg { width: 12px; height: 12px; }
+.header-advertise-options { position: absolute; top: 100%; left: -22px; width: 310px; padding: 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--header-surface); color: var(--header-ink); box-shadow: var(--shadow-header); }
+.header-advertise-options a { display: flex; align-items: center; gap: 12px; padding: 14px 12px; border-radius: 5px; }
+.header-advertise-options a:hover, .header-advertise-options a:focus-visible { background: var(--muted); outline: 2px solid transparent; }
+.header-advertise-options a > svg { width: 18px; height: 18px; flex-shrink: 0; }
+.header-advertise-options a > svg:last-child { margin-left: auto; width: 14px; }
+.header-advertise-options strong { display: block; font-size: 14px; font-weight: 600; }
+.header-advertise-options small { display: block; font-size: 12px; margin-top: 4px; color: color-mix(in oklab, var(--header-ink) 65%, var(--header-surface)); }
+.header-advertise-mobile .header-advertise-trigger { width: 100%; justify-content: space-between; }
+.header-advertise-mobile .header-advertise-options { position: static; width: 100%; box-shadow: none; margin: 4px 0 8px; }
 /* Campaign creation: presentation remains separate from pricing and fulfillment. */
 .campaign-studio { --muted-foreground: oklch(0.43 0 0); --campaign-inverse-muted: oklch(0.77 0 0); --shadow-campaign: 0 14px 40px -24px color-mix(in oklab, var(--foreground) 24%, transparent); max-width: 1600px; margin: auto; padding: 34px 48px 24px; color: var(--foreground); letter-spacing: 0; }
 .campaign-heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-bottom: 30px; }

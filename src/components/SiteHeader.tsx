@@ -1,8 +1,8 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import { Settings, LogOut, ChevronsRight, Menu, X } from "lucide-react";
+import { Settings, LogOut, ChevronsRight, Menu, X, ChevronDown, ArrowRight, Image, Layers3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 function Logo() {
@@ -32,6 +32,41 @@ export function SiteHeader({ children }: { children?: ReactNode }) {
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [advertiseOpen, setAdvertiseOpen] = useState(false);
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+
+  useEffect(() => {
+    setAdvertiseOpen(false);
+    setMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!advertiseOpen) return;
+    const dismiss = (event: PointerEvent) => {
+      if (event.target instanceof Element && !event.target.closest("[data-advertise-menu]")) setAdvertiseOpen(false);
+    };
+    document.addEventListener("pointerdown", dismiss);
+    return () => document.removeEventListener("pointerdown", dismiss);
+  }, [advertiseOpen]);
+
+  const advertiseMenu = (mobile = false) => (
+    <div data-advertise-menu className={cn("header-advertise", mobile && "header-advertise-mobile")}
+      onMouseEnter={() => { if (!mobile) setAdvertiseOpen(true); }}
+      onMouseLeave={() => { if (!mobile) setAdvertiseOpen(false); }}
+      onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setAdvertiseOpen(false); }}
+      onKeyDown={(event) => { if (event.key === "Escape") { setAdvertiseOpen(false); event.currentTarget.querySelector("button")?.focus(); } }}>
+      <Button variant="ghost" className={cn(linkCls, "header-advertise-trigger", pathname.startsWith("/advertise") && activeCls)}
+        aria-expanded={advertiseOpen} aria-controls={mobile ? "advertise-mobile-options" : "advertise-options"}
+        onClick={() => setAdvertiseOpen(!advertiseOpen)}
+        onKeyDown={(event) => { if (event.key === "ArrowDown") { event.preventDefault(); setAdvertiseOpen(true); const parent = event.currentTarget.parentElement; requestAnimationFrame(() => parent?.querySelector("a")?.focus()); } }}>
+        Advertise <ChevronDown className={cn("transition-transform", advertiseOpen && "rotate-180")} />
+      </Button>
+      {advertiseOpen && <div id={mobile ? "advertise-mobile-options" : "advertise-options"} className="header-advertise-options">
+        <Link to="/advertise" onClick={() => { setAdvertiseOpen(false); setMenuOpen(false); }}><Layers3 /><span><strong>Advertising overview</strong><small>Explore formats and placements</small></span><ArrowRight /></Link>
+        <Link to="/advertise/new" onClick={() => { setAdvertiseOpen(false); setMenuOpen(false); }}><Image /><span><strong>Create a campaign</strong><small>Set up your next promotion</small></span><ArrowRight /></Link>
+      </div>}
+    </div>
+  );
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setAuthed(!!data.session));
@@ -64,7 +99,7 @@ export function SiteHeader({ children }: { children?: ReactNode }) {
       <div className="mx-auto flex h-[88px] max-w-[1440px] items-center justify-between gap-6 px-5 sm:px-8 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:gap-8">
         <Logo />
         <nav aria-label="Main navigation" className="hidden items-center gap-3 xl:gap-6 lg:flex">
-          {links.map(link => <Link key={link.to} to={link.to} activeProps={{ className: activeCls }} className={linkCls}>{link.label}</Link>)}
+          {links.map(link => link.to === "/advertise" ? <div key={link.to}>{advertiseMenu()}</div> : <Link key={link.to} to={link.to} activeProps={{ className: activeCls }} className={linkCls}>{link.label}</Link>)}
         </nav>
         <div className="flex items-center justify-end gap-2.5">
           {authed === null ? (
@@ -85,7 +120,7 @@ export function SiteHeader({ children }: { children?: ReactNode }) {
         </div>
       </div>
       {menuOpen && <nav id="site-mobile-menu" aria-label="Mobile navigation" className="grid border-t border-header-ink/8 bg-header-surface px-5 py-4 lg:hidden">
-        {links.map(link => <Link key={link.to} to={link.to} onClick={() => setMenuOpen(false)} activeProps={{ className: activeCls }} className={linkCls}>{link.label}</Link>)}
+        {links.map(link => link.to === "/advertise" ? <div key={link.to}>{advertiseMenu(true)}</div> : <Link key={link.to} to={link.to} onClick={() => setMenuOpen(false)} activeProps={{ className: activeCls }} className={linkCls}>{link.label}</Link>)}
         {authed ? <><Link to="/account" className={linkCls} onClick={() => setMenuOpen(false)}>Account settings</Link><Button variant="ghost" className="justify-start px-2 text-header-ink" onClick={signOut}><LogOut />Sign out</Button></> : <Link to="/auth" className={linkCls} onClick={() => setMenuOpen(false)}>Sign in</Link>}
       </nav>}
       {children}
