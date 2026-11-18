@@ -2020,6 +2020,23 @@ body[style*="padding-top: 36px"] .apply-install-shell { height: calc(100dvh - 36
 .nw-cta { display: flex; align-items: center; justify-content: center; gap: 6px; height: 42px; border-radius: 99px; background: var(--foreground); color: var(--background); font-size: 15px; font-weight: 600; transition: opacity .2s; }
 .nw-cta:hover { opacity: .85; }
 .nw-scroll { scrollbar-width: thin; overscroll-behavior: contain; padding-bottom: 8px; }
+.nw-proof { display: flex; flex-direction: column; gap: 16px; }
+.nw-proof > .nw-card { flex-shrink: 0; }
+.nw-proof > .nw-milestones { display: flex; flex-direction: column; flex-shrink: 1; min-height: 140px; overflow: hidden; }
+.nw-milestone-list { min-height: 0; max-height: 320px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-gutter: stable; }
+.nw-milestone-list:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+@media (min-width: 1024px) {
+  .nw-proof { position: sticky; top: 128px; align-self: start; max-height: calc(100dvh - 144px); gap: 12px; }
+  .nw-proof > .nw-card { padding: 14px; }
+  .nw-proof > .nw-milestones { min-height: 210px; }
+  .nw-milestone-list { flex: 1; }
+  .nw-proof > .nw-card:last-child > ul { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 6px; }
+  .nw-proof > .nw-card:last-child .nw-row { flex-wrap: wrap; gap: 6px; padding: 3px 0; }
+  .nw-proof > .nw-card:last-child .nw-row > span:last-child { width: 100%; padding-left: 34px; font-size: 11px; }
+  .nw-proof > .nw-card:last-child .nw-row > p { font-size: 13px; }
+  .nw-proof > .nw-card:last-child .nw-cta { height: 34px; margin-top: 10px; font-size: 13px; }
+}
+@media (min-width: 1024px) and (max-height: 800px) { .nw-proof { gap: 10px; } .nw-proof > .nw-card { padding: 12px; } .nw-proof > .nw-card:last-child .nw-row { padding-top: 3px; padding-bottom: 3px; } }
 .nw-row-wrap { animation: adx-up .5s both; list-style: none; }
 .nw-row-link { cursor: pointer; }
 .nw-row-link:hover p:first-child { text-decoration: underline; text-underline-offset: 3px; }

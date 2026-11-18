@@ -1,3 +1,6 @@
+# Network milestone scrolling
+- [x] Lock the right column during page scrolling and scroll milestones internally; seven-day UTC history uses existing daily counts with no guessed crossing dates. Four date/crossing tests, desktop fixed-position/internal-scroll checks, real startup profile readback and phone fit pass.
+
 # Campaign setup redesign
 - [x] Redesign /advertise/new with a wide monochrome workspace, format choices, live preview and order summary; verified signed-in real image uploads/readback, device and section switches, 4-week $196 summary, enabled payment and 390/768px fit; five banner tests pass. No payment initiated; temporary uploads removed.
 

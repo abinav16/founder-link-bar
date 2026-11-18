@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { buildMilestoneFeed, type MilestoneDay, type NetworkMilestone } from "@/lib/network-milestones";
 
 function getClient() {
   return createClient<Database>(
@@ -42,6 +43,7 @@ export interface NetworkDashboardResult {
   recentStartups: StartupCard[];
   newThisWeek: StartupCard[];
   recentlyActive: StartupCard[];
+  milestones: NetworkMilestone[];
 }
 
 export const getNetworkDashboard = createServerFn({ method: "GET" }).handler(
@@ -65,10 +67,11 @@ export const getNetworkDashboard = createServerFn({ method: "GET" }).handler(
     // Totals include ALL startups that ever participated in the network
     // (approved + rejected/removed) so removing a startup doesn't erase the
     // impressions/clicks it contributed to the network's totals.
-    const [totalsRes, per24hRes, lifetimeRes] = await Promise.all([
+    const [totalsRes, per24hRes, lifetimeRes, dailyRes] = await Promise.all([
       supabase.rpc("public_network_totals_all" as any),
       supabase.rpc("public_startup_24h" as any, { _ids: approvedIds }),
       supabase.rpc("public_startup_totals" as any, { _ids: approvedIds }),
+      supabase.rpc("public_startup_daily_v2" as any, { _ids: approvedIds }),
     ]);
 
     const totalsRow = (totalsRes.data as any)?.[0] ?? {};
@@ -150,6 +153,7 @@ export const getNetworkDashboard = createServerFn({ method: "GET" }).handler(
         ctr: totalImpressions > 0 ? Math.round((totalClicks / totalImpressions) * 1000) / 10 : 0,
       },
       recentStartups: cards,
+      milestones: buildMilestoneFeed(cards, (dailyRes.data ?? []) as MilestoneDay[], now.getTime()),
       newThisWeek: cards.filter((c) => c.created_at >= since7d),
       recentlyActive: [...cards]
         .filter((c) => c.impressions_24h > 0)

@@ -1141,7 +1141,7 @@ function NetworkDashboardPage() {
           )}
         </div>
         </div>
-        <ProofPanel startups={allStartups} totalClicks={stats?.totalClicks ?? 0} totalImpressions={stats?.totalImpressions ?? 0} />
+        <ProofPanel startups={allStartups} milestones={data.milestones} totalClicks={stats?.totalClicks ?? 0} totalImpressions={stats?.totalImpressions ?? 0} />
         </div>
       </div>
     </DashboardLayout>
@@ -1154,7 +1154,7 @@ type ProofStartup = NetworkDashboardResult["recentStartups"][number];
 const CLICK_MILESTONES = [1000, 500, 250, 100, 50];
 const NETWORK_GOALS = [1000, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000, 5000000];
 
-function ProofPanel({ startups, totalClicks, totalImpressions }: { startups: ProofStartup[]; totalClicks: number; totalImpressions: number }) {
+function ProofPanel({ startups, milestones, totalClicks, totalImpressions }: { startups: ProofStartup[]; milestones: NetworkDashboardResult["milestones"]; totalClicks: number; totalImpressions: number }) {
   const router = useRouter();
   useEffect(() => {
     const id = window.setInterval(() => { if (document.visibilityState === "visible") router.invalidate(); }, 60000);
@@ -1163,13 +1163,16 @@ function ProofPanel({ startups, totalClicks, totalImpressions }: { startups: Pro
   const clicks24 = startups.reduce((n, s) => n + (s.clicks_24h ?? 0), 0);
   const impr24 = startups.reduce((n, s) => n + (s.impressions_24h ?? 0), 0);
   const active24 = startups.filter((s) => (s.impressions_24h ?? 0) > 0).length;
-  const feed = buildMilestoneFeed(startups);
+  const feed = (milestones ?? []).flatMap(f => {
+    const s = startups.find(s => s.id === f.startupId);
+    return s ? [{ ...f, s }] : [];
+  });
   const joined = [...startups].sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at)).slice(0, 4);
   const goal = NETWORK_GOALS.find((g) => g > totalClicks) ?? totalClicks;
   const pct = goal ? Math.min(100, (totalClicks / goal) * 100) : 100;
   const reached = [...NETWORK_GOALS].reverse().find((g) => g <= totalClicks);
   return (
-    <aside className="nw-proof min-w-0 space-y-4 lg:sticky lg:top-28 lg:self-start lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto nw-scroll">
+    <aside className="nw-proof min-w-0" aria-label="Network activity">
       <div className="nw-card nw-dark">
         <div className="flex items-center justify-between">
           <span className="nw-eyebrow">Last 24 hours</span>
@@ -1191,13 +1194,13 @@ function ProofPanel({ startups, totalClicks, totalImpressions }: { startups: Pro
         <p className="mt-3 text-[13px] text-muted-foreground">{fmt(totalImpressions)} total views across member sites</p>
       </div>
 
-      {feed.length > 0 && (
-        <div className="nw-card">
+        <div className="nw-card nw-milestones">
           <div className="flex items-center justify-between">
             <span className="nw-eyebrow">Founder milestones</span>
             <span className="nw-live-dark"><i />Live</span>
           </div>
-          <ul className="mt-3 space-y-0.5">
+          <p className="mt-2 text-[13px] text-muted-foreground">Last 7 days · UTC</p>
+          <ul className="nw-milestone-list mt-3 space-y-0.5" aria-label="Founder milestones from the last 7 days" tabIndex={0}>
             {feed.map((f, i) => (
               <li key={f.key} style={{ animationDelay: `${i * 50}ms` }} className="nw-row-wrap">
                 <ProofLink slug={f.s.slug}>
@@ -1210,9 +1213,9 @@ function ProofPanel({ startups, totalClicks, totalImpressions }: { startups: Pro
                 </ProofLink>
               </li>
             ))}
+            {feed.length === 0 && <li className="py-4 text-sm text-muted-foreground">No new milestones in the last 7 days.</li>}
           </ul>
         </div>
-      )}
 
       <div className="nw-card">
         <span className="nw-eyebrow">Recently joined</span>
@@ -1238,43 +1241,3 @@ function ProofLink({ slug, children }: { slug: string | null; children: ReactNod
   return <Link to="/startup/$slug" params={{ slug }} className="nw-row nw-row-link">{children}</Link>;
 }
 
-const CLICK_STEPS = [1, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000];
-const VIEW_STEPS = [100, 1000, 5000, 10000, 25000, 50000, 100000];
-const DAY_STEPS = [7, 30, 60, 90, 100, 180, 365, 730];
-
-type FeedItem = { key: string; s: ProofStartup; icon: string; text: string; when: string; fresh: boolean; t: number };
-
-function buildMilestoneFeed(startups: ProofStartup[]): FeedItem[] {
-  const now = Date.now();
-  const day = 86400000;
-  const items: FeedItem[] = [];
-  for (const s of startups) {
-    const clicks = s.clicks ?? 0;
-    const c24 = s.clicks_24h ?? 0;
-    const views = s.impressions ?? 0;
-    const v24 = s.impressions_24h ?? 0;
-    const top = [...CLICK_STEPS].reverse().find((m) => clicks >= m);
-    if (top) {
-      const fresh = clicks - c24 < top;
-      items.push({ key: `c${s.id}`, s, icon: top === 1 ? "🎉" : "🚀", fresh,
-        text: top === 1 ? "Got its first click from the network" : `Reached ${fmt(top)} clicks`,
-        when: fresh ? "Today" : `${fmt(clicks)} total`, t: fresh ? now - 1000 : now - 30 * day + clicks });
-    }
-    const vTop = [...VIEW_STEPS].reverse().find((m) => views >= m);
-    if (vTop && views - v24 < vTop) {
-      items.push({ key: `v${s.id}`, s, icon: "👀", fresh: true, text: `Passed ${fmt(vTop)} views`, when: "Today", t: now - 2000 });
-    }
-    const created = new Date(s.created_at).getTime();
-    const age = Math.floor((now - created) / day);
-    const dTop = [...DAY_STEPS].reverse().find((d) => age >= d);
-    if (dTop) {
-      const hitAt = created + dTop * day;
-      const ago = Math.floor((now - hitAt) / day);
-      items.push({ key: `d${s.id}`, s, icon: "📅", fresh: ago === 0,
-        text: dTop >= 365 ? `${dTop / 365} year${dTop > 365 ? "s" : ""} in the network` : `${dTop} days in the network`,
-        when: ago === 0 ? "Today" : `${ago}d ago`, t: hitAt });
-    }
-    if (age < 1) items.push({ key: `j${s.id}`, s, icon: "👋", fresh: true, text: "Just joined the network", when: "Today", t: created });
-  }
-  return items.sort((a, b) => b.t - a.t).slice(0, 10);
-}
