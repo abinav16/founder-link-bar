@@ -50,7 +50,7 @@ export const Route = createFileRoute("/")({
             "@type": "Organization",
             "name": "StartupBar",
             "url": "https://startupbar.co",
-            "logo": "https://startupbar.co/favicon.ico",
+            "logo": "https://startupbar.co/favicon.png",
           },
         ],
       }),

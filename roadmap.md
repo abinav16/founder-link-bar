@@ -1,3 +1,7 @@
+# SEO and policy alignment
+- [x] Audit page metadata and crawl controls; add Advertise to the existing sitemap, paginate approved non-banned public profiles, surface failures, remove generated lastmod, correct canonical/OG URLs and pricing offers, and replace retired AI-search product copy. Preview sitemap returns 97 URLs including 87 real profiles; four sitemap tests pass. Google Search Console is not linked, so Google indexing/submission remains unverified.
+- [x] Align Terms and Privacy with current sponsorships, Supporter benefits, public profiles, assistant access and actual analytics/storage. Nine public pages and a real startup profile read back, policy sections fit desktop/390px, 34 sitemap/product tests pass and build is clean. Existing root hydration warning observed; no tracking, billing, access or consent behavior changed. Updates require publication to reach the live site.
+
 # Welcome page redesign
 - [x] Preserve the hero exactly; redesign the remaining homepage and footer with monochrome visuals, real startup logos, interactive exchange, live network map, signup journey, options and FAQ. Verified video playback/pause, step selection, FAQ expansion, 390/768/1631px fit, no runtime errors and 19 pricing/signup tests; payments unchanged.
 

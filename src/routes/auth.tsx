@@ -19,7 +19,7 @@ export const Route = createFileRoute("/auth")({
       { property: "og:url", content: "https://startupbar.co/auth" },
       { name: "robots", content: "noindex" },
     ],
-    links: [{ rel: "canonical", href: "/auth" }],
+    links: [{ rel: "canonical", href: "https://startupbar.co/auth" }],
   }),
   component: AuthPage,
 });

@@ -42,7 +42,7 @@ export const Route = createFileRoute("/apply")({
       { property: "og:description", content: "Submit your startup to join the StartupBar network and get featured on other founders' sites." },
       { property: "og:url", content: "https://startupbar.co/apply" },
     ],
-    links: [{ rel: "canonical", href: "/apply" }],
+    links: [{ rel: "canonical", href: "https://startupbar.co/apply" }],
   }),
   ssr: false,
   component: Apply,

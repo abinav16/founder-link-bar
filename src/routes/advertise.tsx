@@ -15,6 +15,7 @@ export const Route = createFileRoute("/advertise")({
       { property: "og:title", content: "Advertise on StartupBar" },
       { property: "og:description", content: "Banner ads, gold highlights and newsletter sponsorships in front of founders and makers." },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://startupbar.co/advertise" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "canonical", href: "https://startupbar.co/advertise" }],

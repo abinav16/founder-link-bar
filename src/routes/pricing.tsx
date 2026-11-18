@@ -29,6 +29,15 @@ export const Route = createFileRoute("/pricing")({
           description: "Startup listings in the StartupBar traffic exchange network, plus one-time Guaranteed Clicks packs.",
           brand: { "@type": "Brand", name: "StartupBar" },
           offers: [
+            ...CLICK_PACKS.map(pack => ({
+              "@type": "Offer",
+              name: `${pack.clicks} Guaranteed Clicks`,
+              description: "One-time click pack with Gold listing highlights; bot-filtered delivery after startup approval.",
+              price: String(pack.priceUsd),
+              priceCurrency: "USD",
+              url: "https://startupbar.co/pricing",
+              availability: "https://schema.org/InStock",
+            })),
             {
               "@type": "Offer",
               name: "First listing",

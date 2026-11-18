@@ -50,8 +50,10 @@ export const Route = createFileRoute("/startupbid")({
       { property: "og:title", content: TITLE },
       { property: "og:description", content: DESCRIPTION },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://startupbar.co/startupbid" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://startupbar.co/startupbid" }],
   }),
   component: StartupBidPage,
 });

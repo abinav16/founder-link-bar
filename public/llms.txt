@@ -17,7 +17,7 @@ Notes:
 - The bar renders in a sandboxed iframe (36px tall) and never blocks page content.
 - Placement is your choice: show the bar at the top or the bottom of your site, switchable from the dashboard.
 - The bar automatically blends with your site's background and text colors, including light/dark mode switches.
-- Visitors can dismiss the bar for their session; nothing is stored beyond a per-session ID used to de-duplicate impressions.
+- Session storage holds the bar's dismissal state, a session identifier, and a cached recommendation; local storage may remember placement preferences. Optional signup referral storage requires the partner's analytics-consent signal.
 - The bar survives client-side navigation (Livewire, Turbo, Astro, SPA routers) without reloading or shifting your layout.
 - Works on any site or framework — plain HTML, React, Next.js, Webflow, Framer, etc. No npm package needed.
 - Installation is verified automatically; the dashboard shows whether the widget is detected and last seen.
@@ -38,12 +38,15 @@ Rejected: sites that are not live yet, parked or placeholder pages, adult conten
 ## Pricing
 
 - Joining the network and listing one startup is free.
-- Additional listings beyond your first are a one-time paid add-on.
-- Featured spots cost $79 per month, with 8 slots available across StartupBar pages. Cancel anytime; the slot stays active until the end of the paid period.
+- Additional listings beyond your first cost $9.99 USD once per listing; prepaid credits and resubmissions are not charged again.
+- Guaranteed Clicks packs are one-time purchases: 100 clicks for $49, 250 for $99, 500 for $179, or 1,000 for $299. Only bot-filtered clicks count; delivery starts after approval and continues until the pack is delivered.
+- Banner sponsorships cost $49 per week for 1–52 weeks, paid once. Any signed-in company can apply. Duration starts only after approval; banners rotate randomly across eligible Network, Leaderboard and startup profile placements. No impression total is promised.
+- Sunday newsletter sponsorship costs $0.25 per eligible founder, calculated from the live list and locked at checkout; one sponsor per available Sunday. Date selection alone is not a reservation.
+- Supporter membership costs $999/year after a seven-day free trial, with annual renewal until cancelled. One complimentary Sunday sponsorship unlocks after the first successful annual payment, never during the trial.
 
-## Featured spots
+## Gold highlights and retired promotions
 
-A Featured spot is paid visibility on StartupBar's own pages, not inside the widget. A featured startup appears in the sponsored rails beside the network, leaderboard and dashboard pages, and is highlighted in gold across the network cards, network list and leaderboard. Featured spots do not change widget delivery, impression counts, or leaderboard ranking. Payments are handled by Dodo Payments.
+Guaranteed Clicks give an approved startup priority in the member-site bar and a Gold highlight on Network and Leaderboard listings while delivery is active. They do not buy a leaderboard rank or guarantee signups or revenue. The former $79/month eight-slot featured subscription and side rails are retired and no longer sold. Existing renewal cancellation remains available in Account under Legacy promotion billing. Payments are handled by Dodo Payments.
 
 ## StartupBid
 
@@ -67,10 +70,15 @@ Eligible referrals have a 30-day attribution window. Browser referral storage an
 - [Network](/network): Explore the full network of startups, trending startups by daily clicks, newly joined startups, and a sortable, searchable list.
 - [Startup profiles](/startup/): One public page per approved startup with founder name, photo and quote, joined date, impressions served and contributed, clicks, and a live preview of the site.
 - [StartupBid](/startupbid): Standalone pay-to-rank board. Bid from $5 on any site or @handle, cumulative totals decide rank, open to guests.
-- [Pricing](/pricing): Free listing, additional listings, and the $79/month Featured spot.
-- [FAQ](/faq): Answers on getting started, widget install, membership and approval, billing, featured spots, traffic and delivery.
+- [Advertise](/advertise): Compare banner ads, Gold click packs and Sunday newsletter sponsorships.
+- [Pricing](/pricing): Free first listing, $9.99 additional listings, one-time click packs and annual Supporter membership.
+- [FAQ](/faq): Answers on getting started, widget install, membership and approval, billing, click packs, sponsorships, traffic and delivery.
 - [Privacy Policy](/privacy): How StartupBar collects, uses, and protects founder and visitor data.
-- [Terms of Service](/terms): Rules for participating in the traffic exchange, application requirements, featured promotion, billing, and acceptable use.
+- [Terms of Service](/terms): Rules for participating in the traffic exchange, paid sponsorships, assistant access, billing, and acceptable use.
+
+## Assistant access
+
+With account-owner approval, connected assistants can read the owner's startup listings and search approved public listings through MCP. Browser tools on Network and Leaderboard are read-only. Current tools cannot purchase ads, edit listings or submit bids. The campaign studio at /advertise/new, dashboard and account pages require sign-in and are not public search landing pages.
 
 ## Optional
 

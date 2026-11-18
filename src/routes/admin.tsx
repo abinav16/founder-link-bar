@@ -21,7 +21,7 @@ export const Route = createFileRoute("/admin")({
       { property: "og:url", content: "https://startupbar.co/admin" },
       { name: "robots", content: "noindex" },
     ],
-    links: [{ rel: "canonical", href: "/admin" }],
+    links: [{ rel: "canonical", href: "https://startupbar.co/admin" }],
   }),
   ssr: false,
   beforeLoad: async () => {
