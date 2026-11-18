@@ -166,7 +166,7 @@ function ListRow({ name, founder, cat, desc, url, you, impressions, clicks, mobi
             {!mobile && <span className="rounded-md border border-border px-2 py-0.5 text-[10px] text-muted-foreground">{cat}</span>}
           </div>
           <p className="mt-1.5 truncate text-[12px] text-muted-foreground">{founder}</p>
-          
+
           <p className="mt-2 truncate text-[13px] text-muted-foreground">{desc}</p>
         </div>
         {!mobile && (
