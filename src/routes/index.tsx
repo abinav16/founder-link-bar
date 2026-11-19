@@ -12,6 +12,7 @@ import { SitePreviewSurface } from "@/components/SitePreviewSurface";
 import { resolveEmbedUrl } from "@/lib/preview-probe.functions";
 import { resolveWidgetPalette, widgetMutedColor } from "@/lib/widget-palette";
 import { assignHeroOrbits } from "@/lib/hero-orbits";
+import claudeIcon from "@/assets/claude-ai-icon.png.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -394,6 +395,7 @@ function Landing() {
             <div className="hero-entry">
               <div className="hero-url-input"><span className="hero-brand-capsule" /><input value={siteInput} onChange={e => setSiteInput(e.target.value)} onKeyDown={e => { if (e.key === "Enter") void goApply(); }} placeholder="Your startup’s website" aria-label="Your website" /><Button onClick={() => void goApply()} aria-label="Continue to apply with your site" className="hero-submit" size="icon"><ArrowRight /></Button></div>
               <div className="hero-entry-notes"><span><Check /> First listing free forever</span><span>No card required</span></div>
+              <Link to="/docs/mcp" className="hero-claude-link"><img src={claudeIcon.url} alt="Claude" width={18} height={18} /><span>Add to Claude</span><small>Official connector — manage your startups in chat</small><ArrowUpRight /></Link>
             </div>
           </div>
           <div className="hero-preview-area">
