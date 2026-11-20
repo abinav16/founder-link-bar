@@ -61,6 +61,7 @@ export function GoogleOneTap() {
 
       const rawNonce = crypto.randomUUID() + crypto.randomUUID();
       const hashedNonce = await sha256Hex(rawNonce);
+      if (cancelled) return;
 
       gid.initialize({
         client_id: GOOGLE_CLIENT_ID,
@@ -84,14 +85,16 @@ export function GoogleOneTap() {
           toast.success("You're signed in.");
         },
       });
-      gid.prompt();
+      // A browser may decline FedCM when no Google account is available.
+      // Normal Google sign-in remains available; do not create an app error.
+      try { gid.prompt(); } catch { /* optional prompt unavailable */ }
     })();
 
     return () => {
       cancelled = true;
       try { window.google?.accounts?.id?.cancel(); } catch { /* ignore */ }
     };
-  }, [skip, pathname]);
+  }, [skip]);
 
   return null;
 }

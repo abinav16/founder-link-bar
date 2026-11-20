@@ -8,6 +8,7 @@ import { BannerSlot } from "@/components/BannerAd";
 import { ProfileMomentum, FounderVouches, RelatedStartups, OwnerStatsShare } from '@/components/StartupProfileInsights';
 
 import { StartupFavicon } from "@/components/StartupFavicon";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { ExternalLink, Quote, Activity, ArrowUpRight, Calendar, User, Pencil, LayoutDashboard, Share2, Check, ArrowLeft } from "lucide-react";
 
@@ -416,13 +417,12 @@ function FounderSection({ s }: { s: { name: string; user_id: string | null; foun
         )}
       </div>
       <div className="flex items-start gap-4 sm:gap-5">
-        {s.founder_avatar_url ? (
-          <img src={s.founder_avatar_url} alt={s.founder_name || "Founder"} className="h-12 w-12 sm:h-16 sm:w-16 shrink-0 rounded-full object-cover ring-2 ring-white shadow" />
-        ) : (
-          <div className="flex h-12 w-12 sm:h-16 sm:w-16 shrink-0 items-center justify-center rounded-full bg-black/8 text-lg font-semibold text-black/40">
+        <Avatar className="h-12 w-12 sm:h-16 sm:w-16 ring-2 ring-background shadow">
+          <AvatarImage src={s.founder_avatar_url || undefined} alt={s.founder_name || "Founder"} className="object-cover" />
+          <AvatarFallback className="bg-muted text-muted-foreground text-lg font-semibold">
             {initial}
-          </div>
-        )}
+          </AvatarFallback>
+        </Avatar>
         <div className="min-w-0 flex-1">
           {s.founder_quote ? (
             <div className="relative">

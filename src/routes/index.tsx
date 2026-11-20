@@ -12,6 +12,7 @@ import { SitePreviewSurface } from "@/components/SitePreviewSurface";
 import { resolveEmbedUrl } from "@/lib/preview-probe.functions";
 import { resolveWidgetPalette, widgetMutedColor } from "@/lib/widget-palette";
 import { assignHeroOrbits } from "@/lib/hero-orbits";
+import { startupLogoSources } from "@/lib/startup-logo-sources";
 import claudeIcon from "@/assets/claude-ai-icon.png.asset.json";
 import { CLAUDE_CONNECTOR_URL } from "@/components/McpAnnouncement";
 
@@ -66,19 +67,24 @@ function HeroCanvas() {
   const logosRef = useRef<{ img: HTMLImageElement; dotIdx: number }[]>([]);
 
   useEffect(() => {
+    let cancelled = false;
     supabase.from("startups").select("website_url,logo_url").eq("status", "approved").then(({ data }) => {
-      if (!data || data.length === 0) return;
+      if (cancelled || !data || data.length === 0) return;
       logosRef.current = data.map((s, i) => {
         const img = new Image();
-        const domain = (s.website_url || "").replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+        const sources = startupLogoSources(s.website_url || "", s.logo_url);
+        let sourceIndex = 0;
         img.onerror = () => {
-          img.onerror = null;
-          img.src = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+          const next = sources[++sourceIndex];
+          if (!cancelled && next) img.src = next;
+          else img.onerror = null;
         };
-        img.src = s.logo_url || `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+        const first = sources[0];
+        if (first) img.src = first;
         return { img, dotIdx: i };
       });
     });
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {

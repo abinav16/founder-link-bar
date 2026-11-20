@@ -9,6 +9,7 @@ import { BannerSlot } from "@/components/BannerAd";
 import { BANNER_EVERY_N_ROWS } from "@/lib/banner-ads";
 import { Fragment } from "react";
 import { StartupFavicon } from "@/components/StartupFavicon";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getNetworkDashboard, type NetworkDashboardResult } from "@/lib/network-dashboard.functions";
 import { ArrowUpRight, ArrowRight, Eye, Globe, Search, Star, X } from "lucide-react";
 
@@ -257,26 +258,12 @@ function FounderChip({ s, sponsored }: { s: Card; sponsored?: boolean }) {
   if (!s.founder_name) return null;
   return (
     <span className="flex w-full min-w-0 items-center gap-1.5">
-      {s.founder_avatar_url ? (
-        <img
-          src={s.founder_avatar_url}
-          alt=""
-          width={18}
-          height={18}
-          loading="lazy"
-          className={[
-            "h-[18px] w-[18px] rounded-full object-cover shrink-0",
-            sponsored ? "bg-white/10" : "bg-black/[0.06]",
-          ].join(" ")}
-        />
-      ) : (
-        <span className={[
-          "h-[18px] w-[18px] rounded-full text-[11px] font-semibold inline-flex items-center justify-center shrink-0",
-          sponsored ? "bg-white/10 text-white/65" : "bg-black/[0.06] text-black/65",
-        ].join(" ")}>
+      <Avatar className="h-[18px] w-[18px]">
+        <AvatarImage src={s.founder_avatar_url || undefined} alt="" className="object-cover" />
+        <AvatarFallback className="bg-muted text-muted-foreground text-[11px] font-semibold">
           {s.founder_name.trim().charAt(0).toUpperCase()}
-        </span>
-      )}
+        </AvatarFallback>
+      </Avatar>
       <span className={["text-[13px] font-medium truncate", sponsored ? "text-white/60" : "text-black/65"].join(" ")}>{s.founder_name}</span>
     </span>
   );
@@ -402,7 +389,7 @@ function PillStat({ value, label, small }: { value: string; label: string; small
 }
 
 
-function MagneticField({ startups, stats }: { startups: { id: string; name: string; website_url: string }[]; stats?: { totalStartups: number; ctr: number; totalImpressions: number; totalClicks: number } }) {
+function MagneticField({ startups, stats }: { startups: Pick<Card, "id" | "name" | "website_url" | "logo_url">[]; stats?: { totalStartups: number; ctr: number; totalImpressions: number; totalClicks: number } }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const nodeRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -793,8 +780,6 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
       </div>
 
       {startups.map((s, i) => {
-        const domain = (() => { try { return new URL(s.website_url.startsWith("http") ? s.website_url : `https://${s.website_url}`).hostname.replace(/^www\./, ""); } catch { return s.website_url; } })();
-        const imgUrl = (s as any).logo_url || `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
         return (
           <div
             key={s.id}
@@ -802,17 +787,7 @@ function MagneticField({ startups, stats }: { startups: { id: string; name: stri
             className="absolute top-0 left-0"
             style={{ width: 38, height: 38, zIndex: 5 }}
           >
-            <div
-              style={{
-                width: 38,
-                height: 38,
-                borderRadius: "50%",
-                overflow: "hidden",
-                border: "1px solid rgba(255,255,255,0.08)",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-                background: `white url(${imgUrl}) center/cover no-repeat`,
-              }}
-            />
+            <StartupFavicon url={s.website_url} name={s.name} logoUrl={s.logo_url} size={38} className="rounded-full border border-border shadow-sm" />
           </div>
         );
       })}

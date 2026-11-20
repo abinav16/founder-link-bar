@@ -1,3 +1,8 @@
+# Minor site audit repairs
+- [x] Add founder-photo fallbacks, deduplicate logo retries and give map logos graceful fallbacks, including failures before hydration.
+- [x] Recheck the reported stale stored logo: it now returns HTTP 200, so no data was changed. Keep Google sign-in enabled; optional One Tap handles browser refusal and no longer restarts on every public navigation. Google’s own no-account warning cannot be removed by the site.
+- [x] 26 regression tests pass; real Network, Leaderboard and profile pages show initials with all external images blocked at 1280/390px, without broken images, overflow or page errors. Normal homepage images load; preview build clean. Live updates require publication.
+
 # MCP submission repair and click-pack booking
 - [x] Fix composite draft conflict targeting; actual World of Messages application saved, resumed with the same ID and opened in signed-in /apply with the $9.99 additional-listing handoff. No submission or charge.
 - [x] Share owner-authorized checkout with book_guaranteed_clicks; twelve-tool guide and catalog updated. 32 tests pass and preview build clean. Real-account 100-click $49 checkout opens the secure payment page; pending order reads back through caller permissions. No payment made or delivery granted. Existing Cloud/auth/Dodo reused; no new services. Hosted revision and external OAuth await republishing.

@@ -40,3 +40,4 @@
 - MCP comparisons use bounded per-startup daily reads over equal complete UTC windows, excluding today, so database response caps and partial days cannot distort comparisons.
 - Keep the MCP guide in its public content route with browser-safe reference data; shared announcements follow SiteHeader outside its sticky box so existing page offsets remain unchanged.
 - Website and OAuth MCP click-pack bookings share an owner-authorized server checkout helper and payment-verified fulfillment, so assistants can return checkout links without granting reach or charging users.
+- Share deduplicated startup logo sources across canvas and image views, and use the design-system Avatar fallback for founder photos, so failed external media cannot produce repeated retries or broken portraits.
